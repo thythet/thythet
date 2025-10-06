@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChatRoom</title>
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Siemreap&display=swap" rel="stylesheet">
+
+<!-- Remix Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.min.css" />
+
+<style>
+:root{--bg-dark:#0a1c37;--bg-light:#d9d9db;--card-dark:#041122;--card-light:#ffffff;--text-dark:#e6eef6;--text-light:#111111;--muted-dark:#f4ffe0;--muted-light:#32353a;--accent:#c4c9ff;--blue:#d1cbff;--radius:12px;}
+[data-theme="dark"]{--bg:var(--bg-dark);--card:var(--card-dark);--text:var(--text-dark);--muted:var(--muted-dark);}
+[data-theme="light"]{--bg:var(--bg-light);--card:var(--card-light);--text:var(--text-light);--muted:var(--muted-light);}
+body{font-family:'DM Sans',system-ui,Arial;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;transition:all 0.3s;}
+*{box-sizing:border-box;margin:0;padding:0;}
+.container{width:980px;max-width:98%;display:grid;grid-template-columns:340px 1fr;gap:18px;}
+.panel{background:var(--card);padding:18px;border-radius:var(--radius);border:1px solid rgba(255,255,255,0.05);transition:all 0.3s;}
+.brand{display:flex;gap:12px;align-items:center;margin-bottom:16px;}
+.logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--blue));display:flex;align-items:center;justify-content:center;font-weight:700;color:#021024;box-shadow:0 6px 16px rgba(0,0,0,0.3);}
+h1{margin:0;font-size:18px;font-weight:700;}
+.sub{color:var(--muted);font-size:13px;margin-top:4px;}
+label{display:block;color:var(--muted);margin-top:12px;margin-bottom: 8px;font-size:13px;}
+input[type=text],input[type=password]{width:100%;padding:10px;border-radius:10px;border:2px solid rgba(173, 147, 147, 0.1);background:transparent;color:var(--text);transition:border 0.2s;font-family:inherit;}
+input:focus{outline:none;border-color:var(--accent);}
+.row{display:flex;gap:8px;margin-top:12px;}
+.btn{padding:10px 12px;border-radius:10px;border:none;cursor:pointer;font-weight:600;transition:all 0.2s;display:flex;align-items:center;gap:6px;justify-content:center;font-family:inherit;}
+.btn.primary{background:linear-gradient(90deg,var(--blue),var(--accent));color:#021024;}
+.btn.primary:hover{opacity:0.9;transform:scale(1.02);}
+.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.1);color:var(--muted);}
+.btn.ghost:hover{opacity:0.8;}
+.small{font-size:13px;color:var(--muted);}
+.chat{display:flex;flex-direction:column;min-height:520px;padding:12px;border-radius:var(--radius);border:1px solid rgba(255,255,255,0.05);background:var(--card);transition:all 0.3s;}
+.header{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.05);}
+.title{font-weight:700;}
+.subtle{font-size:13px;color:var(--muted);}
+.messages{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:10px;word-break:break-word;font-family:'Siemreap',sans-serif;}
+.bubble{max-width:70%;padding:10px 12px;border-radius:var(--radius);background:rgba(255,255,255,0.05);color:var(--text);font-size:14px;opacity:0;animation:fadein 0.3s forwards;transition:all 0.2s;font-family:'Siemreap',sans-serif;}
+.bubble.you{align-self:flex-end;background:linear-gradient(90deg,var(--blue),var(--accent));color:#021024;}
+.bubble.other{align-self:flex-start;background:rgba(255,255,255,0.08);}
+.meta{font-size:11px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;align-items:center;}
+.composer{display:flex;gap:10px;padding:12px;border-top:1px solid rgba(255,255,255,0.05);}
+.composer input{flex:1;padding:10px;border-radius:10px;border:2px solid rgba(173, 147, 147, 0.1);background:transparent;color:var(--text);font-family:'Siemreap',sans-serif;}
+.smallright{font-size:12px;color:var(--muted);text-align:right;}
+.viewers{margin-top:10px;font-size:13px;color:var(--muted);}
+.messages::-webkit-scrollbar{width:10px;}
+.messages::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:10px;}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+@media(max-width:880px){.container{grid-template-columns:1fr}}
+.toggle-theme{position:absolute;top:16px;right:16px;cursor:pointer;font-size:24px;color:var(--accent);}
+</style>
+</head>
+<body data-theme="dark">
+<i class="ri-moon-line toggle-theme" id="toggleTheme" title="Toggle theme"></i>
+
+<div class="container">
+  <div class="panel">
+    <div class="brand">
+      <div class="logo">EC</div>
+      <div>
+        <h1>EncryptedChat 2User </h1>
+        <div class="sub">Create or join a room. Supports Khmer</div>
+      </div>
+    </div>
+
+    <label>Username</label>
+    <input id="username" type="text" placeholder="Your name" autocomplete="off">
+
+    <label>Room ID</label>
+    <input id="roomId" type="text" placeholder="Room ID" autocomplete="off">
+
+    <label>Room password</label>
+    <input id="pwdRoom" type="password" placeholder="Room password" autocomplete="off">
+
+    <div class="row">
+      <button id="btnCreate" class="btn primary"><i class="ri-add-line"></i> Create Room</button>
+      <button id="btnJoin" class="btn primary"><i class="ri-login-box-line"></i> Join Room</button>
+    </div>
+
+    <div class="row" style="margin-top:8px">
+      <button id="btnLeave" class="btn ghost"><i class="ri-logout-box-line"></i> Leave Room</button>
+      <button id="btnClearRoom" class="btn ghost"><i class="ri-delete-bin-5-line"></i> Remove Room</button>
+    </div>
+
+    <div class="viewers" id="viewers">Viewers: --</div>
+    <div id="infoStorage" class="smallright" style="margin-top:8px;">--</div>
+  </div>
+
+  <div class="chat">
+    <div class="header">
+      <div>
+        <div class="title">Room Chat</div>
+        <div id="roomState" class="subtle">Not joined</div>
+      </div>
+    </div>
+
+    <div class="messages" id="messages" aria-live="polite"></div>
+
+    <div class="composer">
+      <input id="msgInput" placeholder="Join a room to type..." disabled autocomplete="off">
+      <button id="btnSend" class="btn primary"><i class="ri-send-plane-line"></i> Send</button>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;padding:8px 12px">
+      <div class="small">Encrypted local chat • messages auto-delete after 24 hours</div>
+      <div id="lastPrune" class="smallright">--</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Theme toggle
+const toggleTheme=document.getElementById('toggleTheme');
+toggleTheme.onclick=()=>{document.body.dataset.theme=document.body.dataset.theme==='dark'?'light':'dark';};
+
+// Storage & encryption
+const STORAGE_KEY='encchat_rooms_v5';
+const RETAIN_MS=24*60*60*1000;
+
+const roomIdEl=document.getElementById('roomId');
+const pwdRoomEl=document.getElementById('pwdRoom');
+const usernameEl=document.getElementById('username');
+const btnCreate=document.getElementById('btnCreate');
+const btnJoin=document.getElementById('btnJoin');
+const btnLeave=document.getElementById('btnLeave');
+const btnClearRoom=document.getElementById('btnClearRoom');
+const btnSend=document.getElementById('btnSend');
+const msgInput=document.getElementById('msgInput');
+const messagesEl=document.getElementById('messages');
+const roomStateEl=document.getElementById('roomState');
+const viewersEl=document.getElementById('viewers');
+const infoStorageEl=document.getElementById('infoStorage');
+const lastPruneEl=document.getElementById('lastPrune');
+
+let rooms=loadRooms();
+let current={id:null,key:null,username:null};
+
+// --- Helpers ---
+function loadRooms(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');}catch(e){return{};}}
+function saveRooms(){localStorage.setItem(STORAGE_KEY,JSON.stringify(rooms)); updateStorageInfo();}
+function ensureRoom(rid){if(!rooms[rid]) rooms[rid]={salt:null,verifier:null,messages:[],users:[]};}
+
+function str2ab(s){return new TextEncoder().encode(s);}
+function ab2b64(buf){return btoa(String.fromCharCode(...new Uint8Array(buf)));}
+function b642ab(b64){const bin=atob(b64); const arr=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i); return arr.buffer;}
+async function deriveKey(password,salt){const pwKey=await crypto.subtle.importKey('raw',str2ab(password),{name:'PBKDF2'},false,['deriveKey']); return await crypto.subtle.deriveKey({name:'PBKDF2',salt:salt,iterations:200000,hash:'SHA-256'},pwKey,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);}
+async function encrypt(key,text){const iv=crypto.getRandomValues(new Uint8Array(12)); const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,str2ab(text)); return {iv:ab2b64(iv.buffer),ct:ab2b64(ct)};}
+async function decrypt(key,iv,ct){try{const buf=b642ab(iv); const ctb=b642ab(ct); const dec=await crypto.subtle.decrypt({name:'AES-GCM',iv:new Uint8Array(buf)},key,ctb); return new TextDecoder().decode(dec);}catch(e){throw new Error('decrypt-failed');}}
+
+function genId(){return Math.random().toString(36).slice(2,9);}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);}
+
+function pruneAll(){const cutoff=Date.now()-RETAIN_MS;let changed=false; Object.keys(rooms).forEach(rid=>{const before=rooms[rid].messages.length; rooms[rid].messages=rooms[rid].messages.filter(m=>m.ts>=cutoff); if(rooms[rid].messages.length!==before) changed=true;}); if(changed) saveRooms(); lastPruneEl.textContent='Last prune: '+new Date().toLocaleTimeString();}
+function updateStorageInfo(){const raw=localStorage.getItem(STORAGE_KEY)||'';infoStorageEl.textContent=`Rooms: ${Object.keys(rooms).length} • ≈ ${new Blob([raw]).size} bytes`;}
+
+// --- Buttons ---
+btnCreate.addEventListener('click',async()=>{
+  const rid=roomIdEl.value.trim(), pwd=pwdRoomEl.value, uname=usernameEl.value.trim();
+  if(!rid||!pwd||!uname){alert('Enter room, password, and username'); return;}
+  if(rooms[rid] && rooms[rid].salt && !confirm('Room exists, overwrite?')) return;
+  const salt=crypto.getRandomValues(new Uint8Array(16)), salt_b64=ab2b64(salt.buffer);
+  const key=await deriveKey(pwd,salt);
+  const v=await encrypt(key,'verifier:'+Date.now());
+  rooms[rid]={salt:salt_b64,verifier:v.ct+'::'+v.iv,messages:[],users:[uname]};
+  saveRooms(); alert('Room created'); joinRoom(rid,uname,pwd);
+});
+
+btnJoin.addEventListener('click',()=>joinRoom(roomIdEl.value.trim(),usernameEl.value.trim(),pwdRoomEl.value));
+btnLeave.addEventListener('click',()=>leaveRoom());
+btnClearRoom.addEventListener('click',()=>{const rid=roomIdEl.value.trim(); if(!rid||!rooms[rid]) return alert('Room not found'); if(confirm('Remove room?')){delete rooms[rid]; saveRooms(); leaveRoom();}});
+btnSend.addEventListener('click',sendMsg);
+msgInput.addEventListener('keypress',e=>{if(e.key==='Enter') sendMsg();});
+
+// --- Room logic ---
+async function joinRoom(rid,uname,pwd){
+  ensureRoom(rid); const room=rooms[rid]; const salt=b642ab(room.salt); const key=await deriveKey(pwd,salt);
+  try{const [ct,iv]=room.verifier.split('::'); await decrypt(key,iv,ct);}catch(e){alert('Wrong password'); return;}
+  if(room.users.length>=2 && !room.users.includes(uname)){alert('Room full (2 users max)'); return;}
+  if(!room.users.includes(uname)) room.users.push(uname); saveRooms();
+  current={id:rid,key,username:uname}; roomStateEl.textContent=`Joined: ${rid}`; msgInput.disabled=false; btnSend.disabled=false; renderMessages(); renderViewers();
+}
+
+function leaveRoom(){if(current.id){const room=rooms[current.id]; room.users=room.users.filter(u=>u!==current.username); saveRooms();}current={id:null,key:null,username:null};msgInput.disabled=true;btnSend.disabled=true;messagesEl.innerHTML='';roomStateEl.textContent='Not joined';renderViewers();}
+function renderViewers(){if(!current.id){viewersEl.textContent='Viewers: --'; return;} const room=rooms[current.id]; viewersEl.textContent=`Viewers: ${room.users.join(', ')}`;}
+async function sendMsg(){if(!current.id) return; const txt=msgInput.value.trim(); if(!txt) return; msgInput.value=''; const enc=await encrypt(current.key,txt); const msg={id:genId(),ct:enc.ct,iv:enc.iv,ts:Date.now(),username:current.username}; rooms[current.id].messages.push(msg); saveRooms(); renderMessages();}
+async function renderMessages(){messagesEl.innerHTML=''; if(!current.id) return; const room=rooms[current.id]; for(const m of room.messages){const b=document.createElement('div'); try{const txt=await decrypt(current.key,m.iv,m.ct); b.className='bubble '+(m.username===current.username?'you':'other'); b.innerHTML=`<strong>${escapeHtml(m.username)}</strong>: ${escapeHtml(txt)} <div class="meta">${new Date(m.ts).toLocaleTimeString()}</div>`;}catch(e){b.className='bubble other'; b.textContent='[Encrypted]';} messagesEl.appendChild(b);} messagesEl.scrollTop=messagesEl.scrollHeight;}
+
+// Init
+pruneAll(); updateStorageInfo(); setInterval(()=>{pruneAll(); renderMessages(); renderViewers();},60000);
+</script>
+</body>
+</html>
