@@ -1,3 +1,206 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>THY THET</title><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"><link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet"><style>:root{--bg:#111;--fg:#eee;--ac:#ff5722}html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:'DM Sans',sans-serif;overflow:hidden}.controls{position:absolute;top:10px;right:10px;z-index:50;display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:12px;background:rgba(255,255,255,0.05);backdrop-filter:blur(8px);display:none}label{display:flex;align-items:center;gap:6px;font-size:13px}input[type=range]{width:140px}.file-btn,.rotate-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:8px;border:0;cursor:pointer;font-weight:600}.file-btn{background:var(--ac);color:#fff}.rotate-btn{background:#222;color:#fff}.quiz-box{position:absolute;top:10px;right:10px;z-index:60;width:320px;background:rgba(255,255,255,0.05);backdrop-filter:blur(8px);padding:12px;border-radius:12px;color:#fff;text-align:center}.quiz-question{font-size:15px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}.quiz-option{display:block;width:100%;padding:8px 12px;margin:6px 0;background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.12);border-radius:8px;text-align:left;cursor:pointer;transition:all .18s}.quiz-option:hover{background:rgba(255,255,255,0.18)}.quiz-option.correct{background:#2e7d32;border-color:#43a047}.quiz-option.wrong{background:#b71c1c;border-color:#e53935}.refresh-btn{background:none;border:0;color:#fff;font-size:18px;cursor:pointer}.admin-box{margin-top:10px;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.03);border-radius:8px;padding:6px 8px}.admin-input{background:transparent;border:0;outline:0;color:#fff;font-size:13px;flex:1}.icon-btn{background:transparent;border:0;color:#fff;font-size:18px;cursor:pointer}.icon-muted{color:#9a9a9a}#progressBox{margin-top:10px;background:rgba(255,255,255,0.06);border-radius:8px;height:6px;width:100%;overflow:hidden;display:flex;align-items:center}#progressBar{height:100%;width:0%;background:#4caf50;border-radius:8px;transition:width .45s ease}</style></head><body><div class="controls" id="c"><label><button class="file-btn" id="bu"><i class="ri-image-line"></i> Upload Your Image</button><input id="fi" type="file" accept="image/*" style="display:none"></label><label>Pixels <input id="pr" type="range" min="20" max="200" step="5" value="30"></label><label>Scale <input id="sr" type="range" min="0.5" max="3" step="0.1" value="1"></label><label>Speed <input id="vr" type="range" min="0.001" max="0.06" step="0.001" value="0.01"></label><label>Rate ms <input id="rr" type="range" min="30" max="2000" step="10" value="200"></label><button class="rotate-btn" id="rot"><i class="ri-refresh-line"></i></button></div><div class="quiz-box" id="qb"><div class="quiz-question"><span id="qt">...</span><button class="refresh-btn" id="rf"><i class="ri-refresh-line"></i></button></div><div id="qo"></div><div id="progressBox"><div id="progressBar"></div></div><div class="admin-box"><i id="ai" class="ri-key-line icon-muted"></i><input id="ap" class="admin-input" type="password" placeholder=""><button id="as" class="icon-btn"><i id="aii" class="ri-arrow-right-line"></i></button></div></div><script src="https://cdn.jsdelivr.net/npm/three@0.156.0/build/three.min.js"></script><script>(function(){const A="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*",B="!$%&*";let p=parseInt(document.getElementById('pr').value),s=parseFloat(document.getElementById('vr').value),z=parseFloat(document.getElementById('sr').value),r=parseInt(document.getElementById('rr').value),g=false;const S=new THREE.Scene();S.background=new THREE.Color(0x111111);const C=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,.1,2e3);C.position.z=80;const R=new THREE.WebGLRenderer({antialias:true});R.setPixelRatio(window.devicePixelRatio||1);R.setSize(innerWidth,innerHeight);document.body.appendChild(R.domElement);S.add(new THREE.AmbientLight(16777215,.6));const L=new THREE.PointLight(16777215,.8);L.position.set(150,150,150);S.add(L);const G=new THREE.Group();S.add(G);const P=new THREE.PlaneGeometry(1,1);const X=new Map(),Y=new Map();let Mx=[],IMG=null;function t(c1,c2,c3,c4,c5=32,c6=false){const k=`${c1}_${c2}_${c3}_${c4}_${c5}_${c6}`;if(X.has(k))return X.get(k);const e=document.createElement('canvas');e.width=e.height=c5;const q=e.getContext('2d');q.clearRect(0,0,c5,c5);q.fillStyle=`rgb(${c2},${c3},${c4})`;q.font=`${c6?'italic ':''}${Math.floor(c5*.85)}px 'Cascadia Code',monospace`;q.textAlign='center';q.textBaseline='middle';q.fillText(c1,c5/2,c5/2);const tx=new THREE.CanvasTexture(e);tx.magFilter=THREE.LinearFilter;tx.minFilter=THREE.LinearMipMapLinearFilter;tx.needsUpdate=true;X.set(k,tx);return tx}function u(tex){const id=tex.uuid; if(Y.has(id))return Y.get(id);const m=new THREE.MeshBasicMaterial({map:tex,transparent:true,side:THREE.DoubleSide,depthTest:true});Y.set(id,m);return m}function b(im){Mx.forEach(o=>{G.remove(o.m);o.m.geometry&&o.m.geometry.dispose()});Mx=[];const w=p,h=Math.max(1,Math.round(im.height*(w/im.width)));const cv=document.createElement('canvas');cv.width=w;cv.height=h;const cc=cv.getContext('2d');cc.clearRect(0,0,w,h);cc.drawImage(im,0,0,w,h);const D=cc.getImageData(0,0,w,h).data;const SW=Math.min(60,180),psz=SW/w,zs=.0005*psz;for(let y=0;y<h;y++){for(let x=0;x<w;x++){const i=(y*w+x)*4,rr=D[i],gg=D[i+1],bb=D[i+2],aa=D[i+3];if(aa<20)continue;const ch=A[Math.floor(Math.random()*A.length)],it=B.includes(ch);const tx=t(ch,rr,gg,bb,32,it),mt=u(tx);const m=new THREE.Mesh(P,mt);m.scale.set(psz,psz,1);m.position.x=(x-w/2+.5)*psz;m.position.y=-(y-h/2+.5)*psz;m.position.z=(y-h/2)*zs;m.frustumCulled=false;G.add(m);Mx.push({m:m,r:rr,g:gg,b:bb,idx:A.indexOf(ch)})}}IMG=im}let LT=performance.now();function rnd(now){const d=now-LT; if(d>=r&&Mx.length>0){LT=now;const changes=Math.max(1,Math.floor(Mx.length*.02));for(let i=0;i<changes;i++){const idx=Math.floor(Math.random()*Mx.length),it= Mx[idx],nc=A[Math.floor(Math.random()*A.length)];if(it.idx===A.indexOf(nc))continue;it.idx=A.indexOf(nc);it.m.material=u(t(nc,it.r,it.g,it.b,32,B.includes(nc)))}}}let ang=0;function loop(now){requestAnimationFrame(loop);rnd(now||performance.now());if(g){ang+=s;G.rotation.y=ang;G.rotation.x=Math.sin(ang*.3)*.12}G.scale.set(z,z,z);R.render(S,C)}requestAnimationFrame(loop);const dft=new Image();dft.crossOrigin='anonymous';dft.onload=function(){b(dft)};dft.src='https://thythet.com/assets/img/home1-img.png';document.getElementById('bu').addEventListener('click',function(){document.getElementById('fi').click()});document.getElementById('fi').addEventListener('change',function(e){const f=e.target.files[0];if(!f)return;const rfr=new FileReader;rfr.onload=function(ev){const im=new Image;im.onload=function(){b(im)};im.src=ev.target.result};rfr.readAsDataURL(f)});document.getElementById('pr').addEventListener('input',function(e){p=parseInt(e.target.value);if(IMG)b(IMG)});document.getElementById('sr').addEventListener('input',function(e){z=parseFloat(e.target.value)});document.getElementById('vr').addEventListener('input',function(e){s=parseFloat(e.target.value)});document.getElementById('rr').addEventListener('input',function(e){r=parseInt(e.target.value)});document.getElementById('rot').addEventListener('click',function(){g=!g});window.addEventListener('resize',function(){R.setSize(innerWidth,innerHeight);C.aspect=innerWidth/innerHeight;C.updateProjectionMatrix()});const ALL=[{q:'What is <iframe> used for?',c:['Embed HTML','Display image','Run server code'],a:0},{q:'Which tag is used for images?',c:['<img>','<image>','<pic>'],a:0},{q:'Which tag creates hyperlink?',c:['<link>','<a>','<href>'],a:1},{q:'Which tag defines a section?',c:['<section>','<box>','<div-section>'],a:0},{q:'Which attribute adds alt text?',c:['alt','title','descr'],a:0},{q:'Which tag is for inline code?',c:['<code>','<pre>','<script>'],a:0}];let asked=[],cur=null,ok=0,req=10;const QB=document.getElementById('qb'),QT=document.getElementById('qt'),QO=document.getElementById('qo'),RF=document.getElementById('rf'),PB=document.getElementById('progressBar');PB.style.width='0%';PB.style.transition='width .45s ease';function pick(){let avail=ALL.filter(x=>!asked.includes(x));if(avail.length===0)asked=[];avail=ALL.filter(x=>!asked.includes(x));cur=avail[Math.floor(Math.random()*avail.length)];asked.push(cur);show();}function show(){QT.textContent=""+cur.q+" ("+ok+"/"+req+")";QO.innerHTML='';cur.c.forEach(function(txt,i){const btn=document.createElement('button');btn.className='quiz-option';btn.textContent=txt;btn.dataset.i=i;btn.addEventListener('click',function(){check(parseInt(this.dataset.i,10))});QO.appendChild(btn)})}function check(i){if(i===cur.a){ok++}else{if(ok>0)ok--}PB.style.width=Math.min(100,(ok/req*100))+'%';if(ok>=req){document.getElementById('c').style.display='flex';QB.style.display='none';return}setTimeout(pick,450)}RF.addEventListener('click',function(){pick()});pick();const ai=document.getElementById('ap'),asb=document.getElementById('as'),ib=document.getElementById('aii');let st=0;const P1=String.fromCharCode(110,111,100,101,37,37,37,37),P2=String.fromCharCode(115,99,114,105,112,116,46,106,115,32,32,105,43,43);asb.addEventListener('click',function(){const v=ai.value; if(st===0&&v===P1){st=1;ib.className='ri-arrow-right-line';ai.value='';ai.placeholder='Second password';return} if(st===1&&v===P2){document.getElementById('c').style.display='flex';QB.style.display='none';ai.value='';return}ai.value='';st=0;ib.className='ri-arrow-right-line'})})();</script></body></html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>THY THET</title><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"><link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet"><style>:root{--bg:#111;--fg:#eee;--ac:#ff5722}html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:'DM Sans',sans-serif;overflow:hidden}.controls{position:absolute;top:10px;right:10px;z-index:50;display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:12px;background:rgba(255,255,255,0.05);backdrop-filter:blur(8px);display:none}label{display:flex;align-items:center;gap:6px;font-size:13px}input[type=range]{width:140px}.file-btn,.rotate-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:8px;border:0;cursor:pointer;font-weight:600}.file-btn{background:var(--ac);color:#fff}.rotate-btn{background:#222;color:#fff}.quiz-box{position:absolute;top:10px;right:10px;z-index:60;width:320px;background:rgba(255,255,255,0.05);backdrop-filter:blur(8px);padding:12px;border-radius:12px;color:#fff;text-align:center}.quiz-question{font-size:15px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}.quiz-option{display:block;width:100%;padding:8px 12px;margin:6px 0;background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.12);border-radius:8px;text-align:left;cursor:pointer;transition:all .18s}.quiz-option:hover{background:rgba(255,255,255,0.18)}.quiz-option.correct{background:#2e7d32;border-color:#43a047}.quiz-option.wrong{background:#b71c1c;border-color:#e53935}.refresh-btn{background:none;border:0;color:#fff;font-size:18px;cursor:pointer}.admin-box{margin-top:10px;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.03);border-radius:8px;padding:6px 8px}.admin-input{background:transparent;border:0;outline:0;color:#fff;font-size:13px;flex:1}.icon-btn{background:transparent;border:0;color:#fff;font-size:18px;cursor:pointer}.icon-muted{color:#9a9a9a}#progressBox{margin-top:10px;background:rgba(255,255,255,0.06);border-radius:8px;height:6px;width:100%;overflow:hidden;display:flex;align-items:center}#progressBar{height:100%;width:0%;background:#4caf50;border-radius:8px;transition:width .45s ease}</style></head><body><div class="controls" id="c"><label><button class="file-btn" id="bu"><i class="ri-image-line"></i> Upload Your Image</button><input id="fi" type="file" accept="image/*" style="display:none"></label><label>Pixels <input id="pr" type="range" min="20" max="200" step="5" value="30"></label><label>Scale <input id="sr" type="range" min="0.5" max="3" step="0.1" value="1"></label><label>Speed <input id="vr" type="range" min="0.001" max="0.06" step="0.001" value="0.01"></label><label>Rate ms <input id="rr" type="range" min="30" max="2000" step="10" value="200"></label><button class="rotate-btn" id="rot"><i class="ri-refresh-line"></i></button></div><div class="quiz-box" id="qb"><div class="quiz-question"><span id="qt">...</span><button class="refresh-btn" id="rf"><i class="ri-refresh-line"></i></button></div><div id="qo"></div><div id="progressBox"><div id="progressBar"></div></div><div class="admin-box"><i id="ai" class="ri-key-line icon-muted"></i><input id="ap" class="admin-input" type="password" placeholder=""><button id="as" class="icon-btn"><i id="aii" class="ri-arrow-right-line"></i></button></div></div><script src="https://cdn.jsdelivr.net/npm/three@0.156.0/build/three.min.js"></script><script>(function(){const A="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*",B="!$%&*";let p=parseInt(document.getElementById('pr').value),s=parseFloat(document.getElementById('vr').value),z=parseFloat(document.getElementById('sr').value),r=parseInt(document.getElementById('rr').value),g=false;const S=new THREE.Scene();S.background=new THREE.Color(0x111111);const C=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,.1,2e3);C.position.z=80;const R=new THREE.WebGLRenderer({antialias:true});R.setPixelRatio(window.devicePixelRatio||1);R.setSize(innerWidth,innerHeight);document.body.appendChild(R.domElement);S.add(new THREE.AmbientLight(16777215,.6));const L=new THREE.PointLight(16777215,.8);L.position.set(150,150,150);S.add(L);const G=new THREE.Group();S.add(G);const P=new THREE.PlaneGeometry(1,1);const X=new Map(),Y=new Map();let Mx=[],IMG=null;function t(c1,c2,c3,c4,c5=32,c6=false){const k=`${c1}_${c2}_${c3}_${c4}_${c5}_${c6}`;if(X.has(k))return X.get(k);const e=document.createElement('canvas');e.width=e.height=c5;const q=e.getContext('2d');q.clearRect(0,0,c5,c5);q.fillStyle=`rgb(${c2},${c3},${c4})`;q.font=`${c6?'italic ':''}${Math.floor(c5*.85)}px 'Cascadia Code',monospace`;q.textAlign='center';q.textBaseline='middle';q.fillText(c1,c5/2,c5/2);const tx=new THREE.CanvasTexture(e);tx.magFilter=THREE.LinearFilter;tx.minFilter=THREE.LinearMipMapLinearFilter;tx.needsUpdate=true;X.set(k,tx);return tx}function u(tex){const id=tex.uuid; if(Y.has(id))return Y.get(id);const m=new THREE.MeshBasicMaterial({map:tex,transparent:true,side:THREE.DoubleSide,depthTest:true});Y.set(id,m);return m}function b(im){Mx.forEach(o=>{G.remove(o.m);o.m.geometry&&o.m.geometry.dispose()});Mx=[];const w=p,h=Math.max(1,Math.round(im.height*(w/im.width)));const cv=document.createElement('canvas');cv.width=w;cv.height=h;const cc=cv.getContext('2d');cc.clearRect(0,0,w,h);cc.drawImage(im,0,0,w,h);const D=cc.getImageData(0,0,w,h).data;const SW=Math.min(60,180),psz=SW/w,zs=.0005*psz;for(let y=0;y<h;y++){for(let x=0;x<w;x++){const i=(y*w+x)*4,rr=D[i],gg=D[i+1],bb=D[i+2],aa=D[i+3];if(aa<20)continue;const ch=A[Math.floor(Math.random()*A.length)],it=B.includes(ch);const tx=t(ch,rr,gg,bb,32,it),mt=u(tx);const m=new THREE.Mesh(P,mt);m.scale.set(psz,psz,1);m.position.x=(x-w/2+.5)*psz;m.position.y=-(y-h/2+.5)*psz;m.position.z=(y-h/2)*zs;m.frustumCulled=false;G.add(m);Mx.push({m:m,r:rr,g:gg,b:bb,idx:A.indexOf(ch)})}}IMG=im}let LT=performance.now();function rnd(now){const d=now-LT; if(d>=r&&Mx.length>0){LT=now;const changes=Math.max(1,Math.floor(Mx.length*.02));for(let i=0;i<changes;i++){const idx=Math.floor(Math.random()*Mx.length),it= Mx[idx],nc=A[Math.floor(Math.random()*A.length)];if(it.idx===A.indexOf(nc))continue;it.idx=A.indexOf(nc);it.m.material=u(t(nc,it.r,it.g,it.b,32,B.includes(nc)))}}}let ang=0;function loop(now){requestAnimationFrame(loop);rnd(now||performance.now());if(g){ang+=s;G.rotation.y=ang;G.rotation.x=Math.sin(ang*.3)*.12}G.scale.set(z,z,z);R.render(S,C)}requestAnimationFrame(loop);const dft=new Image();dft.crossOrigin='anonymous';dft.onload=function(){b(dft)};dft.src='https://thythet.com/assets/img/home1-img.png';document.getElementById('bu').addEventListener('click',function(){document.getElementById('fi').click()});document.getElementById('fi').addEventListener('change',function(e){const f=e.target.files[0];if(!f)return;const rfr=new FileReader;rfr.onload=function(ev){const im=new Image;im.onload=function(){b(im)};im.src=ev.target.result};rfr.readAsDataURL(f)});document.getElementById('pr').addEventListener('input',function(e){p=parseInt(e.target.value);if(IMG)b(IMG)});document.getElementById('sr').addEventListener('input',function(e){z=parseFloat(e.target.value)});document.getElementById('vr').addEventListener('input',function(e){s=parseFloat(e.target.value)});document.getElementById('rr').addEventListener('input',function(e){r=parseInt(e.target.value)});document.getElementById('rot').addEventListener('click',function(){g=!g});window.addEventListener('resize',function(){R.setSize(innerWidth,innerHeight);C.aspect=innerWidth/innerHeight;C.updateProjectionMatrix()});const ALL=[{q:'What is <iframe> used for?',c:['Embed HTML','Display image','Run server code'],a:0},{q:'Which tag is used for images?',c:['<img>','<image>','<pic>'],a:0},{q:'Which tag creates hyperlink?',c:['<link>','<a>','<href>'],a:1},{q:'Which tag defines a section?',c:['<section>','<box>','<div-section>'],a:0},{q:'Which attribute adds alt text?',c:['alt','title','descr'],a:0},{q:'Which tag is for inline code?',c:['<code>','<pre>','<script>'],a:0}];let asked=[],cur=null,ok=0,req=10;const QB=document.getElementById('qb'),QT=document.getElementById('qt'),QO=document.getElementById('qo'),RF=document.getElementById('rf'),PB=document.getElementById('progressBar');PB.style.width='0%';PB.style.transition='width .45s ease';function pick(){let avail=ALL.filter(x=>!asked.includes(x));if(avail.length===0)asked=[];avail=ALL.filter(x=>!asked.includes(x));cur=avail[Math.floor(Math.random()*avail.length)];asked.push(cur);show();}function show(){QT.textContent=""+cur.q+" ("+ok+"/"+req+")";QO.innerHTML='';cur.c.forEach(function(txt,i){const btn=document.createElement('button');btn.className='quiz-option';btn.textContent=txt;btn.dataset.i=i;btn.addEventListener('click',function(){check(parseInt(this.dataset.i,10))});QO.appendChild(btn)})}function check(i){if(i===cur.a){ok++}else{if(ok>0)ok--}PB.style.width=Math.min(100,(ok/req*100))+'%';if(ok>=req){document.getElementById('c').style.display='flex';QB.style.display='none';return}setTimeout(pick,450)}RF.addEventListener('click',function(){pick()});pick();const ai=document.getElementById('ap'),asb=document.getElementById('as'),ib=document.getElementById('aii');let st=0;const P1=String.fromCharCode(110,111,100,101,37,37,37,37),P2=String.fromCharCode(115,99,114,105,112,116,46,106,115,32,32,105,43,43);asb.addEventListener('click',function(){const v=ai.value; if(st===0&&v===P1){st=1;ib.className='ri-arrow-right-line';ai.value='';ai.placeholder='Second password';return} if(st===1&&v===P2){document.getElementById('c').style.display='flex';QB.style.display='none';ai.value='';return}ai.value='';st=0;ib.className='ri-arrow-right-line'})})();</script><!-- Remix Icon -->
+<link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+
+<style>
+body{margin:0;padding:0;font-family:'DM Sans',sans-serif;background:#f0f0f0;overflow:hidden;}
+#toggleWrapper{position:fixed;bottom:40px;right:40px;display:flex;align-items:center;gap:5px;z-index:10000;}
+#toggleBtn{width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);
+  backdrop-filter:blur(8px) saturate(120%);color:white;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:grab;
+  box-shadow:0 8px 15px rgba(0,0,0,0.2);user-select:none;transition:all 0.3s ease;}
+#toggleBtn:active{cursor:grabbing;}
+#pwInput{display:none;background:rgba(255,255,255,0.06);backdrop-filter:blur(8px) saturate(120%);
+  border:none;color:white;padding:4px 8px;border-radius:8px;outline:none;width:100px;}
+#pwSubmit{display:none;background:transparent;border:none;color:white;cursor:pointer;font-size:16px;}
+.glass-wrap{position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);width:420px; height:280px; min-width:180px; min-height:120px;
+  border-radius:24px; padding:8px; box-sizing:border-box; background:transparent; cursor:default; user-select:none; transition:opacity 0.3s ease,width 0.3s ease,height 0.3s ease;
+  z-index:1000; display:none;}
+.glass{width:100%; height:100%; border-radius:16px;background:linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  border:1px solid rgba(255,255,255,0.15);box-shadow:0 10px 30px rgba(2,6,23,0.6), inset 0 1px 0 rgba(255,255,255,0.03);
+  backdrop-filter: blur(8px) saturate(120%);display:flex; flex-direction:column; overflow:hidden; color:rgba(255,255,255,0.3);
+  font-family:'Cascadia Code', monospace; font-style:italic; font-weight:400;}
+.glass-header{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:grab}
+.glass-header:active{cursor:grabbing}
+.dots{display:flex;gap:6px}
+.dot{width:10px;height:10px;border-radius:50%;background:linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0.4));opacity:0.85}
+.title{font-weight:600;font-size:14px;opacity:0.95}
+.spacer{flex:1}
+.hide-btn{border:none;background:transparent;color:rgba(255,255,255,0.5);cursor:pointer;font-size:16px}
+.glass-content{padding:12px 16px;flex:1;overflow:auto;font-size:13px;line-height:1.45;outline:none;}
+</style>
+
+<div id="toggleWrapper">
+  <button id="toggleBtn"><i class="ri-keynote-line"></i></button>
+  <input id="pwInput" type="password" placeholder="Password" aria-label="password">
+  <button id="pwSubmit"><i class="ri-arrow-right-line"></i></button>
+</div>
+
+<div class="glass-wrap" id="glassWrap">
+  <div class="glass">
+    <div class="glass-header" id="dragHandle">
+      <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      <div class="title">Note</div>
+      <div class="spacer"></div>
+      <button class="hide-btn" id="hideBtn"><i class="ri-keynote-fill"></i></button>
+    </div>
+    <div class="glass-content" id="glassContent" contenteditable="true">
+      Type your note here...
+    </div>
+  </div>
+</div>
+
+<script>
+/*
+Client-side PBKDF2 verification:
+- We store only salt (base64), iterations and derived key (base64).
+- When user types password, we run PBKDF2 in browser and compare derived bytes.
+- Password itself is never stored in code.
+Note: this still can't protect against a determined attacker who can brute-force offline,
+but it raises the bar significantly (slow KDF + salt).
+*/
+
+// ---------- Configuration (stored values only, not the plaintext password) ----------
+const STORED = {
+  // salt used when deriving the stored key (base64). If you want to change password,
+  // you must create a new salt and derivedKey (see note below).
+  saltB64: 'j9Kaq74SNFZ4kKvN7wEjRQ==',            // 16 bytes, base64
+  iterations: 200000,                          // PBKDF2 iterations (high -> slow brute force)
+  derivedKeyB64: 'YGIwz+2q4/ScPwbNoHlHsVXzymRUyNWmoepVOnWGZvs=' // base64 of 32-byte derived key
+};
+// ---------- End stored config ----------
+
+(async function(){
+  // Utilities
+  function b64ToArrayBuffer(b64){ return Uint8Array.from(atob(b64), c=>c.charCodeAt(0)); }
+  function arrayBufferToHex(buf){
+    const b = new Uint8Array(buf); return Array.from(b).map(x=>x.toString(16).padStart(2,'0')).join('');
+  }
+
+  const toggleBtn = document.getElementById('toggleBtn');
+  const toggleIcon = toggleBtn.querySelector('i');
+  const pwInput = document.getElementById('pwInput');
+  const pwSubmit = document.getElementById('pwSubmit');
+  const wrap = document.getElementById('glassWrap');
+  const hideBtn = document.getElementById('hideBtn');
+  const content = document.getElementById('glassContent');
+
+  // auth / storage keys
+  const STORAGE_KEY='glass_note_48h';
+  const STORAGE_AUTH_KEY='glass_note_auth_1h';
+  const AUTH_EXPIRY = 60*60*1000; // 1 hour
+  const NOTE_EXPIRY = 48*60*60*1000; // 48 hours for note
+
+  // Load note content (like before)
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      const obj=JSON.parse(raw);
+      if(obj.ts && (obj.ts + NOTE_EXPIRY) < Date.now()){
+        localStorage.removeItem(STORAGE_KEY); content.innerText='';
+      } else if(obj.text) content.innerText = obj.text;
+    }
+  }catch(e){}
+
+  // Load auth flag from localStorage (timestamp only)
+  let authorized = false;
+  let authTime = 0;
+  try{
+    const a = JSON.parse(localStorage.getItem(STORAGE_AUTH_KEY));
+    if(a && a.ts && (Date.now() - a.ts) < AUTH_EXPIRY){ authorized = true; authTime = a.ts; }
+  }catch(e){}
+
+  // Auto-save note content
+  setInterval(()=>{ localStorage.setItem(STORAGE_KEY, JSON.stringify({text: content.innerText, ts: Date.now()})); }, 3000);
+
+  // PBKDF2 derive function using SubtleCrypto -> returns Uint8Array
+  async function deriveKeyFromPassword(passwordStr){
+    const enc = new TextEncoder();
+    const passKey = await crypto.subtle.importKey('raw', enc.encode(passwordStr), {name:'PBKDF2'}, false, ['deriveBits']);
+    const saltArr = b64ToArrayBuffer(STORED.saltB64);
+    const derivedBits = await crypto.subtle.deriveBits(
+      {name:'PBKDF2', salt: saltArr, iterations: STORED.iterations, hash: 'SHA-256'},
+      passKey,
+      256 // bits -> 32 bytes
+    );
+    return new Uint8Array(derivedBits);
+  }
+
+  // Compare derived key to stored derived key (timing-resistant compare)
+  function equalsUint8(a, b){
+    if(a.length !== b.length) return false;
+    let diff = 0;
+    for(let i=0;i<a.length;i++) diff |= a[i] ^ b[i];
+    return diff === 0;
+  }
+
+  // When user clicks toggle
+  toggleBtn.addEventListener('click', ()=>{
+    const now = Date.now();
+    if(!authorized || (now - authTime) > AUTH_EXPIRY){
+      // show inline password input
+      pwInput.style.display = 'inline-block';
+      pwSubmit.style.display = 'inline-block';
+      pwInput.focus();
+      return;
+    }
+    // toggle
+    if(wrap.style.display === 'block'){
+      wrap.style.display = 'none';
+      toggleIcon.className = 'ri-keynote-line';
+    } else {
+      wrap.style.display = 'block';
+      toggleIcon.className = 'ri-keynote-fill';
+    }
+  });
+
+  // Handle Enter key in input to submit
+  pwInput.addEventListener('keydown', async (e)=>{
+    if(e.key === 'Enter') { e.preventDefault(); await pwSubmit.click(); }
+  });
+
+  // Password submit handler: derive and compare
+  pwSubmit.addEventListener('click', async ()=>{
+    const pw = pwInput.value || '';
+    if(!pw){ pwInput.value = ''; return; }
+
+    try{
+      // derive
+      const derived = await deriveKeyFromPassword(pw);
+      const stored = b64ToArrayBuffer(STORED.derivedKeyB64);
+      // compare
+      if(equalsUint8(derived, stored)){
+        authorized = true;
+        authTime = Date.now();
+        // store timestamp only
+        localStorage.setItem(STORAGE_AUTH_KEY, JSON.stringify({ts: authTime}));
+        pwInput.style.display = 'none';
+        pwSubmit.style.display = 'none';
+        pwInput.value = '';
+        // show note
+        wrap.style.display = 'block';
+        toggleIcon.className = 'ri-keynote-fill';
+        return;
+      } else {
+        // wrong password
+        alert('Wrong password');
+        pwInput.value = '';
+        return;
+      }
+    }catch(err){
+      console.error(err);
+      alert('Error during password verification');
+      pwInput.value = '';
+    }
+  });
+
+  // hide button inside note
+  hideBtn.addEventListener('click', ()=>{
+    wrap.style.display = 'none';
+    toggleIcon.className = 'ri-keynote-line';
+  });
+
+})();
+</script>
+</body></html>
+
 
