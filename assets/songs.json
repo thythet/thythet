@@ -1,20 +1,14 @@
 [
   {
     "title": "Amazing Grace",
-    "lyrics": "Amazing grace! How sweet the sound that saved a wretch like me.",
-    "page": "https://example.com/amazing-grace",
-    "pptx": "https://example.com/amazing-grace.pptx"
+    "lyrics": "Amazing grace! How sweet the sound...",
+    "page": "https://thythet.com/song/amazing-grace",
+    "pptx": "https://thythet.com/assets/slides/amazing-grace.pptx"
   },
   {
-    "title": "Holy Spirit",
-    "lyrics": "Holy Spirit, You are welcome here. Come flood this place and fill the atmosphere.",
-    "page": "https://example.com/holy-spirit",
-    "pptx": "https://example.com/holy-spirit.pptx"
-  },
-  {
-    "title": "Here I Am to Worship",
-    "lyrics": "Light of the world, You stepped down into darkness. Opened my eyes, let me see.",
-    "page": "https://example.com/here-i-am",
-    "pptx": "https://example.com/here-i-am.pptx"
+    "title": "How Great Is Our God",
+    "lyrics": "The splendor of a King, clothed in majesty...",
+    "page": "https://thythet.com/song/how-great-is-our-god",
+    "pptx": "https://thythet.com/assets/slides/how-great-is-our-god.pptx"
   }
 ]
