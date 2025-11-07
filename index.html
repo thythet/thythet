@@ -7,8 +7,9 @@
 <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
+  /* GENERAL */
+  * { font-family: 'DM Sans', sans-serif; box-sizing: border-box; }
   body {
-    font-family: 'DM Sans', sans-serif;
     background: #0f0f0f;
     color: #f2f2f2;
     margin: 0;
@@ -19,15 +20,9 @@
     min-height: 100vh;
     overflow-x: hidden;
   }
-  header {
-    margin-top: 40px;
-    text-align: center;
-  }
-  h1 {
-    font-size: 2rem;
-    margin-bottom: 10px;
-    color: #fff;
-  }
+  header { margin-top: 40px; text-align: center; }
+  h1 { font-size: 2rem; margin-bottom: 10px; color: #fff; }
+  
   .search-bar-wrapper {
     display: flex;
     align-items: center;
@@ -49,6 +44,8 @@
     transition: 0.3s;
   }
   .search-bar-wrapper input:focus { background: #242424; }
+
+  /* SONG LIST */
   .song-list {
     margin-top: 40px;
     width: 90%;
@@ -79,6 +76,7 @@
     transition: 0.3s;
   }
   .download-btns a:hover { color: #59a6ff; }
+
   footer {
     margin-top: auto;
     padding: 20px;
@@ -126,14 +124,44 @@
     background: rgba(255,255,255,0.05);
     border-top-left-radius: 16px;
     border-top-right-radius: 16px;
+    font-family: 'DM Sans', sans-serif;
   }
-  .draggable-header button { background: none; border: none; color: white; font-size: 1.3rem; cursor: pointer; }
-  .draggable-content { padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
-  .draggable-content input { background: rgba(255,255,255,0.1); border: none; border-radius: 8px; color: white; padding: 8px; outline: none; }
-  .draggable-content button { margin-top: 10px; background: #59a6ff; border: none; border-radius: 8px; color: white; padding: 8px 14px; cursor: pointer; font-weight: 600; transition: 0.3s; }
+  .draggable-header button { background: none; border: none; color: white; font-size: 1.1rem; cursor: pointer; font-family: 'DM Sans', sans-serif; margin-left:5px; }
+
+  .draggable-content {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 60vh;
+    overflow-y: auto;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .draggable-content input { 
+    background: rgba(255,255,255,0.1); border: none; border-radius: 8px; color: white; padding: 8px; outline: none; 
+  }
+  .draggable-content button { 
+    margin-top: 10px; background: #59a6ff; border: none; border-radius: 8px; color: white; padding: 8px 14px; 
+    cursor: pointer; font-weight: 600; transition: 0.3s; font-family: 'DM Sans', sans-serif;
+  }
   .draggable-content button:hover { background: #72b4ff; }
-  .draggable-content h2 { color: #59a6ff; margin-bottom: 10px; }
-  .draggable-content p { color: #ccc; text-align: center; white-space: pre-line; }
+  .draggable-content h2 { color: #59a6ff; margin-bottom: 10px; font-family: 'DM Sans', sans-serif; }
+  .draggable-content p { color: #ccc; text-align: center; white-space: pre-line; font-family: 'DM Sans', sans-serif; }
+
+  /* SCROLLBAR */
+  .draggable-content::-webkit-scrollbar { width: 6px; }
+  .draggable-content::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.2); border-radius: 3px; }
+  .draggable-content::-webkit-scrollbar-track { background: transparent; }
+
+  /* QUICK BOX RESIZE */
+  #quickBox {
+    resize: both;
+    overflow: auto;
+    min-width: 300px;
+    min-height: 200px;
+    max-width: 90%;
+    max-height: 80vh;
+  }
 </style>
 </head>
 <body>
@@ -176,7 +204,11 @@
 <div class="draggable-box" id="quickBox">
   <div class="draggable-header">
     <span><i class="ri-file-music-line"></i> Quick View</span>
-    <button onclick="closeQuick()"><i class="ri-close-circle-line"></i></button>
+    <div>
+      <button onclick="adjustFont(1)">A+</button>
+      <button onclick="adjustFont(-1)">A-</button>
+      <button onclick="closeQuick()"><i class="ri-close-circle-line"></i></button>
+    </div>
   </div>
   <div class="draggable-content">
     <h2 id="quickTitle"></h2>
@@ -192,10 +224,11 @@ let songs = [];
 let localSongs = []; 
 let HASHED_PASSWORD = btoa('node.js');
 let authorized = false;
+let currentFontSize = 16;
 
 const songList=document.getElementById('songList');
 
-// ✅ Fetch from thythet.com
+// ✅ Fetch songs
 fetch('https://thythet.com/assets/songs.json')
 .then(r=>r.json())
 .then(data=>{ songs=data; displaySongs(); })
@@ -239,11 +272,19 @@ function openQuick(i){
   currentSongPage=song.page;
   currentSongPptx=song.pptx;
   document.getElementById('quickBox').style.display='flex';
+  currentFontSize = 16; // reset font size
+  document.getElementById('quickLyrics').style.fontSize = currentFontSize + 'px';
   document.getElementById('quickPageBtn').onclick=()=>window.open(currentSongPage,'_blank');
   document.getElementById('quickPptxBtn').onclick=()=>window.open(currentSongPptx,'_blank');
 }
 function closeQuick(){ document.getElementById('quickBox').style.display='none'; }
 function copyLyrics(){ navigator.clipboard.writeText(document.getElementById('quickLyrics').textContent); alert('Copied!'); }
+function adjustFont(delta){
+  currentFontSize += delta;
+  if(currentFontSize < 10) currentFontSize = 10;
+  if(currentFontSize > 36) currentFontSize = 36;
+  document.getElementById('quickLyrics').style.fontSize = currentFontSize + 'px';
+}
 
 // ADMIN LOGIN
 const toggleBtn=document.getElementById('toggleBtn');
