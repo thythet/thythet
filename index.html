@@ -189,13 +189,13 @@ footer {
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  overflow-y: auto; /* scroll lyrics */
+  overflow-y: auto;
   padding: 20px;
-  max-height: 95%; /* updated to 95% */
+  max-height: 95%;
 }
 #quickBox.fullscreen h2,
 #quickBox.fullscreen p {
-  font-size: 3rem !important;
+  font-size: 5rem; /* default fullscreen bigger */
   margin: 20px 0;
   line-height: 1.2;
   white-space: pre-wrap;
@@ -262,11 +262,11 @@ let HASHED_PASSWORD = btoa('node.js');
 let authorized=false;
 const songList=document.getElementById('songList');
 const quickBox=document.getElementById('quickBox');
-const quickContent=document.querySelector('#quickBox .draggable-content');
 const quickTitle=document.getElementById('quickTitle');
 const quickLyrics=document.getElementById('quickLyrics');
 const quickDownloadBtn=document.getElementById('quickDownloadBtn');
-let fontSize=16;
+
+let contentFontSize = 16; // default normal
 
 // Fetch songs
 fetch('https://thythet.com/assets/songs.json')
@@ -310,9 +310,10 @@ function openQuick(i){
   quickLyrics.textContent = song.lyrics || 'No lyrics';
   quickDownloadBtn.href = song.pptx || '#';
   quickBox.style.display='flex';
-  fontSize=16;
-  quickContent.style.fontSize=fontSize+'px';
-  quickBox.classList.remove('fullscreen'); // reset fullscreen
+  quickBox.classList.remove('fullscreen');
+  contentFontSize = 16;
+  quickTitle.style.fontSize = contentFontSize+'px';
+  quickLyrics.style.fontSize = contentFontSize+'px';
 }
 
 function closeQuick(){ 
@@ -320,8 +321,17 @@ function closeQuick(){
   quickBox.classList.remove('fullscreen');
   quickBox.style.display='none';
 }
-function increaseFont(){ fontSize+=2; quickContent.style.fontSize=fontSize+'px'; }
-function decreaseFont(){ fontSize=Math.max(10,fontSize-2); quickContent.style.fontSize=fontSize+'px'; }
+
+function increaseFont(){ 
+  contentFontSize += 2;
+  quickTitle.style.fontSize = contentFontSize+'px';
+  quickLyrics.style.fontSize = contentFontSize+'px';
+}
+function decreaseFont(){ 
+  contentFontSize = Math.max(10, contentFontSize-2);
+  quickTitle.style.fontSize = contentFontSize+'px';
+  quickLyrics.style.fontSize = contentFontSize+'px';
+}
 
 // Admin login
 const toggleBtn=document.getElementById('toggleBtn');
@@ -378,14 +388,20 @@ function makeDraggable(el){
 makeDraggable(adminBox);
 makeDraggable(quickBox);
 
-// Fullscreen (F11)
+// Fullscreen toggle
 function toggleFullscreen(){
   if (!document.fullscreenElement) {
     quickBox.requestFullscreen();
     quickBox.classList.add('fullscreen');
+    contentFontSize = 80; // 5rem = 80px
+    quickTitle.style.fontSize = contentFontSize+'px';
+    quickLyrics.style.fontSize = contentFontSize+'px';
   } else {
     document.exitFullscreen();
     quickBox.classList.remove('fullscreen');
+    contentFontSize = 16;
+    quickTitle.style.fontSize = contentFontSize+'px';
+    quickLyrics.style.fontSize = contentFontSize+'px';
   }
 }
 </script>
