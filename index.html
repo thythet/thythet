@@ -442,77 +442,99 @@ function toggleFullscreen(){
 #uploadResult { margin-top: 10px; font-size: 14px; color: #0f0; }
 </style>
 
-<!-- Open popup button -->
-<button id="openPopup">Upload JSON</button>
+<!-- Popup Upload -->
+<style>
+/* Basic popup styling */
+#popupWrap {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  padding: 20px;
+  background: rgba(0,0,0,0.8);
+  color: white;
+  border-radius: 12px;
+  display: none;
+  z-index: 10000;
+  text-align: center;
+}
+#popupWrap button { margin-top: 10px; }
+#popupWrap input { width: 90%; }
+#popupBg {
+  position: fixed; top:0; left:0;
+  width:100%; height:100%;
+  background: rgba(0,0,0,0.4);
+  display:none;
+  z-index: 9999;
+}
+</style>
 
-<!-- Popup HTML -->
-<div id="popupOverlay">
-  <div id="popupBox">
-    <h3>Upload JSON File</h3>
-    <input type="file" id="fileInput" accept=".json"><br>
-    <button id="uploadBtn">Upload</button><br>
-    <div id="uploadResult"></div>
-    <button id="closePopup">Close</button>
-  </div>
+<button id="showPopup">Upload JSON</button>
+
+<div id="popupBg"></div>
+<div id="popupWrap">
+  <h3>Upload JSON</h3>
+  <input type="file" id="fileInput" accept=".json">
+  <br>
+  <button id="uploadBtn">Upload</button>
+  <p id="statusMsg"></p>
+  <button id="closePopup">Close</button>
 </div>
 
 <script>
-// Elements
-const openPopup = document.getElementById('openPopup');
-const closePopup = document.getElementById('closePopup');
-const overlay = document.getElementById('popupOverlay');
-const uploadBtn = document.getElementById('uploadBtn');
-const fileInput = document.getElementById('fileInput');
-const uploadResult = document.getElementById('uploadResult');
+const showPopup = document.getElementById("showPopup");
+const popupWrap = document.getElementById("popupWrap");
+const popupBg = document.getElementById("popupBg");
+const closePopup = document.getElementById("closePopup");
+const uploadBtn = document.getElementById("uploadBtn");
+const fileInput = document.getElementById("fileInput");
+const statusMsg = document.getElementById("statusMsg");
 
 // Show popup
-openPopup.addEventListener('click', () => {
-  overlay.style.display = 'flex';
+showPopup.addEventListener("click", () => {
+  popupWrap.style.display = "block";
+  popupBg.style.display = "block";
 });
 
 // Close popup
-closePopup.addEventListener('click', () => {
-  overlay.style.display = 'none';
-  uploadResult.innerText = '';
-  fileInput.value = '';
+closePopup.addEventListener("click", () => {
+  popupWrap.style.display = "none";
+  popupBg.style.display = "none";
+  statusMsg.innerHTML = "";
+  fileInput.value = "";
 });
 
-// Upload JSON
-uploadBtn.addEventListener('click', () => {
+// Upload file
+uploadBtn.addEventListener("click", async () => {
   const file = fileInput.files[0];
-  if(!file){
-    alert("Please choose a JSON file");
-    return;
-  }
+  if (!file) { alert("Select a file!"); return; }
 
   const formData = new FormData();
   formData.append("file", file);
 
-  fetch("https://thythet.ct.ws/wp-content/themes/caards/upload.php", {
-    method: "POST",
-    body: formData
-  })
-  .then(res => res.json())
-  .then(data => {
+  statusMsg.innerHTML = "Uploading...";
+
+  try {
+    const res = await fetch("https://thythet.ct.ws/wp-content/themes/caards/upload.php", {
+      method: "POST",
+      body: formData
+    });
+    const data = await res.json();
     if(data.status === "success"){
-      uploadResult.innerHTML = `Uploaded successfully! <a href="${data.url}" target="_blank" style="color:#0f0">View file</a>`;
-      fileInput.value = "";
-    } else if(data.status === "error"){
-      uploadResult.innerText = "Upload failed!";
-      uploadResult.style.color = "#f00";
+      statusMsg.innerHTML = `Uploaded! <a href="${data.url}" target="_blank" style="color:lightgreen;">View File</a>`;
+    } else if(data.status === "no_file") {
+      statusMsg.innerHTML = "No file selected or sent!";
     } else {
-      uploadResult.innerText = "No file uploaded!";
-      uploadResult.style.color = "#f00";
+      statusMsg.innerHTML = "Error uploading file!";
     }
-  })
-  .catch(err => {
-    uploadResult.innerText = "Error: " + err;
-    uploadResult.style.color = "#f00";
-    console.error(err);
-  });
+  } catch(err) {
+    statusMsg.innerHTML = "Upload failed: " + err;
+  }
 });
 </script>
 
+
 </body>
 </html>
+
 
