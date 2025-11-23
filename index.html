@@ -405,5 +405,114 @@ function toggleFullscreen(){
   }
 }
 </script>
+  <!-- Popup for JSON Upload -->
+<style>
+/* Overlay */
+#popupOverlay {
+  display: none;
+  position: fixed;
+  top:0; left:0; right:0; bottom:0;
+  background: rgba(0,0,0,0.5);
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Popup box */
+#popupBox {
+  background: #111;
+  padding: 20px;
+  border-radius: 12px;
+  width: 320px;
+  color: #fff;
+  text-align: center;
+}
+
+/* Buttons */
+#openPopup, #uploadBtn, #closePopup {
+  padding: 8px 14px;
+  margin: 8px 0;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  background: rgba(255,255,255,0.1);
+  color:#fff;
+}
+#fileInput { margin-top: 10px; }
+#uploadResult { margin-top: 10px; font-size: 14px; color: #0f0; }
+</style>
+
+<!-- Open popup button -->
+<button id="openPopup">Upload JSON</button>
+
+<!-- Popup HTML -->
+<div id="popupOverlay">
+  <div id="popupBox">
+    <h3>Upload JSON File</h3>
+    <input type="file" id="fileInput" accept=".json"><br>
+    <button id="uploadBtn">Upload</button><br>
+    <div id="uploadResult"></div>
+    <button id="closePopup">Close</button>
+  </div>
+</div>
+
+<script>
+// Elements
+const openPopup = document.getElementById('openPopup');
+const closePopup = document.getElementById('closePopup');
+const overlay = document.getElementById('popupOverlay');
+const uploadBtn = document.getElementById('uploadBtn');
+const fileInput = document.getElementById('fileInput');
+const uploadResult = document.getElementById('uploadResult');
+
+// Show popup
+openPopup.addEventListener('click', () => {
+  overlay.style.display = 'flex';
+});
+
+// Close popup
+closePopup.addEventListener('click', () => {
+  overlay.style.display = 'none';
+  uploadResult.innerText = '';
+  fileInput.value = '';
+});
+
+// Upload JSON
+uploadBtn.addEventListener('click', () => {
+  const file = fileInput.files[0];
+  if(!file){
+    alert("Please choose a JSON file");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  fetch("https://thythet.ct.ws/wp-content/themes/caards/upload.php", {
+    method: "POST",
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    if(data.status === "success"){
+      uploadResult.innerHTML = `Uploaded successfully! <a href="${data.url}" target="_blank" style="color:#0f0">View file</a>`;
+      fileInput.value = "";
+    } else if(data.status === "error"){
+      uploadResult.innerText = "Upload failed!";
+      uploadResult.style.color = "#f00";
+    } else {
+      uploadResult.innerText = "No file uploaded!";
+      uploadResult.style.color = "#f00";
+    }
+  })
+  .catch(err => {
+    uploadResult.innerText = "Error: " + err;
+    uploadResult.style.color = "#f00";
+    console.error(err);
+  });
+});
+</script>
+
 </body>
 </html>
+
