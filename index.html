@@ -415,32 +415,28 @@ function toggleFullscreen(){
 <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
 
 <style>
-/* Toggle Button */
+/* Floating button */
 #toggleBtn{
   position:fixed; bottom:40px; right:40px;
-  width:40px; height:40px;
-  border-radius:50%; border:none;
-  background: rgba(255,255,255,0.06);
-  backdrop-filter: blur(8px) saturate(120%);
+  width:40px; height:40px; border-radius:50%;
+  border:none; background:rgba(255,255,255,0.06);
   color:white; font-size:22px; cursor:pointer;
   display:flex; justify-content:center; align-items:center;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-  z-index:10000;
+  box-shadow:0 5px 15px rgba(0,0,0,0.3); z-index:10000;
 }
 
-/* Glass Popup */
+/* Glass-style popup */
 .glass-wrap{
   position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
-  width:400px; max-width:90%; background: rgba(255,255,255,0.02);
-  border:1px solid rgba(255,255,255,0.15); border-radius:20px;
-  box-shadow:0 10px 30px rgba(2,6,23,0.6); backdrop-filter: blur(10px) saturate(120%);
+  width:400px; max-width:90%; background: rgba(0,0,0,0.8);
   color:white; display:none; z-index:10001; padding:20px; text-align:center;
+  border-radius:20px; box-shadow:0 10px 30px rgba(2,6,23,0.6);
 }
 .glass-header{ font-weight:600; font-size:16px; margin-bottom:15px; }
 .glass-content input[type="file"]{ width:90%; margin-top:10px; padding:6px; border-radius:8px; border:none; background: rgba(255,255,255,0.06); color:white; }
 .glass-content button{ margin-top:10px; padding:6px 12px; border:none; border-radius:8px; background: rgba(255,255,255,0.15); color:white; cursor:pointer; }
 #statusMsg{margin-top:12px; font-size:13px; color:lightgreen;}
-#closePopup{margin-top:12px; background:red;}
+#closePopup{margin-top:12px; background:red; color:white;}
 </style>
 
 <button id="toggleBtn"><i class="ri-upload-line"></i></button>
@@ -457,58 +453,60 @@ function toggleFullscreen(){
 </div>
 
 <script>
-const toggleBtn = document.getElementById("toggleBtn");
-const glassWrap = document.getElementById("glassWrap");
-const closePopup = document.getElementById("closePopup");
-const uploadBtn = document.getElementById("uploadBtn");
-const fileInput = document.getElementById("fileInput");
-const statusMsg = document.getElementById("statusMsg");
+window.onload = function() {
+  const toggleBtn = document.getElementById("toggleBtn");
+  const glassWrap = document.getElementById("glassWrap");
+  const closePopup = document.getElementById("closePopup");
+  const uploadBtn = document.getElementById("uploadBtn");
+  const fileInput = document.getElementById("fileInput");
+  const statusMsg = document.getElementById("statusMsg");
 
-// Show popup
-toggleBtn.addEventListener("click", () => {
-  glassWrap.style.display = "block";
-  statusMsg.innerHTML = "";
-});
+  // Show popup
+  toggleBtn.addEventListener("click", () => {
+    glassWrap.style.display = "block";
+    statusMsg.innerHTML = "";
+  });
 
-// Close popup
-closePopup.addEventListener("click", () => {
-  glassWrap.style.display = "none";
-  statusMsg.innerHTML = "";
-  fileInput.value = "";
-});
+  // Close popup
+  closePopup.addEventListener("click", () => {
+    glassWrap.style.display = "none";
+    statusMsg.innerHTML = "";
+    fileInput.value = "";
+  });
 
-// Upload file
-uploadBtn.addEventListener("click", async () => {
-  const file = fileInput.files[0];
-  if(!file){ alert("Please select a file."); return; }
+  // Upload file
+  uploadBtn.addEventListener("click", async () => {
+    const file = fileInput.files[0];
+    if(!file){ alert("Please select a file."); return; }
 
-  const formData = new FormData();
-  formData.append("file", file);
+    const formData = new FormData();
+    formData.append("file", file);
 
-  statusMsg.style.color = "yellow";
-  statusMsg.innerHTML = "Uploading...";
+    statusMsg.style.color = "yellow";
+    statusMsg.innerHTML = "Uploading...";
 
-  try {
-    const res = await fetch("https://thythet.ct.ws/wp-content/themes/caards/upload.php", { method:"POST", body:formData });
-    const data = await res.json();
+    try {
+      const res = await fetch("https://thythet.ct.ws/wp-content/themes/caards/upload.php", { method:"POST", body:formData });
+      const data = await res.json();
 
-    if(data.status === "success"){
-      statusMsg.style.color = "lightgreen";
-      statusMsg.innerHTML = `Uploaded! <a href="${data.url}" target="_blank" style="color:lightgreen;">View File</a>`;
-    } else if(data.status === "no_file"){
+      if(data.status === "success"){
+        statusMsg.style.color = "lightgreen";
+        statusMsg.innerHTML = `Uploaded! <a href="${data.url}" target="_blank" style="color:lightgreen;">View File</a>`;
+      } else if(data.status === "no_file"){
+        statusMsg.style.color = "red";
+        statusMsg.innerHTML = "No file selected!";
+      } else {
+        statusMsg.style.color = "red";
+        statusMsg.innerHTML = "Error uploading file!";
+      }
+    } catch(err){
       statusMsg.style.color = "red";
-      statusMsg.innerHTML = "No file selected or sent!";
-    } else {
-      statusMsg.style.color = "red";
-      statusMsg.innerHTML = "Error uploading file!";
+      statusMsg.innerHTML = "Upload failed: " + err;
     }
-
-  } catch(err){
-    statusMsg.style.color = "red";
-    statusMsg.innerHTML = "Upload failed: " + err;
-  }
-});
+  });
+}
 </script>
+
 
 
 
@@ -517,6 +515,7 @@ uploadBtn.addEventListener("click", async () => {
 
 </body>
 </html>
+
 
 
 
