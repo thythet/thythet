@@ -415,15 +415,11 @@ function toggleFullscreen(){
 <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
 
 <style>
-/* Basic body reset */
-body{margin:0;padding:0;font-family:'DM Sans',sans-serif;}
-
 /* Toggle Button */
 #toggleBtn{
-  position: fixed; bottom: 40px; right: 40px;
-  width: 40px; height: 40px;
-  border-radius:50%;
-  border:none;
+  position:fixed; bottom:40px; right:40px;
+  width:40px; height:40px;
+  border-radius:50%; border:none;
   background: rgba(255,255,255,0.06);
   backdrop-filter: blur(8px) saturate(120%);
   color:white; font-size:22px; cursor:pointer;
@@ -434,56 +430,21 @@ body{margin:0;padding:0;font-family:'DM Sans',sans-serif;}
 
 /* Glass Popup */
 .glass-wrap{
-  position: fixed; left:50%; top:50%;
-  transform: translate(-50%,-50%);
-  width:400px; max-width:90%;
-  background: rgba(255,255,255,0.02);
-  border:1px solid rgba(255,255,255,0.15);
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(2,6,23,0.6);
-  backdrop-filter: blur(10px) saturate(120%);
-  color:white;
-  display:none;
-  z-index:10001;
-  padding: 20px;
-  box-sizing:border-box;
-  text-align:center;
+  position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
+  width:400px; max-width:90%; background: rgba(255,255,255,0.02);
+  border:1px solid rgba(255,255,255,0.15); border-radius:20px;
+  box-shadow:0 10px 30px rgba(2,6,23,0.6); backdrop-filter: blur(10px) saturate(120%);
+  color:white; display:none; z-index:10001; padding:20px; text-align:center;
 }
-
-/* Header */
-.glass-header{
-  font-weight:600;
-  font-size:16px;
-  margin-bottom:15px;
-}
-
-/* File input & button */
-.glass-content input[type="file"]{
-  width: 90%;
-  margin-top: 10px;
-  padding: 6px;
-  border-radius: 8px;
-  border:none;
-  background: rgba(255,255,255,0.06);
-  color:white;
-}
-.glass-content button{
-  margin-top: 10px;
-  padding:6px 12px;
-  border:none;
-  border-radius:8px;
-  background: rgba(255,255,255,0.15);
-  color:white;
-  cursor:pointer;
-}
+.glass-header{ font-weight:600; font-size:16px; margin-bottom:15px; }
+.glass-content input[type="file"]{ width:90%; margin-top:10px; padding:6px; border-radius:8px; border:none; background: rgba(255,255,255,0.06); color:white; }
+.glass-content button{ margin-top:10px; padding:6px 12px; border:none; border-radius:8px; background: rgba(255,255,255,0.15); color:white; cursor:pointer; }
 #statusMsg{margin-top:12px; font-size:13px; color:lightgreen;}
 #closePopup{margin-top:12px; background:red;}
 </style>
 
-<!-- Toggle Button -->
 <button id="toggleBtn"><i class="ri-upload-line"></i></button>
 
-<!-- Popup -->
 <div class="glass-wrap" id="glassWrap">
   <div class="glass-header">Upload JSON File</div>
   <div class="glass-content">
@@ -528,10 +489,7 @@ uploadBtn.addEventListener("click", async () => {
   statusMsg.innerHTML = "Uploading...";
 
   try {
-    const res = await fetch("https://thythet.ct.ws/wp-content/themes/caards/upload.php", {
-      method: "POST",
-      body: formData
-    });
+    const res = await fetch("https://thythet.ct.ws/wp-content/themes/caards/upload.php", { method:"POST", body:formData });
     const data = await res.json();
 
     if(data.status === "success"){
@@ -556,8 +514,10 @@ uploadBtn.addEventListener("click", async () => {
 
 
 
+
 </body>
 </html>
+
 
 
 
