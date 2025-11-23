@@ -408,64 +408,110 @@ function toggleFullscreen(){
 
 
 
-  <!-- Popup Upload -->
+
+  
+
+ <!-- Glass-style Upload Popup -->
+<link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+
 <style>
-#popupWrap {
-  position: fixed;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 320px;
-  padding: 20px;
-  background: rgba(0,0,0,0.85);
-  color: white;
-  border-radius: 12px;
-  display: none;
-  z-index: 10000;
-  text-align: center;
-  font-family: Arial, sans-serif;
+/* Basic body reset */
+body{margin:0;padding:0;font-family:'DM Sans',sans-serif;}
+
+/* Toggle Button */
+#toggleBtn{
+  position: fixed; bottom: 40px; right: 40px;
+  width: 40px; height: 40px;
+  border-radius:50%;
+  border:none;
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(8px) saturate(120%);
+  color:white; font-size:22px; cursor:pointer;
+  display:flex; justify-content:center; align-items:center;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  z-index:10000;
 }
-#popupWrap input { width: 90%; margin-top: 10px; }
-#popupWrap button { margin-top: 10px; padding: 6px 12px; cursor: pointer; }
-#popupBg {
-  position: fixed; top:0; left:0;
-  width:100%; height:100%;
-  background: rgba(0,0,0,0.4);
+
+/* Glass Popup */
+.glass-wrap{
+  position: fixed; left:50%; top:50%;
+  transform: translate(-50%,-50%);
+  width:400px; max-width:90%;
+  background: rgba(255,255,255,0.02);
+  border:1px solid rgba(255,255,255,0.15);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(2,6,23,0.6);
+  backdrop-filter: blur(10px) saturate(120%);
+  color:white;
   display:none;
-  z-index: 9999;
+  z-index:10001;
+  padding: 20px;
+  box-sizing:border-box;
+  text-align:center;
 }
+
+/* Header */
+.glass-header{
+  font-weight:600;
+  font-size:16px;
+  margin-bottom:15px;
+}
+
+/* File input & button */
+.glass-content input[type="file"]{
+  width: 90%;
+  margin-top: 10px;
+  padding: 6px;
+  border-radius: 8px;
+  border:none;
+  background: rgba(255,255,255,0.06);
+  color:white;
+}
+.glass-content button{
+  margin-top: 10px;
+  padding:6px 12px;
+  border:none;
+  border-radius:8px;
+  background: rgba(255,255,255,0.15);
+  color:white;
+  cursor:pointer;
+}
+#statusMsg{margin-top:12px; font-size:13px; color:lightgreen;}
+#closePopup{margin-top:12px; background:red;}
 </style>
 
-<button id="showPopup">Upload JSON</button>
+<!-- Toggle Button -->
+<button id="toggleBtn"><i class="ri-upload-line"></i></button>
 
-<div id="popupBg"></div>
-<div id="popupWrap">
-  <h3>Upload JSON File</h3>
-  <input type="file" id="fileInput" accept=".json">
-  <br>
-  <button id="uploadBtn">Upload</button>
-  <p id="statusMsg" style="margin-top:10px;"></p>
-  <button id="closePopup">Close</button>
+<!-- Popup -->
+<div class="glass-wrap" id="glassWrap">
+  <div class="glass-header">Upload JSON File</div>
+  <div class="glass-content">
+    <input type="file" id="fileInput" accept=".json">
+    <br>
+    <button id="uploadBtn">Upload</button>
+    <p id="statusMsg"></p>
+    <button id="closePopup">Close</button>
+  </div>
 </div>
 
 <script>
-const showPopup = document.getElementById("showPopup");
-const popupWrap = document.getElementById("popupWrap");
-const popupBg = document.getElementById("popupBg");
+const toggleBtn = document.getElementById("toggleBtn");
+const glassWrap = document.getElementById("glassWrap");
 const closePopup = document.getElementById("closePopup");
 const uploadBtn = document.getElementById("uploadBtn");
 const fileInput = document.getElementById("fileInput");
 const statusMsg = document.getElementById("statusMsg");
 
 // Show popup
-showPopup.addEventListener("click", () => {
-  popupWrap.style.display = "block";
-  popupBg.style.display = "block";
+toggleBtn.addEventListener("click", () => {
+  glassWrap.style.display = "block";
+  statusMsg.innerHTML = "";
 });
 
 // Close popup
 closePopup.addEventListener("click", () => {
-  popupWrap.style.display = "none";
-  popupBg.style.display = "none";
+  glassWrap.style.display = "none";
   statusMsg.innerHTML = "";
   fileInput.value = "";
 });
@@ -473,11 +519,12 @@ closePopup.addEventListener("click", () => {
 // Upload file
 uploadBtn.addEventListener("click", async () => {
   const file = fileInput.files[0];
-  if (!file) { alert("Select a file!"); return; }
+  if(!file){ alert("Please select a file."); return; }
 
   const formData = new FormData();
   formData.append("file", file);
 
+  statusMsg.style.color = "yellow";
   statusMsg.innerHTML = "Uploading...";
 
   try {
@@ -486,14 +533,20 @@ uploadBtn.addEventListener("click", async () => {
       body: formData
     });
     const data = await res.json();
+
     if(data.status === "success"){
+      statusMsg.style.color = "lightgreen";
       statusMsg.innerHTML = `Uploaded! <a href="${data.url}" target="_blank" style="color:lightgreen;">View File</a>`;
-    } else if(data.status === "no_file") {
+    } else if(data.status === "no_file"){
+      statusMsg.style.color = "red";
       statusMsg.innerHTML = "No file selected or sent!";
     } else {
+      statusMsg.style.color = "red";
       statusMsg.innerHTML = "Error uploading file!";
     }
-  } catch(err) {
+
+  } catch(err){
+    statusMsg.style.color = "red";
     statusMsg.innerHTML = "Upload failed: " + err;
   }
 });
@@ -502,8 +555,10 @@ uploadBtn.addEventListener("click", async () => {
 
 
 
+
 </body>
 </html>
+
 
 
 
