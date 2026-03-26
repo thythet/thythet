@@ -688,6 +688,577 @@ document.addEventListener('touchend', () => popupDragging = false);
 
      <!----------------------------------------------------------------------------------end- TEXT → JSON TOOL (DRAGGABLE BUTTON + POPUP, Kantumruy Pro, Circle Buttons, Clear Inputs) -->
 
+<!-- ========================= MP3 AVAILABLE SONG POPUP ========================= -->
+<style>
+#mp3ToolBtn {
+  position: fixed;
+  bottom: 190px;
+  right: 40px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 15px rgba(0,0,0,0.25);
+  transition: 0.3s;
+}
+#mp3ToolBtn:hover { background: rgba(89,166,255,0.35); }
+
+#mp3Tool {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 430px;
+  max-width: 92%;
+  display: none;
+  flex-direction: column;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  color: #fff;
+  z-index: 10000;
+  font-family: 'DM Sans', 'Kantumruy Pro', sans-serif;
+  overflow: hidden;
+}
+
+#mp3Tool .header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.06);
+  cursor: grab;
+  user-select: none;
+}
+#mp3Tool .header button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+#mp3Tool .content {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#mp3SearchInput {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  font-size: 14px;
+}
+
+#mp3NowPlaying {
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+}
+#mp3NowPlaying small {
+  display: block;
+  color: #aaa;
+  margin-bottom: 4px;
+}
+#mp3NowTitle {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+#popupAudio { display: none; }
+
+#glassPlayer {
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+}
+
+#playerTopRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.player-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.3s;
+}
+.player-btn:hover { background: rgba(89,166,255,0.30); }
+.player-btn.active {
+  background: rgba(89,166,255,0.28);
+  border-color: rgba(89,166,255,0.45);
+  color: #59a6ff;
+}
+
+#timeInfo {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #cfcfcf;
+  margin-top: 10px;
+  margin-bottom: 8px;
+}
+
+#progressWrap {
+  position: relative;
+  width: 100%;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+#progressBar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(89,166,255,0.85), rgba(166,210,255,0.95));
+}
+#progressKnob {
+  position: absolute;
+  top: 50%;
+  left: 0%;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #dff0ff;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+#mp3Status {
+  font-size: 12px;
+  color: #bdbdbd;
+  margin-top: 8px;
+  text-align: center;
+  min-height: 16px;
+}
+
+#availableSongsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+#availableSongsList::-webkit-scrollbar { width: 6px; }
+#availableSongsList::-webkit-scrollbar-thumb {
+  background-color: rgba(255,255,255,0.2);
+  border-radius: 3px;
+}
+#availableSongsList::-webkit-scrollbar-track { background: transparent; }
+
+.song-audio-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  cursor: pointer;
+  transition: 0.3s;
+}
+.song-audio-item:hover {
+  background: rgba(89,166,255,0.20);
+}
+.song-audio-item.active {
+  background: rgba(89,166,255,0.28);
+  border-color: rgba(89,166,255,0.45);
+}
+.song-audio-item .left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.song-audio-item .title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 14px;
+}
+</style>
+
+<button id="mp3ToolBtn" title="Available MP3 Songs">
+  <i class="ri-headphone-line"></i>
+</button>
+
+<div id="mp3Tool">
+  <div class="header">
+    <span><i class="ri-headphone-line"></i> MP3 Songs</span>
+    <div>
+      <button onclick="toggleMp3Tool(false)" title="Close">
+        <i class="ri-close-circle-line"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="content">
+    <input id="mp3SearchInput" type="text" placeholder="Search available song..." oninput="filterAvailableMp3Songs()">
+
+    <div id="mp3NowPlaying">
+      <small>Now Playing</small>
+      <div id="mp3NowTitle">No audio selected</div>
+    </div>
+
+    <audio id="popupAudio" preload="metadata"></audio>
+
+    <div id="glassPlayer">
+      <div id="playerTopRow">
+        <button class="player-btn" id="playPauseBtn" title="Play / Pause">
+          <i class="ri-play-fill"></i>
+        </button>
+
+        <button class="player-btn" id="repeatBtn" title="Repeat mode">
+          <i class="ri-repeat-line"></i>
+        </button>
+      </div>
+
+      <div id="timeInfo">
+        <span id="currentTime">0:00</span>
+        <span id="durationTime">0:00</span>
+      </div>
+
+      <div id="progressWrap">
+        <div id="progressBar"></div>
+        <div id="progressKnob"></div>
+      </div>
+
+      <div id="mp3Status">Checking available MP3 songs...</div>
+    </div>
+
+    <div id="availableSongsList"></div>
+  </div>
+</div>
+
+<script>
+const mp3Tool = document.getElementById('mp3Tool');
+const mp3ToolBtn = document.getElementById('mp3ToolBtn');
+const mp3Header = mp3Tool.querySelector('.header');
+const popupAudio = document.getElementById('popupAudio');
+const mp3NowTitle = document.getElementById('mp3NowTitle');
+const mp3SearchInput = document.getElementById('mp3SearchInput');
+const availableSongsList = document.getElementById('availableSongsList');
+const playPauseBtn = document.getElementById('playPauseBtn');
+const repeatBtn = document.getElementById('repeatBtn');
+const currentTimeEl = document.getElementById('currentTime');
+const durationTimeEl = document.getElementById('durationTime');
+const progressWrap = document.getElementById('progressWrap');
+const progressBar = document.getElementById('progressBar');
+const progressKnob = document.getElementById('progressKnob');
+const mp3Status = document.getElementById('mp3Status');
+
+let availableMp3Songs = [];
+let filteredMp3Songs = [];
+let currentMp3Index = -1;
+let repeatMode = 0; // 0 off, 1 all, 2 one
+let mp3ScanDone = false;
+
+function normalizeTitle(title) {
+  return title.toLowerCase().replace(/[^a-z0-9]+/g, '');
+}
+
+function getMp3Url(title) {
+  return 'https://thythet.com/assets/' + normalizeTitle(title) + '.mp3';
+}
+
+function toggleMp3Tool(force) {
+  const shouldOpen = typeof force === 'boolean'
+    ? force
+    : mp3Tool.style.display !== 'flex';
+
+  mp3Tool.style.display = shouldOpen ? 'flex' : 'none';
+
+  if (shouldOpen && !mp3ScanDone) {
+    scanAvailableMp3Songs();
+  }
+}
+
+mp3ToolBtn.addEventListener('click', () => toggleMp3Tool());
+
+async function fileExists(url) {
+  try {
+    const res = await fetch(url, { method: 'HEAD' });
+    return res.ok;
+  } catch (err) {
+    return false;
+  }
+}
+
+async function scanAvailableMp3Songs() {
+  mp3Status.textContent = 'Scanning songs for available MP3...';
+  availableSongsList.innerHTML = '';
+
+  const allSongs = [...(songs || []), ...(localSongs || [])];
+  const seen = new Set();
+  availableMp3Songs = [];
+
+  for (const song of allSongs) {
+    if (!song.title) continue;
+
+    const key = song.title.trim().toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    const url = getMp3Url(song.title);
+    const exists = await fileExists(url);
+
+    if (exists) {
+      availableMp3Songs.push({
+        title: song.title,
+        url: url
+      });
+    }
+  }
+
+  filteredMp3Songs = [...availableMp3Songs];
+  mp3ScanDone = true;
+
+  if (availableMp3Songs.length) {
+    mp3Status.textContent = availableMp3Songs.length + ' MP3 song(s) available';
+  } else {
+    mp3Status.textContent = 'No available MP3 songs found';
+  }
+
+  renderAvailableMp3Songs();
+}
+
+function renderAvailableMp3Songs() {
+  availableSongsList.innerHTML = '';
+
+  if (!filteredMp3Songs.length) {
+    availableSongsList.innerHTML = '<div style="color:#aaa;text-align:center;padding:12px;">No matching songs</div>';
+    return;
+  }
+
+  filteredMp3Songs.forEach((item, index) => {
+    const isActive = currentMp3Index >= 0 &&
+      availableMp3Songs[currentMp3Index] &&
+      availableMp3Songs[currentMp3Index].title === item.title;
+
+    const div = document.createElement('div');
+    div.className = 'song-audio-item' + (isActive ? ' active' : '');
+    div.innerHTML = `
+      <div class="left">
+        <i class="ri-music-2-line"></i>
+        <div class="title">${escapeHtml(item.title)}</div>
+      </div>
+      <div><i class="ri-play-circle-line"></i></div>
+    `;
+
+    div.addEventListener('click', () => {
+      const realIndex = availableMp3Songs.findIndex(song => song.title === item.title);
+      playAvailableMp3(realIndex);
+    });
+
+    availableSongsList.appendChild(div);
+  });
+}
+
+function filterAvailableMp3Songs() {
+  const term = mp3SearchInput.value.trim().toLowerCase();
+
+  filteredMp3Songs = availableMp3Songs.filter(song =>
+    song.title.toLowerCase().includes(term)
+  );
+
+  renderAvailableMp3Songs();
+}
+
+function playAvailableMp3(index) {
+  const item = availableMp3Songs[index];
+  if (!item) return;
+
+  currentMp3Index = index;
+  popupAudio.src = item.url;
+  popupAudio.load();
+  mp3NowTitle.textContent = item.title;
+  mp3Status.textContent = 'Loading...';
+
+  popupAudio.play()
+    .then(() => {
+      mp3Status.textContent = 'Playing';
+      updatePlayPauseIcon();
+      renderAvailableMp3Songs();
+    })
+    .catch(err => {
+      console.log('Audio play failed:', err);
+      mp3Status.textContent = 'Could not play audio';
+    });
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function formatTime(seconds) {
+  if (isNaN(seconds)) return '0:00';
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return mins + ':' + String(secs).padStart(2, '0');
+}
+
+function updateProgress() {
+  const duration = popupAudio.duration || 0;
+  const current = popupAudio.currentTime || 0;
+  const percent = duration ? (current / duration) * 100 : 0;
+
+  progressBar.style.width = percent + '%';
+  progressKnob.style.left = percent + '%';
+  currentTimeEl.textContent = formatTime(current);
+  durationTimeEl.textContent = formatTime(duration);
+}
+
+function updatePlayPauseIcon() {
+  playPauseBtn.innerHTML = popupAudio.paused
+    ? '<i class="ri-play-fill"></i>'
+    : '<i class="ri-pause-fill"></i>';
+}
+
+function updateRepeatIcon() {
+  repeatBtn.classList.remove('active');
+
+  if (repeatMode === 0) {
+    repeatBtn.innerHTML = '<i class="ri-repeat-line"></i>';
+    repeatBtn.title = 'Repeat off';
+  } else if (repeatMode === 1) {
+    repeatBtn.innerHTML = '<i class="ri-repeat-line"></i>';
+    repeatBtn.title = 'Repeat all';
+    repeatBtn.classList.add('active');
+  } else {
+    repeatBtn.innerHTML = '<i class="ri-repeat-one-line"></i>';
+    repeatBtn.title = 'Repeat one';
+    repeatBtn.classList.add('active');
+  }
+}
+
+playPauseBtn.addEventListener('click', () => {
+  if (!popupAudio.src) {
+    if (availableMp3Songs.length) playAvailableMp3(0);
+    return;
+  }
+
+  if (popupAudio.paused) {
+    popupAudio.play().catch(err => console.log(err));
+  } else {
+    popupAudio.pause();
+  }
+});
+
+repeatBtn.addEventListener('click', () => {
+  repeatMode = (repeatMode + 1) % 3;
+  updateRepeatIcon();
+});
+
+popupAudio.addEventListener('play', () => {
+  mp3Status.textContent = 'Playing';
+  updatePlayPauseIcon();
+});
+
+popupAudio.addEventListener('pause', () => {
+  mp3Status.textContent = 'Paused';
+  updatePlayPauseIcon();
+});
+
+popupAudio.addEventListener('loadedmetadata', updateProgress);
+popupAudio.addEventListener('timeupdate', updateProgress);
+
+popupAudio.addEventListener('ended', () => {
+  if (repeatMode === 2) {
+    popupAudio.currentTime = 0;
+    popupAudio.play();
+    return;
+  }
+
+  if (repeatMode === 1 && availableMp3Songs.length > 0) {
+    const nextIndex = currentMp3Index < availableMp3Songs.length - 1 ? currentMp3Index + 1 : 0;
+    playAvailableMp3(nextIndex);
+    return;
+  }
+
+  updatePlayPauseIcon();
+  mp3Status.textContent = 'Finished';
+});
+
+progressWrap.addEventListener('click', (e) => {
+  const rect = progressWrap.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const percent = Math.max(0, Math.min(1, x / rect.width));
+
+  if (popupAudio.duration) {
+    popupAudio.currentTime = popupAudio.duration * percent;
+  }
+});
+
+popupAudio.addEventListener('error', () => {
+  mp3Status.textContent = 'MP3 file error';
+});
+
+updatePlayPauseIcon();
+updateRepeatIcon();
+updateProgress();
+
+/* drag popup */
+let mp3Dragging = false;
+let mp3DX = 0;
+let mp3DY = 0;
+
+mp3Header.addEventListener('mousedown', e => {
+  mp3Dragging = true;
+  mp3DX = e.clientX - mp3Tool.offsetLeft;
+  mp3DY = e.clientY - mp3Tool.offsetTop;
+  mp3Tool.style.transform = 'none';
+});
+
+document.addEventListener('mousemove', e => {
+  if (!mp3Dragging) return;
+  mp3Tool.style.left = e.clientX - mp3DX + 'px';
+  mp3Tool.style.top = e.clientY - mp3DY + 'px';
+});
+
+document.addEventListener('mouseup', () => {
+  mp3Dragging = false;
+});
+</script>
+<!-- ======================= END MP3 AVAILABLE SONG POPUP ======================= -->
+  
 </body>
 </html>
 
