@@ -1,14 +1,22 @@
 [
   {
-    "title": "Episode 1",
-    "file": "episode1"
+    "title": "Faith in Difficult Times",
+    "preacher": "Pastor Samuel",
+    "subtitle": "Sunday Worship Sermon",
+    "date": "2026-03-29",
+    "file": "faith-in-difficult-times"
   },
   {
-    "title": "Episode 2",
-    "file": "episode2"
+    "title": "",
+    "preacher": "Pastor John",
+    "subtitle": "Morning Message",
+    "date": "2026-03-22",
+    "file": "walking-with-god"
   },
   {
-    "title": "Episode 3",
-    "file": "episode3"
+    "preacher": "Pastor David",
+    "subtitle": "Evening Sermon",
+    "date": "2026-03-15",
+    "file": "the-love-of-christ"
   }
 ]
