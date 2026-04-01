@@ -29,14 +29,14 @@
   },
   {
     "title": "",
-    "preacher": "Pastor John",
+    "preacher": "Pastor ",
     "subtitle": "Morning Message",
-    "date": "2026-03-22",
-    "file": "walking-with-god"
+    "date": "",
+    "file": ""
   },
   {
-    "preacher": "Pastor David",
-    "subtitle": "Evening Sermon",
+    "preacher": "Pastor David Mengtong",
+    "subtitle": "Monday Sermon",
     "date": "2026-03-15",
     "file": "the-love-of-christ"
   }
