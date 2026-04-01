@@ -1,0 +1,1749 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ស្ដាប់ព្រះបន្ទូល</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: 'Kantumruy Pro', sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(89,166,255,0.15), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(255,255,255,0.08), transparent 25%),
+        #0f0f0f;
+      color: #f3f3f3;
+      min-height: 100vh;
+    }
+
+    .page-wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 20px 100px;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 2.1rem;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+
+    .subtext {
+      color: #c8c8c8;
+      max-width: 700px;
+      margin: 0 auto;
+      line-height: 1.7;
+      font-size: 15px;
+      font-weight: 400;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+
+    .home-latest-wrap {
+      margin-top: 34px;
+      text-align: left;
+    }
+
+    .latest-tracks {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .home-track-card {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 12px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.10);
+      backdrop-filter: blur(10px);
+      transition: 0.25s ease;
+      cursor: pointer;
+    }
+
+    .home-track-card:hover {
+      background: rgba(89,166,255,0.16);
+    }
+
+    .home-track-thumb {
+      width: 72px;
+      height: 72px;
+      object-fit: cover;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.08);
+      flex-shrink: 0;
+    }
+
+    .home-track-meta {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .home-track-title {
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.5;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .home-track-subtitle {
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1.5;
+      color: #d4d4d4;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .home-track-date {
+      font-size: 12px;
+      font-weight: 300;
+      line-height: 1.5;
+      color: #ababab;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .home-track-play {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .glass-more-btn {
+      margin-top: 16px;
+      width: 100%;
+      padding: 13px 16px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.07);
+      color: #fff;
+      border-radius: 16px;
+      cursor: pointer;
+      font-family: 'Kantumruy Pro', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      transition: 0.25s ease;
+    }
+
+    .glass-more-btn:hover {
+      background: rgba(89,166,255,0.18);
+    }
+
+    .home-all-tracks-wrap {
+      margin-top: 16px;
+    }
+
+    .home-all-tracks {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 50vh;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .home-all-tracks::-webkit-scrollbar,
+    #playlistBox::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .home-all-tracks::-webkit-scrollbar-thumb,
+    #playlistBox::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.18);
+      border-radius: 999px;
+    }
+
+    .home-all-tracks::-webkit-scrollbar-track,
+    #playlistBox::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .home-all-track-card {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      cursor: pointer;
+      transition: 0.25s ease;
+    }
+
+    .home-all-track-card:hover {
+      background: rgba(89,166,255,0.14);
+    }
+
+    .home-all-track-thumb {
+      width: 56px;
+      height: 56px;
+      object-fit: cover;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.08);
+      flex-shrink: 0;
+    }
+
+    .home-all-track-meta {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .home-all-track-title {
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.5;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .home-all-track-subtitle {
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1.5;
+      color: #d0d0d0;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .home-all-track-date {
+      font-size: 11px;
+      font-weight: 300;
+      line-height: 1.5;
+      color: #ababab;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .home-all-track-play {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    #podcastToolBtn {
+      position: fixed;
+      right: 30px;
+      bottom: 30px;
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(12px);
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.28);
+      z-index: 9999;
+      transition: 0.25s ease;
+      user-select: none;
+    }
+
+    #podcastToolBtn:hover {
+      transform: translateY(-2px);
+      background: rgba(89,166,255,0.22);
+    }
+
+    #podcastTool {
+      position: fixed;
+      right: 24px;
+      top: 24px;
+      width: 460px;
+      max-width: calc(100vw - 32px);
+      height: calc(100vh - 48px);
+      max-height: 820px;
+      display: none;
+      flex-direction: column;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      backdrop-filter: blur(16px);
+      border-radius: 22px;
+      overflow: hidden;
+      z-index: 10000;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+      left: auto;
+      transform: none;
+    }
+
+    #podcastTool .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.06);
+      cursor: grab;
+      user-select: none;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    #podcastTool .header-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+
+    #podcastTool .header-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    #podcastTool .header-buttons button {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      color: #fff;
+      cursor: pointer;
+      font-size: 17px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.25s ease;
+      font-family: 'Kantumruy Pro', sans-serif;
+    }
+
+    #podcastTool .header-buttons button:hover {
+      background: rgba(89,166,255,0.22);
+    }
+
+    #podcastTool .content {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 14px;
+      min-height: 0;
+      flex: 1;
+    }
+
+    #podcastSearch {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: none;
+      outline: none;
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      font-size: 14px;
+      font-family: 'Kantumruy Pro', sans-serif;
+    }
+
+    #podcastSearch::placeholder {
+      color: #bcbcbc;
+    }
+
+    #nowPlayingCard {
+      display: flex;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.10);
+      align-items: center;
+    }
+
+    #nowPlayingThumb {
+      width: 72px;
+      height: 72px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.08);
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    #nowPlayingThumb.thumb-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #9ecfff;
+      font-size: 30px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    #nowPlayingThumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    #nowPlayingMeta {
+      min-width: 0;
+      flex: 1;
+      text-align: left;
+    }
+
+    #nowPlayingLabel {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #b6b6b6;
+      margin-bottom: 6px;
+      font-weight: 500;
+      line-height: 1.5;
+    }
+
+    #nowPlayingTitle {
+      font-size: 16px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
+      line-height: 1.5;
+    }
+
+    #nowPlayingSubtitle {
+      font-size: 13px;
+      font-weight: 500;
+      color: #d5d5d5;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
+      line-height: 1.5;
+    }
+
+    #nowPlayingExtra {
+      font-size: 12px;
+      font-weight: 300;
+      color: #a8a8a8;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.5;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    #glassPlayer {
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+
+    #playerControls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .player-btn {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 21px;
+      transition: 0.25s ease;
+    }
+
+    .player-btn:hover {
+      background: rgba(89,166,255,0.24);
+    }
+
+    .player-btn.active {
+      background: rgba(89,166,255,0.24);
+      color: #9fd0ff;
+      border-color: rgba(89,166,255,0.45);
+    }
+
+    #waveformWrap {
+      position: relative;
+      width: 100%;
+      height: 64px;
+      margin-top: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 8px 6px;
+    }
+
+    #waveformBars {
+      height: 100%;
+      display: flex;
+      align-items: end;
+      gap: 2px;
+    }
+
+    .wave-bar {
+      flex: 1 1 auto;
+      min-width: 2px;
+      border-radius: 2px 2px 0 0;
+      background: rgba(255,255,255,0.38);
+      transition: background 0.15s ease;
+    }
+
+    .wave-bar.played {
+      background: #ff8a5b;
+    }
+
+    .wave-bar.current {
+      background: #ffffff;
+    }
+
+    #waveformTime {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #d0d0d0;
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+
+    #playerStatus {
+      text-align: center;
+      font-size: 12px;
+      color: #bdbdbd;
+      min-height: 16px;
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+
+    #playlistBox {
+      min-height: 0;
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .track-card {
+      display: flex;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.09);
+      cursor: pointer;
+      transition: 0.25s ease;
+      align-items: center;
+    }
+
+    .track-card:hover {
+      background: rgba(89,166,255,0.15);
+    }
+
+    .track-card.active {
+      background: rgba(89,166,255,0.24);
+      border-color: rgba(89,166,255,0.35);
+    }
+
+    .track-thumb {
+      width: 56px;
+      height: 56px;
+      object-fit: cover;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.08);
+      flex-shrink: 0;
+    }
+
+    .track-thumb.placeholder-thumb,
+    .home-track-thumb.placeholder-thumb,
+    .home-all-track-thumb.placeholder-thumb {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #9ecfff;
+      background: rgba(255,255,255,0.08);
+    }
+
+    .track-thumb.placeholder-thumb i,
+    .home-track-thumb.placeholder-thumb i,
+    .home-all-track-thumb.placeholder-thumb i {
+      font-size: 26px;
+    }
+
+    .track-meta {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .track-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 2px;
+      line-height: 1.55;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      white-space: normal;
+    }
+
+    .track-preacher {
+      font-size: 13px;
+      font-weight: 500;
+      color: #d8d8d8;
+      margin-bottom: 2px;
+      line-height: 1.55;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      white-space: normal;
+    }
+
+    .track-subtitle {
+      font-size: 12px;
+      font-weight: 500;
+      color: #b6b6b6;
+      margin-bottom: 2px;
+      line-height: 1.55;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      white-space: normal;
+    }
+
+    .track-date {
+      font-size: 12px;
+      font-weight: 300;
+      color: #9c9c9c;
+      line-height: 1.55;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .track-play {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 16px;
+    }
+
+    .like-btn {
+      width: auto;
+      height: auto;
+      border: none;
+      background: transparent;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 40px;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+      transition: 0.2s ease;
+    }
+
+    .like-btn:hover {
+      background: transparent;
+      transform: scale(1.04);
+    }
+
+    .like-btn.liked {
+      color: #f04b6a;
+      background: transparent;
+      border: none;
+    }
+
+    .count-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: #9ecfff;
+      white-space: nowrap;
+    }
+
+    .like-count {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: #9ecfff;
+      white-space: nowrap;
+    }
+
+    .empty-text {
+      text-align: center;
+      color: #bdbdbd;
+      padding: 20px 8px;
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    #podcastFooter {
+      margin-top: auto;
+      padding: 12px 14px 14px;
+      text-align: center;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .footer-inline {
+      font-size: 12px;
+      line-height: 1.6;
+      color: #a8a8a8;
+      font-weight: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      text-align: center;
+    }
+
+    .footer-inline .dot {
+      color: #7f7f7f;
+    }
+
+    .footer-visitors {
+      color: #9ecfff;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+    }
+
+    audio {
+      display: none;
+    }
+
+    @media (max-width: 520px) {
+      #podcastTool {
+        right: 8px;
+        top: 8px;
+        width: calc(100vw - 16px);
+        height: calc(100vh - 16px);
+        border-radius: 18px;
+        max-width: none;
+      }
+
+      #nowPlayingThumb {
+        width: 64px;
+        height: 64px;
+      }
+
+      .track-thumb {
+        width: 54px;
+        height: 54px;
+      }
+
+      .home-track-thumb {
+        width: 60px;
+        height: 60px;
+      }
+
+      .footer-inline {
+        gap: 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-wrap">
+    <h1><i class="ri-mic-line"></i> ព្រះបន្ទូលសប្ដាហ៍នេះ</h1>
+    <p class="subtext">
+      ព្រះបន្ទូលថ្ងៃអាទិត្យចុងក្រោយ សម្រាប់ការស្តាប់ឡើងវិញ ការអនុវត្តន៍តាមព្រះបន្ទូល និងការលូតលាស់ខាងវិញ្ញាណ។
+    </p>
+
+    <div class="home-latest-wrap">
+      <div class="section-title">ព្រះបន្ទូលថ្មីៗ</div>
+      <div id="latestTracks" class="latest-tracks"></div>
+
+      <button id="showMoreTracksBtn" class="glass-more-btn">
+        បង្ហាញបន្ថែម
+      </button>
+
+      <div id="homeAllTracksWrap" class="home-all-tracks-wrap" style="display:none;">
+        <div id="homeAllTracks" class="home-all-tracks"></div>
+      </div>
+    </div>
+  </div>
+
+  <button id="podcastToolBtn" title="Open Podcast Playlist">
+    <i class="ri-headphone-line"></i>
+  </button>
+
+  <div id="podcastTool">
+    <div class="header" id="podcastHeader">
+      <div class="header-title">
+        <i class="ri-mic-line"></i>
+        <span>ស្ដាប់ព្រះបន្ទូល</span>
+      </div>
+      <div class="header-buttons">
+        <button id="refreshBtn" title="Reload playlist">
+          <i class="ri-refresh-line"></i>
+        </button>
+        <button id="closeBtn" title="Close">
+          <i class="ri-close-circle-line"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="content">
+      <input id="podcastSearch" type="text" placeholder="ស្វែងរកចំណងជើង ឬឈ្មោះអ្នកអធិប្បាយ..." />
+
+      <div id="nowPlayingCard">
+        <div id="nowPlayingThumb" class="thumb-placeholder">
+          <i class="ri-equalizer-line"></i>
+        </div>
+        <div id="nowPlayingMeta">
+          <div id="nowPlayingLabel">NOW PLAYING</div>
+          <div id="nowPlayingTitle">មិនទាន់មានសំឡេងកំពុងចាក់</div>
+          <div id="nowPlayingSubtitle">សូមជ្រើសរើសព្រះបន្ទូលពីបញ្ជីខាងក្រោម</div>
+          <div id="nowPlayingExtra">---</div>
+        </div>
+      </div>
+
+      <audio id="audioPlayer" preload="metadata"></audio>
+
+      <div id="glassPlayer">
+        <div id="playerControls">
+          <button class="player-btn" id="prevBtn" title="Previous">
+            <i class="ri-skip-back-fill"></i>
+          </button>
+          <button class="player-btn" id="playPauseBtn" title="Play / Pause">
+            <i class="ri-play-fill"></i>
+          </button>
+          <button class="player-btn" id="nextBtn" title="Next">
+            <i class="ri-skip-forward-fill"></i>
+          </button>
+          <button class="player-btn" id="repeatBtn" title="Repeat">
+            <i class="ri-repeat-line"></i>
+          </button>
+        </div>
+
+        <div id="waveformWrap">
+          <div id="waveformBars"></div>
+        </div>
+
+        <div id="waveformTime">
+          <span id="currentTime">0:00</span>
+          <span id="durationTime">0:00</span>
+        </div>
+
+        <div id="playerStatus">កំពុងផ្ទុកបញ្ជីសំឡេង...</div>
+      </div>
+
+      <div id="playlistBox"></div>
+    </div>
+
+    <div id="podcastFooter">
+      <div class="footer-inline">
+        <span id="footerVisitorCount" class="footer-visitors"><i class="ri-eye-line"></i> 0 visitors</span>
+        <span class="dot">•</span>
+        <span>Developed by Thet.</span>
+        <span class="dot">•</span>
+        <span>©thythet.com</span>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+    import { getDatabase, ref, runTransaction, onValue } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCZgQBrY5cwGpCra0gBqs1ZDkJPugewHhc",
+      authDomain: "thythet-podcast.firebaseapp.com",
+      databaseURL: "https://thythet-podcast-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "thythet-podcast",
+      storageBucket: "thythet-podcast.firebasestorage.app",
+      messagingSenderId: "164940506015",
+      appId: "1:164940506015:web:3860e938d888f424b693aa",
+      measurementId: "G-GZRDKL1N0R"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const AUDIO_BASE = 'https://thythet.com/assets/audio/';
+    const PLAYLIST_URL = AUDIO_BASE + 'playlist.json';
+
+    const DEVICE_ID_KEY = 'thythet_device_id';
+    const PLAYED_STORAGE_KEY = 'thythet_podcast_played_tracks_v2';
+    const LIKED_STORAGE_KEY = 'thythet_podcast_liked_tracks_v1';
+
+    function getDeviceId() {
+      let id = localStorage.getItem(DEVICE_ID_KEY);
+      if (!id) {
+        id = 'device_' + Math.random().toString(36).slice(2, 11);
+        localStorage.setItem(DEVICE_ID_KEY, id);
+      }
+      return id;
+    }
+
+    const DEVICE_ID = getDeviceId();
+
+    const podcastToolBtn = document.getElementById('podcastToolBtn');
+    const podcastTool = document.getElementById('podcastTool');
+    const podcastHeader = document.getElementById('podcastHeader');
+    const closeBtn = document.getElementById('closeBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const podcastSearch = document.getElementById('podcastSearch');
+
+    const audioPlayer = document.getElementById('audioPlayer');
+    const playlistBox = document.getElementById('playlistBox');
+    const playerStatus = document.getElementById('playerStatus');
+
+    const nowPlayingThumb = document.getElementById('nowPlayingThumb');
+    const nowPlayingTitle = document.getElementById('nowPlayingTitle');
+    const nowPlayingSubtitle = document.getElementById('nowPlayingSubtitle');
+    const nowPlayingExtra = document.getElementById('nowPlayingExtra');
+    const footerVisitorCount = document.getElementById('footerVisitorCount');
+
+    const prevBtn = document.getElementById('prevBtn');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const repeatBtn = document.getElementById('repeatBtn');
+
+    const currentTimeEl = document.getElementById('currentTime');
+    const durationTimeEl = document.getElementById('durationTime');
+
+    const latestTracks = document.getElementById('latestTracks');
+    const showMoreTracksBtn = document.getElementById('showMoreTracksBtn');
+    const homeAllTracksWrap = document.getElementById('homeAllTracksWrap');
+    const homeAllTracks = document.getElementById('homeAllTracks');
+
+    const waveformWrap = document.getElementById('waveformWrap');
+    const waveformBars = document.getElementById('waveformBars');
+
+    let playlist = [];
+    let filteredPlaylist = [];
+    let currentIndex = -1;
+    let repeatMode = 0;
+    let homeExpanded = false;
+    let playCounts = {};
+    let likeCounts = {};
+    let hasCountedForCurrentTrack = false;
+
+    function getAudioUrl(file) {
+      return AUDIO_BASE + file + '.mp3';
+    }
+
+    function getThumbUrl(file) {
+      return AUDIO_BASE + file + '.jpg';
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text ?? '';
+      return div.innerHTML;
+    }
+
+    function filenameToTitle(file) {
+      return String(file || '')
+        .replace(/\.[^/.]+$/, '')
+        .replace(/[-_]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .replace(/\b\w/g, char => char.toUpperCase());
+    }
+
+    function safeTitle(item) {
+      const title = (item.title || '').trim();
+      return title || filenameToTitle(item.file);
+    }
+
+    function safeKey(file) {
+      return String(file || '').replace(/[.#$[\]/]/g, '_');
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return 'មិនមានកាលបរិច្ឆេទ';
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      return d.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      });
+    }
+
+    function formatTime(seconds) {
+      if (isNaN(seconds)) return '0:00';
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return mins + ':' + String(secs).padStart(2, '0');
+    }
+
+    function getSafeDateValue(dateStr) {
+      const d = new Date(dateStr);
+      return isNaN(d.getTime()) ? 0 : d.getTime();
+    }
+
+    function getLatestThreeTracks() {
+      return [...playlist]
+        .sort((a, b) => getSafeDateValue(b.date) - getSafeDateValue(a.date))
+        .slice(0, 3);
+    }
+
+    function getPlayedTracks() {
+      try {
+        return JSON.parse(localStorage.getItem(PLAYED_STORAGE_KEY)) || {};
+      } catch {
+        return {};
+      }
+    }
+
+    function hasTrackBeenCounted(file) {
+      const played = getPlayedTracks();
+      return !!played[safeKey(file)];
+    }
+
+    function markTrackAsCounted(file) {
+      const played = getPlayedTracks();
+      played[safeKey(file)] = true;
+      localStorage.setItem(PLAYED_STORAGE_KEY, JSON.stringify(played));
+    }
+
+    function resetLocalPlayedTrack(file) {
+      const played = getPlayedTracks();
+      const key = safeKey(file);
+
+      if (played[key]) {
+        delete played[key];
+        localStorage.setItem(PLAYED_STORAGE_KEY, JSON.stringify(played));
+      }
+    }
+
+    function getLikedTracks() {
+      try {
+        return JSON.parse(localStorage.getItem(LIKED_STORAGE_KEY)) || {};
+      } catch {
+        return {};
+      }
+    }
+
+    function saveLikedTracks(data) {
+      localStorage.setItem(LIKED_STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function isTrackLiked(file) {
+      const liked = getLikedTracks();
+      return !!liked[safeKey(file)];
+    }
+
+    function setTrackLiked(file, value) {
+      const liked = getLikedTracks();
+      const key = safeKey(file);
+
+      if (value) liked[key] = true;
+      else delete liked[key];
+
+      saveLikedTracks(liked);
+    }
+
+    function getPlayCount(file) {
+      return Number(playCounts[safeKey(file)] || 0);
+    }
+
+    function getLikeCount(file) {
+      return Number(likeCounts[safeKey(file)] || 0);
+    }
+
+    function getCountHtml(file) {
+      return `<span class="count-badge"><i class="ri-eye-line"></i> ${getPlayCount(file)}</span>`;
+    }
+
+    function getLikeHtml(file) {
+      return `<span class="like-count"><i class="ri-thumb-up-line"></i> ${getLikeCount(file)}</span>`;
+    }
+
+    function listenToPlayCounts() {
+      const countsRef = ref(db, 'playCounts');
+
+      onValue(countsRef, (snapshot) => {
+        playCounts = snapshot.exists() ? snapshot.val() : {};
+
+        playlist.forEach(item => {
+          const key = safeKey(item.file);
+          const firebaseCount = Number(playCounts[key] || 0);
+
+          if (firebaseCount === 0) {
+            resetLocalPlayedTrack(item.file);
+          }
+        });
+
+        renderPlaylist();
+        renderLatestTracks();
+        renderHomeAllTracks();
+
+        if (currentIndex >= 0 && playlist[currentIndex]) {
+          updateNowPlaying(playlist[currentIndex]);
+        }
+      });
+    }
+
+    function listenToLikeCounts() {
+      const likesRef = ref(db, 'likeCounts');
+
+      onValue(likesRef, (snapshot) => {
+        likeCounts = snapshot.exists() ? snapshot.val() : {};
+
+        renderPlaylist();
+        renderLatestTracks();
+        renderHomeAllTracks();
+
+        if (currentIndex >= 0 && playlist[currentIndex]) {
+          updateNowPlaying(playlist[currentIndex]);
+        }
+      });
+    }
+
+    function trackVisitor() {
+      const visitorRef = ref(db, `visitors/${DEVICE_ID}`);
+      runTransaction(visitorRef, (val) => {
+        if (val === true) return;
+        return true;
+      });
+    }
+
+    function listenVisitorCount() {
+      const visitorsRef = ref(db, 'visitors');
+
+      onValue(visitorsRef, (snap) => {
+        const count = snap.exists() ? Object.keys(snap.val()).length : 0;
+        footerVisitorCount.innerHTML = `<i class="ri-eye-line"></i> ${count} visitors`;
+      });
+    }
+
+    function increasePlayCount(file) {
+      if (!file) return;
+
+      const key = safeKey(file);
+      if (hasTrackBeenCounted(file)) return;
+
+      const countRef = ref(db, 'playCounts/' + key);
+
+      runTransaction(countRef, (currentValue) => {
+        return (currentValue || 0) + 1;
+      }).then(() => {
+        markTrackAsCounted(file);
+      }).catch((err) => {
+        console.error('Count update failed:', err);
+      });
+    }
+
+    function toggleLike(file) {
+      if (!file) return;
+
+      const key = safeKey(file);
+      const likedNow = isTrackLiked(file);
+      const countRef = ref(db, 'likeCounts/' + key);
+
+      runTransaction(countRef, (currentValue) => {
+        const current = currentValue || 0;
+        return likedNow ? Math.max(0, current - 1) : current + 1;
+      }).then(() => {
+        setTrackLiked(file, !likedNow);
+
+        renderPlaylist();
+        renderLatestTracks();
+        renderHomeAllTracks();
+
+        if (currentIndex >= 0 && playlist[currentIndex]) {
+          updateNowPlaying(playlist[currentIndex]);
+        }
+      }).catch((err) => {
+        console.error('Like update failed:', err);
+      });
+    }
+
+    function attachTrackPlaceholder(card, selector, holderClass) {
+      const img = card.querySelector(selector);
+      if (!img) return;
+
+      img.onerror = function () {
+        const holder = document.createElement('div');
+        holder.className = holderClass + ' placeholder-thumb';
+        holder.innerHTML = '<i class="ri-voiceprint-line"></i>';
+        this.replaceWith(holder);
+      };
+    }
+
+    function renderLatestTracks() {
+      latestTracks.innerHTML = '';
+      const latest = getLatestThreeTracks();
+
+      if (!latest.length) {
+        latestTracks.innerHTML = '<div class="empty-text">មិនទាន់មានព្រះបន្ទូលថ្មីៗទេ។</div>';
+        return;
+      }
+
+      latest.forEach(item => {
+        const realIndex = playlist.findIndex(p => p.file === item.file);
+
+        const card = document.createElement('div');
+        card.className = 'home-track-card';
+        card.innerHTML = `
+          <img class="home-track-thumb" src="${escapeHtml(item.thumb)}" alt="${escapeHtml(item.title)}">
+          <div class="home-track-meta">
+            <div class="home-track-title">${escapeHtml(item.title)}</div>
+            <div class="home-track-subtitle">${escapeHtml(item.preacher)} • ${escapeHtml(item.subtitle)}</div>
+            <div class="home-track-date">
+              <span>${escapeHtml(formatDate(item.date))}</span>
+              ${getCountHtml(item.file)}
+              ${getLikeHtml(item.file)}
+            </div>
+          </div>
+          <div class="home-track-play"><i class="ri-play-fill"></i></div>
+        `;
+
+        card.addEventListener('click', () => {
+          playTrack(realIndex);
+          togglePodcastTool(true);
+        });
+
+        latestTracks.appendChild(card);
+        attachTrackPlaceholder(card, '.home-track-thumb', 'home-track-thumb');
+      });
+    }
+
+    function renderHomeAllTracks() {
+      homeAllTracks.innerHTML = '';
+
+      if (!playlist.length) {
+        homeAllTracks.innerHTML = '<div class="empty-text">មិនទាន់មានឯកសារសំឡេងទេ។</div>';
+        return;
+      }
+
+      const sorted = [...playlist].sort((a, b) => getSafeDateValue(b.date) - getSafeDateValue(a.date));
+
+      sorted.forEach(item => {
+        const realIndex = playlist.findIndex(p => p.file === item.file);
+
+        const card = document.createElement('div');
+        card.className = 'home-all-track-card';
+        card.innerHTML = `
+          <img class="home-all-track-thumb" src="${escapeHtml(item.thumb)}" alt="${escapeHtml(item.title)}">
+          <div class="home-all-track-meta">
+            <div class="home-all-track-title">${escapeHtml(item.title)}</div>
+            <div class="home-all-track-subtitle">${escapeHtml(item.preacher)} • ${escapeHtml(item.subtitle)}</div>
+            <div class="home-all-track-date">
+              <span>${escapeHtml(formatDate(item.date))}</span>
+              ${getCountHtml(item.file)}
+              ${getLikeHtml(item.file)}
+            </div>
+          </div>
+          <div style="display:flex; gap:4px; align-items:center;">
+            <button class="like-btn ${isTrackLiked(item.file) ? 'liked' : ''}" data-like-file="${escapeHtml(item.file)}">
+              <i class="${isTrackLiked(item.file) ? 'ri-heart-fill' : 'ri-heart-line'}"></i>
+            </button>
+            <div class="home-all-track-play"><i class="ri-play-fill"></i></div>
+          </div>
+        `;
+
+        card.addEventListener('click', () => {
+          playTrack(realIndex);
+          togglePodcastTool(true);
+        });
+
+        homeAllTracks.appendChild(card);
+        attachTrackPlaceholder(card, '.home-all-track-thumb', 'home-all-track-thumb');
+
+        const likeBtn = card.querySelector('[data-like-file]');
+        likeBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleLike(item.file);
+        });
+      });
+    }
+
+    function updatePlayPauseIcon() {
+      playPauseBtn.innerHTML = audioPlayer.paused
+        ? '<i class="ri-play-fill"></i>'
+        : '<i class="ri-pause-fill"></i>';
+    }
+
+    function updateRepeatIcon() {
+      repeatBtn.classList.remove('active');
+
+      if (repeatMode === 0) {
+        repeatBtn.innerHTML = '<i class="ri-repeat-line"></i>';
+      } else if (repeatMode === 1) {
+        repeatBtn.innerHTML = '<i class="ri-repeat-line"></i>';
+        repeatBtn.classList.add('active');
+      } else {
+        repeatBtn.innerHTML = '<i class="ri-repeat-one-line"></i>';
+        repeatBtn.classList.add('active');
+      }
+    }
+
+    function hashString(str) {
+      let hash = 0;
+      const s = String(str || '');
+      for (let i = 0; i < s.length; i++) {
+        hash = ((hash << 5) - hash) + s.charCodeAt(i);
+        hash |= 0;
+      }
+      return Math.abs(hash);
+    }
+
+    function generateWaveformHeights(seedKey, count = 120) {
+      const seed = hashString(seedKey);
+      let heights = [];
+      let value = seed % 9973;
+
+      for (let i = 0; i < count; i++) {
+        value = (value * 9301 + 49297) % 233280;
+        const rand = value / 233280;
+        const smoothBoost =
+          0.55 +
+          0.25 * Math.sin(i * 0.22) +
+          0.12 * Math.sin(i * 0.51) +
+          rand * 0.25;
+
+        const height = Math.max(12, Math.min(92, Math.round(smoothBoost * 100)));
+        heights.push(height);
+      }
+
+      return heights;
+    }
+
+    function buildWaveform(seedKey) {
+      waveformBars.innerHTML = '';
+      const heights = generateWaveformHeights(seedKey, 120);
+
+      heights.forEach(h => {
+        const bar = document.createElement('div');
+        bar.className = 'wave-bar';
+        bar.style.height = h + '%';
+        waveformBars.appendChild(bar);
+      });
+
+      updateWaveformProgress();
+    }
+
+    function updateWaveformProgress() {
+      const bars = waveformBars.querySelectorAll('.wave-bar');
+      const duration = audioPlayer.duration || 0;
+      const current = audioPlayer.currentTime || 0;
+      const percent = duration ? current / duration : 0;
+      const activeCount = Math.floor(bars.length * percent);
+
+      bars.forEach((bar, index) => {
+        bar.classList.remove('played', 'current');
+
+        if (index < activeCount) {
+          bar.classList.add('played');
+        } else if (index === activeCount && duration > 0) {
+          bar.classList.add('current');
+        }
+      });
+    }
+
+    function updateProgress() {
+      const duration = audioPlayer.duration || 0;
+      const current = audioPlayer.currentTime || 0;
+      currentTimeEl.textContent = formatTime(current);
+      durationTimeEl.textContent = formatTime(duration);
+      updateWaveformProgress();
+    }
+
+    function normalizeItem(raw) {
+      const item = { ...raw };
+      item.file = String(item.file || '').trim();
+      item.title = safeTitle(item);
+      item.preacher = String(item.preacher || '').trim() || 'មិនមានឈ្មោះអ្នកអធិប្បាយ';
+      item.subtitle = String(item.subtitle || '').trim() || 'ព្រះបន្ទូលថ្ងៃអាទិត្យ';
+      item.date = String(item.date || '').trim();
+      item.audio = getAudioUrl(item.file);
+      item.thumb = getThumbUrl(item.file);
+      return item;
+    }
+
+    async function loadPlaylist() {
+      playerStatus.textContent = 'កំពុងផ្ទុកបញ្ជីសំឡេង...';
+      playlistBox.innerHTML = '<div class="empty-text">កំពុងផ្ទុកព្រះបន្ទូល...</div>';
+
+      try {
+        const res = await fetch(PLAYLIST_URL, { cache: 'no-store' });
+        if (!res.ok) throw new Error('Failed to load playlist.json');
+
+        const data = await res.json();
+
+        playlist = Array.isArray(data)
+          ? data.filter(item => item && item.file).map(normalizeItem)
+          : [];
+
+        filteredPlaylist = [...playlist];
+        renderPlaylist();
+        renderLatestTracks();
+        renderHomeAllTracks();
+
+        playerStatus.textContent = playlist.length
+          ? 'បានផ្ទុក ' + playlist.length + ' ឯកសារសំឡេង'
+          : 'មិនមានឯកសារសំឡេង';
+
+      } catch (err) {
+        console.error(err);
+        playlist = [];
+        filteredPlaylist = [];
+        renderPlaylist();
+        renderLatestTracks();
+        renderHomeAllTracks();
+        playerStatus.textContent = 'មិនអាចផ្ទុក playlist បានទេ';
+      }
+    }
+
+    function renderPlaylist() {
+      playlistBox.innerHTML = '';
+
+      if (!filteredPlaylist.length) {
+        playlistBox.innerHTML = '<div class="empty-text">មិនមានលទ្ធផលដែលត្រូវគ្នាទេ។</div>';
+        return;
+      }
+
+      filteredPlaylist.forEach(item => {
+        const realIndex = playlist.findIndex(p => p.file === item.file);
+        const isActive = currentIndex >= 0 &&
+          playlist[currentIndex] &&
+          playlist[currentIndex].file === item.file;
+
+        const card = document.createElement('div');
+        card.className = 'track-card' + (isActive ? ' active' : '');
+        card.innerHTML = `
+          <img class="track-thumb" src="${escapeHtml(item.thumb)}" alt="${escapeHtml(item.title)}">
+          <div class="track-meta">
+            <div class="track-title">${escapeHtml(item.title)}</div>
+            <div class="track-preacher">${escapeHtml(item.preacher)}</div>
+            <div class="track-subtitle">${escapeHtml(item.subtitle)}</div>
+            <div class="track-date">
+              <span>${escapeHtml(formatDate(item.date))}</span>
+              ${getCountHtml(item.file)}
+              ${getLikeHtml(item.file)}
+            </div>
+          </div>
+          <div style="display:flex; gap:4px; align-items:center;">
+            <button class="like-btn ${isTrackLiked(item.file) ? 'liked' : ''}" data-like-file="${escapeHtml(item.file)}">
+              <i class="${isTrackLiked(item.file) ? 'ri-heart-fill' : 'ri-heart-line'}"></i>
+            </button>
+            <div class="track-play"><i class="ri-play-circle-line"></i></div>
+          </div>
+        `;
+
+        card.addEventListener('click', () => playTrack(realIndex));
+        playlistBox.appendChild(card);
+        attachTrackPlaceholder(card, '.track-thumb', 'track-thumb');
+
+        const likeBtn = card.querySelector('[data-like-file]');
+        likeBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleLike(item.file);
+        });
+      });
+    }
+
+    function updateNowPlaying(item) {
+      if (!item) {
+        nowPlayingThumb.className = 'thumb-placeholder';
+        nowPlayingThumb.innerHTML = '<i class="ri-equalizer-line"></i>';
+        nowPlayingTitle.textContent = 'មិនទាន់មានសំឡេងកំពុងចាក់';
+        nowPlayingSubtitle.textContent = 'សូមជ្រើសរើសព្រះបន្ទូលពីបញ្ជីខាងក្រោម';
+        nowPlayingExtra.innerHTML = '---';
+        return;
+      }
+
+      nowPlayingThumb.className = '';
+      nowPlayingThumb.innerHTML = `<img src="${escapeHtml(item.thumb)}" alt="${escapeHtml(item.title)}">`;
+
+      const img = nowPlayingThumb.querySelector('img');
+      img.onerror = function () {
+        nowPlayingThumb.className = 'thumb-placeholder';
+        nowPlayingThumb.innerHTML = '<i class="ri-equalizer-line"></i>';
+      };
+
+      nowPlayingTitle.textContent = item.title;
+      nowPlayingSubtitle.textContent = item.subtitle;
+      nowPlayingExtra.innerHTML = `
+        <span>${escapeHtml(item.preacher)} • ${escapeHtml(formatDate(item.date))}</span>
+        ${getCountHtml(item.file)}
+        ${getLikeHtml(item.file)}
+      `;
+    }
+
+    function playTrack(index) {
+      const item = playlist[index];
+      if (!item) return;
+
+      hasCountedForCurrentTrack = false;
+      currentIndex = index;
+      audioPlayer.src = item.audio;
+      audioPlayer.load();
+
+      updateNowPlaying(item);
+      renderPlaylist();
+      playerStatus.textContent = 'កំពុងផ្ទុក...';
+      buildWaveform(item.file || item.title || 'track');
+
+      audioPlayer.play()
+        .then(() => {
+          playerStatus.textContent = 'កំពុងចាក់';
+          updatePlayPauseIcon();
+        })
+        .catch(err => {
+          console.error(err);
+          playerStatus.textContent = 'មិនអាចចាក់សំឡេងបានទេ';
+          updatePlayPauseIcon();
+        });
+    }
+
+    function playNext() {
+      if (!playlist.length) return;
+
+      if (currentIndex < playlist.length - 1) {
+        playTrack(currentIndex + 1);
+      } else if (repeatMode === 1) {
+        playTrack(0);
+      }
+    }
+
+    function playPrev() {
+      if (!playlist.length) return;
+
+      if (currentIndex > 0) {
+        playTrack(currentIndex - 1);
+      } else if (repeatMode === 1) {
+        playTrack(playlist.length - 1);
+      }
+    }
+
+    function filterPlaylist() {
+      const term = podcastSearch.value.trim().toLowerCase();
+
+      filteredPlaylist = playlist.filter(item => {
+        return (
+          item.title.toLowerCase().includes(term) ||
+          item.preacher.toLowerCase().includes(term) ||
+          item.subtitle.toLowerCase().includes(term) ||
+          formatDate(item.date).toLowerCase().includes(term)
+        );
+      });
+
+      renderPlaylist();
+    }
+
+    function togglePodcastTool(force) {
+      const shouldOpen = typeof force === 'boolean'
+        ? force
+        : podcastTool.style.display !== 'flex';
+
+      podcastTool.style.display = shouldOpen ? 'flex' : 'none';
+    }
+
+    podcastToolBtn.addEventListener('click', () => togglePodcastTool());
+    closeBtn.addEventListener('click', () => togglePodcastTool(false));
+    refreshBtn.addEventListener('click', loadPlaylist);
+    podcastSearch.addEventListener('input', filterPlaylist);
+
+    showMoreTracksBtn.addEventListener('click', () => {
+      homeExpanded = !homeExpanded;
+      homeAllTracksWrap.style.display = homeExpanded ? 'block' : 'none';
+      showMoreTracksBtn.textContent = homeExpanded ? 'បង្ហាញតិច' : 'បង្ហាញបន្ថែម';
+      togglePodcastTool(true);
+    });
+
+    playPauseBtn.addEventListener('click', () => {
+      if (!audioPlayer.src) {
+        if (playlist.length) playTrack(0);
+        return;
+      }
+
+      if (audioPlayer.paused) {
+        audioPlayer.play().catch(console.error);
+      } else {
+        audioPlayer.pause();
+      }
+    });
+
+    nextBtn.addEventListener('click', playNext);
+    prevBtn.addEventListener('click', playPrev);
+
+    repeatBtn.addEventListener('click', () => {
+      repeatMode = (repeatMode + 1) % 3;
+      updateRepeatIcon();
+    });
+
+    audioPlayer.addEventListener('play', () => {
+      playerStatus.textContent = 'កំពុងចាក់';
+      updatePlayPauseIcon();
+    });
+
+    audioPlayer.addEventListener('pause', () => {
+      playerStatus.textContent = 'បានផ្អាក';
+      updatePlayPauseIcon();
+    });
+
+    audioPlayer.addEventListener('loadedmetadata', updateProgress);
+
+    audioPlayer.addEventListener('timeupdate', () => {
+      updateProgress();
+
+      if (
+        audioPlayer.currentTime >= 10 &&
+        !hasCountedForCurrentTrack &&
+        currentIndex >= 0 &&
+        playlist[currentIndex]
+      ) {
+        const file = playlist[currentIndex].file;
+
+        if (!hasTrackBeenCounted(file)) {
+          increasePlayCount(file);
+        }
+
+        hasCountedForCurrentTrack = true;
+      }
+    });
+
+    audioPlayer.addEventListener('ended', () => {
+      if (repeatMode === 2) {
+        audioPlayer.currentTime = 0;
+        audioPlayer.play();
+        return;
+      }
+
+      if (repeatMode === 1) {
+        const nextIndex = currentIndex < playlist.length - 1 ? currentIndex + 1 : 0;
+        playTrack(nextIndex);
+        return;
+      }
+
+      if (currentIndex < playlist.length - 1) {
+        playTrack(currentIndex + 1);
+      } else {
+        playerStatus.textContent = 'ចាក់ចប់ហើយ';
+        updatePlayPauseIcon();
+      }
+    });
+
+    audioPlayer.addEventListener('error', () => {
+      playerStatus.textContent = 'មានបញ្ហាឯកសារ MP3';
+    });
+
+    waveformWrap.addEventListener('click', e => {
+      const rect = waveformWrap.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const percent = Math.max(0, Math.min(1, x / rect.width));
+
+      if (audioPlayer.duration) {
+        audioPlayer.currentTime = audioPlayer.duration * percent;
+      }
+    });
+
+    let popupDragging = false;
+    let popupDX = 0;
+    let popupDY = 0;
+
+    podcastHeader.addEventListener('mousedown', e => {
+      popupDragging = true;
+      popupDX = e.clientX - podcastTool.offsetLeft;
+      popupDY = e.clientY - podcastTool.offsetTop;
+    });
+
+    document.addEventListener('mousemove', e => {
+      if (!popupDragging) return;
+      podcastTool.style.right = 'auto';
+      podcastTool.style.left = (e.clientX - popupDX) + 'px';
+      podcastTool.style.top = (e.clientY - popupDY) + 'px';
+    });
+
+    document.addEventListener('mouseup', () => {
+      popupDragging = false;
+    });
+
+    podcastHeader.addEventListener('touchstart', e => {
+      const t = e.touches[0];
+      popupDragging = true;
+      popupDX = t.clientX - podcastTool.offsetLeft;
+      popupDY = t.clientY - podcastTool.offsetTop;
+    });
+
+    document.addEventListener('touchmove', e => {
+      if (!popupDragging) return;
+      const t = e.touches[0];
+      podcastTool.style.right = 'auto';
+      podcastTool.style.left = (t.clientX - popupDX) + 'px';
+      podcastTool.style.top = (t.clientY - popupDY) + 'px';
+    });
+
+    document.addEventListener('touchend', () => {
+      popupDragging = false;
+    });
+
+    updateRepeatIcon();
+    updatePlayPauseIcon();
+    updateNowPlaying(null);
+    updateProgress();
+    trackVisitor();
+    listenVisitorCount();
+    listenToPlayCounts();
+    listenToLikeCounts();
+    loadPlaylist();
+  </script>
+</body>
+</html>
