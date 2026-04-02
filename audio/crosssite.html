@@ -950,6 +950,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
+    const CROSSSITE_BUILD = '2026-04-02-audioUrl';
     const PLAYLIST_BASE = 'https://thythet.com/assets/audio/';
     const AUDIO_FILE_BASES = [
       'https://thythet.ct.ws/wp-content/uploads/2026/04/',
@@ -1957,6 +1958,7 @@
     updateNowPlaying(null);
     updateProgress();
     refreshTitleMarquees();
+    console.log('crosssite build:', CROSSSITE_BUILD);
     trackVisitor();
     listenVisitorCount();
     listenToPlayCounts();
