@@ -951,7 +951,9 @@
     const db = getDatabase(app);
 
     const AUDIO_BASE = 'https://thythet.com/assets/audio/';
-    const PLAYLIST_URL = AUDIO_BASE + 'playlist.json';
+    const PLAYLIST_BASENAME = 'playlist';
+    const PLAYLIST_EXTENSION = '.json';
+    const PLAYLIST_DISCOVERY_LIMIT = 50;
 
     const DEVICE_ID_KEY = 'thythet_device_id';
     const PLAYED_STORAGE_KEY = 'thythet_podcast_played_tracks_v2';
@@ -1016,6 +1018,11 @@
 
     function getThumbUrl(file) {
       return AUDIO_BASE + file + '.jpg';
+    }
+
+    function getPlaylistUrl(index) {
+      const suffix = index === 0 ? '' : String(index);
+      return AUDIO_BASE + PLAYLIST_BASENAME + suffix + PLAYLIST_EXTENSION;
     }
 
     function escapeHtml(text) {
@@ -1521,24 +1528,83 @@
       return item;
     }
 
+    async function fetchPlaylistFile(index) {
+      const url = getPlaylistUrl(index);
+      const res = await fetch(url, { cache: 'no-store' });
+
+      if (res.status === 404) {
+        return { found: false, items: [] };
+      }
+
+      if (!res.ok) {
+        throw new Error('Failed to load ' + url);
+      }
+
+      const data = await res.json();
+      const items = Array.isArray(data)
+        ? data.filter(item => item && item.file).map(normalizeItem)
+        : [];
+
+      return { found: true, items };
+    }
+
+    async function fetchAllPlaylists() {
+      const merged = [];
+      const seenFiles = new Set();
+
+      for (let index = 0; index <= PLAYLIST_DISCOVERY_LIMIT; index++) {
+        const { found, items } = await fetchPlaylistFile(index);
+
+        if (!found) {
+          if (index === 0) {
+            throw new Error('Failed to load playlist.json');
+          }
+          break;
+        }
+
+        items.forEach((item) => {
+          if (!seenFiles.has(item.file)) {
+            seenFiles.add(item.file);
+            merged.push(item);
+          }
+        });
+      }
+
+      return merged;
+    }
+
     async function loadPlaylist() {
       playerStatus.textContent = 'កំពុងផ្ទុកបញ្ជីសំឡេង...';
       playlistBox.innerHTML = '<div class="empty-text">កំពុងផ្ទុកព្រះបន្ទូល...</div>';
 
       try {
-        const res = await fetch(PLAYLIST_URL, { cache: 'no-store' });
-        if (!res.ok) throw new Error('Failed to load playlist.json');
+        const currentFile = currentIndex >= 0 && playlist[currentIndex]
+          ? playlist[currentIndex].file
+          : '';
 
-        const data = await res.json();
+        playlist = await fetchAllPlaylists();
 
-        playlist = Array.isArray(data)
-          ? data.filter(item => item && item.file).map(normalizeItem)
-          : [];
+        if (currentFile) {
+          currentIndex = playlist.findIndex(item => item.file === currentFile);
+        } else {
+          currentIndex = -1;
+        }
 
         filteredPlaylist = [...playlist];
         renderPlaylist();
         renderLatestTracks();
         renderHomeAllTracks();
+
+        if (currentIndex >= 0 && playlist[currentIndex]) {
+          updateNowPlaying(playlist[currentIndex]);
+        } else if (!audioPlayer.paused) {
+          audioPlayer.pause();
+          audioPlayer.removeAttribute('src');
+          audioPlayer.load();
+          updateNowPlaying(null);
+        } else {
+          updateNowPlaying(null);
+        }
 
         playerStatus.textContent = playlist.length
           ? 'បានផ្ទុក ' + playlist.length + ' ឯកសារសំឡេង'
