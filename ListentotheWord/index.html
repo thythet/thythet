@@ -439,6 +439,8 @@
       text-overflow: ellipsis;
       margin-bottom: 4px;
       line-height: 1.5;
+      display: block;
+      width: 100%;
     }
 
     #nowPlayingSubtitle {
@@ -625,11 +627,11 @@
       font-weight: 700;
       margin-bottom: 2px;
       line-height: 1.55;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
+      white-space: nowrap;
       overflow: hidden;
-      white-space: normal;
+      text-overflow: ellipsis;
+      display: block;
+      width: 100%;
     }
 
     .track-preacher {
@@ -725,6 +727,33 @@
       gap: 5px;
       color: #9ecfff;
       white-space: nowrap;
+    }
+
+
+    .marquee-title {
+      display: block;
+      width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      position: relative;
+    }
+
+    .marquee-title .marquee-inner {
+      display: inline-block;
+      white-space: nowrap;
+      transform: translateX(0);
+      will-change: transform;
+      min-width: max-content;
+    }
+
+    .marquee-title.is-ready:hover .marquee-inner,
+    .marquee-title.is-playing.is-ready .marquee-inner {
+      animation: titleMarquee var(--marquee-duration, 8s) linear infinite alternate;
+    }
+
+    @keyframes titleMarquee {
+      from { transform: translateX(0); }
+      to { transform: translateX(calc(-1 * var(--marquee-distance, 0px))); }
     }
 
     .empty-text {
@@ -1262,6 +1291,7 @@
         latestTracks.appendChild(card);
         attachTrackPlaceholder(card, '.home-track-thumb', 'home-track-thumb');
       });
+      refreshTitleMarquees();
     }
 
     function renderHomeAllTracks() {
@@ -1312,7 +1342,81 @@
           toggleLike(item.file);
         });
       });
+      refreshTitleMarquees();
     }
+
+
+    function applyMarqueeToElement(el, playing = false) {
+      if (!el) return;
+
+      const original = (el.dataset.marqueeText || el.textContent || '').trim();
+      if (!original) return;
+
+      if (!el.dataset.marqueeText) {
+        el.dataset.marqueeText = original;
+      }
+
+      const savedText = el.dataset.marqueeText;
+
+      if (!el.querySelector(':scope > .marquee-inner')) {
+        el.innerHTML = `<span class="marquee-inner">${escapeHtml(savedText)}</span>`;
+      } else {
+        const inner = el.querySelector(':scope > .marquee-inner');
+        if (inner && inner.textContent !== savedText) {
+          inner.textContent = savedText;
+        }
+      }
+
+      el.classList.add('marquee-title');
+      el.classList.remove('is-ready', 'is-playing');
+      el.style.removeProperty('--marquee-distance');
+      el.style.removeProperty('--marquee-duration');
+
+      const inner = el.querySelector(':scope > .marquee-inner');
+      if (!inner) return;
+
+      requestAnimationFrame(() => {
+        const boxWidth = el.clientWidth;
+        const textWidth = inner.scrollWidth;
+
+        if (textWidth > boxWidth + 4) {
+          const distance = textWidth - boxWidth;
+          const duration = Math.max(6, distance / 18);
+
+          el.style.setProperty('--marquee-distance', `${distance}px`);
+          el.style.setProperty('--marquee-duration', `${duration}s`);
+          el.classList.add('is-ready');
+
+          if (playing) {
+            el.classList.add('is-playing');
+          }
+        } else {
+          inner.style.transform = 'translateX(0)';
+        }
+      });
+    }
+
+    function refreshTitleMarquees() {
+      document.querySelectorAll('.home-track-title').forEach((el) => {
+        el.dataset.marqueeText = (el.dataset.marqueeText || el.textContent || '').trim();
+        applyMarqueeToElement(el, false);
+      });
+
+      document.querySelectorAll('.home-all-track-title').forEach((el) => {
+        el.dataset.marqueeText = (el.dataset.marqueeText || el.textContent || '').trim();
+        applyMarqueeToElement(el, false);
+      });
+
+      document.querySelectorAll('.track-card .track-title').forEach((el) => {
+        el.dataset.marqueeText = (el.dataset.marqueeText || el.textContent || '').trim();
+        const active = !!el.closest('.track-card.active');
+        applyMarqueeToElement(el, active && !audioPlayer.paused);
+      });
+
+      nowPlayingTitle.dataset.marqueeText = (nowPlayingTitle.dataset.marqueeText || nowPlayingTitle.textContent || '').trim();
+      applyMarqueeToElement(nowPlayingTitle, !audioPlayer.paused && currentIndex >= 0);
+    }
+
 
     function updatePlayPauseIcon() {
       playPauseBtn.innerHTML = audioPlayer.paused
@@ -1497,6 +1601,7 @@
           toggleLike(item.file);
         });
       });
+      refreshTitleMarquees();
     }
 
     function updateNowPlaying(item) {
@@ -1504,8 +1609,10 @@
         nowPlayingThumb.className = 'thumb-placeholder';
         nowPlayingThumb.innerHTML = '<i class="ri-equalizer-line"></i>';
         nowPlayingTitle.textContent = 'មិនទាន់មានសំឡេងកំពុងចាក់';
+        nowPlayingTitle.dataset.marqueeText = 'មិនទាន់មានសំឡេងកំពុងចាក់';
         nowPlayingSubtitle.textContent = 'សូមជ្រើសរើសព្រះបន្ទូលពីបញ្ជីខាងក្រោម';
         nowPlayingExtra.innerHTML = '---';
+        refreshTitleMarquees();
         return;
       }
 
@@ -1519,12 +1626,14 @@
       };
 
       nowPlayingTitle.textContent = item.title;
+      nowPlayingTitle.dataset.marqueeText = item.title;
       nowPlayingSubtitle.textContent = item.subtitle;
       nowPlayingExtra.innerHTML = `
         <span>${escapeHtml(item.preacher)} • ${escapeHtml(formatDate(item.date))}</span>
         ${getCountHtml(item.file)}
         ${getLikeHtml(item.file)}
       `;
+      refreshTitleMarquees();
     }
 
     function playTrack(index) {
@@ -1626,17 +1735,21 @@
 
     repeatBtn.addEventListener('click', () => {
       repeatMode = (repeatMode + 1) % 3;
-      updateRepeatIcon();
+      window.addEventListener('resize', refreshTitleMarquees);
+
+    updateRepeatIcon();
     });
 
     audioPlayer.addEventListener('play', () => {
       playerStatus.textContent = 'កំពុងចាក់';
       updatePlayPauseIcon();
+      refreshTitleMarquees();
     });
 
     audioPlayer.addEventListener('pause', () => {
       playerStatus.textContent = 'បានផ្អាក';
       updatePlayPauseIcon();
+      refreshTitleMarquees();
     });
 
     audioPlayer.addEventListener('loadedmetadata', updateProgress);
@@ -1678,6 +1791,7 @@
       } else {
         playerStatus.textContent = 'ចាក់ចប់ហើយ';
         updatePlayPauseIcon();
+        refreshTitleMarquees();
       }
     });
 
@@ -1739,6 +1853,7 @@
     updatePlayPauseIcon();
     updateNowPlaying(null);
     updateProgress();
+    refreshTitleMarquees();
     trackVisitor();
     listenVisitorCount();
     listenToPlayCounts();
