@@ -70,5 +70,13 @@
     "subtitle": "Sunday Worship Sermon",
     "date": "2022-11-20",
     "file": "សូម​ឲ្យ​ស្រុក​ភ្នំ​នេះមក​ខ្ញុំ​"
+  },
+ {
+    "file": "sermon001",
+    "title": "Test Sermon",
+    "preacher": "Pastor Name",
+    "subtitle": "Sunday Message",
+    "date": "2026-04-02",
+    "audioUrl": "https://thythet.ct.ws/wp-content/uploads/2026/04/sermon001.mp3"
   }
 ]
