@@ -49,10 +49,19 @@
     "date": "",
     "file": ""
   },
+  
   {
-    "preacher": "បុណ្យកាន់ទុក្ខខ្ញុំគួរស់នៅយ៉ាងណា?",
+    "title": "បុណ្យកាន់ទុក្ខខ្ញុំគួរស់នៅយ៉ាងណា?",
+    "preacher": "Pastor Marry",
     "subtitle": "Sunday Worship Sermon",
     "date": "2026-03-22",
     "file": "បុណ្យកាន់ទុក្ខខ្ញុំគួរស់នៅយ៉ាងណា"
+  },
+  {
+    "title": "កុំរសាយចិត្តឡើយ",
+    "preacher": "Pastor Marry",
+    "subtitle": "Sunday Worship Sermon",
+    "date": "2022-11-06",
+    "file": "កុំរសាយចិត្តឡើយ"
   }
 ]
