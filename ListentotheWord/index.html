@@ -289,6 +289,304 @@
       background: rgba(89,166,255,0.22);
     }
 
+    #broadcastToolBtn {
+      position: fixed;
+      right: 30px;
+      bottom: 96px;
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(12px);
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.28);
+      z-index: 9999;
+      transition: 0.25s ease;
+      user-select: none;
+    }
+
+    #broadcastToolBtn:hover {
+      transform: translateY(-2px);
+      background: rgba(255,173,92,0.22);
+    }
+
+    #broadcastOverlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(8px);
+      z-index: 10020;
+    }
+
+    #broadcastOverlay.open {
+      display: flex;
+    }
+
+    #broadcastModal {
+      width: min(560px, 100%);
+      max-height: calc(100vh - 40px);
+      overflow-y: auto;
+      border-radius: 24px;
+      background: rgba(20,20,20,0.94);
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+    }
+
+    .broadcast-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .broadcast-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+
+    .broadcast-close-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .broadcast-body {
+      padding: 18px 20px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      text-align: left;
+    }
+
+    .broadcast-help {
+      font-size: 13px;
+      color: #c8c8c8;
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    .broadcast-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .broadcast-field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .broadcast-field.full {
+      grid-column: 1 / -1;
+    }
+
+    .broadcast-field.broadcast-hidden {
+      display: none;
+    }
+
+    .broadcast-field label {
+      font-size: 12px;
+      color: #cfcfcf;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
+
+    .broadcast-field input,
+    .broadcast-field textarea {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.05);
+      color: #fff;
+      padding: 12px 14px;
+      font-family: 'Kantumruy Pro', sans-serif;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .broadcast-field textarea {
+      min-height: 92px;
+      resize: vertical;
+    }
+
+    .broadcast-field input::placeholder,
+    .broadcast-field textarea::placeholder {
+      color: #9f9f9f;
+    }
+
+    .broadcast-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .broadcast-action-btn {
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      border-radius: 14px;
+      padding: 12px 16px;
+      cursor: pointer;
+      font-family: 'Kantumruy Pro', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      transition: 0.2s ease;
+    }
+
+    .broadcast-action-btn:hover {
+      background: rgba(89,166,255,0.18);
+    }
+
+    .broadcast-action-btn.primary {
+      background: rgba(89,166,255,0.22);
+      border-color: rgba(89,166,255,0.35);
+      color: #dff0ff;
+    }
+
+    .broadcast-status {
+      min-height: 18px;
+      font-size: 13px;
+      color: #bdbdbd;
+      line-height: 1.6;
+    }
+
+    .broadcast-preview {
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      background: rgba(255,255,255,0.04);
+      padding: 12px 14px;
+      color: #d9d9d9;
+      font-size: 13px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .broadcast-auth {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 8px 0 4px;
+    }
+
+    .broadcast-auth.hidden,
+    .broadcast-panel.hidden,
+    .broadcast-list-wrap.hidden,
+    .broadcast-export-wrap.hidden {
+      display: none;
+    }
+
+    .broadcast-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .broadcast-section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #d7d7d7;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+
+    .broadcast-list-wrap,
+    .broadcast-export-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 6px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .broadcast-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 250px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .broadcast-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .broadcast-item-meta {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .broadcast-item-title {
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.5;
+      margin-bottom: 3px;
+    }
+
+    .broadcast-item-sub {
+      font-size: 12px;
+      color: #c9c9c9;
+      line-height: 1.6;
+    }
+
+    .broadcast-item-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .broadcast-mini-btn {
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      border-radius: 12px;
+      padding: 9px 12px;
+      cursor: pointer;
+      font-family: 'Kantumruy Pro', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .broadcast-mini-btn.danger {
+      border-color: rgba(255,106,106,0.28);
+      color: #ffd6d6;
+      background: rgba(255,106,106,0.1);
+    }
+
     #podcastTool {
       position: fixed;
       right: 24px;
@@ -801,6 +1099,11 @@
     }
 
     @media (max-width: 520px) {
+      #broadcastToolBtn {
+        right: 8px;
+        bottom: 76px;
+      }
+
       #podcastTool {
         right: 8px;
         top: 8px;
@@ -827,6 +1130,10 @@
 
       .footer-inline {
         gap: 6px;
+      }
+
+      .broadcast-grid {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -856,6 +1163,108 @@
   <button id="podcastToolBtn" title="Open Podcast Playlist">
     <i class="ri-headphone-line"></i>
   </button>
+
+  <button id="broadcastToolBtn" title="Open Broadcast Box">
+    <i class="ri-user-settings-line"></i>
+  </button>
+
+  <div id="broadcastOverlay">
+    <div id="broadcastModal">
+      <div class="broadcast-header">
+        <div class="broadcast-title">
+          <i class="ri-tools-line"></i>
+          <span><i class="ri-user-settings-line"></i> Broadcast Playlist Box</span>
+        </div>
+        <button id="broadcastCloseBtn" class="broadcast-close-btn" type="button" title="Close broadcast box">
+          <i class="ri-close-line"></i>
+        </button>
+      </div>
+
+      <div class="broadcast-body">
+        <p class="broadcast-help">Manage Firebase playlist records here. The home page merges Firebase items with your existing playlist JSON files.</p>
+
+        <div id="broadcastAuthWrap" class="broadcast-auth">
+          <div class="broadcast-field full">
+            <label for="broadcastEmailInput"><i class="ri-arrow-right-line"></i> Broadcast Email</label>
+            <input id="broadcastEmailInput" type="email" placeholder="broadcast@example.com">
+          </div>
+
+          <div class="broadcast-field full">
+            <label for="broadcastPasswordInput"><i class="ri-key-2-line"></i> Broadcast Password</label>
+            <input id="broadcastPasswordInput" type="password" placeholder="Enter password">
+          </div>
+
+          <div class="broadcast-actions">
+            <button id="broadcastUnlockBtn" class="broadcast-action-btn primary" type="button"><i class="ri-arrow-right-line"></i> Login Broadcast Box</button>
+          </div>
+        </div>
+
+        <div id="broadcastPanel" class="broadcast-panel hidden">
+          <div class="broadcast-section-title">Add Or Edit Record</div>
+
+          <div class="broadcast-grid">
+            <div class="broadcast-field full">
+              <label for="broadcastTitleInput">Title</label>
+              <input id="broadcastTitleInput" type="text" placeholder="Message title">
+            </div>
+
+            <div class="broadcast-field">
+              <label for="broadcastPreacherInput">Preacher</label>
+              <input id="broadcastPreacherInput" type="text" placeholder="Pastor name">
+            </div>
+
+            <div class="broadcast-field">
+              <label for="broadcastDateInput">Date</label>
+              <input id="broadcastDateInput" type="date">
+            </div>
+
+            <div class="broadcast-field full">
+              <label for="broadcastSubtitleInput">Subtitle</label>
+              <input id="broadcastSubtitleInput" type="text" placeholder="Sunday Worship Sermon">
+            </div>
+
+            <div class="broadcast-field full">
+              <label for="broadcastFileInput">File</label>
+              <input id="broadcastFileInput" type="text" placeholder="mp3 file name without .mp3">
+            </div>
+
+            <div class="broadcast-field full broadcast-hidden">
+              <label for="broadcastAudioUrlInput">Audio URL (optional)</label>
+              <input id="broadcastAudioUrlInput" type="url" placeholder="https://...">
+            </div>
+
+            <div class="broadcast-field full">
+              <label for="broadcastNotesPreview">JSON Preview</label>
+              <div id="broadcastNotesPreview" class="broadcast-preview">{}</div>
+            </div>
+          </div>
+
+          <div class="broadcast-actions">
+            <button id="broadcastPreviewBtn" class="broadcast-action-btn" type="button">Refresh Preview</button>
+            <button id="broadcastResetBtn" class="broadcast-action-btn" type="button">Clear Form</button>
+            <button id="broadcastSaveBtn" class="broadcast-action-btn primary" type="button">Save To Firebase</button>
+            <button id="broadcastLogoutBtn" class="broadcast-action-btn" type="button"><i class="ri-lock-2-line"></i> Logout</button>
+          </div>
+
+          <div id="broadcastListWrap" class="broadcast-list-wrap">
+            <div class="broadcast-section-title">Existing Firebase Items</div>
+            <div id="broadcastList" class="broadcast-list"></div>
+          </div>
+
+          <div id="broadcastExportWrap" class="broadcast-export-wrap">
+            <div class="broadcast-section-title">Export Firebase JSON</div>
+            <div class="broadcast-actions">
+              <button id="broadcastExportBtn" class="broadcast-action-btn" type="button">Generate Export JSON</button>
+              <button id="broadcastCopyExportBtn" class="broadcast-action-btn" type="button">Copy Export JSON</button>
+            </div>
+            <div id="broadcastExportPreview" class="broadcast-preview">[]</div>
+          </div>
+        </div>
+
+        <div id="broadcastStatus" class="broadcast-status"></div>
+      </div>
+    </div>
+  </div>
 
   <div id="podcastTool">
     <div class="header" id="podcastHeader">
@@ -925,7 +1334,7 @@
       <div class="footer-inline">
         <span id="footerVisitorCount" class="footer-visitors"><i class="ri-eye-line"></i> 0 visitors</span>
         <span class="dot">•</span>
-        <span>Developed by Thet.</span>
+          <span>Developed by Thet.</span>
         <span class="dot">•</span>
         <span>©thythet.com</span>
       </div>
@@ -934,7 +1343,8 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-    import { getDatabase, ref, runTransaction, onValue } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+    import { getDatabase, ref, runTransaction, onValue, push, set, remove } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCZgQBrY5cwGpCra0gBqs1ZDkJPugewHhc",
@@ -948,9 +1358,16 @@
     };
 
     const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
     const db = getDatabase(app);
 
-    const AUDIO_BASE = 'https://thythet.com/assets/audio/';
+    const PLAYLIST_BASE = 'https://thythet.com/assets/audio/';
+    const AUDIO_FILE_BASES = [
+      'https://thythet.ct.ws/wp-content/uploads/2026/04/',
+      'https://thythet.ct.ws/asset/2026/04/',
+      'https://thythet.com/assets/audio/'
+    ];
+    const THUMB_BASE = 'https://thythet.com/assets/audio/';
     const PLAYLIST_BASENAME = 'playlist';
     const PLAYLIST_EXTENSION = '.json';
     const PLAYLIST_DISCOVERY_LIMIT = 50;
@@ -958,6 +1375,7 @@
     const DEVICE_ID_KEY = 'thythet_device_id';
     const PLAYED_STORAGE_KEY = 'thythet_podcast_played_tracks_v2';
     const LIKED_STORAGE_KEY = 'thythet_podcast_liked_tracks_v1';
+    const BROADCAST_SESSION_KEY = 'thythet_broadcast_unlocked_v1';
 
     function getDeviceId() {
       let id = localStorage.getItem(DEVICE_ID_KEY);
@@ -971,11 +1389,35 @@
     const DEVICE_ID = getDeviceId();
 
     const podcastToolBtn = document.getElementById('podcastToolBtn');
+    const broadcastToolBtn = document.getElementById('broadcastToolBtn');
     const podcastTool = document.getElementById('podcastTool');
     const podcastHeader = document.getElementById('podcastHeader');
     const closeBtn = document.getElementById('closeBtn');
     const refreshBtn = document.getElementById('refreshBtn');
     const podcastSearch = document.getElementById('podcastSearch');
+    const broadcastOverlay = document.getElementById('broadcastOverlay');
+    const broadcastCloseBtn = document.getElementById('broadcastCloseBtn');
+    const broadcastAuthWrap = document.getElementById('broadcastAuthWrap');
+    const broadcastPanel = document.getElementById('broadcastPanel');
+    const broadcastEmailInput = document.getElementById('broadcastEmailInput');
+    const broadcastPasswordInput = document.getElementById('broadcastPasswordInput');
+    const broadcastUnlockBtn = document.getElementById('broadcastUnlockBtn');
+    const broadcastTitleInput = document.getElementById('broadcastTitleInput');
+    const broadcastPreacherInput = document.getElementById('broadcastPreacherInput');
+    const broadcastSubtitleInput = document.getElementById('broadcastSubtitleInput');
+    const broadcastDateInput = document.getElementById('broadcastDateInput');
+    const broadcastFileInput = document.getElementById('broadcastFileInput');
+    const broadcastAudioUrlInput = document.getElementById('broadcastAudioUrlInput');
+    const broadcastPreviewBtn = document.getElementById('broadcastPreviewBtn');
+    const broadcastResetBtn = document.getElementById('broadcastResetBtn');
+    const broadcastSaveBtn = document.getElementById('broadcastSaveBtn');
+    const broadcastLogoutBtn = document.getElementById('broadcastLogoutBtn');
+    const broadcastStatus = document.getElementById('broadcastStatus');
+    const broadcastNotesPreview = document.getElementById('broadcastNotesPreview');
+    const broadcastList = document.getElementById('broadcastList');
+    const broadcastExportBtn = document.getElementById('broadcastExportBtn');
+    const broadcastCopyExportBtn = document.getElementById('broadcastCopyExportBtn');
+    const broadcastExportPreview = document.getElementById('broadcastExportPreview');
 
     const audioPlayer = document.getElementById('audioPlayer');
     const playlistBox = document.getElementById('playlistBox');
@@ -1011,18 +1453,248 @@
     let playCounts = {};
     let likeCounts = {};
     let hasCountedForCurrentTrack = false;
+    let activeAudioSources = [];
+    let activeAudioSourceIndex = 0;
+    let jsonPlaylistItems = [];
+    let firebasePlaylistItems = [];
+    let firebasePlaylistReady = false;
+    let broadcastUnlocked = sessionStorage.getItem(BROADCAST_SESSION_KEY) === 'true';
+    let editingFirebaseKey = '';
+    let broadcastUserEmail = '';
 
-    function getAudioUrl(file) {
-      return AUDIO_BASE + file + '.mp3';
+    function getAudioUrls(file) {
+      return AUDIO_FILE_BASES.map(base => base + file + '.mp3');
+    }
+
+    function getCustomAudioUrls(rawAudioUrl) {
+      const url = String(rawAudioUrl || '').trim();
+      return url ? [url] : [];
     }
 
     function getThumbUrl(file) {
-      return AUDIO_BASE + file + '.jpg';
+      return THUMB_BASE + file + '.jpg';
     }
 
     function getPlaylistUrl(index) {
       const suffix = index === 0 ? '' : String(index);
-      return AUDIO_BASE + PLAYLIST_BASENAME + suffix + PLAYLIST_EXTENSION;
+      return PLAYLIST_BASE + PLAYLIST_BASENAME + suffix + PLAYLIST_EXTENSION;
+    }
+
+    function getBroadcastDraft() {
+      return {
+        title: broadcastTitleInput.value.trim(),
+        preacher: broadcastPreacherInput.value.trim(),
+        subtitle: broadcastSubtitleInput.value.trim(),
+        date: broadcastDateInput.value.trim(),
+        file: broadcastFileInput.value.trim(),
+        audioUrl: ''
+      };
+    }
+
+    function getTodayDateValue() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function getBroadcastPayload() {
+      const draft = getBroadcastDraft();
+      const payload = {};
+
+      if (draft.title) payload.title = draft.title;
+      if (draft.preacher) payload.preacher = draft.preacher;
+      if (draft.subtitle) payload.subtitle = draft.subtitle;
+      payload.date = draft.date || getTodayDateValue();
+      if (draft.file) payload.file = draft.file;
+      if (draft.audioUrl) payload.audioUrl = draft.audioUrl;
+
+      return payload;
+    }
+
+    function updateBroadcastPreview() {
+      broadcastNotesPreview.textContent = JSON.stringify(getBroadcastPayload(), null, 2) || '{}';
+    }
+
+    function setBroadcastStatus(message) {
+      broadcastStatus.textContent = message;
+    }
+
+    function getFirebaseExportJson() {
+      const exportItems = firebasePlaylistItems.map((item) => {
+        const payload = {
+          title: item.title || '',
+          preacher: item.preacher || '',
+          subtitle: item.subtitle || '',
+          date: item.date || '',
+          file: item.file || ''
+        };
+
+        if (item.audioUrl) payload.audioUrl = item.audioUrl;
+        return payload;
+      });
+
+      return JSON.stringify(exportItems, null, 2);
+    }
+
+    function renderBroadcastList() {
+      if (!broadcastList) return;
+
+      broadcastList.innerHTML = '';
+
+      if (!firebasePlaylistItems.length) {
+        broadcastList.innerHTML = '<div class="empty-text">No Firebase playlist items yet.</div>';
+        return;
+      }
+
+      firebasePlaylistItems.forEach((item) => {
+        const row = document.createElement('div');
+        row.className = 'broadcast-item';
+        row.innerHTML = `
+          <div class="broadcast-item-meta">
+            <div class="broadcast-item-title">${escapeHtml(item.title)}</div>
+            <div class="broadcast-item-sub">${escapeHtml(item.preacher)} • ${escapeHtml(item.subtitle)}</div>
+            <div class="broadcast-item-sub">${escapeHtml(item.file)} • ${escapeHtml(formatDate(item.date))}</div>
+          </div>
+          <div class="broadcast-item-actions">
+            <button class="broadcast-mini-btn" type="button" data-broadcast-edit="${escapeHtml(item.firebaseKey || '')}">Edit</button>
+            <button class="broadcast-mini-btn danger" type="button" data-broadcast-delete="${escapeHtml(item.firebaseKey || '')}">Delete</button>
+          </div>
+        `;
+        broadcastList.appendChild(row);
+      });
+
+      broadcastList.querySelectorAll('[data-broadcast-edit]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const key = button.getAttribute('data-broadcast-edit') || '';
+          const item = firebasePlaylistItems.find(entry => entry.firebaseKey === key);
+          if (!item) return;
+
+          editingFirebaseKey = key;
+          broadcastTitleInput.value = item.title || '';
+          broadcastPreacherInput.value = item.preacher || '';
+          broadcastSubtitleInput.value = item.subtitle || '';
+          broadcastDateInput.value = item.date || '';
+          broadcastFileInput.value = item.file || '';
+          broadcastAudioUrlInput.value = item.audioUrl || '';
+          updateBroadcastPreview();
+          setBroadcastStatus('Editing existing Firebase item.');
+        });
+      });
+
+      broadcastList.querySelectorAll('[data-broadcast-delete]').forEach((button) => {
+        button.addEventListener('click', async () => {
+          const key = button.getAttribute('data-broadcast-delete') || '';
+          if (!key) return;
+
+          const item = firebasePlaylistItems.find(entry => entry.firebaseKey === key);
+          const confirmed = window.confirm(`Delete "${item?.title || 'this item'}" from Firebase?`);
+          if (!confirmed) return;
+
+          try {
+            await remove(ref(db, 'playlistItems/' + key));
+            if (editingFirebaseKey === key) {
+              editingFirebaseKey = '';
+              resetBroadcastForm();
+            }
+            setBroadcastStatus('Firebase item deleted.');
+          } catch (error) {
+            console.error('Delete failed:', error);
+            setBroadcastStatus('Could not delete Firebase item.');
+          }
+        });
+      });
+    }
+
+    function updateBroadcastAccessUi() {
+      broadcastAuthWrap.classList.toggle('hidden', broadcastUnlocked);
+      broadcastPanel.classList.toggle('hidden', !broadcastUnlocked);
+
+      if (broadcastUnlocked) {
+        renderBroadcastList();
+        broadcastExportPreview.textContent = getFirebaseExportJson();
+      } else {
+        broadcastEmailInput.value = '';
+        broadcastPasswordInput.value = '';
+      }
+    }
+
+    async function loginBroadcastBox() {
+      const email = broadcastEmailInput.value.trim();
+      const password = broadcastPasswordInput.value;
+
+      if (!email || !password) {
+        setBroadcastStatus('Please enter your Firebase broadcast email and password.');
+        return;
+      }
+
+      broadcastUnlockBtn.disabled = true;
+      setBroadcastStatus('Signing in...');
+
+      try {
+        const credential = await signInWithEmailAndPassword(auth, email, password);
+        broadcastUnlocked = true;
+        broadcastUserEmail = credential.user?.email || email;
+        sessionStorage.setItem(BROADCAST_SESSION_KEY, 'true');
+        updateBroadcastAccessUi();
+        updateBroadcastPreview();
+        setBroadcastStatus(`Signed in as ${broadcastUserEmail}.`);
+        broadcastTitleInput.focus();
+      } catch (error) {
+        console.error('Broadcast login failed:', error);
+        broadcastUnlocked = false;
+        broadcastUserEmail = '';
+        sessionStorage.removeItem(BROADCAST_SESSION_KEY);
+        updateBroadcastAccessUi();
+        setBroadcastStatus('Login failed. Check your Firebase email/password account.');
+      } finally {
+        broadcastUnlockBtn.disabled = false;
+      }
+    }
+
+    async function logoutBroadcastBox() {
+      try {
+        await signOut(auth);
+      } catch (error) {
+        console.error('Broadcast logout failed:', error);
+      }
+
+      broadcastUnlocked = false;
+      broadcastUserEmail = '';
+      editingFirebaseKey = '';
+      sessionStorage.removeItem(BROADCAST_SESSION_KEY);
+      resetBroadcastForm();
+      updateBroadcastAccessUi();
+      setBroadcastStatus('Signed out from broadcast box.');
+    }
+
+    function resetBroadcastForm() {
+      broadcastTitleInput.value = '';
+      broadcastPreacherInput.value = '';
+      broadcastSubtitleInput.value = '';
+      broadcastDateInput.value = '';
+      broadcastFileInput.value = '';
+      broadcastAudioUrlInput.value = '';
+      editingFirebaseKey = '';
+      updateBroadcastPreview();
+    }
+
+    function toggleBroadcastBox(force) {
+      const shouldOpen = typeof force === 'boolean'
+        ? force
+        : !broadcastOverlay.classList.contains('open');
+
+      broadcastOverlay.classList.toggle('open', shouldOpen);
+
+      if (shouldOpen) {
+        updateBroadcastAccessUi();
+        updateBroadcastPreview();
+        setTimeout(() => {
+          if (broadcastUnlocked) broadcastTitleInput.focus();
+          else broadcastPasswordInput.focus();
+        }, 30);
+      }
     }
 
     function escapeHtml(text) {
@@ -1076,6 +1748,55 @@
       return [...playlist]
         .sort((a, b) => getSafeDateValue(b.date) - getSafeDateValue(a.date))
         .slice(0, 3);
+    }
+
+    function composePlaylist() {
+      const merged = [];
+      const seenFiles = new Set();
+      const combined = [...firebasePlaylistItems, ...jsonPlaylistItems];
+
+      combined.forEach((item) => {
+        if (!item || !item.file || seenFiles.has(item.file)) return;
+        seenFiles.add(item.file);
+        merged.push(item);
+      });
+
+      return merged;
+    }
+
+    function refreshPlaylistState() {
+      const currentFile = currentIndex >= 0 && playlist[currentIndex]
+        ? playlist[currentIndex].file
+        : '';
+      const searchTerm = podcastSearch.value.trim().toLowerCase();
+
+      playlist = composePlaylist();
+      currentIndex = currentFile
+        ? playlist.findIndex(item => item.file === currentFile)
+        : -1;
+
+      filteredPlaylist = searchTerm
+        ? playlist.filter(item => (
+          item.title.toLowerCase().includes(searchTerm) ||
+          item.preacher.toLowerCase().includes(searchTerm) ||
+          item.subtitle.toLowerCase().includes(searchTerm) ||
+          formatDate(item.date).toLowerCase().includes(searchTerm)
+        ))
+        : [...playlist];
+
+      renderPlaylist();
+      renderLatestTracks();
+      renderHomeAllTracks();
+
+      if (currentIndex >= 0 && playlist[currentIndex]) {
+        updateNowPlaying(playlist[currentIndex]);
+      } else {
+        updateNowPlaying(null);
+      }
+
+      playerStatus.textContent = playlist.length
+        ? 'បានផ្ទុក ' + playlist.length + ' ឯកសារសំឡេង'
+        : 'មិនមានឯកសារសំឡេង';
     }
 
     function getPlayedTracks() {
@@ -1523,9 +2244,34 @@
       item.preacher = String(item.preacher || '').trim() || 'មិនមានឈ្មោះអ្នកអធិប្បាយ';
       item.subtitle = String(item.subtitle || '').trim() || 'ព្រះបន្ទូលថ្ងៃអាទិត្យ';
       item.date = String(item.date || '').trim();
-      item.audio = getAudioUrl(item.file);
+      item.audioUrl = String(item.audioUrl || '').trim();
+      item.audioSources = [
+        ...getCustomAudioUrls(item.audioUrl),
+        ...getAudioUrls(item.file)
+      ].filter((url, index, list) => url && list.indexOf(url) === index);
+      item.audio = item.audioSources[0] || '';
       item.thumb = getThumbUrl(item.file);
       return item;
+    }
+
+    function normalizeFirebasePlaylist(snapshotValue) {
+      if (!snapshotValue) return [];
+
+      return Object.entries(snapshotValue)
+        .map(([firebaseKey, item]) => ({ firebaseKey, ...item }))
+        .filter(item => item && item.file)
+        .map(normalizeItem)
+        .sort((a, b) => getSafeDateValue(b.date) - getSafeDateValue(a.date));
+    }
+
+    function setAudioSource(item, sourceIndex = 0) {
+      const sources = Array.isArray(item.audioSources) && item.audioSources.length
+        ? item.audioSources
+        : [''];
+
+      activeAudioSources = sources;
+      activeAudioSourceIndex = sourceIndex;
+      audioPlayer.src = activeAudioSources[activeAudioSourceIndex] || '';
     }
 
     async function fetchPlaylistFile(index) {
@@ -1573,51 +2319,76 @@
       return merged;
     }
 
+    function listenToFirebasePlaylist() {
+      const playlistRef = ref(db, 'playlistItems');
+
+      onValue(playlistRef, (snapshot) => {
+        firebasePlaylistItems = normalizeFirebasePlaylist(snapshot.val());
+        firebasePlaylistReady = true;
+        refreshPlaylistState();
+        renderBroadcastList();
+        broadcastExportPreview.textContent = getFirebaseExportJson();
+      }, (error) => {
+        console.error('Firebase playlist listen failed:', error);
+        firebasePlaylistItems = [];
+        firebasePlaylistReady = true;
+        refreshPlaylistState();
+        renderBroadcastList();
+        broadcastExportPreview.textContent = '[]';
+      });
+    }
+
+    async function saveBroadcastRecord() {
+      if (!broadcastUnlocked) {
+        setBroadcastStatus('Unlock the broadcast box first.');
+        return;
+      }
+
+      const payload = getBroadcastPayload();
+
+      if (!payload.title || !payload.preacher || !payload.subtitle || !payload.date || !payload.file) {
+        setBroadcastStatus('Please fill title, preacher, subtitle, date, and file.');
+        return;
+      }
+
+      broadcastSaveBtn.disabled = true;
+      setBroadcastStatus(editingFirebaseKey ? 'Updating Firebase record...' : 'Saving to Firebase...');
+
+      try {
+        const recordRef = editingFirebaseKey
+          ? ref(db, 'playlistItems/' + editingFirebaseKey)
+          : push(ref(db, 'playlistItems'));
+
+        await set(recordRef, {
+          ...payload,
+          createdAt: Date.now()
+        });
+
+        const wasEditing = !!editingFirebaseKey;
+        resetBroadcastForm();
+        setBroadcastStatus(wasEditing ? 'Firebase item updated successfully.' : 'Saved to Firebase successfully.');
+      } catch (error) {
+        console.error('Broadcast save failed:', error);
+        setBroadcastStatus('Could not save to Firebase. Check your database rules.');
+      } finally {
+        broadcastSaveBtn.disabled = false;
+      }
+    }
+
     async function loadPlaylist() {
       playerStatus.textContent = 'កំពុងផ្ទុកបញ្ជីសំឡេង...';
       playlistBox.innerHTML = '<div class="empty-text">កំពុងផ្ទុកព្រះបន្ទូល...</div>';
 
       try {
-        const currentFile = currentIndex >= 0 && playlist[currentIndex]
-          ? playlist[currentIndex].file
-          : '';
-
-        playlist = await fetchAllPlaylists();
-
-        if (currentFile) {
-          currentIndex = playlist.findIndex(item => item.file === currentFile);
-        } else {
-          currentIndex = -1;
-        }
-
-        filteredPlaylist = [...playlist];
-        renderPlaylist();
-        renderLatestTracks();
-        renderHomeAllTracks();
-
-        if (currentIndex >= 0 && playlist[currentIndex]) {
-          updateNowPlaying(playlist[currentIndex]);
-        } else if (!audioPlayer.paused) {
-          audioPlayer.pause();
-          audioPlayer.removeAttribute('src');
-          audioPlayer.load();
-          updateNowPlaying(null);
-        } else {
-          updateNowPlaying(null);
-        }
-
-        playerStatus.textContent = playlist.length
-          ? 'បានផ្ទុក ' + playlist.length + ' ឯកសារសំឡេង'
-          : 'មិនមានឯកសារសំឡេង';
-
+        jsonPlaylistItems = await fetchAllPlaylists();
+        refreshPlaylistState();
       } catch (err) {
         console.error(err);
-        playlist = [];
-        filteredPlaylist = [];
-        renderPlaylist();
-        renderLatestTracks();
-        renderHomeAllTracks();
-        playerStatus.textContent = 'មិនអាចផ្ទុក playlist បានទេ';
+        jsonPlaylistItems = [];
+        refreshPlaylistState();
+        playerStatus.textContent = firebasePlaylistReady
+          ? 'ផ្ទុកពី Firebase បាន ប៉ុន្តែ JSON playlist មិនបាន'
+          : 'មិនអាចផ្ទុក playlist បានទេ';
       }
     }
 
@@ -1708,7 +2479,7 @@
 
       hasCountedForCurrentTrack = false;
       currentIndex = index;
-      audioPlayer.src = item.audio;
+      setAudioSource(item, 0);
       audioPlayer.load();
 
       updateNowPlaying(item);
@@ -1772,9 +2543,44 @@
     }
 
     podcastToolBtn.addEventListener('click', () => togglePodcastTool());
+    broadcastToolBtn.addEventListener('click', () => toggleBroadcastBox(true));
     closeBtn.addEventListener('click', () => togglePodcastTool(false));
     refreshBtn.addEventListener('click', loadPlaylist);
     podcastSearch.addEventListener('input', filterPlaylist);
+    broadcastCloseBtn.addEventListener('click', () => toggleBroadcastBox(false));
+    broadcastUnlockBtn.addEventListener('click', loginBroadcastBox);
+    broadcastOverlay.addEventListener('click', (e) => {
+      if (e.target === broadcastOverlay) toggleBroadcastBox(false);
+    });
+    broadcastPreviewBtn.addEventListener('click', updateBroadcastPreview);
+    broadcastResetBtn.addEventListener('click', () => {
+      resetBroadcastForm();
+      setBroadcastStatus('Form cleared.');
+    });
+    broadcastSaveBtn.addEventListener('click', saveBroadcastRecord);
+    broadcastLogoutBtn.addEventListener('click', logoutBroadcastBox);
+    broadcastExportBtn.addEventListener('click', () => {
+      broadcastExportPreview.textContent = getFirebaseExportJson();
+      setBroadcastStatus('Export JSON generated from Firebase items.');
+    });
+    broadcastCopyExportBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(getFirebaseExportJson());
+        broadcastExportPreview.textContent = getFirebaseExportJson();
+        setBroadcastStatus('Export JSON copied to clipboard.');
+      } catch (error) {
+        console.error('Copy export failed:', error);
+        setBroadcastStatus('Could not copy export JSON.');
+      }
+    });
+    [broadcastTitleInput, broadcastPreacherInput, broadcastSubtitleInput, broadcastDateInput, broadcastFileInput, broadcastAudioUrlInput]
+      .forEach((input) => input.addEventListener('input', updateBroadcastPreview));
+    [broadcastEmailInput, broadcastPasswordInput].forEach((input) => input.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        loginBroadcastBox();
+      }
+    }));
 
     showMoreTracksBtn.addEventListener('click', () => {
       homeExpanded = !homeExpanded;
@@ -1862,6 +2668,15 @@
     });
 
     audioPlayer.addEventListener('error', () => {
+      if (activeAudioSourceIndex < activeAudioSources.length - 1) {
+        activeAudioSourceIndex += 1;
+        audioPlayer.src = activeAudioSources[activeAudioSourceIndex];
+        audioPlayer.load();
+        audioPlayer.play().catch(console.error);
+        playerStatus.textContent = 'កំពុងសាកល្បងប្រភព MP3 មួយទៀត...';
+        return;
+      }
+
       playerStatus.textContent = 'មានបញ្ហាឯកសារ MP3';
     });
 
@@ -1920,10 +2735,26 @@
     updateNowPlaying(null);
     updateProgress();
     refreshTitleMarquees();
+    resetBroadcastForm();
+    updateBroadcastAccessUi();
+    onAuthStateChanged(auth, (user) => {
+      broadcastUnlocked = !!user;
+      broadcastUserEmail = user?.email || '';
+
+      if (broadcastUnlocked) {
+        sessionStorage.setItem(BROADCAST_SESSION_KEY, 'true');
+      } else {
+        sessionStorage.removeItem(BROADCAST_SESSION_KEY);
+        editingFirebaseKey = '';
+      }
+
+      updateBroadcastAccessUi();
+    });
     trackVisitor();
     listenVisitorCount();
     listenToPlayCounts();
     listenToLikeCounts();
+    listenToFirebasePlaylist();
     loadPlaylist();
   </script>
 </body>
