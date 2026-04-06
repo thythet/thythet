@@ -1201,8 +1201,8 @@
           </div>
 
           <div class="broadcast-field full">
-            <label for="broadcastPasswordInput"><i class="ri-key-2-line"></i> Password</label>
-            <input id="broadcastPasswordInput" type="password" placeholder="Enter password">
+            <label for="broadcastKeyInput"><i class="ri-key-2-line"></i> Key</label>
+            <input id="broadcastKeyInput" type="password" placeholder="Enter key">
           </div>
 
           <div class="broadcast-actions">
@@ -1410,7 +1410,7 @@
     const broadcastAuthWrap = document.getElementById('broadcastAuthWrap');
     const broadcastPanel = document.getElementById('broadcastPanel');
     const broadcastEmailInput = document.getElementById('broadcastEmailInput');
-    const broadcastPasswordInput = document.getElementById('broadcastPasswordInput');
+    const broadcastKeyInput = document.getElementById('broadcastKeyInput');
     const broadcastUnlockBtn = document.getElementById('broadcastUnlockBtn');
     const broadcastTitleInput = document.getElementById('broadcastTitleInput');
     const broadcastPreacherInput = document.getElementById('broadcastPreacherInput');
@@ -1626,16 +1626,16 @@
         broadcastExportPreview.textContent = getFirebaseExportJson();
       } else {
         broadcastEmailInput.value = '';
-        broadcastPasswordInput.value = '';
+        broadcastKeyInput.value = '';
       }
     }
 
     async function loginBroadcastBox() {
       const email = broadcastEmailInput.value.trim();
-      const password = broadcastPasswordInput.value;
+      const key = broadcastKeyInput.value;
 
-      if (!email || !password) {
-        setBroadcastStatus('Please enter your Firebase broadcast email and password.');
+      if (!email || !key) {
+        setBroadcastStatus('Please enter your Firebase broadcast email and key.');
         return;
       }
 
@@ -1643,7 +1643,7 @@
       setBroadcastStatus('Signing in...');
 
       try {
-        const credential = await signInWithEmailAndPassword(auth, email, password);
+        const credential = await signInWithEmailAndPassword(auth, email, key);
         broadcastUnlocked = true;
         broadcastUserEmail = credential.user?.email || email;
         sessionStorage.setItem(BROADCAST_SESSION_KEY, 'true');
@@ -1657,7 +1657,7 @@
         broadcastUserEmail = '';
         sessionStorage.removeItem(BROADCAST_SESSION_KEY);
         updateBroadcastAccessUi();
-        setBroadcastStatus('Login failed. Check your Firebase email/password account.');
+        setBroadcastStatus('Login failed. Check your Firebase email/key account.');
       } finally {
         broadcastUnlockBtn.disabled = false;
       }
@@ -1702,7 +1702,7 @@
         updateBroadcastPreview();
         setTimeout(() => {
           if (broadcastUnlocked) broadcastTitleInput.focus();
-          else broadcastPasswordInput.focus();
+          else broadcastKeyInput.focus();
         }, 30);
       }
     }
@@ -2714,7 +2714,7 @@
     });
     [broadcastTitleInput, broadcastPreacherInput, broadcastSubtitleInput, broadcastDateInput, broadcastFileInput, broadcastAudioUrlInput]
       .forEach((input) => input.addEventListener('input', updateBroadcastPreview));
-    [broadcastEmailInput, broadcastPasswordInput].forEach((input) => input.addEventListener('keydown', (event) => {
+    [broadcastEmailInput, broadcastKeyInput].forEach((input) => input.addEventListener('keydown', (event) => {
       if (event.key === 'Enter') {
         event.preventDefault();
         loginBroadcastBox();
