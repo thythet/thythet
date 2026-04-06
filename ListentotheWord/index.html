@@ -264,6 +264,7 @@
 
     #podcastToolBtn {
       position: fixed;
+      left: auto;
       right: 30px;
       bottom: 30px;
       width: 54px;
@@ -281,6 +282,7 @@
       box-shadow: 0 12px 28px rgba(0,0,0,0.28);
       z-index: 9999;
       transition: 0.25s ease;
+      touch-action: none;
       user-select: none;
     }
 
@@ -291,8 +293,8 @@
 
     #broadcastToolBtn {
       position: fixed;
-      right: 30px;
-      bottom: 96px;
+      left: 30px;
+      bottom: 30px;
       width: 54px;
       height: 54px;
       border-radius: 50%;
@@ -308,6 +310,7 @@
       box-shadow: 0 12px 28px rgba(0,0,0,0.28);
       z-index: 9999;
       transition: 0.25s ease;
+      touch-action: none;
       user-select: none;
     }
 
@@ -336,6 +339,7 @@
       width: min(560px, 100%);
       max-height: calc(100vh - 40px);
       overflow-y: auto;
+      margin-left: 0;
       border-radius: 24px;
       background: rgba(20,20,20,0.94);
       border: 1px solid rgba(255,255,255,0.12);
@@ -1100,8 +1104,8 @@
 
     @media (max-width: 520px) {
       #broadcastToolBtn {
-        right: 8px;
-        bottom: 76px;
+        left: 8px;
+        bottom: 8px;
       }
 
       #podcastTool {
@@ -1135,6 +1139,13 @@
       .broadcast-grid {
         grid-template-columns: 1fr;
       }
+
+      #podcastToolBtn {
+        left: auto;
+        right: 76px;
+        bottom: 8px;
+      }
+
     }
   </style>
 </head>
@@ -1165,15 +1176,15 @@
   </button>
 
   <button id="broadcastToolBtn" title="Open Broadcast Box">
-    <i class="ri-user-settings-line"></i>
+    <i class="ri-keynote-line"></i>
   </button>
 
   <div id="broadcastOverlay">
     <div id="broadcastModal">
       <div class="broadcast-header">
         <div class="broadcast-title">
-          <i class="ri-tools-line"></i>
-          <span><i class="ri-user-settings-line"></i> Broadcast Playlist Box</span>
+          <i class="ri-safe-2-line"></i>
+          <span></span>
         </div>
         <button id="broadcastCloseBtn" class="broadcast-close-btn" type="button" title="Close broadcast box">
           <i class="ri-close-line"></i>
@@ -1181,21 +1192,21 @@
       </div>
 
       <div class="broadcast-body">
-        <p class="broadcast-help">Manage Firebase playlist records here. The home page merges Firebase items with your existing playlist JSON files.</p>
+        <p class="broadcast-help"></p>
 
         <div id="broadcastAuthWrap" class="broadcast-auth">
           <div class="broadcast-field full">
-            <label for="broadcastEmailInput"><i class="ri-arrow-right-line"></i> Broadcast Email</label>
-            <input id="broadcastEmailInput" type="email" placeholder="broadcast@example.com">
+            <label for="broadcastEmailInput"><i class="ri-arrow-right-line"></i> Email</label>
+            <input id="broadcastEmailInput" type="email" placeholder="example@gmail.com">
           </div>
 
           <div class="broadcast-field full">
-            <label for="broadcastPasswordInput"><i class="ri-key-2-line"></i> Broadcast Password</label>
+            <label for="broadcastPasswordInput"><i class="ri-key-2-line"></i> Password</label>
             <input id="broadcastPasswordInput" type="password" placeholder="Enter password">
           </div>
 
           <div class="broadcast-actions">
-            <button id="broadcastUnlockBtn" class="broadcast-action-btn primary" type="button"><i class="ri-arrow-right-line"></i> Login Broadcast Box</button>
+            <button id="broadcastUnlockBtn" class="broadcast-action-btn primary" type="button"><i class="ri-arrow-right-line"></i> Login</button>
           </div>
         </div>
 
@@ -1387,7 +1398,6 @@
     }
 
     const DEVICE_ID = getDeviceId();
-
     const podcastToolBtn = document.getElementById('podcastToolBtn');
     const broadcastToolBtn = document.getElementById('broadcastToolBtn');
     const podcastTool = document.getElementById('podcastTool');
@@ -1666,7 +1676,7 @@
       sessionStorage.removeItem(BROADCAST_SESSION_KEY);
       resetBroadcastForm();
       updateBroadcastAccessUi();
-      setBroadcastStatus('Signed out from broadcast box.');
+      setBroadcastStatus('Signed out.');
     }
 
     function resetBroadcastForm() {
@@ -2534,6 +2544,121 @@
       renderPlaylist();
     }
 
+    function getFloatingButtonDefaultPosition(type) {
+      const isMobile = window.innerWidth <= 520;
+
+      if (type === 'broadcast') {
+        return {
+          left: isMobile ? 8 : 30,
+          right: null,
+          bottom: isMobile ? 8 : 30
+        };
+      }
+
+      return {
+        left: null,
+        right: isMobile ? 8 : 30,
+        bottom: isMobile ? 8 : 30
+      };
+    }
+
+    function clampFloatingButtonPosition(button, position) {
+      const size = button.offsetWidth || 54;
+      const margin = 8;
+      const maxX = Math.max(margin, window.innerWidth - size - margin);
+      const maxY = Math.max(margin, window.innerHeight - size - margin);
+
+      if (position.left != null) {
+        position.left = Math.max(margin, Math.min(position.left, maxX));
+        position.right = null;
+      } else if (position.right != null) {
+        position.right = Math.max(margin, Math.min(position.right, maxX));
+        position.left = null;
+      }
+
+      position.bottom = Math.max(margin, Math.min(position.bottom, maxY));
+      return position;
+    }
+
+    function applyFloatingButtonPosition(button, rawPosition) {
+      const position = clampFloatingButtonPosition(button, { ...rawPosition });
+
+      button.style.top = 'auto';
+      button.style.left = position.left != null ? `${position.left}px` : 'auto';
+      button.style.right = position.right != null ? `${position.right}px` : 'auto';
+      button.style.bottom = `${position.bottom}px`;
+    }
+
+    function enableFloatingButtonDrag(button, options) {
+      let pointerId = null;
+      let startX = 0;
+      let startY = 0;
+      let dragStartLeft = 0;
+      let dragStartBottom = 0;
+      let moved = false;
+
+      const press = (event) => {
+        pointerId = event.pointerId;
+        moved = false;
+        startX = event.clientX;
+        startY = event.clientY;
+        dragStartLeft = button.offsetLeft;
+        dragStartBottom = window.innerHeight - button.offsetTop - button.offsetHeight;
+        button.setPointerCapture(pointerId);
+      };
+
+      const move = (event) => {
+        if (pointerId !== event.pointerId) return;
+
+        const deltaX = event.clientX - startX;
+        const deltaY = event.clientY - startY;
+
+        if (!moved && Math.hypot(deltaX, deltaY) > 6) {
+          moved = true;
+        }
+
+        if (!moved) return;
+
+        event.preventDefault();
+
+        const position = clampFloatingButtonPosition(button, {
+          left: dragStartLeft + deltaX,
+          right: null,
+          bottom: dragStartBottom - deltaY
+        });
+
+        applyFloatingButtonPosition(button, position);
+      };
+
+      const release = (event) => {
+        if (pointerId !== event.pointerId) return;
+
+        if (button.hasPointerCapture(pointerId)) {
+          button.releasePointerCapture(pointerId);
+        }
+
+        const position = clampFloatingButtonPosition(button, {
+          left: button.offsetLeft,
+          right: null,
+          bottom: window.innerHeight - button.offsetTop - button.offsetHeight
+        });
+
+        applyFloatingButtonPosition(button, position);
+        const wasDragged = moved;
+        pointerId = null;
+        moved = false;
+
+        if (!wasDragged) {
+          options.onClick();
+        }
+      };
+
+      button.addEventListener('pointerdown', press);
+      button.addEventListener('pointermove', move);
+      button.addEventListener('pointerup', release);
+      button.addEventListener('pointercancel', release);
+    }
+
     function togglePodcastTool(force) {
       const shouldOpen = typeof force === 'boolean'
         ? force
@@ -2542,8 +2667,22 @@
       podcastTool.style.display = shouldOpen ? 'flex' : 'none';
     }
 
-    podcastToolBtn.addEventListener('click', () => togglePodcastTool());
-    broadcastToolBtn.addEventListener('click', () => toggleBroadcastBox(true));
+    applyFloatingButtonPosition(
+      podcastToolBtn,
+      getFloatingButtonDefaultPosition('podcast')
+    );
+    applyFloatingButtonPosition(
+      broadcastToolBtn,
+      getFloatingButtonDefaultPosition('broadcast')
+    );
+
+    enableFloatingButtonDrag(podcastToolBtn, {
+      onClick: () => togglePodcastTool()
+    });
+    enableFloatingButtonDrag(broadcastToolBtn, {
+      onClick: () => toggleBroadcastBox(true)
+    });
+
     closeBtn.addEventListener('click', () => togglePodcastTool(false));
     refreshBtn.addEventListener('click', loadPlaylist);
     podcastSearch.addEventListener('input', filterPlaylist);
@@ -2728,6 +2867,17 @@
 
     document.addEventListener('touchend', () => {
       popupDragging = false;
+    });
+
+    window.addEventListener('resize', () => {
+      applyFloatingButtonPosition(
+        podcastToolBtn,
+        getFloatingButtonDefaultPosition('podcast')
+      );
+      applyFloatingButtonPosition(
+        broadcastToolBtn,
+        getFloatingButtonDefaultPosition('broadcast')
+      );
     });
 
     updateRepeatIcon();
