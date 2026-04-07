@@ -2117,10 +2117,8 @@
     }
 
     function buildTrackShareUrl(file) {
-      const url = new URL(window.location.href);
-      url.hash = '';
-      url.search = '';
       const item = playlist.find(track => track.file === file);
+      const url = new URL('https://thythet.com/word/');
       url.searchParams.set('t', item?.shareId || file);
       return url.toString();
     }
