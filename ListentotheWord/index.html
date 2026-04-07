@@ -1188,6 +1188,45 @@
       white-space: nowrap;
     }
 
+    #sharedPlayPrompt {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(7,12,20,0.34);
+      backdrop-filter: blur(6px);
+      z-index: 15000;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+    }
+
+    #sharedPlayPrompt.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .shared-play-btn {
+      border: 1px solid rgba(140,180,235,0.18);
+      background: rgba(24,38,58,0.96);
+      color: #fff;
+      border-radius: 999px;
+      padding: 16px 26px;
+      font-family: 'Kantumruy Pro', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.28);
+    }
+
+    .shared-play-btn:hover {
+      background: rgba(44,70,104,0.96);
+    }
+
     #themeToggleBtn {
       position: fixed;
       right: 30px;
@@ -1310,6 +1349,13 @@
     <div class="preloader-card">
       <div class="preloader-mark"><i class="ri-mic-line"></i></div>
     </div>
+  </div>
+
+  <div id="sharedPlayPrompt" class="hidden">
+    <button id="sharedPlayPromptBtn" class="shared-play-btn" type="button">
+      <i class="ri-play-circle-fill"></i>
+      <span>Play Now</span>
+    </button>
   </div>
 
   <div class="page-wrap">
@@ -1552,7 +1598,6 @@
     const DEVICE_ID_KEY = 'thythet_device_id';
     const PLAYED_STORAGE_KEY = 'thythet_podcast_played_tracks_v2';
     const LIKED_STORAGE_KEY = 'thythet_podcast_liked_tracks_v1';
-    const SHARED_STORAGE_KEY = 'thythet_podcast_shared_tracks_v1';
     const BROADCAST_SESSION_KEY = 'thythet_broadcast_unlocked_v1';
     const THEME_STORAGE_KEY = 'thythet_theme_mode_v2';
 
@@ -1572,6 +1617,8 @@
     const podcastToolBtn = document.getElementById('podcastToolBtn');
     const broadcastToolBtn = document.getElementById('broadcastToolBtn');
     const sitePreloader = document.getElementById('sitePreloader');
+    const sharedPlayPrompt = document.getElementById('sharedPlayPrompt');
+    const sharedPlayPromptBtn = document.getElementById('sharedPlayPromptBtn');
     const themeToggleBtn = document.getElementById('themeToggleBtn');
     const podcastTool = document.getElementById('podcastTool');
     const podcastHeader = document.getElementById('podcastHeader');
@@ -1637,6 +1684,7 @@
     let likeCounts = {};
     let shareCounts = {};
     let pendingSharedTrackFile = new URLSearchParams(window.location.search).get('t') || '';
+    let pendingSharedPromptIndex = -1;
     let hasCountedForCurrentTrack = false;
     let activeAudioSources = [];
     let activeAudioSourceIndex = 0;
@@ -2044,25 +2092,6 @@
       saveLikedTracks(liked);
     }
 
-    function getSharedTracks() {
-      try {
-        return JSON.parse(localStorage.getItem(SHARED_STORAGE_KEY)) || {};
-      } catch {
-        return {};
-      }
-    }
-
-    function hasSharedTrackBeenCounted(file) {
-      const shared = getSharedTracks();
-      return !!shared[safeKey(file)];
-    }
-
-    function markSharedTrackAsCounted(file) {
-      const shared = getSharedTracks();
-      shared[safeKey(file)] = true;
-      localStorage.setItem(SHARED_STORAGE_KEY, JSON.stringify(shared));
-    }
-
     function getPlayCount(file) {
       return Number(playCounts[safeKey(file)] || 0);
     }
@@ -2137,6 +2166,16 @@
       });
     }
 
+    function showSharedPlayPrompt(index) {
+      pendingSharedPromptIndex = index;
+      sharedPlayPrompt.classList.remove('hidden');
+    }
+
+    function hideSharedPlayPrompt() {
+      pendingSharedPromptIndex = -1;
+      sharedPlayPrompt.classList.add('hidden');
+    }
+
     function applySharedTrackFromUrl() {
       if (!pendingSharedTrackFile) return;
 
@@ -2147,7 +2186,7 @@
 
       increaseShareCount(playlist[sharedIndex].file);
       togglePodcastTool(true);
-      playTrack(sharedIndex);
+      playTrack(sharedIndex, { fromSharedLink: true });
       pendingSharedTrackFile = '';
     }
 
@@ -2244,26 +2283,27 @@
 
     function increaseShareCount(file) {
       if (!file) return;
-      if (hasSharedTrackBeenCounted(file)) return;
 
       const key = safeKey(file);
-      const shareRef = ref(db, 'shareCounts/' + key);
+      const shareDeviceRef = ref(db, `shareDevices/${key}/${DEVICE_ID}`);
 
-      shareCounts[key] = (Number(shareCounts[key] || 0) + 1);
-      renderPlaylist();
-      renderLatestTracks();
-      renderHomeAllTracks();
+      runTransaction(shareDeviceRef, (currentValue) => {
+        if (currentValue === true) return;
+        return true;
+      }).then((result) => {
+        if (!result.committed) return;
 
-      runTransaction(shareRef, (currentValue) => {
-        return (currentValue || 0) + 1;
-      }).then(() => {
-        markSharedTrackAsCounted(file);
-      }).catch((err) => {
-        console.error('Share count update failed:', err);
-        shareCounts[key] = Math.max(0, Number(shareCounts[key] || 1) - 1);
+        const shareRef = ref(db, 'shareCounts/' + key);
+        shareCounts[key] = (Number(shareCounts[key] || 0) + 1);
         renderPlaylist();
         renderLatestTracks();
         renderHomeAllTracks();
+
+        return runTransaction(shareRef, (currentValue) => {
+          return (currentValue || 0) + 1;
+        });
+      }).catch((err) => {
+        console.error('Share count update failed:', err);
       });
     }
 
@@ -2801,12 +2841,15 @@
       refreshTitleMarquees();
     }
 
-    function playTrack(index) {
+    function playTrack(index, options = {}) {
       const item = playlist[index];
       if (!item) return;
 
       hasCountedForCurrentTrack = false;
       currentIndex = index;
+      if (!options.fromSharedLink) {
+        hideSharedPlayPrompt();
+      }
       setAudioSource(item, 0);
       audioPlayer.load();
 
@@ -2823,6 +2866,9 @@
         .catch(err => {
           console.error(err);
           playerStatus.textContent = 'បានជ្រើសបទហើយ។ ចុចប៊ូតុង Play ដើម្បីចាក់។';
+          if (options.fromSharedLink) {
+            showSharedPlayPrompt(index);
+          }
           updatePlayPauseIcon();
         });
     }
@@ -3086,6 +3132,21 @@
       }
     });
 
+    sharedPlayPromptBtn.addEventListener('click', () => {
+      if (pendingSharedPromptIndex < 0) return;
+
+      audioPlayer.play()
+        .then(() => {
+          hideSharedPlayPrompt();
+          playerStatus.textContent = 'កំពុងចាក់';
+          updatePlayPauseIcon();
+        })
+        .catch((error) => {
+          console.error('Manual shared play failed:', error);
+          playerStatus.textContent = 'មិនអាចចាក់សំឡេងបានទេ';
+        });
+    });
+
     nextBtn.addEventListener('click', playNext);
     prevBtn.addEventListener('click', playPrev);
 
@@ -3097,6 +3158,7 @@
     });
 
     audioPlayer.addEventListener('play', () => {
+      hideSharedPlayPrompt();
       playerStatus.textContent = 'កំពុងចាក់';
       updatePlayPauseIcon();
       refreshTitleMarquees();
