@@ -2249,12 +2249,21 @@
       const key = safeKey(file);
       const shareRef = ref(db, 'shareCounts/' + key);
 
+      shareCounts[key] = (Number(shareCounts[key] || 0) + 1);
+      renderPlaylist();
+      renderLatestTracks();
+      renderHomeAllTracks();
+
       runTransaction(shareRef, (currentValue) => {
         return (currentValue || 0) + 1;
       }).then(() => {
         markSharedTrackAsCounted(file);
       }).catch((err) => {
         console.error('Share count update failed:', err);
+        shareCounts[key] = Math.max(0, Number(shareCounts[key] || 1) - 1);
+        renderPlaylist();
+        renderLatestTracks();
+        renderHomeAllTracks();
       });
     }
 
@@ -2813,7 +2822,7 @@
         })
         .catch(err => {
           console.error(err);
-          playerStatus.textContent = 'មិនអាចចាក់សំឡេងបានទេ';
+          playerStatus.textContent = 'បានជ្រើសបទហើយ។ ចុចប៊ូតុង Play ដើម្បីចាក់។';
           updatePlayPauseIcon();
         });
     }
