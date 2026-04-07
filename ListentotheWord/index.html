@@ -10,6 +10,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;700&display=swap" rel="stylesheet">
 
   <style>
+    @font-face {
+      font-family: 'Krasar';
+      src: url('http://thythet.com/assets/fonts/Krasar.woff') format('woff');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
     * { box-sizing: border-box; }
 
     body {
@@ -101,6 +109,7 @@
     }
 
     .subtext {
+      font-family: 'Krasar', 'Kantumruy Pro', sans-serif;
       color: #c8c8c8;
       max-width: 700px;
       margin: 0 auto;
@@ -1095,6 +1104,23 @@
       white-space: nowrap;
     }
 
+    .share-track-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: #9ecfff;
+      white-space: nowrap;
+      border: none;
+      background: transparent;
+      padding: 0;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .share-track-btn:hover {
+      color: #c7e2ff;
+    }
+
 
     .marquee-title {
       display: block;
@@ -1526,6 +1552,7 @@
     const DEVICE_ID_KEY = 'thythet_device_id';
     const PLAYED_STORAGE_KEY = 'thythet_podcast_played_tracks_v2';
     const LIKED_STORAGE_KEY = 'thythet_podcast_liked_tracks_v1';
+    const SHARED_STORAGE_KEY = 'thythet_podcast_shared_tracks_v1';
     const BROADCAST_SESSION_KEY = 'thythet_broadcast_unlocked_v1';
     const THEME_STORAGE_KEY = 'thythet_theme_mode_v2';
 
@@ -1608,6 +1635,8 @@
     let homeExpanded = false;
     let playCounts = {};
     let likeCounts = {};
+    let shareCounts = {};
+    let pendingSharedTrackFile = new URLSearchParams(window.location.search).get('t') || '';
     let hasCountedForCurrentTrack = false;
     let activeAudioSources = [];
     let activeAudioSourceIndex = 0;
@@ -1950,6 +1979,8 @@
         updateNowPlaying(null);
       }
 
+      applySharedTrackFromUrl();
+
       playerStatus.textContent = playlist.length
         ? 'បានផ្ទុក ' + playlist.length + ' ឯកសារសំឡេង'
         : 'មិនមានឯកសារសំឡេង';
@@ -2011,6 +2042,25 @@
       saveLikedTracks(liked);
     }
 
+    function getSharedTracks() {
+      try {
+        return JSON.parse(localStorage.getItem(SHARED_STORAGE_KEY)) || {};
+      } catch {
+        return {};
+      }
+    }
+
+    function hasSharedTrackBeenCounted(file) {
+      const shared = getSharedTracks();
+      return !!shared[safeKey(file)];
+    }
+
+    function markSharedTrackAsCounted(file) {
+      const shared = getSharedTracks();
+      shared[safeKey(file)] = true;
+      localStorage.setItem(SHARED_STORAGE_KEY, JSON.stringify(shared));
+    }
+
     function getPlayCount(file) {
       return Number(playCounts[safeKey(file)] || 0);
     }
@@ -2019,12 +2069,81 @@
       return Number(likeCounts[safeKey(file)] || 0);
     }
 
+    function getShareCount(file) {
+      return Number(shareCounts[safeKey(file)] || 0);
+    }
+
     function getCountHtml(file) {
       return `<span class="count-badge"><i class="ri-eye-line"></i> ${getPlayCount(file)}</span>`;
     }
 
     function getLikeHtml(file) {
       return `<span class="like-count"><i class="ri-thumb-up-line"></i> ${getLikeCount(file)}</span>`;
+    }
+
+    function getShareHtml(file) {
+      return `<button class="share-track-btn" type="button" data-share-file="${escapeHtml(file)}" title="Share track"><i class="ri-share-forward-line"></i> ${getShareCount(file)}</button>`;
+    }
+
+    function buildTrackShareUrl(file) {
+      const url = new URL(window.location.href);
+      url.hash = '';
+      url.search = '';
+      url.searchParams.set('t', file);
+      return url.toString();
+    }
+
+    async function shareTrack(file) {
+      if (!file) return;
+
+      const shareUrl = buildTrackShareUrl(file);
+      const item = playlist.find(track => track.file === file);
+      const shareTitle = item?.title || 'Track';
+
+      try {
+        if (navigator.share) {
+          await navigator.share({
+            title: shareTitle,
+            text: shareTitle,
+            url: shareUrl
+          });
+        } else if (navigator.clipboard) {
+          await navigator.clipboard.writeText(shareUrl);
+        } else {
+          window.prompt('Copy this track link:', shareUrl);
+          return;
+        }
+
+        playerStatus.textContent = `បានចែករំលែក ${shareTitle}`;
+        setBroadcastStatus(`Share link ready for ${shareTitle}.`);
+      } catch (error) {
+        if (error?.name !== 'AbortError') {
+          console.error('Share failed:', error);
+          playerStatus.textContent = 'មិនអាចចែករំលែកតំណបានទេ';
+          setBroadcastStatus('Could not share this track.');
+        }
+      }
+    }
+
+    function attachShareButtonHandlers(container, onShare) {
+      container.querySelectorAll('[data-share-file]').forEach((button) => {
+        button.addEventListener('click', async (event) => {
+          event.stopPropagation();
+          await onShare(button.getAttribute('data-share-file') || '');
+        });
+      });
+    }
+
+    function applySharedTrackFromUrl() {
+      if (!pendingSharedTrackFile) return;
+
+      const sharedIndex = playlist.findIndex(item => item.file === pendingSharedTrackFile);
+      if (sharedIndex < 0) return;
+
+      increaseShareCount(pendingSharedTrackFile);
+      togglePodcastTool(true);
+      playTrack(sharedIndex);
+      pendingSharedTrackFile = '';
     }
 
     function listenToPlayCounts() {
@@ -2068,6 +2187,22 @@
       });
     }
 
+    function listenToShareCounts() {
+      const sharesRef = ref(db, 'shareCounts');
+
+      onValue(sharesRef, (snapshot) => {
+        shareCounts = snapshot.exists() ? snapshot.val() : {};
+
+        renderPlaylist();
+        renderLatestTracks();
+        renderHomeAllTracks();
+
+        if (currentIndex >= 0 && playlist[currentIndex]) {
+          updateNowPlaying(playlist[currentIndex]);
+        }
+      });
+    }
+
     function trackVisitor() {
       const visitorRef = ref(db, `visitors/${DEVICE_ID}`);
       runTransaction(visitorRef, (val) => {
@@ -2099,6 +2234,22 @@
         markTrackAsCounted(file);
       }).catch((err) => {
         console.error('Count update failed:', err);
+      });
+    }
+
+    function increaseShareCount(file) {
+      if (!file) return;
+      if (hasSharedTrackBeenCounted(file)) return;
+
+      const key = safeKey(file);
+      const shareRef = ref(db, 'shareCounts/' + key);
+
+      runTransaction(shareRef, (currentValue) => {
+        return (currentValue || 0) + 1;
+      }).then(() => {
+        markSharedTrackAsCounted(file);
+      }).catch((err) => {
+        console.error('Share count update failed:', err);
       });
     }
 
@@ -2162,6 +2313,7 @@
               <span>${escapeHtml(formatDate(item.date))}</span>
               ${getCountHtml(item.file)}
               ${getLikeHtml(item.file)}
+              ${getShareHtml(item.file)}
             </div>
           </div>
           <div class="home-track-play"><i class="ri-play-fill"></i></div>
@@ -2174,6 +2326,7 @@
 
         latestTracks.appendChild(card);
         attachTrackPlaceholder(card, '.home-track-thumb', 'home-track-thumb');
+        attachShareButtonHandlers(card, shareTrack);
       });
       refreshTitleMarquees();
     }
@@ -2202,6 +2355,7 @@
               <span>${escapeHtml(formatDate(item.date))}</span>
               ${getCountHtml(item.file)}
               ${getLikeHtml(item.file)}
+              ${getShareHtml(item.file)}
             </div>
           </div>
           <div style="display:flex; gap:4px; align-items:center;">
@@ -2225,6 +2379,7 @@
           e.stopPropagation();
           toggleLike(item.file);
         });
+        attachShareButtonHandlers(card, shareTrack);
       });
       refreshTitleMarquees();
     }
@@ -2574,6 +2729,7 @@
               <span>${escapeHtml(formatDate(item.date))}</span>
               ${getCountHtml(item.file)}
               ${getLikeHtml(item.file)}
+              ${getShareHtml(item.file)}
             </div>
           </div>
           <div style="display:flex; gap:4px; align-items:center;">
@@ -2593,6 +2749,7 @@
           e.stopPropagation();
           toggleLike(item.file);
         });
+        attachShareButtonHandlers(card, shareTrack);
       });
       refreshTitleMarquees();
     }
@@ -3077,6 +3234,7 @@
     listenVisitorCount();
     listenToPlayCounts();
     listenToLikeCounts();
+    listenToShareCounts();
     listenToFirebasePlaylist();
     loadPlaylist();
     window.addEventListener('load', hidePreloader, { once: true });
