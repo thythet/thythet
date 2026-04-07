@@ -23,6 +23,69 @@
       min-height: 100vh;
     }
 
+    body.preloading {
+      overflow: hidden;
+    }
+
+    body.preloading .page-wrap,
+    body.preloading #podcastTool,
+    body.preloading #podcastToolBtn,
+    body.preloading #broadcastToolBtn {
+      opacity: 0;
+    }
+
+    #sitePreloader {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background:
+        radial-gradient(circle at top left, rgba(106,168,255,0.16), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(61,104,163,0.18), transparent 28%),
+        #101925;
+      z-index: 20000;
+      transition: opacity 0.45s ease, visibility 0.45s ease;
+    }
+
+    #sitePreloader.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .preloader-card {
+      padding: 0;
+      border-radius: 0;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      text-align: center;
+      backdrop-filter: none;
+    }
+
+    .preloader-mark {
+      width: 76px;
+      height: 76px;
+      margin: 0 auto;
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(89,166,255,0.3), rgba(61,104,163,0.16));
+      border: 1px solid rgba(140,180,235,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 34px;
+      color: #ffffff;
+      animation: preloaderPulse 1.8s ease-in-out infinite;
+    }
+
+    @keyframes preloaderPulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 rgba(125,184,255,0); }
+      50% { transform: scale(1.04); box-shadow: 0 0 30px rgba(125,184,255,0.16); }
+    }
+
+
     .page-wrap {
       max-width: 900px;
       margin: 0 auto;
@@ -1217,6 +1280,12 @@
 </head>
 <body>
 
+  <div id="sitePreloader">
+    <div class="preloader-card">
+      <div class="preloader-mark"><i class="ri-mic-line"></i></div>
+    </div>
+  </div>
+
   <div class="page-wrap">
     <h1><i class="ri-mic-line"></i> ព្រះបន្ទូលសប្ដាហ៍នេះ</h1>
     <p class="subtext">
@@ -1470,8 +1539,12 @@
     }
 
     const DEVICE_ID = getDeviceId();
+    const PRELOADER_MIN_MS = 2000;
+    const preloadStartedAt = Date.now();
+    document.body.classList.add('preloading');
     const podcastToolBtn = document.getElementById('podcastToolBtn');
     const broadcastToolBtn = document.getElementById('broadcastToolBtn');
+    const sitePreloader = document.getElementById('sitePreloader');
     const themeToggleBtn = document.getElementById('themeToggleBtn');
     const podcastTool = document.getElementById('podcastTool');
     const podcastHeader = document.getElementById('podcastHeader');
@@ -2755,6 +2828,16 @@
       podcastTool.style.display = shouldOpen ? 'flex' : 'none';
     }
 
+    function hidePreloader() {
+      const elapsed = Date.now() - preloadStartedAt;
+      const remaining = Math.max(0, PRELOADER_MIN_MS - elapsed);
+
+      window.setTimeout(() => {
+        sitePreloader.classList.add('hidden');
+        document.body.classList.remove('preloading');
+      }, remaining);
+    }
+
     applyFloatingButtonPosition(
       podcastToolBtn,
       getFloatingButtonDefaultPosition('podcast')
@@ -2996,6 +3079,8 @@
     listenToLikeCounts();
     listenToFirebasePlaylist();
     loadPlaylist();
+    window.addEventListener('load', hidePreloader, { once: true });
+    window.setTimeout(hidePreloader, PRELOADER_MIN_MS + 1200);
   </script>
 </body>
 </html>
