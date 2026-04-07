@@ -1693,6 +1693,7 @@
       if (draft.subtitle) payload.subtitle = draft.subtitle;
       payload.date = draft.date || getTodayDateValue();
       if (draft.file) payload.file = draft.file;
+      if (payload.date) payload.shareId = `${payload.date}-1`;
       if (draft.audioUrl) payload.audioUrl = draft.audioUrl;
 
       return payload;
@@ -1716,6 +1717,7 @@
           file: item.file || ''
         };
 
+        if (item.shareId) payload.shareId = item.shareId;
         if (item.audioUrl) payload.audioUrl = item.audioUrl;
         return payload;
       });
@@ -1740,7 +1742,7 @@
           <div class="broadcast-item-meta">
             <div class="broadcast-item-title">${escapeHtml(item.title)}</div>
             <div class="broadcast-item-sub">${escapeHtml(item.preacher)} • ${escapeHtml(item.subtitle)}</div>
-            <div class="broadcast-item-sub">${escapeHtml(item.file)} • ${escapeHtml(formatDate(item.date))}</div>
+            <div class="broadcast-item-sub">${escapeHtml(item.shareId || item.file)} • ${escapeHtml(formatDate(item.date))}</div>
           </div>
           <div class="broadcast-item-actions">
             <button class="broadcast-mini-btn" type="button" data-broadcast-edit="${escapeHtml(item.firebaseKey || '')}">Edit</button>
@@ -2089,7 +2091,8 @@
       const url = new URL(window.location.href);
       url.hash = '';
       url.search = '';
-      url.searchParams.set('t', file);
+      const item = playlist.find(track => track.file === file);
+      url.searchParams.set('t', item?.shareId || file);
       return url.toString();
     }
 
@@ -2137,10 +2140,12 @@
     function applySharedTrackFromUrl() {
       if (!pendingSharedTrackFile) return;
 
-      const sharedIndex = playlist.findIndex(item => item.file === pendingSharedTrackFile);
+      const sharedIndex = playlist.findIndex(item =>
+        item.shareId === pendingSharedTrackFile || item.file === pendingSharedTrackFile
+      );
       if (sharedIndex < 0) return;
 
-      increaseShareCount(pendingSharedTrackFile);
+      increaseShareCount(playlist[sharedIndex].file);
       togglePodcastTool(true);
       playTrack(sharedIndex);
       pendingSharedTrackFile = '';
@@ -2555,6 +2560,7 @@
       item.preacher = String(item.preacher || '').trim() || 'មិនមានឈ្មោះអ្នកអធិប្បាយ';
       item.subtitle = String(item.subtitle || '').trim() || 'ព្រះបន្ទូលថ្ងៃអាទិត្យ';
       item.date = String(item.date || '').trim();
+      item.shareId = String(item.shareId || '').trim() || (item.date ? `${item.date}-1` : item.file);
       item.audioUrl = String(item.audioUrl || '').trim();
       item.audioSources = [
         ...getCustomAudioUrls(item.audioUrl),
