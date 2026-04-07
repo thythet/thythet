@@ -16,9 +16,9 @@
       margin: 0;
       font-family: 'Kantumruy Pro', sans-serif;
       background:
-        radial-gradient(circle at top left, rgba(89,166,255,0.15), transparent 30%),
-        radial-gradient(circle at bottom right, rgba(255,255,255,0.08), transparent 25%),
-        #0f0f0f;
+        radial-gradient(circle at top left, rgba(106,168,255,0.14), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(61,104,163,0.18), transparent 28%),
+        #101925;
       color: #f3f3f3;
       min-height: 100vh;
     }
@@ -1099,11 +1099,76 @@
       white-space: nowrap;
     }
 
+    #themeToggleBtn {
+      position: fixed;
+      right: 30px;
+      bottom: 96px;
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(28,43,64,0.9);
+      backdrop-filter: blur(12px);
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.28);
+      z-index: 9999;
+      transition: 0.25s ease;
+    }
+
+    #themeToggleBtn:hover {
+      transform: translateY(-2px);
+      background: rgba(89,166,255,0.22);
+    }
+
+    body.theme-gray {
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,0.06), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(255,255,255,0.04), transparent 24%),
+        #111315;
+    }
+
+    body.theme-gray .home-track-card,
+    body.theme-gray .home-all-track-card,
+    body.theme-gray .track-card,
+    body.theme-gray .broadcast-item,
+    body.theme-gray #podcastTool,
+    body.theme-gray #broadcastModal {
+      background: rgba(255,255,255,0.05);
+      border-color: rgba(255,255,255,0.1);
+    }
+
+    body.theme-gray #podcastToolBtn,
+    body.theme-gray #broadcastToolBtn,
+    body.theme-gray #themeToggleBtn,
+    body.theme-gray .broadcast-close-btn,
+    body.theme-gray .broadcast-action-btn,
+    body.theme-gray .broadcast-mini-btn {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.12);
+    }
+
+    body.theme-gray .broadcast-preview,
+    body.theme-gray .broadcast-field input,
+    body.theme-gray .broadcast-field textarea {
+      background: rgba(255,255,255,0.05);
+      border-color: rgba(255,255,255,0.1);
+    }
+
     audio {
       display: none;
     }
 
     @media (max-width: 520px) {
+      #themeToggleBtn {
+        right: 8px;
+        bottom: 76px;
+      }
+
       #broadcastToolBtn {
         left: 8px;
         bottom: 8px;
@@ -1178,6 +1243,10 @@
 
   <button id="broadcastToolBtn" title="Open Broadcast Box">
     <i class="ri-keynote-line"></i>
+  </button>
+
+  <button id="themeToggleBtn" title="Switch Theme">
+    <i class="ri-contrast-2-line"></i>
   </button>
 
   <div id="broadcastOverlay">
@@ -1389,6 +1458,7 @@
     const PLAYED_STORAGE_KEY = 'thythet_podcast_played_tracks_v2';
     const LIKED_STORAGE_KEY = 'thythet_podcast_liked_tracks_v1';
     const BROADCAST_SESSION_KEY = 'thythet_broadcast_unlocked_v1';
+    const THEME_STORAGE_KEY = 'thythet_theme_mode_v2';
 
     function getDeviceId() {
       let id = localStorage.getItem(DEVICE_ID_KEY);
@@ -1402,6 +1472,7 @@
     const DEVICE_ID = getDeviceId();
     const podcastToolBtn = document.getElementById('podcastToolBtn');
     const broadcastToolBtn = document.getElementById('broadcastToolBtn');
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
     const podcastTool = document.getElementById('podcastTool');
     const podcastHeader = document.getElementById('podcastHeader');
     const closeBtn = document.getElementById('closeBtn');
@@ -2661,6 +2732,21 @@
       button.addEventListener('pointercancel', release);
     }
 
+    function applyTheme(theme) {
+      const nextTheme = theme === 'gray' ? 'gray' : 'blue';
+      document.body.classList.toggle('theme-gray', nextTheme === 'gray');
+      localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+      themeToggleBtn.title = nextTheme === 'gray' ? 'Switch to dark blue' : 'Switch to dark gray';
+      themeToggleBtn.innerHTML = nextTheme === 'gray'
+        ? '<i class="ri-palette-line"></i>'
+        : '<i class="ri-contrast-2-line"></i>';
+    }
+
+    function toggleTheme() {
+      const isGray = document.body.classList.contains('theme-gray');
+      applyTheme(isGray ? 'blue' : 'gray');
+    }
+
     function togglePodcastTool(force) {
       const shouldOpen = typeof force === 'boolean'
         ? force
@@ -2677,6 +2763,7 @@
       broadcastToolBtn,
       getFloatingButtonDefaultPosition('broadcast')
     );
+    applyTheme(localStorage.getItem(THEME_STORAGE_KEY) || 'gray');
 
     enableFloatingButtonDrag(podcastToolBtn, {
       onClick: () => togglePodcastTool()
@@ -2684,6 +2771,7 @@
     enableFloatingButtonDrag(broadcastToolBtn, {
       onClick: () => toggleBroadcastBox(true)
     });
+    themeToggleBtn.addEventListener('click', toggleTheme);
 
     closeBtn.addEventListener('click', () => togglePodcastTool(false));
     refreshBtn.addEventListener('click', loadPlaylist);
