@@ -238,7 +238,7 @@
     .home-all-tracks {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
       max-height: 50vh;
       overflow-y: auto;
       padding-right: 4px;
@@ -264,8 +264,8 @@
       display: flex;
       gap: 10px;
       align-items: center;
-      padding: 10px;
-      border-radius: 16px;
+      padding: 8px 10px;
+      border-radius: 15px;
       background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.08);
       cursor: pointer;
@@ -277,10 +277,10 @@
     }
 
     .home-all-track-thumb {
-      width: 56px;
-      height: 56px;
+      width: 44px;
+      height: 44px;
       object-fit: cover;
-      border-radius: 12px;
+      border-radius: 10px;
       background: rgba(255,255,255,0.08);
       flex-shrink: 0;
     }
@@ -291,47 +291,47 @@
     }
 
     .home-all-track-title {
-      font-size: 14px;
+      font-size: 12px;
       font-weight: 700;
       line-height: 1.5;
-      margin-bottom: 2px;
+      margin-bottom: 1px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
     .home-all-track-subtitle {
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 500;
       line-height: 1.5;
       color: #d0d0d0;
-      margin-bottom: 2px;
+      margin-bottom: 1px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
     .home-all-track-date {
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 300;
       line-height: 1.5;
       color: #ababab;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       flex-wrap: wrap;
     }
 
     .home-all-track-play {
-      width: 36px;
-      height: 36px;
+      width: 30px;
+      height: 30px;
       border-radius: 50%;
       border: 1px solid rgba(255,255,255,0.12);
       background: rgba(255,255,255,0.08);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 16px;
+      font-size: 13px;
       flex-shrink: 0;
     }
 
@@ -833,14 +833,23 @@
       font-size: 12px;
       font-weight: 300;
       color: #a8a8a8;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
       line-height: 1.5;
       display: flex;
       align-items: center;
       gap: 10px;
       flex-wrap: wrap;
+    }
+
+    #nowPlayingActions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    #nowPlayingActions .like-btn,
+    #nowPlayingActions .share-track-btn {
+      font-size: 14px;
     }
 
     #glassPlayer {
@@ -1287,6 +1296,56 @@
       border-color: rgba(255,255,255,0.1);
     }
 
+    body.theme-gray .home-track-card:hover,
+    body.theme-gray .home-all-track-card:hover,
+    body.theme-gray .track-card:hover,
+    body.theme-gray .glass-more-btn:hover,
+    body.theme-gray .broadcast-action-btn:hover,
+    body.theme-gray #podcastTool .header-buttons button:hover,
+    body.theme-gray .player-btn:hover,
+    body.theme-gray #podcastToolBtn:hover,
+    body.theme-gray #themeToggleBtn:hover {
+      background: rgba(255,255,255,0.12);
+    }
+
+    body.theme-gray #broadcastToolBtn:hover {
+      background: rgba(255,255,255,0.14);
+    }
+
+    body.theme-gray .track-card.active,
+    body.theme-gray .broadcast-action-btn.primary,
+    body.theme-gray .player-btn.active {
+      background: rgba(255,255,255,0.14);
+      border-color: rgba(255,255,255,0.2);
+      color: #ffffff;
+    }
+
+    body.theme-gray .share-track-btn:hover,
+    body.theme-gray .count-badge,
+    body.theme-gray .like-count,
+    body.theme-gray .footer-visitors {
+      color: #cfe1ff;
+    }
+
+    body.theme-gray .broadcast-help,
+    body.theme-gray .broadcast-status,
+    body.theme-gray .broadcast-item-sub,
+    body.theme-gray .track-date,
+    body.theme-gray .home-track-date,
+    body.theme-gray .home-all-track-date,
+    body.theme-gray .subtext,
+    body.theme-gray .footer-inline,
+    body.theme-gray .footer-inline .dot,
+    body.theme-gray .empty-text {
+      color: #bcc6d3;
+    }
+
+    body.theme-gray .broadcast-field input::placeholder,
+    body.theme-gray .broadcast-field textarea::placeholder,
+    body.theme-gray #podcastSearch::placeholder {
+      color: #9aa4b1;
+    }
+
     audio {
       display: none;
     }
@@ -1611,7 +1670,7 @@
     }
 
     const DEVICE_ID = getDeviceId();
-    const PRELOADER_MIN_MS = 2000;
+    const PRELOADER_MIN_MS = 1000;
     const preloadStartedAt = Date.now();
     document.body.classList.add('preloading');
     const podcastToolBtn = document.getElementById('podcastToolBtn');
@@ -2835,7 +2894,22 @@
         <span>${escapeHtml(item.preacher)} • ${escapeHtml(formatDate(item.date))}</span>
         ${getCountHtml(item.file)}
         ${getLikeHtml(item.file)}
+        <span id="nowPlayingActions">
+          <button class="like-btn ${isTrackLiked(item.file) ? 'liked' : ''}" data-like-file="${escapeHtml(item.file)}">
+            <i class="${isTrackLiked(item.file) ? 'ri-heart-fill' : 'ri-heart-line'}"></i>
+          </button>
+          ${getShareHtml(item.file)}
+        </span>
       `;
+      const nowPlayingActions = nowPlayingExtra.querySelector('#nowPlayingActions');
+      attachShareButtonHandlers(nowPlayingExtra, shareTrack);
+      const nowPlayingLikeBtn = nowPlayingExtra.querySelector('[data-like-file]');
+      if (nowPlayingLikeBtn) {
+        nowPlayingLikeBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleLike(item.file);
+        });
+      }
       refreshTitleMarquees();
     }
 
@@ -2914,6 +2988,14 @@
           left: isMobile ? 8 : 30,
           right: null,
           bottom: isMobile ? 8 : 30
+        };
+      }
+
+      if (type === 'theme') {
+        return {
+          left: null,
+          right: isMobile ? 8 : 30,
+          bottom: isMobile ? 76 : 96
         };
       }
 
@@ -3062,6 +3144,10 @@
       broadcastToolBtn,
       getFloatingButtonDefaultPosition('broadcast')
     );
+    applyFloatingButtonPosition(
+      themeToggleBtn,
+      getFloatingButtonDefaultPosition('theme')
+    );
     applyTheme(localStorage.getItem(THEME_STORAGE_KEY) || 'gray');
 
     enableFloatingButtonDrag(podcastToolBtn, {
@@ -3070,7 +3156,9 @@
     enableFloatingButtonDrag(broadcastToolBtn, {
       onClick: () => toggleBroadcastBox(true)
     });
-    themeToggleBtn.addEventListener('click', toggleTheme);
+    enableFloatingButtonDrag(themeToggleBtn, {
+      onClick: () => toggleTheme()
+    });
 
     closeBtn.addEventListener('click', () => togglePodcastTool(false));
     refreshBtn.addEventListener('click', loadPlaylist);
@@ -3114,7 +3202,7 @@
       homeExpanded = !homeExpanded;
       homeAllTracksWrap.style.display = homeExpanded ? 'block' : 'none';
       showMoreTracksBtn.textContent = homeExpanded ? 'បង្ហាញតិច' : 'បង្ហាញបន្ថែម';
-      togglePodcastTool(true);
+      togglePodcastTool(homeExpanded);
     });
 
     playPauseBtn.addEventListener('click', () => {
@@ -3282,6 +3370,10 @@
       applyFloatingButtonPosition(
         broadcastToolBtn,
         getFloatingButtonDefaultPosition('broadcast')
+      );
+      applyFloatingButtonPosition(
+        themeToggleBtn,
+        getFloatingButtonDefaultPosition('theme')
       );
     });
 
