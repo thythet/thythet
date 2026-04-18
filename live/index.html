@@ -4,30 +4,70 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- ✅ SHARE TITLE -->
+  <!-- ✅ SHARE PREVIEW -->
   <meta property="og:title" content="LIVE WORSHIP" />
+  <meta property="og:description" content="ផ្សាយផ្ទាល់ការថ្វាយបង្គំ" />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://thythet.com/live/" />
+  <meta property="og:url" content="https://thythet.com/listentotheword/" />
 
-  <!-- Optional image -->
-  <meta property="og:image" content="https://thythet.com/assets/live.jpg" />
+  <!-- Optional image (recommended) -->
+  <!-- <meta property="og:image" content="https://thythet.com/assets/live.jpg" /> -->
 
   <title>LIVE WORSHIP</title>
-
-  <script>
-    (function () {
-      const params = window.location.search;
-      const target = window.location.origin + "/listentotheword/" + params;
-      window.location.replace(target);
-    })();
-  </script>
 
   <style>
     body {
       margin: 0;
+      font-family: sans-serif;
       background: #0b1220;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+    }
+
+    .box {
+      padding: 30px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(10px);
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px 20px;
+      border-radius: 10px;
+      border: none;
+      background: #2563eb;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
     }
   </style>
 </head>
-<body></body>
+
+<body>
+
+  <div class="box">
+    <h1>🎧 LIVE WORSHIP</h1>
+    <p>ផ្សាយផ្ទាល់ការថ្វាយបង្គំ</p>
+
+    <button onclick="startAudio()">▶ ស្ដាប់ Live Now</button>
+  </div>
+
+  <script>
+    function startAudio() {
+      // 👉 Replace this with your real live system (YouTube / Firebase)
+      const audio = new Audio("https://thythet.com/assets/sample.mp3");
+      audio.volume = 1;
+
+      audio.play().catch(() => {
+        alert("Tap again to allow audio");
+      });
+    }
+  </script>
+
+</body>
 </html>
