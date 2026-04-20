@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="km">
 <head>
   <meta charset="UTF-8">
@@ -1448,7 +1448,15 @@
       50% { transform: scaleY(1.15); opacity: 1; }
     }
 
-    .live-play-btn {
+    .live-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .live-play-btn,
+    .live-share-btn {
       display: inline-flex;
       align-items: center;
       gap: 8px;
@@ -1464,13 +1472,15 @@
       transition: 0.22s ease;
     }
 
-    .live-play-btn:hover {
+    .live-play-btn:hover,
+    .live-share-btn:hover {
       background: rgba(255,255,255,0.16);
       transform: translateY(-1px);
     }
 
 
-    .live-play-btn[disabled] {
+    .live-play-btn[disabled],
+    .live-share-btn[disabled] {
       opacity: 0.6;
       cursor: not-allowed;
       transform: none;
@@ -1747,7 +1757,10 @@
           <span id="liveMetaText"><i class="ri-broadcast-line"></i> កំពុងផ្សាយសម្រាប់សមាជិកដែលថ្វាយបង្គំពីផ្ទះ</span>
           <span id="liveViewCount" class="live-view-count"><i class="ri-eye-line"></i> 0</span>
         </div>
-        <button id="livePlayBtn" class="live-play-btn" type="button"><i class="ri-play-circle-fill"></i> ស្ដាប់ Live Now</button>
+        <div class="live-actions">
+          <button id="livePlayBtn" class="live-play-btn" type="button"><i class="ri-play-circle-fill"></i> ស្ដាប់ Live Now</button>
+          <button id="liveShareBtn" class="live-share-btn" type="button"><i class="ri-share-forward-line"></i> Share Live</button>
+        </div>
       </div>
       <div id="livePlayerWrap">
         <div id="livePlayer"></div>
@@ -1870,6 +1883,21 @@
               </div>
             </div>
           </div>
+
+          <div class="broadcast-section-title">Audio Storage Links</div>
+
+          <div class="broadcast-grid">
+            <div class="broadcast-field full">
+              <label for="broadcastStorageBasesInput">Paste one base link per line</label>
+              <textarea id="broadcastStorageBasesInput" placeholder="https://thythet.github.io/NewRepo/audio2/"></textarea>
+            </div>
+          </div>
+
+          <div class="broadcast-actions">
+            <button id="broadcastSaveStorageBasesBtn" class="broadcast-action-btn primary" type="button">Save Storage Links</button>
+          </div>
+
+          <div id="broadcastStorageStatus" class="broadcast-status"></div>
 
           <div class="broadcast-section-title">Playlist Control</div>
 
@@ -2036,12 +2064,13 @@
     const db = getDatabase(app);
 
     const PLAYLIST_BASE = 'https://thythet.com/assets/audio/';
-    const AUDIO_FILE_BASES = [
+    const DEFAULT_AUDIO_FILE_BASES = [
       'https://thythet.github.io/Design/audio1/',
       'https://thythet.ct.ws/wp-content/uploads/2026/04/',
       'https://thythet.ct.ws/asset/2026/04/',
       'https://thythet.com/assets/audio/'
     ];
+    let AUDIO_FILE_BASES = [...DEFAULT_AUDIO_FILE_BASES];
     const THUMB_BASE = 'https://thythet.com/assets/audio/';
     const PLAYLIST_BASENAME = 'playlist';
     const PLAYLIST_EXTENSION = '.json';
@@ -2113,6 +2142,9 @@
     const broadcastLivePreview = document.getElementById('broadcastLivePreview');
     const broadcastLiveWatchingNow = document.getElementById('broadcastLiveWatchingNow');
     const broadcastLiveTotalViews = document.getElementById('broadcastLiveTotalViews');
+    const broadcastStorageBasesInput = document.getElementById('broadcastStorageBasesInput');
+    const broadcastSaveStorageBasesBtn = document.getElementById('broadcastSaveStorageBasesBtn');
+    const broadcastStorageStatus = document.getElementById('broadcastStorageStatus');
 
     const liveBox = document.getElementById('liveBox');
     const liveTitle = document.getElementById('liveTitle');
@@ -2120,6 +2152,7 @@
     const liveMetaText = document.getElementById('liveMetaText');
     const liveViewCount = document.getElementById('liveViewCount');
     const livePlayBtn = document.getElementById('livePlayBtn');
+    const liveShareBtn = document.getElementById('liveShareBtn');
     const livePlayerWrap = document.getElementById('livePlayerWrap');
 
     const audioPlayer = document.getElementById('audioPlayer');
@@ -2164,6 +2197,8 @@
     let jsonPlaylistItems = [];
     let firebasePlaylistItems = [];
     let firebasePlaylistReady = false;
+    let rawJsonPlaylistItems = [];
+    let rawFirebasePlaylistValue = null;
     let broadcastUnlocked = sessionStorage.getItem(BROADCAST_SESSION_KEY) === 'true';
     let editingFirebaseKey = '';
     let broadcastUserEmail = '';
@@ -2185,6 +2220,56 @@
 
     function getThumbUrl(file) {
       return THUMB_BASE + file + '.jpg';
+    }
+
+    function getThumbUrls(file) {
+      return [
+        getThumbUrl(file),
+        ...AUDIO_FILE_BASES.map(base => base + file + '.jpg')
+      ].filter((url, index, list) => url && list.indexOf(url) === index);
+    }
+
+    function normalizeStorageBaseUrl(rawUrl) {
+      const value = String(rawUrl || '').trim();
+      if (!value) return '';
+
+      try {
+        const url = new URL(value);
+        if (!['https:', 'http:'].includes(url.protocol)) return '';
+        return url.toString().replace(/\/?$/, '/');
+      } catch {
+        return '';
+      }
+    }
+
+    function parseStorageBaseLines(value) {
+      return String(value || '')
+        .split(/\r?\n/)
+        .map(normalizeStorageBaseUrl)
+        .filter((url, index, list) => url && list.indexOf(url) === index);
+    }
+
+    function normalizeStorageBaseList(value) {
+      const items = Array.isArray(value)
+        ? value
+        : value && typeof value === 'object'
+          ? Object.values(value)
+          : [];
+
+      return items
+        .map(normalizeStorageBaseUrl)
+        .filter((url, index, list) => url && list.indexOf(url) === index);
+    }
+
+    function applyStorageBaseList(extraBases) {
+      AUDIO_FILE_BASES = [
+        ...DEFAULT_AUDIO_FILE_BASES,
+        ...normalizeStorageBaseList(extraBases)
+      ].filter((url, index, list) => url && list.indexOf(url) === index);
+
+      if (broadcastStorageBasesInput) {
+        broadcastStorageBasesInput.value = normalizeStorageBaseList(extraBases).join('\n');
+      }
     }
 
     function getPlaylistUrl(index) {
@@ -2211,6 +2296,44 @@
       const viewed = getLiveViewedMap();
       viewed[String(videoId)] = true;
       localStorage.setItem(LIVE_VIEWED_STORAGE_KEY, JSON.stringify(viewed));
+    }
+
+    function buildLiveShareUrl(videoId) {
+      const url = new URL('https://thythet.com/word/');
+      if (videoId) url.searchParams.set('live', videoId);
+      return url.toString();
+    }
+
+    async function shareLiveStream() {
+      const normalizedVideoId = normalizeYoutubeVideoId(liveStreamData?.videoId || '');
+      if (!normalizedVideoId || !liveStreamData?.isLive) return;
+
+      const shareTitle = liveStreamData?.title || 'Sunday Worship Live';
+      const shareUrl = buildLiveShareUrl(normalizedVideoId);
+
+      try {
+        if (navigator.share) {
+          await navigator.share({
+            title: shareTitle,
+            text: shareTitle,
+            url: shareUrl
+          });
+        } else if (navigator.clipboard) {
+          await navigator.clipboard.writeText(shareUrl);
+        } else {
+          window.prompt('Copy this live worship link:', shareUrl);
+          return;
+        }
+
+        playerStatus.textContent = `Live link ready: ${shareTitle}`;
+        setBroadcastStatus(`Live share link ready for ${shareTitle}.`);
+      } catch (error) {
+        if (error?.name !== 'AbortError') {
+          console.error('Live share failed:', error);
+          playerStatus.textContent = 'Could not share the live worship link.';
+          setBroadcastStatus('Could not share the live worship link.');
+        }
+      }
     }
 
     function setPublicWatchingNowDisplay(count) {
@@ -2352,6 +2475,7 @@
       liveTitle.textContent = payload.title || (isLive ? 'Sunday Worship Live' : 'Sunday Worship');
       liveSpeaker.textContent = payload.speaker || (isLive ? 'កំពុងផ្សាយបន្តផ្ទាល់' : 'មិនទាន់ចាប់ផ្តើមការផ្សាយ');
       livePlayBtn.disabled = !isLive;
+      liveShareBtn.disabled = !isLive;
       livePlayBtn.innerHTML = isLive
         ? '<i class="ri-play-circle-fill"></i> ស្ដាប់ Live Now'
         : '<i class="ri-pause-circle-line"></i> Stream Offline';
@@ -3165,11 +3289,20 @@
       });
     }
 
-    function attachTrackPlaceholder(card, selector, holderClass) {
+    function attachTrackPlaceholder(card, selector, holderClass, thumbSources = []) {
       const img = card.querySelector(selector);
       if (!img) return;
 
+      const sources = Array.isArray(thumbSources) ? thumbSources.filter(Boolean) : [];
+      let sourceIndex = Math.max(0, sources.indexOf(img.getAttribute('src') || ''));
+
       img.onerror = function () {
+        if (sourceIndex < sources.length - 1) {
+          sourceIndex += 1;
+          this.src = sources[sourceIndex];
+          return;
+        }
+
         const holder = document.createElement('div');
         holder.className = holderClass + ' placeholder-thumb';
         holder.innerHTML = '<i class="ri-voiceprint-line"></i>';
@@ -3212,7 +3345,7 @@
         });
 
         latestTracks.appendChild(card);
-        attachTrackPlaceholder(card, '.home-track-thumb', 'home-track-thumb');
+        attachTrackPlaceholder(card, '.home-track-thumb', 'home-track-thumb', item.thumbSources);
         attachShareButtonHandlers(card, shareTrack);
       });
       refreshTitleMarquees();
@@ -3259,7 +3392,7 @@
         });
 
         homeAllTracks.appendChild(card);
-        attachTrackPlaceholder(card, '.home-all-track-thumb', 'home-all-track-thumb');
+        attachTrackPlaceholder(card, '.home-all-track-thumb', 'home-all-track-thumb', item.thumbSources);
 
         const likeBtn = card.querySelector('[data-like-file]');
         likeBtn.addEventListener('click', (e) => {
@@ -3449,7 +3582,8 @@
         ...getAudioUrls(item.file)
       ].filter((url, index, list) => url && list.indexOf(url) === index);
       item.audio = item.audioSources[0] || '';
-      item.thumb = getThumbUrl(item.file);
+      item.thumbSources = getThumbUrls(item.file);
+      item.thumb = item.thumbSources[0] || '';
       return item;
     }
 
@@ -3461,6 +3595,14 @@
         .filter(item => item && item.file)
         .map(normalizeItem)
         .sort((a, b) => getSafeDateValue(b.date) - getSafeDateValue(a.date));
+    }
+
+    function rebuildPlaylistSources() {
+      jsonPlaylistItems = rawJsonPlaylistItems.map(normalizeItem);
+      firebasePlaylistItems = normalizeFirebasePlaylist(rawFirebasePlaylistValue);
+      refreshPlaylistState();
+      renderBroadcastList();
+      broadcastExportPreview.textContent = getFirebaseExportJson();
     }
 
     function setAudioSource(item, sourceIndex = 0) {
@@ -3487,7 +3629,7 @@
 
       const data = await res.json();
       const items = Array.isArray(data)
-        ? data.filter(item => item && item.file).map(normalizeItem)
+        ? data.filter(item => item && item.file)
         : [];
 
       return { found: true, items };
@@ -3522,19 +3664,76 @@
       const playlistRef = ref(db, 'playlistItems');
 
       onValue(playlistRef, (snapshot) => {
-        firebasePlaylistItems = normalizeFirebasePlaylist(snapshot.val());
+        rawFirebasePlaylistValue = snapshot.val();
+        firebasePlaylistItems = normalizeFirebasePlaylist(rawFirebasePlaylistValue);
         firebasePlaylistReady = true;
         refreshPlaylistState();
         renderBroadcastList();
         broadcastExportPreview.textContent = getFirebaseExportJson();
       }, (error) => {
         console.error('Firebase playlist listen failed:', error);
+        rawFirebasePlaylistValue = null;
         firebasePlaylistItems = [];
         firebasePlaylistReady = true;
         refreshPlaylistState();
         renderBroadcastList();
         broadcastExportPreview.textContent = '[]';
       });
+    }
+
+    function listenToAudioStorageBases() {
+      const storageRef = ref(db, 'audioStorageBases');
+
+      onValue(storageRef, (snapshot) => {
+        const bases = normalizeStorageBaseList(snapshot.val());
+        applyStorageBaseList(bases);
+        rebuildPlaylistSources();
+        if (broadcastStorageStatus) {
+          broadcastStorageStatus.textContent = bases.length
+            ? `${bases.length} extra storage link(s) loaded.`
+            : 'Using default audio storage links.';
+        }
+      }, (error) => {
+        console.error('Audio storage links listen failed:', error);
+        applyStorageBaseList([]);
+        rebuildPlaylistSources();
+        if (broadcastStorageStatus) {
+          broadcastStorageStatus.textContent = 'Could not load extra storage links. Using defaults.';
+        }
+      });
+    }
+
+    async function saveAudioStorageBases() {
+      if (!broadcastUnlocked) {
+        setBroadcastStatus('Unlock the broadcast box first.');
+        return;
+      }
+
+      const bases = parseStorageBaseLines(broadcastStorageBasesInput.value);
+
+      broadcastSaveStorageBasesBtn.disabled = true;
+      if (broadcastStorageStatus) {
+        broadcastStorageStatus.textContent = 'Saving storage links to Firebase...';
+      }
+
+      try {
+        await ensureAdminAuthForWrite();
+        await set(ref(db, 'audioStorageBases'), bases);
+        applyStorageBaseList(bases);
+        rebuildPlaylistSources();
+        if (broadcastStorageStatus) {
+          broadcastStorageStatus.textContent = `${bases.length} storage link(s) saved.`;
+        }
+        setBroadcastStatus('Audio storage links saved successfully.');
+      } catch (error) {
+        console.error('Audio storage links save failed:', error);
+        if (broadcastStorageStatus) {
+          broadcastStorageStatus.textContent = 'Could not save storage links. Check Firebase rules and login.';
+        }
+        setBroadcastStatus('Could not save audio storage links.');
+      } finally {
+        broadcastSaveStorageBasesBtn.disabled = false;
+      }
     }
 
     async function saveBroadcastRecord() {
@@ -3588,10 +3787,12 @@
       playlistBox.innerHTML = '<div class="empty-text">កំពុងផ្ទុកព្រះបន្ទូល...</div>';
 
       try {
-        jsonPlaylistItems = await fetchAllPlaylists();
+        rawJsonPlaylistItems = await fetchAllPlaylists();
+        jsonPlaylistItems = rawJsonPlaylistItems.map(normalizeItem);
         refreshPlaylistState();
       } catch (err) {
         console.error(err);
+        rawJsonPlaylistItems = [];
         jsonPlaylistItems = [];
         refreshPlaylistState();
         playerStatus.textContent = firebasePlaylistReady
@@ -3639,7 +3840,7 @@
 
         card.addEventListener('click', () => playTrack(realIndex));
         playlistBox.appendChild(card);
-        attachTrackPlaceholder(card, '.track-thumb', 'track-thumb');
+        attachTrackPlaceholder(card, '.track-thumb', 'track-thumb', item.thumbSources);
 
         const likeBtn = card.querySelector('[data-like-file]');
         likeBtn.addEventListener('click', (e) => {
@@ -3667,7 +3868,15 @@
       nowPlayingThumb.innerHTML = `<img src="${escapeHtml(item.thumb)}" alt="${escapeHtml(item.title)}">`;
 
       const img = nowPlayingThumb.querySelector('img');
+      const thumbSources = Array.isArray(item.thumbSources) ? item.thumbSources.filter(Boolean) : [];
+      let thumbSourceIndex = Math.max(0, thumbSources.indexOf(img?.getAttribute('src') || ''));
       img.onerror = function () {
+        if (thumbSourceIndex < thumbSources.length - 1) {
+          thumbSourceIndex += 1;
+          this.src = thumbSources[thumbSourceIndex];
+          return;
+        }
+
         nowPlayingThumb.className = 'thumb-placeholder';
         nowPlayingThumb.innerHTML = '<i class="ri-equalizer-line"></i>';
       };
@@ -3987,6 +4196,7 @@
       clearLiveForm();
       setBroadcastStatus('Live form cleared.');
     });
+    broadcastSaveStorageBasesBtn.addEventListener('click', saveAudioStorageBases);
     livePlayBtn.addEventListener('click', async () => {
       const normalizedVideoId = normalizeYoutubeVideoId(liveStreamData?.videoId || '');
       if (!normalizedVideoId || !liveStreamData?.isLive) return;
@@ -4005,6 +4215,7 @@
         console.error('Live play failed:', error);
       }
     });
+    liveShareBtn.addEventListener('click', shareLiveStream);
     broadcastExportBtn.addEventListener('click', () => {
       broadcastExportPreview.textContent = getFirebaseExportJson();
       setBroadcastStatus('Export JSON generated from Firebase items.');
@@ -4233,6 +4444,7 @@
     listenToPlayCounts();
     listenToLikeCounts();
     listenToShareCounts();
+    listenToAudioStorageBases();
     listenToFirebasePlaylist();
     listenToLiveStream();
     loadPlaylist();
@@ -4241,5 +4453,3 @@
   </script>
 </body>
 </html>
-
-
