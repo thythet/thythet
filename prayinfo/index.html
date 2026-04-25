@@ -1013,35 +1013,25 @@ renderAreaManager();
 <script>
 (function(){
 
-function waitApp(){
-  if(typeof db === "undefined" || typeof fieldAreas === "undefined" || typeof role === "undefined"){
-    return setTimeout(waitApp, 300);
+function init(){
+
+  // Only admin
+  if(window.role !== "admin") return;
+
+  // Wait until Manager page exists
+  const managerPage = document.getElementById("pageManager");
+  if(!managerPage){
+    return setTimeout(init, 300);
   }
-  initWatcher();
-}
 
-function initWatcher(){
+  // Prevent duplicate
+  if(document.getElementById("gmUIBox")) return;
 
-  if(role !== "admin") return;
-
-  // Watch DOM until Manager page exists
-  const observer = new MutationObserver(()=>{
-    const managerPage = document.querySelector("#pageManager .workspace");
-
-    if(managerPage && !document.getElementById("gmUIBox")){
-      buildUI(managerPage);
-    }
-  });
-
-  observer.observe(document.body, { childList:true, subtree:true });
-}
-
-function buildUI(managerPage){
-
+  // Create UI
   const container = document.createElement("div");
   container.id = "gmUIBox";
   container.className = "glass";
-  container.style.marginTop = "20px";
+  container.style.margin = "15px";
   container.style.padding = "15px";
 
   container.innerHTML = `
@@ -1056,6 +1046,7 @@ function buildUI(managerPage){
     <div id="gmStatus" class="status"></div>
   `;
 
+  // Attach directly to Manager page
   managerPage.appendChild(container);
 
   loadUsers();
@@ -1091,7 +1082,7 @@ function buildUI(managerPage){
       let box = document.getElementById("gmAreaList");
       box.innerHTML = "";
 
-      Object.entries(fieldAreas || {}).forEach(([id,a])=>{
+      Object.entries(window.fieldAreas || {}).forEach(([id,a])=>{
         let div = document.createElement("div");
 
         div.innerHTML = `
@@ -1129,9 +1120,10 @@ function buildUI(managerPage){
   }
 
   console.log("✅ GM UI Loaded");
+
 }
 
-waitApp();
+init();
 
 })();
 </script>
