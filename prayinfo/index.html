@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>របាយការណ៍ពួកជំនុំតាមផ្ទះ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+<style>
+@font-face{font-family:'Krasar';src:url('/prayinfo/fonts/Krasar-Regular.woff') format('woff'),url('./fonts/Krasar-Regular.woff') format('woff'),url('fonts/Krasar-Regular.woff') format('woff');font-weight:normal;font-style:normal;font-display:swap;}*{font-family:'Krasar',sans-serif!important;}body{line-height:1.6;}
+
+:root{--bg1:#0a1220;--bg2:#101b31;--glass:rgba(255,255,255,.08);--stroke:rgba(255,255,255,.14);--text:#f5f7fb;--muted:#b9c2d2;--blue:#5da7ff;--blue2:#7a79ff;--danger:#ff8a8a;--success:#78d69a;--paper:#fff;--ink:#111;--line:#111}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:'Krasar',sans-serif!important;color:var(--text);background:radial-gradient(circle at top left,rgba(93,167,255,.18),transparent 30%),radial-gradient(circle at bottom right,rgba(122,121,255,.18),transparent 30%),linear-gradient(160deg,var(--bg1),var(--bg2))}
+button,input,select,textarea{font:inherit}.hidden{display:none!important}.glass{background:var(--glass);border:1px solid var(--stroke);box-shadow:0 18px 46px rgba(0,0,0,.28);backdrop-filter:blur(16px)}
+.btn{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);color:#fff;border-radius:14px;padding:11px 15px;cursor:pointer}.btn:hover{background:rgba(255,255,255,.14)}.btn.primary{background:linear-gradient(135deg,var(--blue),var(--blue2))}.btn.danger{background:rgba(255,80,80,.16);color:#ffd0d0}.btn.small{padding:7px 10px;border-radius:10px;font-size:13px}.status{font-size:13px;color:var(--muted);min-height:20px;margin-top:10px}
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:22px}.login-card{width:min(560px,100%);border-radius:26px;padding:30px}.brand{display:flex;align-items:center;justify-content:center;gap:12px;font-size:24px;font-weight:700;margin-bottom:20px;line-height:1.35;text-align:center}.brand span{min-width:0}.brand i{width:52px;height:52px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(93,167,255,.36),rgba(255,255,255,.08));font-size:24px}.field{margin-bottom:13px}.field label{display:block;font-size:13px;color:#dce8f8;font-weight:600;margin-bottom:7px}.input-dark{width:100%;border:1px solid rgba(255,255,255,.14);border-radius:16px;background:rgba(255,255,255,.07);color:#fff;padding:13px 14px;outline:none}.password-login-row{display:flex;align-items:center;gap:10px}.password-login-row .input-dark{flex:1;min-width:0}.key-input-wrap{position:relative;flex:1;min-width:0}.key-input-wrap .input-dark{padding-right:48px}.key-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);width:30px;height:30px;border:0;background:transparent;color:#dce8f8;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:10px}.key-toggle:hover{background:rgba(255,255,255,.1)}.key-toggle i{font-size:18px}.password-login-row #loginBtn{flex:0 0 auto;min-height:52px}.icon-login{width:56px;display:inline-flex;align-items:center;justify-content:center}.icon-login i{font-size:20px}
+.app{max-width:1500px;margin:0 auto;padding:16px}.nav{position:sticky;top:0;z-index:10;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;border-radius:22px;margin-bottom:16px}.nav-left{font-weight:700;font-size:18px;display:flex;align-items:center;gap:8px;line-height:1.35}.nav-center{display:flex;gap:8px;flex-wrap:wrap}.nav-tab{border:0;background:transparent;color:#dbe5f2;padding:7px 10px;border-radius:10px;cursor:pointer;font-size:13px;line-height:1.3}.nav-tab.active{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff}.nav-right{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:13px}
+.page{display:none}.page.active{display:block}.layout{display:grid;grid-template-columns:350px 1fr;gap:16px}.panel{border-radius:24px;overflow:hidden}.panel-head{padding:16px;border-bottom:1px solid rgba(255,255,255,.09)}.panel-head h3{margin:0;font-size:19px}.panel-body{padding:14px}.entry-sidebar{padding:0}.search{position:relative;margin-bottom:12px}.search i{position:absolute;top:50%;left:12px;transform:translateY(-50%);color:#cce2ff}.search input{padding-left:38px}.list{display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 260px);overflow:auto}.card-list{padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.1);cursor:pointer}.card-list:hover,.card-list.active{background:rgba(93,167,255,.17)}.entry-preview{position:relative;padding:16px 18px 15px;border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.04));border-color:rgba(255,255,255,.13);box-shadow:0 10px 24px rgba(0,0,0,.12)}.entry-preview:hover,.entry-preview.active{background:linear-gradient(180deg,rgba(93,167,255,.22),rgba(93,167,255,.12));border-color:rgba(150,196,255,.35)}.entry-preview .card-title{font-size:18px;line-height:1.35;margin-bottom:4px}.entry-preview .card-meta{font-size:13px;line-height:1.55;color:#c8d3e4}.entry-preview::after{content:"›";position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:24px;color:rgba(220,232,248,.72);opacity:0;transition:opacity .16s ease,transform .16s ease}.entry-preview:hover::after,.entry-preview.active::after{opacity:1;transform:translate(3px,-50%)}.card-title{font-weight:700}.card-meta{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5}.workspace{padding:14px}.toolbar{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}.toolbar .btn{padding:7px 10px;border-radius:10px;font-size:13px;line-height:1.3}.btn-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.manager-actions .btn{min-height:34px;padding:7px 10px!important;border-radius:10px!important;font-size:13px!important}.glass-icon-btn{width:34px;height:34px;border-radius:11px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.08);color:#eef5ff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(12px)}.glass-icon-btn:hover{background:rgba(255,255,255,.15)}.glass-icon-btn i{font-size:18px}body.paper-fullscreen{overflow:hidden}body.paper-fullscreen .nav,body.paper-fullscreen .entry-sidebar,body.paper-fullscreen #emptyForm,body.paper-fullscreen #formStatus{display:none!important}body.paper-fullscreen .app{max-width:none;padding:0}body.paper-fullscreen #pageForm .layout{display:block}body.paper-fullscreen #pageForm .panel.glass{min-height:100vh;border:0;border-radius:0;background:#0a1220;box-shadow:none}body.paper-fullscreen #pageForm .workspace{padding:12px;min-height:100vh;display:flex;flex-direction:column;align-items:center}body.paper-fullscreen #pageForm .toolbar{width:min(920px,100%);margin:0 auto 10px}body.paper-fullscreen #formBox.shell{max-height:calc(100vh - 58px);overflow:auto}.shell{border-radius:9px;padding:10px;background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.12)}#formBox.shell{width:fit-content;max-width:100%;margin:0 auto;padding:10px}#formBox{scrollbar-width:none;-ms-overflow-style:none}#formBox::-webkit-scrollbar{display:none}#formBox.shell>.paper{width:900px;max-width:100%;margin:0}.empty{min-height:320px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);flex-direction:column;gap:10px}.empty i{font-size:52px;color:#cce2ff}
+.paper{width:min(100%,900px);margin:0 auto;background:var(--paper);color:var(--ink);padding:24px 28px 32px;border-radius:4px;box-shadow:0 14px 40px rgba(0,0,0,.12)}.paper h1{text-align:center;margin:0 0 10px;font-size:27px}.subhead{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;align-items:end;margin-bottom:10px;font-size:18px}.subhead .center{text-align:center}.subhead .right{text-align:right}.inline{display:inline-flex;align-items:baseline;gap:8px;white-space:nowrap}.line-input{width:150px;border:0;border-bottom:1px solid transparent;background:transparent;outline:none;color:inherit}.date-input{width:175px}.field-picker{position:relative;display:inline-block}.field-toggle{border:0;background:transparent;font:inherit;font-weight:700;cursor:pointer;color:inherit;padding-right:28px}.field-panel{display:none;position:absolute;z-index:30;top:calc(100% + 8px);left:0;width:320px;max-height:310px;background:#fff;border:1px solid #cfd6de;border-radius:12px;box-shadow:0 18px 40px rgba(16,25,37,.16);overflow:hidden}.field-picker.open .field-panel{display:block}.field-search{width:calc(100% - 20px);margin:10px;padding:8px 10px;border:1px solid #cfd6de;border-radius:8px}.field-list{max-height:250px;overflow:auto}.field-option{display:block;width:100%;border:0;background:#fff;text-align:left;padding:8px 12px;cursor:pointer}.field-option:hover{background:#eef5ff}
+table{width:100%;border-collapse:collapse;table-layout:fixed;border:1px solid var(--line)}td,th{border:1px solid var(--line);padding:0;vertical-align:middle}.label-cell{width:150px;padding:8px 10px;font-size:18px;font-weight:700;vertical-align:top}.label-cell.bottom-label{vertical-align:middle;text-align:center}.participant-count{color:#2e5fbf}.field-cell textarea,.field-cell input{width:100%;border:0;background:transparent;outline:none;color:inherit;padding:10px 12px}.field-cell textarea{height:52px;min-height:52px;resize:none;overflow:hidden}.participant-wrap{display:flex;align-items:flex-start;gap:12px;padding:10px 12px;flex-wrap:wrap}.participant-wrap>span{font-size:18px;padding-top:5px}.selected-participant{display:flex;gap:8px;flex-wrap:wrap;min-height:32px;align-items:center;color:#183042}.pill{display:inline-flex;align-items:center;gap:7px;padding:5px 12px;border:1px solid #cfd6de;border-radius:999px;background:#f8fafc}.pill-remove{border:0;background:transparent;color:#8b1e1e;cursor:pointer;font-size:16px;line-height:1;padding:0;opacity:0;visibility:hidden;transition:opacity .16s ease,visibility .16s ease}.pill:hover .pill-remove,.pill:focus-within .pill-remove{opacity:1;visibility:visible}.select-row{display:flex;gap:8px;flex-wrap:wrap}.select-row select{width:130px;border:1px solid #cfd6de;border-radius:8px;padding:6px 8px}.add-btn{border:1px solid #cfd6de;background:#fff;color:#183042;border-radius:8px;padding:6px 10px;cursor:pointer}.inner-table{border:0}.number-col{width:66px;text-align:center;font-size:18px}.name-col{width:250px}.name-display{padding:10px 12px}.prayer-header th{height:44px;font-size:18px;background:rgba(0,0,0,.02)}.prayer-row td{height:48px}.single-line{height:52px}.gap-row td{border-left:1px solid #fff!important;border-right:1px solid #fff!important}
+.manager-card{width:min(100%,980px);margin:0 auto;background:#fff;color:#111;border-radius:22px;padding:22px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.light-label{font-weight:700;margin-bottom:7px;display:block}.input-light{width:100%;border:1px solid #d6dde8;border-radius:13px;padding:11px 12px}.section{margin-top:16px;padding-top:14px;border-top:1px solid #e8edf3}.member-row{display:flex;gap:8px;margin-bottom:9px;align-items:center}.member-name{flex:1}.birth-wrap{display:flex;align-items:center;gap:6px;color:#6b7a90}.birth-wrap i{font-size:18px;color:#5d7ff9}.birth-input{width:70px!important;flex:0 0 70px!important;text-align:center}.birth-month-select{width:110px!important;flex:0 0 110px!important}.member-remove{width:42px;min-height:42px;border:0;border-radius:12px;background:#ffe1e1;color:#d62f2f;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}.member-remove i{font-size:20px}.member-remove:hover{background:#ffd2d2}.member-row:not(.editing) .member-remove{display:none}.member-row input:disabled,.member-row select:disabled{background:#f8fafc;color:#5f6c7a}.json-box{display:none!important;background:#0f1724;color:#cfe1ff;border-radius:14px;padding:12px;overflow:auto;font:12px ui-monospace,monospace;max-height:240px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}.stat{padding:18px;border-radius:22px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1)}.stat small{color:var(--muted)}.stat b{display:block;font-size:32px}.dash-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
+@media(max-width:1100px){.layout,.dash-grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.list{max-height:320px}}@media(max-width:760px){
+.app{padding:10px}
+.nav{flex-direction:column;align-items:flex-start}
+.nav-right{width:100%;justify-content:space-between}
+.layout,.grid2{grid-template-columns:1fr}
+.stats{grid-template-columns:1fr}
+.shell{overflow:hidden;padding:10px}
+
+/* Mobile paper scaling */
+.paper{
+  width:900px;
+  max-width:900px;
+  transform:scale(calc((100vw - 52px) / 900));
+  transform-origin:top left;
+  margin:0;
+  padding:24px 28px 32px;
+  border-radius:4px;
+}
+#formBox{
+  overflow:hidden;
+}
+#formBox .paper{
+  margin-bottom:calc((100vw - 52px) / 900 * -1px);
+}
+.shell:has(.paper){
+  min-height:calc(980px * ((100vw - 52px) / 900) + 20px);
+}
+
+/* fallback if :has is not supported */
+.form-mobile-holder{
+  width:100%;
+  overflow:hidden;
+}
+
+.subhead{grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:18px}
+.subhead .center{text-align:center}
+.subhead .right{text-align:right}
+.name-col{width:250px}
+.field-panel{width:320px}
+.label-cell,.number-col,.participant-wrap>span{font-size:18px}
+}
+
+@media(max-width:420px){
+.shell:has(.paper){
+  min-height:calc(1040px * ((100vw - 42px) / 900) + 20px);
+}
+.paper{
+  transform:scale(calc((100vw - 42px) / 900));
+}
+}
+.print-only{display:none}@media print{body{background:#fff}.app,.login-wrap{display:none!important}.print-only{display:block}.paper{width:100%;box-shadow:none;padding:0}}
+
+/* Fix participant controls alignment */
+.select-row{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:10px!important;width:100%!important;}
+#selectedParticipant{flex:1 1 auto!important;min-width:180px!important;}
+#participantSelect{width:150px!important;min-width:150px!important;}
+#addParticipantBtn{white-space:nowrap!important;}
+@media(max-width:760px){.select-row{justify-content:flex-start!important;flex-wrap:wrap!important;}#selectedParticipant{flex:1 1 100%!important;min-width:0!important;}}
+
+
+/* ===== Dashboard clear activity button ===== */
+.dash-head-actions,
+.panel-head-actions{
+  display:flex!important;
+  justify-content:space-between!important;
+  align-items:center!important;
+  gap:10px!important;
+}
+.clear-activity-btn{
+  background:rgba(255,80,80,.18)!important;
+  border:1px solid rgba(255,80,80,.35)!important;
+  color:#ffd0d0!important;
+  border-radius:12px!important;
+  padding:8px 12px!important;
+  cursor:pointer!important;
+  white-space:nowrap!important;
+}
+.clear-activity-btn:hover{
+  background:rgba(255,80,80,.28)!important;
+}
+
+
+/* ===== Print cleanup: hide controls and empty rows ===== */
+@media print{
+  #participantSelect,
+  #addParticipantBtn,
+  .add-btn,
+  .participant-select-wrap,
+  .select-row,
+  .select-with-add select,
+  .select-with-add button,
+  .field-area-toggle i,
+  .field-panel,
+  .field-area-panel,
+  button,
+  select{
+    display:none!important;
+  }
+
+  .participant-wrap,
+  .selected-participant{
+    display:block!important;
+  }
+
+  .selected-participant.empty{
+    display:none!important;
+  }
+
+  tr.print-hide-empty{
+    display:none!important;
+  }
+
+  textarea{
+    overflow:hidden!important;
+    resize:none!important;
+  }
+}
+
+
+/* ===== Auto-growing prayer request cells ===== */
+#prayerRows textarea{
+  min-height:52px!important;
+  height:52px;
+  resize:none!important;
+  overflow:hidden!important;
+  line-height:1.45!important;
+  white-space:pre-wrap!important;
+  word-break:break-word!important;
+}
+#prayerRows td{
+  height:auto!important;
+  vertical-align:top!important;
+}
+#prayerRows .name-display{
+  align-items:flex-start!important;
+}
+
+
+/* ===== Match prayer row default height with header ===== */
+:root{
+  --prayer-row-height:52px;
+}
+.prayer-header th{
+  height:var(--prayer-row-height)!important;
+}
+#prayerRows tr,
+#prayerRows td{
+  min-height:var(--prayer-row-height)!important;
+  height:var(--prayer-row-height);
+}
+#prayerRows .number-col,
+#prayerRows .name-col,
+#prayerRows .field-cell{
+  height:var(--prayer-row-height)!important;
+  min-height:var(--prayer-row-height)!important;
+}
+#prayerRows .name-display{
+  min-height:var(--prayer-row-height)!important;
+  height:auto!important;
+  display:flex!important;
+  align-items:center!important;
+}
+#prayerRows textarea{
+  min-height:var(--prayer-row-height)!important;
+  height:var(--prayer-row-height);
+  box-sizing:border-box!important;
+  line-height:1.45!important;
+  resize:none!important;
+  overflow:hidden!important;
+}
+@media print{
+  #prayerRows tr,
+  #prayerRows td,
+  #prayerRows .number-col,
+  #prayerRows .name-col,
+  #prayerRows .field-cell,
+  #prayerRows .name-display,
+  #prayerRows textarea{
+    min-height:var(--prayer-row-height)!important;
+  }
+}
+
+
+/* ===== Final table alignment fixes ===== */
+.inner-table col:nth-child(2){
+  width:180px!important;
+}
+.prayer-header .name-col,
+#prayerRows .name-col{
+  width:180px!important;
+}
+#prayerRows .number-col{
+  text-align:center!important;
+  vertical-align:middle!important;
+  width:66px!important;
+}
+#prayerRows .name-display{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  min-height:var(--prayer-row-height,52px)!important;
+  padding:0 12px!important;
+}
+#prayerRows td{
+  vertical-align:middle!important;
+}
+#prayerRows .field-cell textarea{
+  display:block!important;
+  width:100%!important;
+}
+
+/* Participant selected names and select row inline alignment */
+.participant-wrap{
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  flex-wrap:nowrap!important;
+}
+.participant-wrap > span{
+  flex:0 0 auto!important;
+}
+.participant-controls{
+  flex:1 1 auto!important;
+  min-width:0!important;
+}
+.select-with-add,
+.select-row{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+  width:100%!important;
+}
+.selected-participant{
+  flex:1 1 auto!important;
+  min-width:0!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  flex-wrap:wrap!important;
+}
+.participant-select-wrap,
+#participantSelect{
+  flex:0 0 150px!important;
+  width:150px!important;
+}
+#addParticipantBtn,
+.add-btn{
+  flex:0 0 auto!important;
+}
+
+/* print separator row before bottom rows */
+.print-separator-row td{
+  height:18px!important;
+  min-height:18px!important;
+  padding:0!important;
+  border-left:1px solid #111!important;
+  border-right:1px solid #111!important;
+  border-top:1px solid #111!important;
+  border-bottom:1px solid #111!important;
+}
+
+@media(max-width:760px){
+  .participant-wrap{
+    flex-wrap:wrap!important;
+    align-items:flex-start!important;
+  }
+  .selected-participant{
+    flex:1 1 100%!important;
+  }
+  .participant-select-wrap,
+  #participantSelect{
+    flex:0 0 150px!important;
+    width:150px!important;
+  }
+}
+
+
+/* Compact participant controls */
+.select-row.participant-controls{gap:5px!important;top:7px!important;right:7px!important;}
+.select-row.participant-controls #participantSelect{width:108px!important;height:28px!important;font-size:12px!important;padding:3px 6px!important;border-radius:7px!important;}
+.select-row.participant-controls #addParticipantBtn{height:28px!important;padding:0 7px!important;font-size:12px!important;border-radius:7px!important;}
+/* ===== Participant controls top-right + print text fix ===== */
+.participant-wrap{
+  position:relative!important;
+  min-height:70px!important;
+  padding-right:230px!important;
+  display:flex!important;
+  align-items:flex-start!important;
+  gap:10px!important;
+}
+.participant-wrap > span{
+  margin-top:8px!important;
+  flex:0 0 auto!important;
+}
+.selected-participant{
+  flex:1 1 auto!important;
+  min-width:0!important;
+  padding-top:6px!important;
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:8px!important;
+}
+.select-row,
+.select-with-add,
+.participant-controls{
+  position:absolute!important;
+  top:10px!important;
+  right:10px!important;
+  width:auto!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:8px!important;
+}
+#participantSelect{
+  width:150px!important;
+  height:38px!important;
+}
+#addParticipantBtn,
+.add-btn{
+  height:38px!important;
+  padding:0 12px!important;
+  white-space:nowrap!important;
+}
+
+/* Print textarea replacement prevents text cutting */
+.print-textarea-value{
+  display:none;
+}
+@media print{
+  .participant-wrap{
+    padding-right:0!important;
+    min-height:auto!important;
+  }
+  .select-row,
+  .select-with-add,
+  .participant-controls,
+  #participantSelect,
+  #addParticipantBtn,
+  .add-btn{
+    display:none!important;
+  }
+  #prayerRows textarea.print-hidden-textarea{
+    display:none!important;
+  }
+  .print-textarea-value{
+    display:block!important;
+    white-space:pre-wrap!important;
+    word-break:break-word!important;
+    overflow:visible!important;
+    min-height:28px!important;
+    line-height:1.6!important;
+    padding:6px 10px!important;
+  }
+  #prayerRows tr,
+  #prayerRows td{
+    height:auto!important;
+    min-height:0!important;
+    vertical-align:top!important;
+  }
+  #prayerRows .name-display{
+    align-items:flex-start!important;
+    padding-top:6px!important;
+  }
+}
+
+@media(max-width:760px){
+  .participant-wrap{
+    padding-right:0!important;
+    min-height:auto!important;
+  }
+  .select-row,
+  .select-with-add,
+  .participant-controls{
+    position:static!important;
+    width:100%!important;
+    margin-top:8px!important;
+    justify-content:flex-end!important;
+  }
+}
+
+
+/* ===== Print field area + separator final fix ===== */
+.print-field-area-text{
+  display:none;
+}
+@media print{
+  /* show field area as plain text in print */
+  .print-field-area-text{
+    display:inline!important;
+    font-weight:700!important;
+  }
+
+  /* hide only the dropdown arrow/control parts, not the value text */
+  .field-toggle i,
+  .field-area-toggle i,
+  .field-panel,
+  .field-area-panel{
+    display:none!important;
+  }
+
+  .field-toggle,
+  .field-area-toggle{
+    display:inline!important;
+    border:0!important;
+    background:transparent!important;
+    padding:0!important;
+    color:#000!important;
+    font-weight:700!important;
+  }
+
+  #fieldValue,
+  #fieldAreaValue{
+    display:inline!important;
+    color:#000!important;
+    font-weight:700!important;
+  }
+
+  /* visible separator row */
+  tr.print-separator-row{
+    display:table-row!important;
+  }
+  tr.print-separator-row td{
+    display:table-cell!important;
+    height:28px!important;
+    min-height:28px!important;
+    padding:0!important;
+    border-top:1px solid #111!important;
+    border-bottom:1px solid #111!important;
+    border-left:1px solid #111!important;
+    border-right:1px solid #111!important;
+    background:#fff!important;
+  }
+}
+
+
+/* ===== Simple print blank row ===== */
+@media print{
+  .print-separator-row{
+    display:table-row!important;
+  }
+  .print-separator-row td{
+    height:28px!important;
+    min-height:28px!important;
+    padding:0!important;
+    border:1px solid #000!important;
+    background:#fff!important;
+  }
+}
+
+
+/* ===== Final print blank row like sample ===== */
+@media print{
+  #prayerRows tr.print-gap-row{
+    display:table-row!important;
+    visibility:visible!important;
+  }
+  #prayerRows tr.print-gap-row td{
+    display:table-cell!important;
+    height:46px!important;
+    min-height:46px!important;
+    padding:0!important;
+    border:1px solid #111!important;
+    background:#fff!important;
+  }
+  #prayerRows tr.print-gap-row.print-hide-empty{
+    display:table-row!important;
+  }
+}
+
+
+/* ===== Static blank gap row before bottom rows ===== */
+.gap-row td{
+  height:40px!important;
+  padding:0!important;
+  background:#fff!important;
+  border-left:1px solid #fff!important;
+  border-right:1px solid #fff!important;
+  border-top:1px solid #111!important;
+  border-bottom:1px solid #111!important;
+}
+@media print{
+  .gap-row{
+    display:table-row!important;
+  }
+  .gap-row td{
+    height:40px!important;
+    padding:0!important;
+    background:#fff!important;
+    border-left:1px solid #fff!important;
+    border-right:1px solid #fff!important;
+    border-top:1px solid #111!important;
+    border-bottom:1px solid #111!important;
+  }
+}
+
+
+/* ===== GM SYSTEM UI START ===== */
+.gm-panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+.gm-panel-title{margin:0;font-size:20px}
+.gm-panel-note{font-size:12px;color:#6b7a90;line-height:1.5;margin-top:4px}
+.gm-card{padding:16px;border-radius:18px;margin-bottom:14px;background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.045));border:1px solid rgba(255,255,255,.12)}
+.gm-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}
+.gm-info{min-width:0}
+.gm-name{font-weight:700;font-size:16px;color:#fff;line-height:1.35}
+.gm-email{font-size:12px;color:var(--muted);line-height:1.5;word-break:break-all}
+.gm-badge{display:inline-flex;align-items:center;gap:5px;margin-top:6px;padding:4px 8px;border-radius:999px;background:rgba(93,167,255,.15);border:1px solid rgba(93,167,255,.25);color:#ddecff;font-size:11px}
+.gm-area-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
+.gm-area-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.1);cursor:pointer;font-size:13px;line-height:1.35;color:#eef5ff}
+.gm-area-item:hover{background:rgba(93,167,255,.16);border-color:rgba(93,167,255,.28)}
+.gm-area-item input{accent-color:#5da7ff}
+.gm-area-item.disabled{opacity:.42;cursor:not-allowed}
+.gm-area-item.disabled input{cursor:not-allowed}
+.gm-area-owner{font-size:11px;color:var(--muted);margin-left:auto}
+.gm-empty{padding:16px;border-radius:16px;background:rgba(255,255,255,.055);border:1px dashed rgba(255,255,255,.16);color:var(--muted);text-align:center}
+.gm-save-status{font-size:12px;color:var(--success);min-height:18px;margin-top:8px}
+@media(max-width:760px){.gm-header,.gm-panel-head{flex-direction:column;align-items:stretch}.gm-area-list{grid-template-columns:1fr}}
+/* ===== GM SYSTEM UI END ===== */
+
+</style>
+</head>
+<body>
+<div id="loginScreen" class="login-wrap">
+  <div class="login-card glass">
+    <div class="brand"><i class="ri-file-list-3-line"></i><span>របាយការណ៍ពួកជំនុំតាមផ្ទះ</span></div>
+    <div class="field"><label>Email</label><input id="loginEmail" class="input-dark" type="email"></div>
+    <div class="field"><label>Key</label><div class="password-login-row"><div class="key-input-wrap"><input id="loginPassword" class="input-dark" type="password"><button id="toggleKeyBtn" class="key-toggle" type="button" aria-label="Show key"><i class="ri-eye-line"></i></button></div><button id="loginBtn" class="btn primary icon-login" type="button" aria-label="Login"><i class="ri-key-line"></i></button></div></div>
+    <div id="loginStatus" class="status"></div>
+  </div>
+</div>
+
+<div id="app" class="app hidden">
+  <div class="nav glass">
+    <div class="nav-left"><i class="ri-stack-line"></i> <span>របាយការណ៍ពួកជំនុំតាមផ្ទះ</span></div>
+    <div class="nav-center">
+      <button class="nav-tab active" data-page="form">Form</button>
+      <button id="navMembers" class="nav-tab hidden" data-page="members">Members</button>
+      <button id="navManager" class="nav-tab hidden" data-page="manager">Manager</button>
+      <button id="navDashboard" class="nav-tab hidden" data-page="dashboard">Dashboard</button>
+    </div>
+    <div class="nav-right"><span id="userInfo"></span><button id="logoutBtn" class="btn small">Logout</button></div>
+  </div>
+
+  <section id="pageForm" class="page active">
+    <div class="layout">
+      <div class="panel-body entry-sidebar">
+        <div class="search"><i class="ri-search-eye-line"></i><input id="entrySearch" class="input-dark" placeholder="Search..."></div>
+        <div id="entryList" class="list"></div>
+      </div>
+      <div class="panel glass">
+        <div class="workspace">
+          <div class="toolbar">
+            <button id="paperFullscreenBtn" class="glass-icon-btn" type="button" aria-label="Preview paper fullscreen"><i class="ri-fullscreen-line"></i></button>
+            <div class="btn-row">
+              <button id="newEntryBtn" class="btn primary hidden">New</button>
+              <button id="saveEntryBtn" class="btn primary hidden">Save</button>
+              <button id="deleteEntryBtn" class="btn danger hidden">Delete</button>
+              <button id="exportBtn" class="btn">Export PDF</button>
+            </div>
+          </div>
+          <div id="emptyForm" class="empty"><i class="ri-file-paper-2-line"></i><div>Select entry or create new form.</div></div>
+          <div id="formBox" class="shell hidden"></div>
+          <div id="formStatus" class="status"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pageMembers" class="page">
+    <div class="layout">
+      <div class="panel-body entry-sidebar"><div class="search"><i class="ri-search-eye-line"></i><input id="memberAreaSearch" class="input-dark" placeholder="Search..."></div><div id="memberAreaList" class="list"></div></div>
+      <div class="panel glass"><div class="workspace"><div class="toolbar"><span></span><div class="btn-row manager-actions"><button id="editMembersBtn" class="btn primary">Edit</button><button id="saveMembersBtn" class="btn primary hidden">Save</button></div></div><div id="memberBox" class="shell"></div><div id="memberStatus" class="status"></div></div></div>
+    </div>
+  </section>
+  <section id="pageManager" class="page">
+    <div class="layout">
+      <div class="panel-body entry-sidebar"><div class="search"><i class="ri-search-eye-line"></i><input id="areaSearch" class="input-dark" placeholder="Search..."></div><div id="areaList" class="list"></div></div>
+      <div class="panel glass"><div class="workspace"><div class="toolbar"><span></span><div class="btn-row manager-actions"><button id="newAreaBtn" class="btn primary">New Area</button><button id="saveAreaBtn" class="btn primary">Save</button><button id="deleteAreaBtn" class="btn danger hidden">Delete</button></div></div><div id="managerBox" class="shell"></div><div id="managerStatus" class="status"></div></div></div>
+    </div>
+  </section>
+
+  <section id="pageDashboard" class="page">
+    <div class="stats"><div class="stat glass"><small>Entries</small><b id="statEntries">0</b></div><div class="stat glass"><small>វាលស្មៅ</small><b id="statAreas">0</b></div><div class="stat glass"><small>Members</small><b id="statMembers">0</b></div><div class="stat glass"><small>Logs</small><b id="statLogs">0</b></div></div>
+    <div class="dash-grid"><div class="panel glass"><div class="panel-head panel-head-actions"><h3>Recent Activity</h3><button id="clearActivityBtn" class="clear-activity-btn">Clear Activity</button></div><div class="panel-body"><div id="activityList" class="list"></div></div></div><div class="panel glass"><div class="panel-head"><h3>Overview</h3></div><div class="panel-body card-meta">Dashboard stats update from Firebase.</div></div></div>
+  </section>
+</div>
+
+<div id="printArea" class="print-only"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getDatabase, ref, onValue, get, push, set, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig={apiKey:"AIzaSyCnY3d8RMsKDKcBVZQso-sI67Kh5jNiQMM",authDomain:"thythet-prayinfo.firebaseapp.com",databaseURL:"https://thythet-prayinfo-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"thythet-prayinfo",storageBucket:"thythet-prayinfo.firebasestorage.app",messagingSenderId:"118558680253",appId:"1:118558680253:web:1a15f0dbfdf293e7c5c3d4"};
+const ADMIN_UID="tbZLZ0VJE2PHk3XS2QWwzqRLitd2";
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getDatabase(app);
+window.db = db;
+window.ref = ref;
+window.remove = remove;
+const $=id=>document.getElementById(id);
+let user=null,role="viewer",allowedUsers={},fieldAreas={},entries={},auditLogs={},currentEntryId=null,currentAreaId=null,currentMemberAreaId=null,selectedAreaId="",selectedParticipants=[],availableMembers=[],prayerRequests=[],unsubscribeFns=[],memberEditMode=false;
+
+function isAdmin(){return role==="admin"}
+function isEditor(){return role==="editor"}
+function isGroupManager(){return role==="groupManager"}
+function getCurrentAllowedUser(){return user ? (allowedUsers[user.uid]||{}) : {}}
+function hasAssignedArea(areaId){return !!areaId && !!user && getCurrentAllowedUser().fieldAreas?.[areaId]===true}
+function ownsArea(areaId){return !!areaId && !!user && (fieldAreas[areaId]?.ownerUid||"")===user.uid}
+function canViewArea(areaId){return isAdmin() || ownsArea(areaId) || hasAssignedArea(areaId)}
+function canEditArea(areaId=selectedAreaId){return isAdmin() || (isEditor() && ownsArea(areaId))}
+function canViewEntry(e){return canViewArea(e?.fieldAreaId)}
+function canEdit(){return isAdmin() || isEditor()}
+function getOwnedAreaIds(){return Object.keys(fieldAreas).filter(id=>ownsArea(id))}
+function getAssignedAreaIds(){return Object.keys(getCurrentAllowedUser().fieldAreas||{}).filter(id=>fieldAreas[id])}
+function getDefaultOwnedAreaId(){let ids=getOwnedAreaIds();return ids.length===1?ids[0]:""}
+window.prayInfoIsAdmin=isAdmin;
+function status(el,t,good=false){el.textContent=t||"";el.style.color=good?"var(--success)":"var(--muted)"}
+function clearNode(el){if(el)el.textContent=""}
+function appendTextNode(parent,tag,className,text){let el=document.createElement(tag);if(className)el.className=className;el.textContent=text||"";parent.appendChild(el);return el}
+function appendMetaEmpty(parent,text){clearNode(parent);appendTextNode(parent,"div","card-meta",text)}
+async function getRole(u){if(!u)return"viewer";if(u.uid===ADMIN_UID)return"admin";const s=await get(ref(db,`allowedUsers/${u.uid}/role`));return s.exists()?s.val():"viewer"}
+function log(action,id,data){if(!user)return;push(ref(db,"auditLogs"),{action,entryId:id||"",fieldArea:data?.fieldArea||data?.name||"",user:{uid:user.uid,email:user.email,role},timestamp:Date.now()})}
+
+$("loginBtn").onclick=async()=>{try{status($("loginStatus"),"Logging in...");await signInWithEmailAndPassword(auth,$("loginEmail").value.trim(),$("loginPassword").value)}catch(e){status($("loginStatus"),e.message)}};
+$("toggleKeyBtn").onclick=()=>{let input=$("loginPassword"),icon=$("toggleKeyBtn").querySelector("i"),show=input.type==="password";input.type=show?"text":"password";icon.className=show?"ri-eye-off-line":"ri-eye-line";$("toggleKeyBtn").setAttribute("aria-label",show?"Hide key":"Show key")};
+$("logoutBtn").onclick=()=>signOut(auth);
+document.querySelectorAll(".nav-tab").forEach(b=>b.onclick=()=>showPage(b.dataset.page));
+function showPage(p){if((p==="manager"||p==="dashboard")&&!isAdmin())p="form";if(p==="members"&&!isEditor())p="form";document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));$("page"+p[0].toUpperCase()+p.slice(1)).classList.add("active");document.querySelectorAll(".nav-tab").forEach(x=>x.classList.toggle("active",x.dataset.page===p));}
+
+onAuthStateChanged(auth,async u=>{clearSubscriptions();user=u;if(!u){role="viewer";allowedUsers={};fieldAreas={};entries={};auditLogs={};currentEntryId=null;currentAreaId=null;currentMemberAreaId=null;memberEditMode=false;$("loginScreen").classList.remove("hidden");$("app").classList.add("hidden");return}role=await getRole(u);$("loginScreen").classList.add("hidden");$("app").classList.remove("hidden");$("userInfo").textContent=`${u.email} • ${role}`;$("navMembers").classList.toggle("hidden",!isEditor());$("navManager").classList.toggle("hidden",!isAdmin());$("navDashboard").classList.toggle("hidden",!isAdmin());if(!isAdmin()&&!isEditor())showPage("form");updateAccess();subscribe();});
+
+function clearSubscriptions(){unsubscribeFns.forEach(fn=>{try{fn()}catch(e){}});unsubscribeFns=[]}
+function subscribe(){clearSubscriptions();let userAccessRef=isAdmin()?ref(db,"allowedUsers"):ref(db,`allowedUsers/${user.uid}`);unsubscribeFns=[onValue(userAccessRef,s=>{allowedUsers=isAdmin()?(s.val()||{}):{[user.uid]:s.val()||{}};renderEntryList();renderAreaList();renderMemberAreaList();renderMemberManager();renderGMUsers();renderStats()}),onValue(ref(db,"fieldAreas"),s=>{fieldAreas=s.val()||{};renderEntryList();renderAreaList();renderMemberAreaList();renderMemberManager();renderGMUsers();renderStats()}),onValue(ref(db,"prayinfoEntries"),s=>{entries=s.val()||{};renderEntryList();renderStats()})];if(isAdmin()){unsubscribeFns.push(onValue(ref(db,"auditLogs"),s=>{auditLogs=s.val()||{};renderStats();renderLogs()}))}else{auditLogs={};renderStats()}}
+function updateAccess(){let areaCanEdit=canEditArea();$("newEntryBtn").classList.toggle("hidden",!canEdit());$("saveEntryBtn").classList.toggle("hidden",!areaCanEdit);$("deleteEntryBtn").classList.toggle("hidden",!isAdmin()||!currentEntryId);if($("fieldToggle"))$("fieldToggle").disabled=!areaCanEdit;if(window.installClearActivityButton)window.installClearActivityButton()}
+
+
+function fitMobilePaper(){
+  const formBox = $("formBox");
+  const paper = formBox?.querySelector(".paper");
+  if(!formBox || !paper) return;
+  if(window.innerWidth > 760){
+    paper.style.transform = "";
+    paper.style.width = "";
+    paper.style.maxWidth = "";
+    formBox.style.height = "";
+    return;
+  }
+  const boxWidth = Math.max(280, formBox.clientWidth - 2);
+  const baseWidth = 900;
+  const scale = Math.min(1, boxWidth / baseWidth);
+  paper.style.width = baseWidth + "px";
+  paper.style.maxWidth = baseWidth + "px";
+  paper.style.transform = `scale(${scale})`;
+  paper.style.transformOrigin = "top left";
+  formBox.style.height = (paper.scrollHeight * scale + 20) + "px";
+  formBox.style.overflow = "hidden";
+}
+window.addEventListener("resize", fitMobilePaper);
+
+function formHTML(){return `<main class="paper"><h1>ពួកជំនុំតាមផ្ទះ</h1><section class="subhead"><div><label class="inline"><span>វាលស្មៅ៖</span><div class="field-picker" id="fieldPicker"><button type="button" class="field-toggle" id="fieldToggle"><span id="fieldValue">ជ្រើសរើស</span> <i class="ri-arrow-down-s-line"></i></button><div class="field-panel"><input id="fieldSearch" class="field-search" placeholder="ស្វែងរក..."><div id="fieldList" class="field-list"></div></div></div></label></div><div class="center"><label class="inline"><span>អ្នកគង្វាល៖</span><input id="pastorName" class="line-input" readonly></label></div><div class="right"><label class="inline"><span>កាលបរិច្ឆេទ៖</span><input id="currentDate" class="line-input date-input" type="date"></label></div></section><table><colgroup><col style="width:150px"><col></colgroup><tr><td class="label-cell">អ្នកចូលរួម <span class="participant-count" id="participantCount">(0នាក់)</span></td><td class="field-cell"><div class="participant-wrap"><span>ឈ្មោះ៖</span><div style="flex:1"><div id="selectedParticipant" class="selected-participant">សូមជ្រើសឈ្មោះពីបញ្ជី</div><div class="select-row"><select id="participantSelect"></select><button type="button" id="addParticipantBtn" class="add-btn">+ Add</button></div></div></div></td></tr><tr><td colspan="2"><table class="inner-table"><colgroup><col style="width:66px"><col style="width:250px"><col></colgroup><thead><tr class="prayer-header"><th class="number-col">លេខ</th><th class="name-col">ឈ្មោះ</th><th>សំណូមពរអធិស្ឋាន</th></tr></thead><tbody id="prayerRows"></tbody></table></td></tr><tr class="gap-row"><td colspan="2"></td></tr><tr><td class="label-cell bottom-label">រឿងពិសេស</td><td class="field-cell single-line"><textarea id="specialNote"></textarea></td></tr><tr><td class="label-cell bottom-label">ដង្វាយ</td><td class="field-cell single-line"><textarea id="offering"></textarea></td></tr></table></main>`}
+function openNewForm(){currentEntryId=null;selectedAreaId="";selectedParticipants=[];availableMembers=[];prayerRequests=Array(12).fill("");$("formBox").innerHTML=formHTML();$("emptyForm").classList.add("hidden");$("formBox").classList.remove("hidden");$("currentDate").value=new Date().toISOString().slice(0,10);bindForm();let defaultAreaId=isEditor()?getDefaultOwnedAreaId():"";if(defaultAreaId)selectArea(defaultAreaId);updateAccess();setTimeout(fitMobilePaper,50)}
+$("newEntryBtn").onclick=openNewForm;
+function bindForm(){
+  renderFields();
+  renderParticipants();
+  renderRows();
+  $("fieldToggle").onclick=()=>{if(!canEditArea())return;$("fieldPicker").classList.toggle("open")};
+  $("fieldSearch").oninput=()=>renderFields($("fieldSearch").value);
+  $("participantSelect").onchange=()=>{
+    let n=$("participantSelect").value;
+    if(n && !selectedParticipants.includes(n)){
+      selectedParticipants.push(n);
+      renderParticipants();
+      renderRows();
+    }
+  };
+  $("addParticipantBtn").onclick=async()=>{
+    let n=$("participantSelect").value;
+    let manuallyAdded=false;
+    if(!n){
+      n=prompt("បញ្ចូលឈ្មោះថ្មី");
+      if(n){
+        n=n.trim();
+        manuallyAdded=!!n && !availableMembers.includes(n);
+        if(manuallyAdded) availableMembers.push(n);
+      }
+    }
+    if(manuallyAdded && selectedAreaId && canEditArea()){
+      let memberRef=push(ref(db,`fieldAreas/${selectedAreaId}/members`));
+      await set(memberRef,{name:n});
+      status($("formStatus"),"បានបន្ថែមសមាជិកទៅវាលស្មៅនេះ។",true);
+    }
+    if(n && !selectedParticipants.includes(n)){
+      selectedParticipants.push(n);
+      renderParticipants();
+      renderRows();
+    }
+  };
+}
+function renderFields(q=""){let list=$("fieldList");if(!list)return;list.innerHTML="";Object.entries(fieldAreas).filter(([id,a])=>canViewArea(id)&&(a.name||"").toLowerCase().includes(q.toLowerCase())).forEach(([id,a])=>{let b=document.createElement("button");b.className="field-option";b.textContent=a.name;b.onclick=()=>selectArea(id);list.appendChild(b)});if(isEditor()&&getOwnedAreaIds().length===1){$("fieldToggle").disabled=true;$("fieldPicker").classList.remove("open")}}
+function selectArea(id){let a=fieldAreas[id];if(!a)return;if(!canViewArea(id)){status($("formStatus"),"អ្នកមិនមានសិទ្ធិមើលវាលស្មៅនេះទេ។");return}selectedAreaId=id;$("fieldValue").textContent=a.name;$("pastorName").value=a.pastorName||"";$("fieldPicker").classList.remove("open");availableMembers=Object.values(a.members||{}).map(m=>m.name).filter(Boolean);selectedParticipants=[];prayerRequests=Array(12).fill("");renderParticipants();renderRows();updateAccess()}
+function removeParticipant(index){if(index<0||index>=selectedParticipants.length)return;selectedParticipants.splice(index,1);prayerRequests.splice(index,1);while(prayerRequests.length<12)prayerRequests.push("");renderParticipants();renderRows()}
+function renderParticipants(){if(!$("participantCount"))return;$("participantCount").textContent=`(${selectedParticipants.length}នាក់)`;let box=$("selectedParticipant");clearNode(box);if(selectedParticipants.length){selectedParticipants.forEach((name,index)=>{let pill=appendTextNode(box,"span","pill",name);if(canEdit()){let removeBtn=document.createElement("button");removeBtn.type="button";removeBtn.className="pill-remove";removeBtn.setAttribute("aria-label","Remove participant");removeBtn.textContent="×";removeBtn.onclick=()=>removeParticipant(index);pill.appendChild(removeBtn)}})}else{box.textContent="សូមជ្រើសឈ្មោះពីបញ្ជី"}let sel=$("participantSelect");sel.textContent="";let empty=document.createElement("option");empty.value="";empty.textContent="ជ្រើសរើស";sel.appendChild(empty);availableMembers.filter(n=>!selectedParticipants.includes(n)).forEach(n=>{let o=document.createElement("option");o.value=n;o.textContent=n;sel.appendChild(o)})}
+function renderRows(){let body=$("prayerRows");if(!body)return;body.textContent="";let total=Math.max(12,selectedParticipants.length);for(let i=0;i<total;i++){let tr=document.createElement("tr");tr.className="prayer-row";let num=document.createElement("td");num.className="number-col";num.textContent=selectedParticipants[i]?String(i+1):"";let nameCell=document.createElement("td");nameCell.className="name-col";appendTextNode(nameCell,"div","name-display",selectedParticipants[i]||"");let fieldCell=document.createElement("td");fieldCell.className="field-cell";let ta=document.createElement("textarea");ta.dataset.i=String(i);ta.value=prayerRequests[i]||"";ta.disabled=!canEditArea();ta.oninput=()=>prayerRequests[i]=ta.value;fieldCell.appendChild(ta);tr.append(num,nameCell,fieldCell);body.appendChild(tr)}setTimeout(fitMobilePaper,30);["currentDate","specialNote","offering"].forEach(id=>$(id).disabled=!canEditArea());$("participantSelect").disabled=!canEditArea();$("addParticipantBtn").style.display=canEditArea()?"":"none"}
+function collect(){
+  let a=fieldAreas[selectedAreaId]||{};
+  let fieldText=(a.name || $("fieldValue")?.textContent || "").trim();
+  let pastorText=(a.pastorName || $("pastorName")?.value || "").trim();
+  return{fieldAreaId:selectedAreaId||"",fieldArea:fieldText,pastorName:pastorText,currentDate:$("currentDate")?.value||"",participants:[...selectedParticipants],prayerRequests:[...prayerRequests],specialNote:$("specialNote")?.value||"",offering:$("offering")?.value||"",updatedAt:Date.now(),updatedBy:user?.email||""}
+}
+$("saveEntryBtn").onclick=async()=>{if(!canEditArea()){status($("formStatus"),"អ្នកអាចកែបានតែវាលស្មៅរបស់អ្នកប៉ុណ្ណោះ។");return}let d=collect();if(!d.fieldArea||!d.currentDate){status($("formStatus"),"ជ្រើសវាលស្មៅ និងកាលបរិច្ឆេទ។");return}if(currentEntryId){await set(ref(db,`prayinfoEntries/${currentEntryId}`),{...(entries[currentEntryId]||{}),...d});log("update",currentEntryId,d);status($("formStatus"),"Updated.",true)}else{let r=push(ref(db,"prayinfoEntries"));currentEntryId=r.key;await set(r,{...d,createdAt:Date.now(),createdBy:user.email});log("create",currentEntryId,d);status($("formStatus"),"Saved.",true)}updateAccess()}
+$("deleteEntryBtn").onclick=async()=>{if(!isAdmin()||!currentEntryId)return;if(!confirm("Delete this entry?"))return;let old=entries[currentEntryId];await set(ref(db,`deletedEntries/${currentEntryId}`),{...old,deletedAt:Date.now(),deletedBy:user.email});await remove(ref(db,`prayinfoEntries/${currentEntryId}`));log("delete",currentEntryId,old);currentEntryId=null;$("formBox").classList.add("hidden");$("emptyForm").classList.remove("hidden");updateAccess()}
+function openEntry(id){
+  let e=entries[id];
+  if(!e)return;
+  if(!canViewEntry(e)){status($("formStatus"),"អ្នកអាចមើលបានតែវាលស្មៅរបស់អ្នកប៉ុណ្ណោះ។");return}
+  currentEntryId=id;
+  $("formBox").innerHTML=formHTML();
+  $("emptyForm").classList.add("hidden");
+  $("formBox").classList.remove("hidden");
+  bindForm();
+  selectedAreaId=e.fieldAreaId||"";
+  if(!selectedAreaId && e.fieldArea){
+    let found=Object.entries(fieldAreas).find(([fid,a])=>(a.name||"")===e.fieldArea);
+    if(found) selectedAreaId=found[0];
+  }
+  availableMembers=Object.values(fieldAreas[selectedAreaId]?.members||{}).map(m=>m.name).filter(Boolean);
+  selectedParticipants=Array.isArray(e.participants)?[...e.participants]:[];
+  // Include saved participant names in available list so edit view can still show them
+  selectedParticipants.forEach(n=>{if(n && !availableMembers.includes(n)) availableMembers.push(n)});
+  prayerRequests=Array.from({length:Math.max(12,(e.prayerRequests||[]).length)},(_,i)=>(e.prayerRequests||[])[i]||"");
+  $("fieldValue").textContent=e.fieldArea||fieldAreas[selectedAreaId]?.name||"";
+  $("pastorName").value=e.pastorName||fieldAreas[selectedAreaId]?.pastorName||"";
+  $("currentDate").value=e.currentDate||"";
+  $("specialNote").value=e.specialNote||"";
+  $("offering").value=e.offering||"";
+  renderParticipants();
+  renderRows();
+  updateAccess();
+  renderEntryList();
+  setTimeout(fitMobilePaper,50)
+}
+function renderEntryList(){let q=($("entrySearch").value||"").toLowerCase();let arr=Object.entries(entries).map(([id,d])=>({id,...d})).filter(canViewEntry).filter(e=>(`${e.fieldArea||""} ${e.pastorName||""}`).toLowerCase().includes(q)).sort((a,b)=>(b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0));let list=$("entryList");if(!arr.length){appendMetaEmpty(list,"No entries.");return}clearNode(list);arr.forEach(e=>{let div=document.createElement("div");div.className="card-list entry-preview"+(e.id===currentEntryId?" active":"");div.setAttribute("role","button");div.tabIndex=0;appendTextNode(div,"div","card-title",`វាលស្មៅ៖ ${e.fieldArea||"No area"}`);appendTextNode(div,"div","card-meta",`${e.currentDate||""} • អ្នកគង្វាល៖ ${e.pastorName||""} • ${(e.participants||[]).length}នាក់`);div.onclick=()=>openEntry(e.id);div.onkeydown=event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();openEntry(e.id)}};list.appendChild(div)})}
+$("entrySearch").oninput=renderEntryList;
+$("paperFullscreenBtn").onclick=()=>{
+  let enabled=document.body.classList.toggle("paper-fullscreen");
+  let icon=$("paperFullscreenBtn").querySelector("i");
+  icon.className=enabled?"ri-fullscreen-exit-line":"ri-fullscreen-line";
+  $("paperFullscreenBtn").setAttribute("aria-label",enabled?"Exit paper fullscreen":"Preview paper fullscreen");
+  setTimeout(fitMobilePaper,50);
+};
+$("exportBtn").onclick=()=>{if(!$("formBox").innerHTML){status($("formStatus"),"Open form first.");return}let d=collect();$("printArea").innerHTML=formHTML();setTimeout(()=>{let pv=$("printArea");pv.querySelector("#fieldValue").textContent=d.fieldArea;pv.querySelector("#pastorName").value=d.pastorName;pv.querySelector("#currentDate").value=d.currentDate;let participantBox=pv.querySelector("#selectedParticipant");participantBox.textContent="";d.participants.forEach(n=>appendTextNode(participantBox,"span","pill",n));pv.querySelector("#participantCount").textContent=`(${d.participants.length}នាក់)`;let body=pv.querySelector("#prayerRows");body.textContent="";for(let i=0;i<Math.max(12,d.participants.length);i++){let tr=document.createElement("tr");tr.className="prayer-row";let num=document.createElement("td");num.className="number-col";num.textContent=d.participants[i]?String(i+1):"";let nameCell=document.createElement("td");nameCell.className="name-col";appendTextNode(nameCell,"div","name-display",d.participants[i]||"");let fieldCell=document.createElement("td");fieldCell.className="field-cell";let ta=document.createElement("textarea");ta.value=d.prayerRequests[i]||"";fieldCell.appendChild(ta);tr.append(num,nameCell,fieldCell);body.appendChild(tr)}pv.querySelector("#specialNote").value=d.specialNote;pv.querySelector("#offering").value=d.offering;window.print()},50)};
+
+const KHMER_MONTHS=["មករា","កុម្ភៈ","មិនា","មេសា","ឧសភា","មិថុនា","កក្កដា","សីហា","កញ្ញា","តុលា","វិច្ឆិកា","ធ្នូ"];function monthOptions(value){let current=String(value||"");return `<option value="">ខែ</option>`+KHMER_MONTHS.map((m,i)=>`<option value="${i+1}"${current===String(i+1)||current===m?" selected":""}>${m}</option>`).join("")}
+function renderMemberAreaList(){let list=$("memberAreaList");if(!list)return;if(!isEditor()){clearNode(list);return}let q=($("memberAreaSearch")?.value||"").toLowerCase();let arr=getOwnedAreaIds().map(id=>({id,...fieldAreas[id]})).filter(a=>(`${a.name||""} ${a.pastorName||""}`).toLowerCase().includes(q));if(!arr.length){appendMetaEmpty(list,"មិនមានវាលស្មៅដែលបានកំណត់។");return}if(!currentMemberAreaId||!ownsArea(currentMemberAreaId))currentMemberAreaId=arr[0].id;clearNode(list);arr.forEach(a=>{let div=document.createElement("div");div.className="card-list entry-preview"+(a.id===currentMemberAreaId?" active":"");appendTextNode(div,"div","card-title",`វាលស្មៅ៖ ${a.name||""}`);appendTextNode(div,"div","card-meta",`អ្នកគង្វាល៖ ${a.pastorName||""} • ${Object.keys(a.members||{}).length} members`);div.onclick=()=>{currentMemberAreaId=a.id;memberEditMode=false;renderMemberAreaList();renderMemberManager()};list.appendChild(div)})}
+function getOwnMemberData(row){return{name:row.querySelector(".own-mem")?.value.trim()||"",birthDay:row.querySelector(".own-birth-day")?.value||"",birthMonth:row.querySelector(".own-birth-month")?.value||""}}
+function updateMemberEditControls(){let editing=memberEditMode;$("editMembersBtn")?.classList.toggle("hidden",editing);$("saveMembersBtn")?.classList.toggle("hidden",!editing);if($("saveMembersBtn"))$("saveMembersBtn").textContent=editing?"Update":"Save";document.querySelectorAll("#ownMembersBox .member-row").forEach(row=>{row.classList.toggle("editing",editing);row.querySelectorAll("input,select").forEach(input=>input.disabled=!editing)});["addOwnMember","pasteOwnMembers"].forEach(id=>{if($(id))$(id).classList.toggle("hidden",!editing)})}
+function showRestoreMember(data,index){let el=$("memberStatus");if(!el)return;el.textContent="";let wrap=document.createElement("span");wrap.textContent="Member removed. ";let btn=appendTextNode(wrap,"button","btn small","Redo");btn.type="button";btn.onclick=()=>{let box=$("ownMembersBox");addOwnMemberRow(data);let row=box.lastElementChild;if(index<box.children.length-1)box.insertBefore(row,box.children[index]);el.textContent="";updateMemberEditControls()};el.appendChild(wrap)}
+function addOwnMemberRow(v){let box=$("ownMembersBox");if(!box)return;let data=typeof v==="string"?{name:v}:v||{};let row=document.createElement("div");row.className="member-row";let input=document.createElement("input");input.className="input-light member-name own-mem";input.value=data.name||"";let birth=document.createElement("div");birth.className="birth-wrap";birth.innerHTML=`<i class="ri-cake-line"></i><input class="input-light birth-input own-birth-day" type="number" min="1" max="31" placeholder="Day"><select class="input-light birth-input birth-month-select own-birth-month">${monthOptions(data.birthMonth)}</select>`;birth.querySelector(".own-birth-day").value=data.birthDay||"";let button=document.createElement("button");button.type="button";button.className="member-remove";button.setAttribute("aria-label","Remove member");button.innerHTML=`<i class="ri-close-circle-line"></i>`;button.onclick=()=>{if(!confirm("Are you sure to delete?"))return;let index=[...box.children].indexOf(row);let data=getOwnMemberData(row);row.remove();showRestoreMember(data,index)};row.append(input,birth,button);box.appendChild(row);updateMemberEditControls()}
+function collectOwnMembers(){let members={};[...document.querySelectorAll("#ownMembersBox .member-row")].forEach((row,i)=>{let name=row.querySelector(".own-mem")?.value.trim()||"";if(!name)return;members[`member_${String(Object.keys(members).length+1).padStart(3,"0")}`]={name,birthDay:row.querySelector(".own-birth-day")?.value||"",birthMonth:row.querySelector(".own-birth-month")?.value||""}});return members}
+function renderMemberManager(){let box=$("memberBox");if(!box)return;if(!isEditor()){box.textContent="";return}let ids=getOwnedAreaIds();if(!ids.length){box.innerHTML=`<div class="manager-card"><div class="empty">មិនមានវាលស្មៅដែលបានកំណត់។</div></div>`;return}if(!currentMemberAreaId||!ownsArea(currentMemberAreaId))currentMemberAreaId=ids[0];let a=fieldAreas[currentMemberAreaId]||{};box.innerHTML=`<div class="manager-card"><div class="grid2"><div><label class="light-label">វាលស្មៅ</label><input id="ownAreaName" class="input-light" disabled></div><div><label class="light-label">អ្នកគង្វាល</label><input id="ownPastorName" class="input-light" disabled></div></div><div class="section"><h3>Members</h3><div class="btn-row"><button id="addOwnMember" class="btn small primary">Add</button><button id="pasteOwnMembers" class="btn small">Paste List</button></div><br><div id="ownMembersBox"></div></div></div>`;$("ownAreaName").value=a.name||"";$("ownPastorName").value=a.pastorName||"";$("addOwnMember").onclick=()=>addOwnMemberRow("");$("pasteOwnMembers").onclick=()=>{let raw=prompt("Paste names, one per line");if(!raw)return;$("ownMembersBox").innerHTML="";raw.split("\n").map(x=>x.trim()).filter(Boolean).forEach(addOwnMemberRow);updateMemberEditControls()};Object.values(a.members||{}).forEach(m=>addOwnMemberRow(m));updateMemberEditControls()}
+$("memberAreaSearch").oninput=renderMemberAreaList;$("editMembersBtn").onclick=()=>{memberEditMode=true;status($("memberStatus"),"");updateMemberEditControls()};$("saveMembersBtn").onclick=async()=>{if(!isEditor()||!ownsArea(currentMemberAreaId)){status($("memberStatus"),"អ្នកអាចកែបានតែវាលស្មៅរបស់អ្នកប៉ុណ្ណោះ។");return}try{await set(ref(db,`fieldAreas/${currentMemberAreaId}/members`),collectOwnMembers());memberEditMode=false;status($("memberStatus"),"Updated.",true);renderMemberManager()}catch(e){status($("memberStatus"),`Update failed: ${e.message}`)}};
+function renderAreaManager(){
+  if(!isAdmin()){if($("managerBox"))$("managerBox").textContent="";return;}
+  $("managerBox").innerHTML=`<div class="manager-card"><div class="grid2"><div><label class="light-label">វាលស្មៅ</label><input id="areaName" class="input-light"></div><div><label class="light-label">អ្នកគង្វាល</label><input id="areaPastor" class="input-light"></div><div><label class="light-label">Owner UID</label><input id="areaOwnerUid" class="input-light" placeholder="Paste Firebase UID"></div><div><label class="light-label">Owner Name</label><input id="areaOwnerName" class="input-light" placeholder="Silay"></div><div><label class="light-label">Owner Email</label><input id="areaOwnerEmail" class="input-light" placeholder="example@email.com"></div><div><label class="light-label">Owner Role</label><select id="areaOwnerRole" class="input-light"><option value="editor">Editor</option><option value="viewer">Viewer</option><option value="groupManager">Group Manager</option></select></div></div><div class="section"><h3>Members</h3><div class="btn-row"><button id="addMember" class="btn small primary">Add</button><button id="pasteMembers" class="btn small">Paste List</button></div><br><div id="membersBox"></div></div><div class="section"><div class="gm-panel-head"><div><h3 class="gm-panel-title">Group Manager Users</h3><div class="gm-panel-note">Admin can assign areas to each Group Manager. Areas already assigned to another GM are locked.</div></div></div><div id="gmUserList"></div></div><pre id="preview" class="json-box">{}</pre></div>`;
+  $("addMember").onclick=()=>addMemberRow("");
+  $("pasteMembers").onclick=()=>{let raw=prompt("Paste names, one per line");if(!raw)return;$("membersBox").innerHTML="";raw.split("\n").map(x=>x.trim()).filter(Boolean).forEach(addMemberRow);preview()};
+  ["areaName","areaPastor","areaOwnerUid","areaOwnerName","areaOwnerEmail","areaOwnerRole"].forEach(id=>$(id).oninput=preview);
+  addMemberRow("");
+  preview();
+  renderGMUsers();
+}
+function addMemberRow(v){let data=typeof v==="string"?{name:v}:v||{};let row=document.createElement("div");row.className="member-row editing";let input=document.createElement("input");input.className="input-light member-name mem";input.value=data.name||"";let birth=document.createElement("div");birth.className="birth-wrap";birth.innerHTML=`<i class="ri-cake-line"></i><input class="input-light birth-input birth-day" type="number" min="1" max="31" placeholder="Day"><select class="input-light birth-input birth-month-select birth-month">${monthOptions(data.birthMonth)}</select>`;birth.querySelector(".birth-day").value=data.birthDay||"";let button=document.createElement("button");button.type="button";button.className="member-remove editing";button.setAttribute("aria-label","Remove member");button.innerHTML=`<i class="ri-close-circle-line"></i>`;button.onclick=()=>{if(!confirm("Are you sure to delete?"))return;row.remove();preview()};input.oninput=preview;birth.querySelectorAll("input,select").forEach(i=>i.oninput=preview);row.append(input,birth,button);$("membersBox").appendChild(row)}
+function collectArea(){let members={};[...document.querySelectorAll("#membersBox .member-row")].forEach(row=>{let name=row.querySelector(".mem")?.value.trim()||"";if(!name)return;members[`member_${String(Object.keys(members).length+1).padStart(3,"0")}`]={name,birthDay:row.querySelector(".birth-day")?.value||"",birthMonth:row.querySelector(".birth-month")?.value||""}});return{name:$("areaName")?.value.trim()||"",pastorName:$("areaPastor")?.value.trim()||"",ownerUid:$("areaOwnerUid")?.value.trim()||"",ownerName:$("areaOwnerName")?.value.trim()||"",ownerEmail:$("areaOwnerEmail")?.value.trim()||"",ownerRole:$("areaOwnerRole")?.value||"editor",members,updatedAt:Date.now()}}
+function preview(){if($("preview"))$("preview").textContent=JSON.stringify(collectArea(),null,2)}
+function renderAreaList(){if(!isAdmin()){let list=$("areaList");if(list)clearNode(list);return;}let q=($("areaSearch").value||"").toLowerCase();let arr=Object.entries(fieldAreas).map(([id,d])=>({id,...d})).filter(a=>(`${a.name||""} ${a.pastorName||""} ${a.ownerEmail||""}`).toLowerCase().includes(q));let list=$("areaList");if(!arr.length){appendMetaEmpty(list,"No areas.");return}clearNode(list);arr.forEach(a=>{let div=document.createElement("div");div.className="card-list";appendTextNode(div,"div","card-title",a.name||"");appendTextNode(div,"div","card-meta",`អ្នកគង្វាល៖ ${a.pastorName||""} • ${Object.keys(a.members||{}).length} members${a.ownerEmail?` • Owner: ${a.ownerEmail}`:""}${a.ownerRole?` • ${a.ownerRole}`:""}`);div.onclick=()=>openArea(a.id);list.appendChild(div)})}
+$("areaSearch").oninput=renderAreaList;$("newAreaBtn").onclick=()=>{currentAreaId=null;renderAreaManager();$("deleteAreaBtn").classList.add("hidden")};
+function openArea(id){currentAreaId=id;renderAreaManager();let a=fieldAreas[id];$("areaName").value=a.name||"";$("areaPastor").value=a.pastorName||"";$("areaOwnerUid").value=a.ownerUid||"";$("areaOwnerName").value=a.ownerName||allowedUsers[a.ownerUid]?.name||"";$("areaOwnerEmail").value=a.ownerEmail||allowedUsers[a.ownerUid]?.email||"";$("areaOwnerRole").value=a.ownerRole||allowedUsers[a.ownerUid]?.role||"editor";$("membersBox").innerHTML="";Object.values(a.members||{}).forEach(m=>addMemberRow(m));$("deleteAreaBtn").classList.remove("hidden");preview()}
+async function saveOwnerAccess(areaId,d){if(!d.ownerUid)return;await set(ref(db,`allowedUsers/${d.ownerUid}/role`),d.ownerRole||"editor");await set(ref(db,`allowedUsers/${d.ownerUid}/name`),d.ownerName||"");await set(ref(db,`allowedUsers/${d.ownerUid}/email`),d.ownerEmail||"");await set(ref(db,`allowedUsers/${d.ownerUid}/fieldAreas/${areaId}`),true)}
+$("saveAreaBtn").onclick=async()=>{if(!isAdmin())return;let d=collectArea();if(!d.name||!d.pastorName){status($("managerStatus"),"បញ្ចូលវាលស្មៅ និងអ្នកគង្វាល។");return}if(currentAreaId){await set(ref(db,`fieldAreas/${currentAreaId}`),{...(fieldAreas[currentAreaId]||{}),...d});await saveOwnerAccess(currentAreaId,d);status($("managerStatus"),"Updated.",true)}else{let r=push(ref(db,"fieldAreas"));currentAreaId=r.key;await set(r,{...d,createdAt:Date.now()});await saveOwnerAccess(currentAreaId,d);status($("managerStatus"),"Saved.",true)}};
+$("deleteAreaBtn").onclick=async()=>{if(!isAdmin()||!currentAreaId)return;if(confirm("Delete area?")){await remove(ref(db,`fieldAreas/${currentAreaId}`));currentAreaId=null;renderAreaManager();$("deleteAreaBtn").classList.add("hidden")}};
+
+
+/* ===== GM SYSTEM START ===== */
+function getGMDisplayName(uid,gm){return gm?.name || gm?.email || uid}
+function collectGMAreaOwners(users){
+  const usedAreas={};
+  Object.entries(users||{}).forEach(([uid,u])=>{
+    if(u.role==="groupManager" && u.fieldAreas){
+      Object.keys(u.fieldAreas).forEach(areaId=>{if(u.fieldAreas[areaId]===true)usedAreas[areaId]=uid});
+    }
+  });
+  return usedAreas;
+}
+function renderGMUsers(){
+  if(!isAdmin())return;
+  const box=$("gmUserList");
+  if(!box)return;
+  const users=allowedUsers||{};
+  const groupManagers=Object.entries(users).filter(([uid,u])=>u.role==="groupManager");
+  box.innerHTML="";
+  if(!groupManagers.length){appendTextNode(box,"div","gm-empty","No Group Manager users yet. Set Owner Role to Group Manager when saving an area/user.");return}
+  const usedAreas=collectGMAreaOwners(users);
+  groupManagers.forEach(([uid,u])=>{
+    const card=document.createElement("div");
+    card.className="gm-card";
+    const assignedCount=Object.values(u.fieldAreas||{}).filter(Boolean).length;
+    let areaHTML="";
+    Object.entries(fieldAreas||{}).forEach(([areaId,area])=>{
+      const assigned=u.fieldAreas?.[areaId]===true;
+      const usedByOther=usedAreas[areaId] && usedAreas[areaId]!==uid;
+      const owner=usedByOther ? (users[usedAreas[areaId]]||{}) : null;
+      areaHTML+=`<label class="gm-area-item ${usedByOther?"disabled":""}"><input type="checkbox" data-uid="${uid}" data-area="${areaId}" ${assigned?"checked":""} ${usedByOther?"disabled":""}><span>${area.name||areaId}</span>${usedByOther?`<span class="gm-area-owner">${getGMDisplayName(usedAreas[areaId],owner)}</span>`:""}</label>`;
+    });
+    card.innerHTML=`<div class="gm-header"><div class="gm-info"><div class="gm-name">${u.name||"No Name"}</div><div class="gm-email">${u.email||uid}</div><span class="gm-badge"><i class="ri-shield-user-line"></i> ${assignedCount} area${assignedCount===1?"":"s"}</span></div><button class="btn small primary" type="button" onclick="saveGMUser('${uid}')">Save</button></div><div class="gm-area-list">${areaHTML||"<div class='gm-empty'>No areas found.</div>"}</div><div class="gm-save-status" id="gmStatus_${uid}"></div>`;
+    box.appendChild(card);
+  });
+}
+window.saveGMUser=async function(uid){
+  if(!isAdmin())return alert("Admin only.");
+  const statusEl=$("gmStatus_"+uid);
+  if(statusEl)statusEl.textContent="Saving...";
+  try{
+    const snap=await get(ref(db,"allowedUsers"));
+    const users=snap.val()||{};
+    const usedAreas=collectGMAreaOwners(users);
+    const checkboxes=document.querySelectorAll(`input[data-uid="${uid}"]`);
+    const data={};
+    let conflict=null;
+    checkboxes.forEach(cb=>{
+      if(cb.checked){
+        const areaId=cb.dataset.area;
+        if(usedAreas[areaId] && usedAreas[areaId]!==uid){conflict={areaId,owner:users[usedAreas[areaId]]||{},ownerUid:usedAreas[areaId]};}
+        data[areaId]=true;
+      }
+    });
+    if(conflict){
+      const areaName=fieldAreas[conflict.areaId]?.name||conflict.areaId;
+      const ownerName=getGMDisplayName(conflict.ownerUid,conflict.owner);
+      if(statusEl)statusEl.textContent=`Conflict: ${areaName} is already assigned to ${ownerName}.`;
+      alert(`⚠ Area already assigned:\n${areaName}\n\nOwner: ${ownerName}`);
+      return;
+    }
+    await set(ref(db,`allowedUsers/${uid}/fieldAreas`),data);
+    if(statusEl)statusEl.textContent="Saved successfully ✔";
+  }catch(e){
+    if(statusEl)statusEl.textContent=e.message||String(e);
+    alert(e.message||String(e));
+  }
+}
+/* ===== GM SYSTEM END ===== */
+
+function renderStats(){$("statEntries").textContent=Object.keys(entries).length;$("statAreas").textContent=Object.keys(fieldAreas).length;$("statMembers").textContent=Object.values(fieldAreas).reduce((s,a)=>s+Object.keys(a.members||{}).length,0);$("statLogs").textContent=Object.keys(auditLogs).length}
+function renderLogs(){let arr=Object.values(auditLogs).sort((a,b)=>(b.timestamp||0)-(a.timestamp||0)).slice(0,30);let list=$("activityList");if(!arr.length){appendMetaEmpty(list,"No logs.");return}clearNode(list);arr.forEach(l=>{let div=document.createElement("div");div.className="card-list";appendTextNode(div,"div","card-title",`${(l.action||"").toUpperCase()} • ${l.fieldArea||""}`);appendTextNode(div,"div","card-meta",`${l.user?.email||""} • ${new Date(l.timestamp||Date.now()).toLocaleString()}`);list.appendChild(div)})}
+renderAreaManager();
+</script>
+
+<script>
+(function(){
+  async function clearActivityLogs(){
+    if(!(window.prayInfoIsAdmin && window.prayInfoIsAdmin())){
+      alert("Admin only.");
+      return;
+    }
+
+    const ok = confirm("Clear all activity logs? This will delete auditLogs from Firebase.");
+    if(!ok) return;
+
+    try{
+      if(window.db && window.ref && window.remove){
+        await window.remove(window.ref(window.db, "auditLogs"));
+      }else{
+        alert("Firebase database is not available.");
+        return;
+      }
+
+      const activityList = document.getElementById("activityList");
+      if(activityList){
+        activityList.textContent = "";
+        const empty = document.createElement("div");
+        empty.className = "card-meta";
+        empty.textContent = "No logs.";
+        activityList.appendChild(empty);
+      }
+
+      const statLogs = document.getElementById("statLogs");
+      if(statLogs) statLogs.textContent = "0";
+
+      alert("Activity cleared successfully.");
+    }catch(err){
+      alert("Clear activity error: " + (err.message || err));
+    }
+  }
+
+  function installClearActivityButton(){
+    let btn = document.getElementById("clearActivityBtn");
+    if(btn){
+      btn.classList.toggle("hidden", !(window.prayInfoIsAdmin && window.prayInfoIsAdmin()));
+    }
+    if(btn && !btn.dataset.boundClear){
+      btn.dataset.boundClear = "1";
+      btn.addEventListener("click", clearActivityLogs);
+    }
+  }
+
+  window.installClearActivityButton = installClearActivityButton;
+  document.addEventListener("DOMContentLoaded", installClearActivityButton);
+  document.addEventListener("click", function(){ setTimeout(installClearActivityButton, 50); }, true);
+})();
+</script>
+
+
+<script>
+(function(){
+  const DEFAULT_PRAYER_ROW_HEIGHT = 52;
+
+  function autoGrowPrayerTextarea(ta){
+    if(!ta) return;
+    ta.style.height = DEFAULT_PRAYER_ROW_HEIGHT + "px";
+    const newHeight = Math.max(DEFAULT_PRAYER_ROW_HEIGHT, ta.scrollHeight);
+    ta.style.height = newHeight + "px";
+    const tr = ta.closest("tr");
+    const td = ta.closest("td");
+    if(td){td.style.height = newHeight + "px";td.style.minHeight = DEFAULT_PRAYER_ROW_HEIGHT + "px";}
+    if(tr){tr.style.height = newHeight + "px";tr.style.minHeight = DEFAULT_PRAYER_ROW_HEIGHT + "px";}
+  }
+
+  function normalizePrayerRows(){
+    document.querySelectorAll("#prayerRows tr").forEach(row=>{
+      const ta = row.querySelector("textarea");
+      if(ta){autoGrowPrayerTextarea(ta);return;}
+      row.style.height = DEFAULT_PRAYER_ROW_HEIGHT + "px";
+      row.style.minHeight = DEFAULT_PRAYER_ROW_HEIGHT + "px";
+    });
+  }
+
+  function installParticipantCorner(){
+    const select = document.getElementById("participantSelect");
+    const add = document.getElementById("addParticipantBtn");
+    if(!select || !add) return;
+    const row = select.closest(".select-row") || select.closest(".select-with-add");
+    if(row) row.classList.add("participant-controls");
+  }
+
+  function setNameColumnWidth(){
+    document.querySelectorAll(".inner-table colgroup col:nth-child(2)").forEach(col=>col.setAttribute("style","width:180px"));
+    document.querySelectorAll(".prayer-header .name-col, #prayerRows .name-col").forEach(el=>el.style.width="220px");
+  }
+
+  function alignPrayerRows(){
+    setNameColumnWidth();
+    document.querySelectorAll("#prayerRows tr").forEach(row=>{
+      const num = row.querySelector(".number-col");
+      const nameCell = row.querySelector(".name-col");
+      const nameDisplay = row.querySelector(".name-display");
+      if(num){num.style.textAlign="center";num.style.verticalAlign="middle";}
+      if(nameCell){nameCell.style.width="220px";nameCell.style.verticalAlign="middle";}
+      if(nameDisplay){nameDisplay.style.display="flex";nameDisplay.style.alignItems="center";nameDisplay.style.minHeight=DEFAULT_PRAYER_ROW_HEIGHT + "px";}
+    });
+  }
+
+  function removePrintArtifacts(){
+    document.querySelectorAll(".print-textarea-value").forEach(el=>el.remove());
+    document.querySelectorAll("textarea.print-hidden-textarea").forEach(ta=>ta.classList.remove("print-hidden-textarea"));
+    document.querySelectorAll("#prayerRows .print-gap-row,#prayerRows .print-separator-row").forEach(row=>row.remove());
+    document.querySelectorAll("#prayerRows tr.print-hide-empty").forEach(row=>row.classList.remove("print-hide-empty"));
+  }
+
+  function preparePrintTextareaValues(){
+    document.querySelectorAll("#prayerRows textarea").forEach(ta=>{
+      const div = document.createElement("div");
+      div.className = "print-textarea-value";
+      div.textContent = ta.value || "";
+      ta.classList.add("print-hidden-textarea");
+      ta.after(div);
+      const tr = ta.closest("tr");
+      if(tr) tr.style.height = "auto";
+    });
+  }
+
+  function rowHasData(row){
+    const name = row.querySelector(".name-display")?.textContent?.trim() || "";
+    const number = row.querySelector(".number-col")?.textContent?.trim() || "";
+    const textarea = row.querySelector("textarea")?.value?.trim() || "";
+    const printText = row.querySelector(".print-textarea-value")?.textContent?.trim() || "";
+    return !!(name || number || textarea || printText);
+  }
+
+  function markEmptyRowsForPrint(){
+    document.querySelectorAll("#prayerRows tr").forEach(row=>{
+      row.classList.toggle("print-hide-empty", !rowHasData(row));
+    });
+  }
+
+  function addPrintGapRow(){
+    const tbody = document.getElementById("prayerRows");
+    if(!tbody) return;
+    const rows = Array.from(tbody.querySelectorAll("tr")).filter(row=>!row.classList.contains("print-gap-row") && !row.classList.contains("print-separator-row"));
+    let lastDataRow = null;
+    rows.forEach(row=>{if(rowHasData(row)) lastDataRow=row;});
+    if(!lastDataRow) lastDataRow = rows[0] || null;
+    if(!lastDataRow) return;
+    const gap = document.createElement("tr");
+    gap.className = "print-gap-row";
+    const td = document.createElement("td");
+    td.colSpan = 3;
+    td.innerHTML = "&nbsp;";
+    gap.appendChild(td);
+    lastDataRow.insertAdjacentElement("afterend", gap);
+  }
+
+  function getFieldAreaText(){
+    const fieldValue = document.getElementById("fieldValue") || document.getElementById("fieldAreaValue");
+    return fieldValue?.textContent?.trim() || "";
+  }
+
+  function ensurePrintFieldAreaText(){
+    const fieldValue = document.getElementById("fieldValue") || document.getElementById("fieldAreaValue");
+    if(!fieldValue) return;
+    let printText = document.getElementById("printFieldAreaText");
+    if(!printText){
+      printText = document.createElement("span");
+      printText.id = "printFieldAreaText";
+      printText.className = "print-field-area-text";
+      fieldValue.after(printText);
+    }
+    printText.textContent = getFieldAreaText();
+  }
+
+  function cleanPdfNamePart(value){return (value||"").replace(/[⌄▾▼:]/g,"").replace(/\s+/g,"").trim()}
+  function normalizeDateForFileName(rawDate){
+    rawDate = (rawDate || "").trim();
+    if(!rawDate) return new Date().toISOString().slice(0,10);
+    if(/^\d{4}-\d{2}-\d{2}$/.test(rawDate)) return rawDate;
+    if(rawDate.includes("/")){
+      const parts = rawDate.split("/").map(p=>p.padStart(2,"0"));
+      if(parts.length===3 && parts[2].length===4) return `${parts[2]}-${parts[0]}-${parts[1]}`;
+    }
+    return rawDate.replace(/[^\d-]/g,"");
+  }
+  function setPrayInfoPdfFileName(){
+    const area = cleanPdfNamePart(getFieldAreaText() || "Unknown");
+    const date = normalizeDateForFileName(document.getElementById("currentDate")?.value || "");
+    document.title = `ពួកជំនុំតាមផ្ទះ-វាលស្មៅ${area}-${date}.pdf`;
+  }
+
+  function finalTableFix(){installParticipantCorner();alignPrayerRows();normalizePrayerRows();ensurePrintFieldAreaText();}
+  function finalPrintPrepare(){removePrintArtifacts();finalTableFix();preparePrintTextareaValues();markEmptyRowsForPrint();addPrintGapRow();setPrayInfoPdfFileName();}
+
+  document.addEventListener("input", e=>{if(e.target?.matches?.("#prayerRows textarea")) autoGrowPrayerTextarea(e.target)}, true);
+  document.addEventListener("click", ()=>setTimeout(finalTableFix,80), true);
+  document.addEventListener("change", ()=>setTimeout(finalTableFix,80), true);
+  document.addEventListener("DOMContentLoaded", finalTableFix);
+  window.addEventListener("resize", finalTableFix);
+  window.addEventListener("beforeprint", finalPrintPrepare);
+  window.addEventListener("afterprint", removePrintArtifacts);
+
+  window.normalizePrayerRows = normalizePrayerRows;
+  window.finalPrintPrepare = finalPrintPrepare;
+  window.setPrayInfoPdfFileName = setPrayInfoPdfFileName;
+})();
+</script>
+
+</body>
+</html>
+
+
+
