@@ -1006,6 +1006,128 @@ renderAreaManager();
 })();
 </script>
 
+
+  
+
+  <!-- ===== GM ASSIGNMENT UI START ===== -->
+
+  
+<script>
+(function(){
+
+function wait(){
+  if(typeof db === "undefined" || typeof fieldAreas === "undefined"){
+    return setTimeout(wait, 300);
+  }
+  initGMUI();
+}
+
+function initGMUI(){
+
+  if(window.role !== "admin") return;
+
+  // Create UI container
+  const container = document.createElement("div");
+  container.className = "glass";
+  container.style.marginTop = "20px";
+  container.style.padding = "15px";
+  container.innerHTML = `
+    <h3>Group Manager Access Control</h3>
+
+    <select id="gmUserSelect" class="input-dark" style="margin-bottom:10px;width:100%;"></select>
+
+    <div id="gmAreaList" style="max-height:300px;overflow:auto;"></div>
+
+    <button id="gmSaveBtn" class="btn primary" style="margin-top:10px;">Save</button>
+
+    <div id="gmStatus" class="status"></div>
+  `;
+
+  // Add to Manager page
+  const managerPage = document.querySelector("#pageManager .workspace");
+  if(managerPage) managerPage.appendChild(container);
+
+  loadUsers();
+
+  document.getElementById("gmUserSelect").onchange = loadAreas;
+  document.getElementById("gmSaveBtn").onclick = saveAreas;
+
+  function loadUsers(){
+    onValue(ref(db,"allowedUsers"), snap=>{
+      let data = snap.val() || {};
+      let select = document.getElementById("gmUserSelect");
+      select.innerHTML = "";
+
+      Object.entries(data).forEach(([uid,u])=>{
+        if(u.role === "groupManager"){
+          let opt = document.createElement("option");
+          opt.value = uid;
+          opt.textContent = u.email || uid;
+          select.appendChild(opt);
+        }
+      });
+
+      loadAreas();
+    });
+  }
+
+  function loadAreas(){
+    let uid = document.getElementById("gmUserSelect").value;
+    if(!uid) return;
+
+    get(ref(db,"allowedUsers/"+uid+"/fieldAreas")).then(snap=>{
+      let assigned = snap.val() || {};
+
+      let box = document.getElementById("gmAreaList");
+      box.innerHTML = "";
+
+      Object.entries(fieldAreas || {}).forEach(([id,a])=>{
+        let div = document.createElement("div");
+        div.style.marginBottom = "6px";
+
+        div.innerHTML = `
+          <label style="cursor:pointer;">
+            <input type="checkbox" value="${id}" ${assigned[id] ? "checked" : ""}>
+            ${a.name || id}
+          </label>
+        `;
+
+        box.appendChild(div);
+      });
+    });
+  }
+
+  function saveAreas(){
+    let uid = document.getElementById("gmUserSelect").value;
+    if(!uid) return;
+
+    let checkboxes = document.querySelectorAll("#gmAreaList input[type=checkbox]");
+    let data = {};
+
+    checkboxes.forEach(cb=>{
+      if(cb.checked){
+        data[cb.value] = true;
+      }
+    });
+
+    set(ref(db,"allowedUsers/"+uid+"/fieldAreas"), data)
+      .then(()=>{
+        document.getElementById("gmStatus").textContent = "Saved successfully ✔";
+      })
+      .catch(err=>{
+        document.getElementById("gmStatus").textContent = err.message;
+      });
+  }
+
+  console.log("✅ GM Assignment UI Ready");
+}
+
+wait();
+
+})();
+</script>
+<!-- ===== GM ASSIGNMENT UI END ===== -->
+
 </body>
 </html>
 
