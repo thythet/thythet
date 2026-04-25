@@ -1009,28 +1009,41 @@ renderAreaManager();
 
   
 
-  <!-- ===== GM ASSIGNMENT UI START ===== -->
-
-  
+<!-- ===== GM ASSIGNMENT UI START ===== -->
 <script>
 (function(){
 
-function wait(){
-  if(typeof db === "undefined" || typeof fieldAreas === "undefined"){
-    return setTimeout(wait, 300);
+function waitApp(){
+  if(typeof db === "undefined" || typeof fieldAreas === "undefined" || typeof role === "undefined"){
+    return setTimeout(waitApp, 300);
   }
-  initGMUI();
+  initWatcher();
 }
 
-function initGMUI(){
+function initWatcher(){
 
-  if(window.role !== "admin") return;
+  if(role !== "admin") return;
 
-  // Create UI container
+  // Watch DOM until Manager page exists
+  const observer = new MutationObserver(()=>{
+    const managerPage = document.querySelector("#pageManager .workspace");
+
+    if(managerPage && !document.getElementById("gmUIBox")){
+      buildUI(managerPage);
+    }
+  });
+
+  observer.observe(document.body, { childList:true, subtree:true });
+}
+
+function buildUI(managerPage){
+
   const container = document.createElement("div");
+  container.id = "gmUIBox";
   container.className = "glass";
   container.style.marginTop = "20px";
   container.style.padding = "15px";
+
   container.innerHTML = `
     <h3>Group Manager Access Control</h3>
 
@@ -1043,9 +1056,7 @@ function initGMUI(){
     <div id="gmStatus" class="status"></div>
   `;
 
-  // Add to Manager page
-  const managerPage = document.querySelector("#pageManager .workspace");
-  if(managerPage) managerPage.appendChild(container);
+  managerPage.appendChild(container);
 
   loadUsers();
 
@@ -1077,16 +1088,14 @@ function initGMUI(){
 
     get(ref(db,"allowedUsers/"+uid+"/fieldAreas")).then(snap=>{
       let assigned = snap.val() || {};
-
       let box = document.getElementById("gmAreaList");
       box.innerHTML = "";
 
       Object.entries(fieldAreas || {}).forEach(([id,a])=>{
         let div = document.createElement("div");
-        div.style.marginBottom = "6px";
 
         div.innerHTML = `
-          <label style="cursor:pointer;">
+          <label>
             <input type="checkbox" value="${id}" ${assigned[id] ? "checked" : ""}>
             ${a.name || id}
           </label>
@@ -1112,22 +1121,22 @@ function initGMUI(){
 
     set(ref(db,"allowedUsers/"+uid+"/fieldAreas"), data)
       .then(()=>{
-        document.getElementById("gmStatus").textContent = "Saved successfully ✔";
+        document.getElementById("gmStatus").textContent = "Saved ✔";
       })
       .catch(err=>{
         document.getElementById("gmStatus").textContent = err.message;
       });
   }
 
-  console.log("✅ GM Assignment UI Ready");
+  console.log("✅ GM UI Loaded");
 }
 
-wait();
+waitApp();
 
 })();
 </script>
 <!-- ===== GM ASSIGNMENT UI END ===== -->
-
+  
 </body>
 </html>
 
