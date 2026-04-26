@@ -139,6 +139,26 @@ table{width:100%;border-collapse:collapse;table-layout:fixed;border:1px solid va
   }
 }
 
+  @media print {
+
+  /* Keep table stable */
+  .inner-table{
+    table-layout: fixed !important;
+    width: 100% !important;
+  }
+
+  /* Set Name column to 160px ONLY in print */
+  .inner-table col:nth-child(2){
+    width:160px !important;
+  }
+
+  .prayer-header .name-col,
+  #prayerRows .name-col{
+    width:160px !important;
+    max-width:160px !important;
+  }
+
+}
 
 /* ===== Auto-growing prayer request cells ===== */
 #prayerRows textarea{
