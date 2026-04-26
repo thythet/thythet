@@ -1361,40 +1361,95 @@ renderAreaManager();
 
 
 
-  (function(){
+(function(){
 
-  // Create UI (slider)
-  const wrap = document.createElement("div");
-  wrap.style.position = "fixed";
-  wrap.style.bottom = "20px";
-  wrap.style.right = "20px";
-  wrap.style.zIndex = "9999";
-  wrap.style.background = "rgba(0,0,0,0.6)";
-  wrap.style.backdropFilter = "blur(10px)";
-  wrap.style.padding = "10px 14px";
-  wrap.style.borderRadius = "12px";
-  wrap.style.color = "#fff";
-  wrap.style.fontSize = "12px";
-  wrap.style.display = "flex";
-  wrap.style.alignItems = "center";
-  wrap.style.gap = "8px";
+  let printNameWidth = 160;
 
-  wrap.innerHTML = `
-    <span>Name width:</span>
-    <input type="range" min="100" max="250" value="160" id="printWidthSlider">
-    <span id="printWidthVal">160px</span>
+  const style = document.createElement("style");
+  style.innerHTML = `
+    @media print{
+      #printArea .inner-table{
+        table-layout:fixed!important;
+        width:100%!important;
+      }
+
+      #printArea .inner-table col:nth-child(2),
+      #printArea .prayer-header th:nth-child(2),
+      #printArea #prayerRows td:nth-child(2),
+      #printArea .name-col{
+        width:var(--print-name-width,160px)!important;
+        max-width:var(--print-name-width,160px)!important;
+      }
+
+      #printNameWidthControl{
+        display:none!important;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+
+  const box = document.createElement("div");
+  box.id = "printNameWidthControl";
+  box.style.cssText = `
+    position:fixed;
+    right:20px;
+    bottom:20px;
+    z-index:99999;
+    background:rgba(0,0,0,.75);
+    color:#fff;
+    padding:10px 14px;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:12px;
   `;
 
-  document.body.appendChild(wrap);
+  box.innerHTML = `
+    <span>Print Name:</span>
+    <input id="printNameWidthSlider" type="range" min="80" max="260" value="160">
+    <span id="printNameWidthText">160px</span>
+  `;
 
-  const slider = document.getElementById("printWidthSlider");
-  const label = document.getElementById("printWidthVal");
+  document.body.appendChild(box);
 
-  slider.oninput = () => {
-    const w = slider.value + "px";
-    document.documentElement.style.setProperty("--print-name-col-width", w);
-    label.textContent = w;
+  function applyPrintNameWidth(){
+    document.documentElement.style.setProperty("--print-name-width", printNameWidth + "px");
+
+    document.querySelectorAll("#formBox .inner-table col:nth-child(2), #printArea .inner-table col:nth-child(2)").forEach(el=>{
+      el.style.width = printNameWidth + "px";
+    });
+
+    document.querySelectorAll(
+      "#formBox .prayer-header th:nth-child(2), #formBox #prayerRows td:nth-child(2), #formBox .name-col, " +
+      "#printArea .prayer-header th:nth-child(2), #printArea #prayerRows td:nth-child(2), #printArea .name-col"
+    ).forEach(el=>{
+      el.style.width = printNameWidth + "px";
+      el.style.maxWidth = printNameWidth + "px";
+    });
+  }
+
+  document.getElementById("printNameWidthSlider").oninput = function(){
+    printNameWidth = Number(this.value);
+    document.getElementById("printNameWidthText").textContent = printNameWidth + "px";
+    applyPrintNameWidth();
   };
+
+  const oldPrint = window.print;
+  window.print = function(){
+    applyPrintNameWidth();
+    setTimeout(()=>oldPrint.call(window),50);
+  };
+
+  const exportBtn = document.getElementById("exportBtn");
+  if(exportBtn){
+    exportBtn.addEventListener("click",()=>{
+      setTimeout(applyPrintNameWidth,80);
+      setTimeout(applyPrintNameWidth,150);
+    });
+  }
+
+  applyPrintNameWidth();
 
 })();
   
