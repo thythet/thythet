@@ -1223,7 +1223,7 @@ renderAreaManager();
 
   function setNameColumnWidth(){
     document.querySelectorAll(".inner-table colgroup col:nth-child(2)").forEach(col=>col.setAttribute("style","width:180px"));
-    document.querySelectorAll(".prayer-header .name-col, #prayerRows .name-col").forEach(el=>el.style.width="220px");
+    document.querySelectorAll(".prayer-header .name-col, #prayerRows .name-col").forEach(el=>el.style.width="150px");
   }
 
   function alignPrayerRows(){
@@ -1233,7 +1233,7 @@ renderAreaManager();
       const nameCell = row.querySelector(".name-col");
       const nameDisplay = row.querySelector(".name-display");
       if(num){num.style.textAlign="center";num.style.verticalAlign="middle";}
-      if(nameCell){nameCell.style.width="220px";nameCell.style.verticalAlign="middle";}
+      if(nameCell){nameCell.style.width="150px";nameCell.style.verticalAlign="middle";}
       if(nameDisplay){nameDisplay.style.display="flex";nameDisplay.style.alignItems="center";nameDisplay.style.minHeight=DEFAULT_PRAYER_ROW_HEIGHT + "px";}
     });
   }
