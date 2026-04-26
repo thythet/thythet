@@ -159,6 +159,12 @@ table{width:100%;border-collapse:collapse;table-layout:fixed;border:1px solid va
   }
 
 }
+  @media print {
+  #prayerRows td:nth-child(2),
+  .prayer-header th:nth-child(2){
+    width:160px !important;
+  }
+  }
 
 /* ===== Auto-growing prayer request cells ===== */
 #prayerRows textarea{
