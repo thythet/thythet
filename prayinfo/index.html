@@ -1,0 +1,2842 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>របាយការណ៍ពួកជំនុំតាមផ្ទះ</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230a1220'/%3E%3Cpath d='M12 31 32 14l20 17v21a3 3 0 0 1-3 3H38V39H26v16H15a3 3 0 0 1-3-3V31z' fill='%2393c5fd'/%3E%3Cpath d='M8 33 32 12l24 21' fill='none' stroke='%23fff' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+<style>
+@font-face{font-family:'Krasar';src:url('/prayinfo/fonts/Krasar-Regular.woff') format('woff'),url('./fonts/Krasar-Regular.woff') format('woff'),url('fonts/Krasar-Regular.woff') format('woff');font-weight:normal;font-style:normal;font-display:swap;}*{font-family:'Krasar',sans-serif!important;}body{line-height:1.6;}
+
+:root{--bg1:#0a1220;--bg2:#101b31;--glass:rgba(255,255,255,.08);--stroke:rgba(255,255,255,.14);--text:#f5f7fb;--muted:#b9c2d2;--blue:#5da7ff;--blue2:#7a79ff;--danger:#ff8a8a;--success:#78d69a;--paper:#fff;--ink:#111;--line:#111}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:'Krasar',sans-serif!important;color:var(--text);background:radial-gradient(circle at top left,rgba(93,167,255,.18),transparent 30%),radial-gradient(circle at bottom right,rgba(122,121,255,.18),transparent 30%),linear-gradient(160deg,var(--bg1),var(--bg2))}
+button,input,select,textarea{font:inherit}.hidden{display:none!important}.glass{background:var(--glass);border:1px solid var(--stroke);box-shadow:0 18px 46px rgba(0,0,0,.28);backdrop-filter:blur(16px)}
+.btn{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);color:#fff;border-radius:14px;padding:11px 15px;cursor:pointer}.btn:hover{background:rgba(255,255,255,.14)}.btn.primary{background:linear-gradient(135deg,var(--blue),var(--blue2))}.btn.danger{background:rgba(255,80,80,.16);color:#ffd0d0}.btn.small{padding:7px 10px;border-radius:10px;font-size:13px}.status{font-size:13px;color:var(--muted);min-height:20px;margin-top:10px}
+.login-wrap{min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:16vh 22px 22px}.login-card{width:min(476px,100%);border-radius:26px;padding:26px}.brand{display:flex;align-items:center;justify-content:center;gap:12px;font-size:24px;font-weight:700;margin-bottom:20px;line-height:1.35;text-align:center}.brand span{min-width:0}.brand i{width:52px;height:52px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(93,167,255,.36),rgba(255,255,255,.08));font-size:24px}.field{margin-bottom:13px}.field label{display:block;font-size:13px;color:#dce8f8;font-weight:600;margin-bottom:7px}.input-dark{width:100%;border:1px solid rgba(255,255,255,.14);border-radius:16px;background:rgba(255,255,255,.07);color:#fff;padding:13px 14px;outline:none}.password-login-row{display:flex;align-items:center;gap:10px}.password-login-row .input-dark{flex:1;min-width:0}.key-input-wrap{position:relative;flex:1;min-width:0}.key-input-wrap .input-dark{padding-right:48px}.key-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);width:30px;height:30px;border:0;background:transparent;color:#dce8f8;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:10px}.key-toggle:hover{background:rgba(255,255,255,.1)}.key-toggle i{font-size:18px}.password-login-row #loginBtn{flex:0 0 auto;min-height:52px}.icon-login{width:56px;display:inline-flex;align-items:center;justify-content:center}.icon-login i{font-size:20px}.remember-login{display:inline-flex;align-items:center;gap:8px;margin-top:2px;color:#dbe5f2;font-size:13px;font-weight:700;cursor:pointer;user-select:none}.remember-login input{appearance:none;width:16px;height:16px;border-radius:999px;border:2px solid rgba(219,234,254,.75);background:rgba(255,255,255,.06);box-shadow:inset 0 1px 0 rgba(255,255,255,.16);cursor:pointer}.remember-login input:checked{border-color:#93c5fd;background:radial-gradient(circle,#93c5fd 0 38%,rgba(147,197,253,.2) 42% 100%)}
+.app{max-width:1500px;margin:0 auto;padding:16px}.nav{position:sticky;top:0;z-index:10;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;border-radius:22px;margin-bottom:16px}.nav-left{font-weight:700;font-size:18px;display:flex;align-items:center;gap:8px;line-height:1.35}.nav-left-title{display:flex;align-items:center;gap:8px;min-width:0}.mobile-theme-btn{width:34px;height:34px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 10px 24px rgba(0,0,0,.16);backdrop-filter:blur(14px);color:#eaf3ff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto}.mobile-theme-btn:hover,.mobile-theme-btn.active{background:linear-gradient(135deg,rgba(93,167,255,.32),rgba(122,121,255,.18));border-color:rgba(147,197,253,.42)}.mobile-theme-btn i{font-size:18px}.skeleton-toggle-btn{width:34px;height:34px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 10px 24px rgba(0,0,0,.16);backdrop-filter:blur(14px);color:#eaf3ff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto}.skeleton-toggle-btn.active{background:linear-gradient(135deg,rgba(147,197,253,.34),rgba(59,130,246,.2));border-color:rgba(147,197,253,.55);color:#dbeafe}.skeleton-toggle-btn i{font-size:18px}.skeleton-duration-input{width:52px;height:34px;border-radius:999px;border:1px solid rgba(147,197,253,.32);background:linear-gradient(135deg,rgba(219,234,254,.16),rgba(59,130,246,.09));box-shadow:inset 0 1px 0 rgba(255,255,255,.16);backdrop-filter:blur(14px);color:#eaf3ff;text-align:center;font-size:12px;font-weight:800;outline:none}.skeleton-duration-input:focus{border-color:rgba(147,197,253,.75);box-shadow:0 0 0 3px rgba(59,130,246,.14),inset 0 1px 0 rgba(255,255,255,.16)}.nav-center{display:flex;gap:8px;flex-wrap:wrap}.nav-tab{border:0;background:transparent;color:#dbe5f2;padding:7px 10px;border-radius:10px;cursor:pointer;font-size:13px;line-height:1.3}.nav-tab.active{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff}.nav-tab.church-switch-active{max-width:210px;border:1px solid rgba(248,113,113,.44);background:linear-gradient(135deg,rgba(248,113,113,.26),rgba(127,29,29,.16));box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 8px 22px rgba(127,29,29,.2);backdrop-filter:blur(14px);color:#fecaca!important;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.nav-tab.church-switch-active.active{background:linear-gradient(135deg,rgba(248,113,113,.38),rgba(127,29,29,.24));color:#fff!important}.nav-right{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:13px}.role-label{color:#93c5fd!important;font-weight:700}.church-nav-badge{display:inline-flex;align-items:center;max-width:210px;padding:5px 10px;border-radius:999px;border:1px solid rgba(248,113,113,.44);background:linear-gradient(135deg,rgba(248,113,113,.26),rgba(127,29,29,.16));box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 8px 22px rgba(127,29,29,.2);backdrop-filter:blur(14px);color:#fecaca!important;font-weight:800;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.church-nav-badge.clickable{cursor:pointer}.church-nav-badge.clickable:hover{background:linear-gradient(135deg,rgba(248,113,113,.38),rgba(127,29,29,.24));color:#fff!important}
+.pastor-layout{display:grid;grid-template-columns:380px 1fr;gap:16px}.pastor-side{padding:0}.pastor-week{margin-bottom:16px}.pastor-week-head{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin:0 0 10px;color:#eaf3ff}.pastor-week-head h3{margin:0;font-size:18px}.pastor-week-head .copy-week-btn{padding:4px 8px!important;min-height:28px;border-radius:8px!important;font-size:11px!important;line-height:1.2}.pastor-card{position:relative;padding:16px 18px;border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.12);box-shadow:0 10px 24px rgba(0,0,0,.12);margin-bottom:10px}.pastor-card-title{font-size:18px;font-weight:800;line-height:1.35;margin-bottom:5px}.pastor-card-meta{font-size:13px;color:#c8d3e4;line-height:1.55}.pastor-offering{margin-top:7px;color:#dbeafe;font-weight:700}.pastor-copy{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:12px;border:1px solid rgba(147,197,253,.4);background:rgba(93,167,255,.18);color:#dbeafe;display:flex;align-items:center;justify-content:center;cursor:pointer}.pastor-copy:hover{background:rgba(93,167,255,.28)}.pastor-preview{white-space:pre-wrap;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:16px;color:#eaf3ff;min-height:240px}.view-form-board{white-space:normal}.view-form-head{padding:14px 16px;border-radius:16px;background:linear-gradient(180deg,rgba(147,197,253,.14),rgba(255,255,255,.055));border:1px solid rgba(147,197,253,.22);margin-bottom:14px}.view-form-church{font-size:17px;font-weight:900;margin-bottom:4px;color:#f8fbff}.view-form-meta{font-size:13px;color:#cbd5e1;line-height:1.7}.request-card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}.request-member-card{padding:13px 14px;border-radius:16px;background:linear-gradient(180deg,rgba(93,167,255,.13),rgba(255,255,255,.045));border:1px solid rgba(147,197,253,.2);box-shadow:0 10px 22px rgba(0,0,0,.12)}.request-member-name{display:flex;align-items:center;gap:7px;font-size:15px;font-weight:900;color:#f8fbff;margin-bottom:7px}.request-member-name .request-number{width:24px;height:24px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;background:rgba(147,197,253,.18);border:1px solid rgba(147,197,253,.28);color:#bfdbfe;font-size:12px}.request-member-text{font-size:13px;line-height:1.75;color:#e5edf8;white-space:pre-wrap}.request-empty{color:#94a3b8}.view-form-special{margin-top:12px;padding:13px 14px;border-radius:16px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.12);color:#e5edf8;white-space:pre-wrap}.view-form-special b{color:#f8fbff}.pastor-status{margin-top:10px;color:var(--muted);font-size:13px}@media(max-width:1100px){.pastor-layout{grid-template-columns:1fr}.pastor-side .list{max-height:360px}}
+.page{display:none}.page.active{display:block}.layout{display:grid;grid-template-columns:350px 1fr;gap:16px}.panel{border-radius:24px;overflow:hidden}.panel-head{padding:16px;border-bottom:1px solid rgba(255,255,255,.09)}.panel-head h3{margin:0;font-size:19px}.panel-body{padding:14px}.entry-sidebar{padding:0}.search{position:relative;margin-bottom:12px}.search i{position:absolute;top:50%;left:12px;transform:translateY(-50%);color:#cce2ff}.search input{padding-left:38px}.list{display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 260px);overflow:auto}.card-list{padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.1);cursor:pointer}.card-list:hover,.card-list.active{background:rgba(93,167,255,.17)}.entry-preview{position:relative;padding:16px 18px 15px;border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.04));border-color:rgba(255,255,255,.13);box-shadow:0 10px 24px rgba(0,0,0,.12)}.entry-preview:hover,.entry-preview.active{background:linear-gradient(180deg,rgba(93,167,255,.22),rgba(93,167,255,.12));border-color:rgba(150,196,255,.35)}.entry-preview .card-title{font-size:18px;line-height:1.35;margin-bottom:4px}.entry-preview .card-meta{font-size:13px;line-height:1.55;color:#c8d3e4}.entry-preview::after{content:"›";position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:24px;color:rgba(220,232,248,.72);opacity:0;transition:opacity .16s ease,transform .16s ease}.entry-preview:hover::after,.entry-preview.active::after{opacity:1;transform:translate(3px,-50%)}.card-title{font-weight:700}.card-meta{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5}.workspace{padding:14px}.toolbar{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}.toolbar .btn{padding:7px 10px;border-radius:10px;font-size:13px;line-height:1.3}.btn-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.manager-actions .btn{min-height:34px;padding:7px 10px!important;border-radius:10px!important;font-size:13px!important}.glass-icon-btn{width:34px;height:34px;border-radius:11px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.08);color:#eef5ff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(12px)}.glass-icon-btn:hover{background:rgba(255,255,255,.15)}.glass-icon-btn i{font-size:18px}.skeleton-shell{width:100%;display:flex;flex-direction:column;gap:12px}.skeleton-card{border-radius:18px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.1);padding:16px}.skeleton-paper{width:min(100%,900px);min-height:760px;margin:0 auto;border-radius:8px;background:rgba(255,255,255,.88);padding:28px}.skeleton-line{height:15px;border-radius:999px;background:linear-gradient(90deg,rgba(147,197,253,.12),rgba(147,197,253,.38),rgba(147,197,253,.12));background-size:220% 100%;animation:skeletonPulse 1.1s ease-in-out infinite;margin-bottom:11px}.skeleton-line.short{width:42%}.skeleton-line.mid{width:66%}.skeleton-line.long{width:88%}.skeleton-paper .skeleton-line{background:linear-gradient(90deg,rgba(71,85,105,.1),rgba(71,85,105,.25),rgba(71,85,105,.1));background-size:220% 100%}.skeleton-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin:18px 0}.skeleton-table-row{height:46px;border:1px solid rgba(15,23,42,.18);border-top:0}.skeleton-table-row:first-child{border-top:1px solid rgba(15,23,42,.18)}@keyframes skeletonPulse{0%{background-position:120% 0}100%{background-position:-120% 0}}body.paper-fullscreen{overflow:hidden}body.paper-fullscreen .nav,body.paper-fullscreen .entry-sidebar,body.paper-fullscreen #emptyForm,body.paper-fullscreen #formStatus{display:none!important}body.paper-fullscreen .app{max-width:none;padding:0}body.paper-fullscreen #pageForm .layout{display:block}body.paper-fullscreen #pageForm .panel.glass{min-height:100vh;border:0;border-radius:0;background:#0a1220;box-shadow:none}body.paper-fullscreen #pageForm .workspace{padding:12px;min-height:100vh;display:flex;flex-direction:column;align-items:center}body.paper-fullscreen #pageForm .toolbar{width:min(920px,100%);margin:0 auto 10px}body.paper-fullscreen #formBox.shell{max-height:calc(100vh - 58px);overflow:auto}.shell{border-radius:9px;padding:10px;background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.12)}#formBox.shell{width:fit-content;max-width:100%;margin:0 auto;padding:10px}#formBox{scrollbar-width:none;-ms-overflow-style:none}#formBox::-webkit-scrollbar{display:none}#formBox.shell>.paper{width:900px;max-width:100%;margin:0}.empty{min-height:320px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);flex-direction:column;gap:10px}.empty i{font-size:52px;color:#cce2ff}
+.paper{width:min(100%,900px);margin:0 auto;background:var(--paper);color:var(--ink);padding:24px 28px 32px;border-radius:4px;box-shadow:0 14px 40px rgba(0,0,0,.12)}.paper h1{text-align:center;margin:0 0 10px;font-size:27px}.subhead{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;align-items:end;margin-bottom:10px;font-size:18px}.subhead .center{text-align:center}.subhead .right{text-align:right}.inline{display:inline-flex;align-items:baseline;gap:8px;white-space:nowrap}.line-input{width:150px;border:0;border-bottom:1px solid transparent;background:transparent;outline:none;color:inherit}.date-input{width:175px}.field-picker{position:relative;display:inline-block}.field-toggle{border:0;background:transparent;font:inherit;font-weight:700;cursor:pointer;color:inherit;padding-right:28px}.field-panel{display:none;position:absolute;z-index:30;top:calc(100% + 8px);left:0;width:320px;max-height:310px;background:#fff;border:1px solid #cfd6de;border-radius:12px;box-shadow:0 18px 40px rgba(16,25,37,.16);overflow:hidden}.field-picker.open .field-panel{display:block}.field-search{width:calc(100% - 20px);margin:10px;padding:8px 10px;border:1px solid #cfd6de;border-radius:8px}.field-list{max-height:250px;overflow:auto}.field-option{display:block;width:100%;border:0;background:#fff;text-align:left;padding:8px 12px;cursor:pointer}.field-option:hover{background:#eef5ff}
+table{width:100%;border-collapse:collapse;table-layout:fixed;border:1px solid var(--line)}td,th{border:1px solid var(--line);padding:0;vertical-align:middle}.label-cell{width:150px;padding:8px 10px;font-size:18px;font-weight:700;vertical-align:top}.label-cell.bottom-label{vertical-align:middle;text-align:center}.participant-count{color:#2e5fbf}.field-cell textarea,.field-cell input{width:100%;border:0;background:transparent;outline:none;color:inherit;padding:10px 12px}.field-cell textarea{height:52px;min-height:52px;resize:none;overflow:hidden}.participant-wrap{display:flex;align-items:flex-start;gap:12px;padding:10px 12px;flex-wrap:wrap}.participant-wrap>span{font-size:18px;padding-top:5px}.selected-participant{display:flex;gap:8px;flex-wrap:wrap;min-height:32px;align-items:center;color:#183042}.pill{display:inline-flex;align-items:center;gap:7px;padding:5px 12px;border:1px solid #cfd6de;border-radius:999px;background:#f8fafc}.pill-remove{border:0;background:transparent;color:#8b1e1e;cursor:pointer;font-size:16px;line-height:1;padding:0;opacity:0;visibility:hidden;transition:opacity .16s ease,visibility .16s ease}.pill:hover .pill-remove,.pill:focus-within .pill-remove{opacity:1;visibility:visible}.select-row{display:flex;gap:8px;flex-wrap:wrap}.select-row select{width:130px;border:1px solid #cfd6de;border-radius:8px;padding:6px 8px}.add-btn{border:1px solid #cfd6de;background:#fff;color:#183042;border-radius:8px;padding:6px 10px;cursor:pointer}.inner-table{border:0}.number-col{width:66px;text-align:center;font-size:18px}.name-col{width:250px}.name-display{padding:10px 12px}.prayer-header th{height:44px;font-size:18px;background:rgba(0,0,0,.02)}.prayer-row td{height:48px}.single-line{height:52px}.gap-row td{border-left:1px solid #fff!important;border-right:1px solid #fff!important}
+.manager-card{width:min(100%,980px);margin:0 auto;background:#fff;color:#111;border-radius:22px;padding:22px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.light-label{font-weight:700;margin-bottom:7px;display:block}.input-light{width:100%;border:1px solid #d6dde8;border-radius:13px;padding:11px 12px}.section{margin-top:16px;padding-top:14px;border-top:1px solid #e8edf3}.member-row{display:flex;gap:8px;margin-bottom:9px;align-items:center}.member-name{flex:1}.birth-wrap{display:flex;align-items:center;gap:6px;color:#6b7a90}.birth-wrap i{font-size:18px;color:#5d7ff9}.birth-input{width:70px!important;flex:0 0 70px!important;text-align:center}.birth-month-select{width:110px!important;flex:0 0 110px!important}.member-remove{width:42px;min-height:42px;border:0;border-radius:12px;background:#ffe1e1;color:#d62f2f;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}.member-remove i{font-size:20px}.member-remove:hover{background:#ffd2d2}.member-row:not(.editing) .member-remove{display:none}.member-row input:disabled,.member-row select:disabled{background:#f8fafc;color:#5f6c7a}.json-box{display:none!important;background:#0f1724;color:#cfe1ff;border-radius:14px;padding:12px;overflow:auto;font:12px ui-monospace,monospace;max-height:240px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}.stat{padding:18px;border-radius:22px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1)}.stat small{color:var(--muted)}.stat b{display:block;font-size:32px}.dash-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}#dashboardOverview>.card-list{margin:0 0 8px!important;padding:8px!important;border-radius:12px!important}#dashboardOverview>.card-list:last-child{margin-bottom:0!important}#dashboardOverview>.card-list .card-title{line-height:1.25}#dashboardOverview>.card-list .card-meta{line-height:1.25;margin-top:1px}#dashboardOverview>.card-meta:not(:first-child){margin-top:8px}.dashboard-rating-stars{display:inline-flex;align-items:center;gap:2px;margin-right:7px;vertical-align:middle}.dashboard-rating-stars i{font-size:15px;color:#64748b}.dashboard-rating-stars i.filled{color:#facc15;text-shadow:0 0 10px rgba(250,204,21,.3)}.rating-card .card-meta{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+@media(max-width:1100px){.layout,.dash-grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.list{max-height:320px}}@media(max-width:760px){
+:root{--mobile-app-top-space:42px;--mobile-app-bottom-space:44px;--mobile-compact-top-space:38px;--mobile-compact-bottom-space:30px}
+body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+body::before{content:"";position:fixed;top:0;left:0;right:0;height:calc(var(--mobile-app-top-space) + env(safe-area-inset-top) + 24px);z-index:9;pointer-events:none;background:linear-gradient(180deg,rgba(10,18,32,.88) 0%,rgba(10,18,32,.48) 58%,rgba(10,18,32,0) 100%)}
+.app{padding:calc(var(--mobile-app-top-space) + env(safe-area-inset-top)) 10px calc(var(--mobile-app-bottom-space) + env(safe-area-inset-bottom))}
+.login-wrap{padding-top:calc(10vh + var(--mobile-app-top-space) + env(safe-area-inset-top));padding-bottom:calc(var(--mobile-app-bottom-space) + env(safe-area-inset-bottom))}
+.nav{flex-direction:column;align-items:flex-start;top:calc(var(--mobile-app-top-space) + env(safe-area-inset-top))}
+.nav-right{width:100%;justify-content:space-between}
+.layout,.grid2{grid-template-columns:1fr}
+.stats{grid-template-columns:1fr}
+.shell{overflow:hidden;padding:10px}
+body.mobile-compact .app{padding:calc(var(--mobile-compact-top-space) + env(safe-area-inset-top)) 7px calc(var(--mobile-compact-bottom-space) + env(safe-area-inset-bottom))}
+body.mobile-compact::before{height:calc(var(--mobile-compact-top-space) + env(safe-area-inset-top) + 24px)}
+body.mobile-compact .nav{padding:9px 10px;border-radius:18px;margin-bottom:10px;gap:8px}
+body.mobile-compact .nav{top:calc(var(--mobile-compact-top-space) + env(safe-area-inset-top))}
+body.mobile-compact .nav-left{font-size:16px}
+body.mobile-compact .mobile-theme-btn{width:30px;height:30px}
+body.mobile-compact .nav-center{gap:5px}
+body.mobile-compact .nav-tab{font-size:11px;padding:5px 7px;border-radius:8px}
+body.mobile-compact .nav-right{font-size:11px;gap:6px}
+body.mobile-compact .btn.small{font-size:11px;padding:5px 8px}
+body.mobile-compact .workspace,body.mobile-compact .panel-body{padding:10px}
+body.mobile-compact .toolbar{margin-bottom:8px}
+body.mobile-compact .toolbar .btn{font-size:11px;padding:5px 8px}
+body.mobile-compact .search{margin-bottom:8px}
+body.mobile-compact .input-dark{padding:10px 12px;border-radius:13px}
+body.mobile-compact .list{gap:7px;max-height:360px}
+body.mobile-compact .card-list{padding:9px 11px;border-radius:13px}
+body.mobile-compact .entry-preview .card-title,body.mobile-compact .pastor-card-title{font-size:15px!important}
+body.mobile-compact .entry-preview .card-meta,body.mobile-compact .pastor-card-meta{font-size:11px!important}
+body.mobile-compact .panel{border-radius:18px}
+body.mobile-compact .stats{gap:8px;margin-bottom:10px}
+body.mobile-compact .stat{padding:12px;border-radius:16px}
+body.mobile-compact .stat b{font-size:24px}
+body.mobile-compact .manager-card{padding:16px;border-radius:18px}
+body.mobile-compact .gm-panel-title{font-size:17px}
+body.mobile-compact .gm-panel-note{font-size:11px}
+
+  :root{
+  --print-name-col-width:160px;
+}
+
+/* Mobile paper scaling */
+.paper{
+  width:900px;
+  max-width:900px;
+  transform:scale(calc((100vw - 52px) / 900));
+  transform-origin:top left;
+  margin:0;
+  padding:24px 28px 32px;
+  border-radius:4px;
+}
+#formBox{
+  overflow:hidden;
+}
+#formBox .paper{
+  margin-bottom:calc((100vw - 88px) / 900 * -1px);
+}
+.shell:has(.paper){
+  min-height:calc(980px * ((100vw - 52px) / 900) + 20px);
+}
+
+/* fallback if :has is not supported */
+.form-mobile-holder{
+  width:100%;
+  overflow:hidden;
+}
+
+.subhead{grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:18px}
+.subhead .center{text-align:center}
+.subhead .right{text-align:right}
+.name-col{width:250px}
+.field-panel{width:320px}
+.label-cell,.number-col,.participant-wrap>span{font-size:18px}
+}
+
+@media(max-width:420px){
+.shell:has(.paper){
+  min-height:calc(1040px * ((100vw - 42px) / 900) + 20px);
+}
+.paper{
+  transform:scale(calc((100vw - 42px) / 900));
+}
+}
+.print-only{display:none}
+
+/* Fix participant controls alignment */
+.select-row{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:10px!important;width:100%!important;}
+#selectedParticipant{flex:1 1 auto!important;min-width:150px!important;}
+#participantSelect{width:150px!important;min-width:150px!important;}
+#addParticipantBtn{white-space:nowrap!important;}
+@media(max-width:760px){.select-row{justify-content:flex-start!important;flex-wrap:wrap!important;}#selectedParticipant{flex:1 1 100%!important;min-width:0!important;}}
+
+/* ===== Dashboard clear activity button ===== */
+.dash-head-actions,
+.panel-head-actions{
+  display:flex!important;
+  justify-content:space-between!important;
+  align-items:center!important;
+  gap:10px!important;
+}
+.clear-activity-btn{
+  background:rgba(255,80,80,.18)!important;
+  border:1px solid rgba(255,80,80,.35)!important;
+  color:#ffd0d0!important;
+  border-radius:12px!important;
+  padding:8px 12px!important;
+  cursor:pointer!important;
+  white-space:nowrap!important;
+}
+.clear-activity-btn:hover{
+  background:rgba(255,80,80,.28)!important;
+}
+
+/* ===== Print cleanup: hide controls and empty rows ===== */
+
+  
+  
+
+/* ===== Auto-growing prayer request cells ===== */
+#prayerRows textarea{
+  min-height:52px!important;
+  height:52px;
+  resize:none!important;
+  overflow:hidden!important;
+  line-height:1.45!important;
+  white-space:pre-wrap!important;
+  word-break:break-word!important;
+}
+#prayerRows td{
+  height:auto!important;
+  vertical-align:top!important;
+}
+#prayerRows .name-display{
+  align-items:flex-start!important;
+}
+
+/* ===== Match prayer row default height with header ===== */
+:root{
+  --prayer-row-height:52px;
+}
+.prayer-header th{
+  height:var(--prayer-row-height)!important;
+}
+#prayerRows tr,
+#prayerRows td{
+  min-height:var(--prayer-row-height)!important;
+  height:var(--prayer-row-height);
+}
+#prayerRows .number-col,
+#prayerRows .name-col,
+#prayerRows .field-cell{
+  height:var(--prayer-row-height)!important;
+  min-height:var(--prayer-row-height)!important;
+}
+#prayerRows .name-display{
+  min-height:var(--prayer-row-height)!important;
+  height:auto!important;
+  display:flex!important;
+  align-items:center!important;
+}
+#prayerRows textarea{
+  min-height:var(--prayer-row-height)!important;
+  height:var(--prayer-row-height);
+  box-sizing:border-box!important;
+  line-height:1.45!important;
+  resize:none!important;
+  overflow:hidden!important;
+}
+
+/* ===== Final table alignment fixes ===== */
+.inner-table col:nth-child(2){
+  width:180px!important;
+}
+.prayer-header .name-col,
+#prayerRows .name-col{
+  width:180px!important;
+}
+#prayerRows .number-col{
+  text-align:center!important;
+  vertical-align:middle!important;
+  width:66px!important;
+}
+#prayerRows .name-display{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  min-height:var(--prayer-row-height,52px)!important;
+  padding:0 12px!important;
+}
+#prayerRows td{
+  vertical-align:middle!important;
+}
+#prayerRows .field-cell textarea{
+  display:block!important;
+  width:100%!important;
+}
+
+/* Participant selected names and select row inline alignment */
+.participant-wrap{
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  flex-wrap:nowrap!important;
+}
+.participant-wrap > span{
+  flex:0 0 auto!important;
+}
+.participant-controls{
+  flex:1 1 auto!important;
+  min-width:0!important;
+}
+.select-with-add,
+.select-row{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+  width:100%!important;
+}
+.selected-participant{
+  flex:1 1 auto!important;
+  min-width:0!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  flex-wrap:wrap!important;
+}
+.participant-select-wrap,
+#participantSelect{
+  flex:0 0 150px!important;
+  width:150px!important;
+}
+#addParticipantBtn,
+.add-btn{
+  flex:0 0 auto!important;
+}
+
+/* print separator row before bottom rows */
+.print-separator-row td{
+  height:18px!important;
+  min-height:18px!important;
+  padding:0!important;
+  border-left:1px solid #111!important;
+  border-right:1px solid #111!important;
+  border-top:1px solid #111!important;
+  border-bottom:1px solid #111!important;
+}
+
+@media(max-width:760px){
+  .participant-wrap{
+    flex-wrap:wrap!important;
+    align-items:flex-start!important;
+  }
+  .selected-participant{
+    flex:1 1 100%!important;
+  }
+  .participant-select-wrap,
+  #participantSelect{
+    flex:0 0 150px!important;
+    width:150px!important;
+  }
+}
+
+/* Compact participant controls */
+.select-row.participant-controls{gap:5px!important;top:7px!important;right:7px!important;}
+.select-row.participant-controls #participantSelect{width:108px!important;height:28px!important;font-size:12px!important;padding:3px 6px!important;border-radius:7px!important;}
+.select-row.participant-controls #addParticipantBtn{height:28px!important;padding:0 7px!important;font-size:12px!important;border-radius:7px!important;}
+/* ===== Participant controls top-right + print text fix ===== */
+.participant-wrap{
+  position:relative!important;
+  min-height:70px!important;
+  padding-right:230px!important;
+  display:flex!important;
+  align-items:flex-start!important;
+  gap:10px!important;
+}
+.participant-wrap > span{
+  margin-top:8px!important;
+  flex:0 0 auto!important;
+}
+.selected-participant{
+  flex:1 1 auto!important;
+  min-width:0!important;
+  padding-top:6px!important;
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:8px!important;
+}
+.select-row,
+.select-with-add,
+.participant-controls{
+  position:absolute!important;
+  top:10px!important;
+  right:10px!important;
+  width:auto!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:8px!important;
+}
+#participantSelect{
+  width:150px!important;
+  height:38px!important;
+}
+#addParticipantBtn,
+.add-btn{
+  height:38px!important;
+  padding:0 12px!important;
+  white-space:nowrap!important;
+}
+
+/* Print textarea replacement prevents text cutting */
+.print-textarea-value{
+  display:none;
+}
+
+@media(max-width:760px){
+  .participant-wrap{
+    padding-right:0!important;
+    min-height:auto!important;
+  }
+  .select-row,
+  .select-with-add,
+  .participant-controls{
+    position:static!important;
+    width:100%!important;
+    margin-top:8px!important;
+    justify-content:flex-end!important;
+  }
+}
+
+/* ===== Print field area + separator final fix ===== */
+.print-field-area-text{
+  display:none;
+}
+
+/* ===== Simple print blank row ===== */
+
+/* ===== Final print blank row like sample ===== */
+
+/* ===== Static blank gap row before bottom rows ===== */
+.gap-row td{
+  height:40px!important;
+  padding:0!important;
+  background:#fff!important;
+  border-left:1px solid #fff!important;
+  border-right:1px solid #fff!important;
+  border-top:1px solid #111!important;
+  border-bottom:1px solid #111!important;
+}
+
+/* ===== GM SYSTEM UI START ===== */
+.gm-panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+.gm-panel-title{margin:0;font-size:20px}
+.gm-panel-title.glass-red-title{display:inline-flex;align-items:center;width:max-content;max-width:100%;padding:6px 12px;border-radius:14px;border:1px solid rgba(248,113,113,.44);background:linear-gradient(135deg,rgba(248,113,113,.26),rgba(127,29,29,.16));box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 8px 22px rgba(127,29,29,.16);backdrop-filter:blur(14px);color:#7f1d1d;font-weight:900}
+.gm-panel-title.glass-blue-title{display:inline-flex;align-items:center;width:max-content;max-width:100%;padding:6px 12px;border-radius:14px;border:1px solid rgba(147,197,253,.5);background:linear-gradient(135deg,rgba(93,167,255,.24),rgba(122,121,255,.14));box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 8px 22px rgba(59,130,246,.16);backdrop-filter:blur(14px);color:#1d4ed8;font-weight:900}
+.gm-panel-note{font-size:12px;color:#6b7a90;line-height:1.5;margin-top:4px}
+.gm-card{padding:16px;border-radius:18px;margin-bottom:14px;background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.045));border:1px solid rgba(255,255,255,.12)}
+.gm-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}
+.gm-info{min-width:0}
+.gm-name{font-weight:700;font-size:16px;color:#fff;line-height:1.35}
+.gm-email{font-size:12px;color:var(--muted);line-height:1.5;word-break:break-all}
+.gm-badge{display:inline-flex;align-items:center;gap:5px;margin-top:6px;padding:4px 8px;border-radius:999px;background:rgba(93,167,255,.15);border:1px solid rgba(93,167,255,.25);color:#ddecff;font-size:11px}
+.gm-area-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
+.gm-area-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.1);cursor:pointer;font-size:13px;line-height:1.35;color:#eef5ff}
+.gm-area-item:hover{background:rgba(93,167,255,.16);border-color:rgba(93,167,255,.28)}
+.gm-area-item input{accent-color:#5da7ff}
+.gm-area-item.disabled{opacity:.42;cursor:not-allowed}
+.gm-area-item.disabled input{cursor:not-allowed}
+.gm-area-owner{font-size:11px;color:var(--muted);margin-left:auto}
+.gm-empty{padding:16px;border-radius:16px;background:rgba(255,255,255,.055);border:1px dashed rgba(255,255,255,.16);color:var(--muted);text-align:center}
+.gm-save-status{font-size:12px;color:var(--success);min-height:18px;margin-top:8px}
+@media(max-width:760px){.gm-header,.gm-panel-head{flex-direction:column;align-items:stretch}.gm-area-list{grid-template-columns:1fr}}
+/* ===== GM SYSTEM UI END ===== */
+
+/* ===== FIX 1: Group Managers box readable dark text ===== */
+#pageGroupManagers .manager-card,
+#pageGroupManagers .manager-card *{
+  color:#111827!important;
+}
+#pageGroupManagers .gm-panel-note,
+#pageGroupManagers .gm-email,
+#pageGroupManagers .gm-area-owner,
+#pageGroupManagers .gm-save-status{
+  color:#4b5563!important;
+}
+#pageGroupManagers .gm-card{
+  background:#ffffff!important;
+  border:1px solid #e5e7eb!important;
+  box-shadow:0 8px 22px rgba(15,23,42,.06)!important;
+}
+#pageGroupManagers .gm-name{
+  color:#111827!important;
+}
+#pageGroupManagers .gm-area-item{
+  background:#f8fafc!important;
+  border:1px solid #e5e7eb!important;
+  color:#111827!important;
+}
+#pageGroupManagers .gm-area-item:hover{
+  background:#eef5ff!important;
+  border-color:#9cc8ff!important;
+}
+#pageGroupManagers .gm-area-item.disabled{
+  opacity:1!important;
+  background:#f1f5f9!important;
+  color:#9ca3af!important;
+}
+#pageGroupManagers .gm-area-item.disabled *{
+  color:#9ca3af!important;
+}
+#pageGroupManagers .gm-badge{
+  background:#eaf3ff!important;
+  border:1px solid #bfdbfe!important;
+  color:#1d4ed8!important;
+}
+#pageGroupManagers .btn.primary,
+#pageGroupManagers .btn.primary *{
+  color:#fff!important;
+}
+#pageGroupManagers input[type=checkbox]{
+  accent-color:#5da7ff!important;
+}
+#pageSwitchChurch .gm-area-item{
+  background:#f8fafc!important;
+  border:1px solid #d6dde8!important;
+  color:#111827!important;
+  font-weight:800!important;
+}
+#pageSwitchChurch .gm-area-item:hover{
+  background:#eef5ff!important;
+  border-color:#93c5fd!important;
+}
+#pageSwitchChurch .gm-area-item.active{
+  background:#dbeafe!important;
+  border-color:#3b82f6!important;
+  color:#1d4ed8!important;
+}
+.nav-tab.church-switch-active{
+  border:1px solid rgba(248,113,113,.44)!important;
+  background:linear-gradient(135deg,rgba(248,113,113,.26),rgba(127,29,29,.16))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 8px 22px rgba(127,29,29,.2)!important;
+  color:#fecaca!important;
+}
+.nav-tab.church-switch-active.active{
+  background:linear-gradient(135deg,rgba(248,113,113,.38),rgba(127,29,29,.24))!important;
+  color:#fff!important;
+}
+.nav-church-switch-wrap{position:relative;display:inline-flex}
+.nav-church-dropdown{position:absolute;top:calc(100% + 8px);left:0;z-index:80;display:none;width:max-content;min-width:210px;max-width:min(320px,calc(100vw - 28px));max-height:280px;overflow:auto;padding:7px;border-radius:15px;border:1px solid rgba(147,197,253,.34);background:linear-gradient(180deg,rgba(31,41,55,.92),rgba(15,23,42,.86));box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 18px 42px rgba(0,0,0,.34);backdrop-filter:blur(18px)}
+.nav-church-switch-wrap:hover .nav-church-dropdown,.nav-church-switch-wrap:focus-within .nav-church-dropdown{display:flex;flex-direction:column;gap:5px}
+.nav-church-option{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;border:1px solid rgba(147,197,253,.18);border-radius:11px;background:rgba(255,255,255,.075);color:#eaf3ff;padding:7px 9px;text-align:left;cursor:pointer;white-space:nowrap}
+.nav-church-option:hover,.nav-church-option.active{background:linear-gradient(135deg,rgba(219,234,254,.18),rgba(59,130,246,.1));border-color:rgba(147,197,253,.5);color:#bfdbfe}
+.nav-church-option i{font-size:14px;color:#93c5fd}
+
+/* ===== A4 print page size final override ===== */
+
+
+
+/* ===== Consolidated print system: A4 portrait ===== */
+@page{
+  size:A4 portrait;
+  margin:10mm;
+}
+@media print{
+  body::before{
+    display:none!important;
+  }
+  html,body{
+    width:210mm!important;
+    min-height:297mm!important;
+    margin:0!important;
+    padding:0!important;
+    background:#fff!important;
+  }
+  .app,.login-wrap,#printNameWidthControl{
+    display:none!important;
+  }
+  .print-only{
+    display:block!important;
+  }
+  #printArea{
+    width:190mm!important;
+    margin:0 auto!important;
+    padding:0!important;
+  }
+  #printArea .paper{
+    width:190mm!important;
+    max-width:190mm!important;
+    min-height:277mm!important;
+    margin:0 auto!important;
+    padding:0!important;
+    box-shadow:none!important;
+    border-radius:0!important;
+    transform:none!important;
+    color:#111!important;
+    background:#fff!important;
+  }
+  #printArea .inner-table{
+    table-layout:fixed!important;
+    width:100%!important;
+  }
+  #printArea .inner-table col:nth-child(2),
+  #printArea .prayer-header th:nth-child(2),
+  #printArea #prayerRows td:nth-child(2),
+  #printArea .name-col{
+    width:var(--print-name-width,140px)!important;
+    max-width:var(--print-name-width,140px)!important;
+  }
+  #participantSelect,
+  #addParticipantBtn,
+  .add-btn,
+  .participant-select-wrap,
+  .select-row,
+  .select-with-add select,
+  .select-with-add button,
+  .field-area-toggle i,
+  .field-panel,
+  .field-area-panel,
+  button,
+  select{
+    display:none!important;
+  }
+  .participant-wrap{
+    display:block!important;
+    padding-right:0!important;
+    min-height:auto!important;
+  }
+  .selected-participant{
+    display:block!important;
+  }
+  .selected-participant.empty{
+    display:none!important;
+  }
+  .print-field-area-text{
+    display:inline!important;
+    font-weight:700!important;
+    color:#000!important;
+    background:transparent!important;
+    border:0!important;
+    box-shadow:none!important;
+  }
+  #printArea .field-toggle,
+  #printArea .line-input,
+  #printArea .date-input,
+  #printArea #participantSelect,
+  #printArea #addParticipantBtn{
+    background:transparent!important;
+    border:0!important;
+    box-shadow:none!important;
+    color:#111!important;
+  }
+  textarea{
+    overflow:hidden!important;
+    resize:none!important;
+  }
+  #prayerRows textarea.print-hidden-textarea{
+    display:none!important;
+  }
+  .print-textarea-value{
+    display:block!important;
+    white-space:pre-wrap!important;
+    word-break:break-word!important;
+    line-height:1.45!important;
+    min-height:52px!important;
+    padding:6px 10px!important;
+  }
+  #prayerRows tr,
+  #prayerRows td{
+    height:auto!important;
+    min-height:0!important;
+    vertical-align:top!important;
+  }
+  #prayerRows .name-display{
+    align-items:flex-start!important;
+    padding-top:6px!important;
+  }
+  tr.print-hide-empty{
+    display:none!important;
+  }
+  #prayerRows tr.print-gap-row,
+  #prayerRows tr.print-gap-row.print-hide-empty,
+  .gap-row,
+  .print-separator-row{
+    display:table-row!important;
+    visibility:visible!important;
+  }
+  #prayerRows tr.print-gap-row td,
+  .gap-row td,
+  .print-separator-row td{
+    display:table-cell!important;
+    height:46px!important;
+    min-height:46px!important;
+    padding:0!important;
+    border:1px solid #111!important;
+    background:#fff!important;
+  }
+}
+.entry-missing{border-color:rgba(248,113,113,.55)!important;background:linear-gradient(180deg,rgba(127,29,29,.38),rgba(127,29,29,.18))!important;box-shadow:0 0 0 1px rgba(248,113,113,.18) inset!important;cursor:default!important}
+.entry-missing .card-title{color:#fecaca!important}
+.entry-missing .card-meta{color:#fecaca!important;font-weight:700}
+.entry-missing-badge{display:inline-flex;margin-top:6px;padding:3px 8px;border-radius:999px;background:rgba(248,113,113,.16);color:#fecaca;font-size:12px;font-weight:800;border:1px solid rgba(248,113,113,.28)}
+.entry-missing-summary{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;padding:9px 10px;border-radius:13px;border:1px solid rgba(248,113,113,.42);background:rgba(127,29,29,.2);color:#fecaca;font-weight:800;line-height:1.35}
+.entry-missing-toggle{width:30px;height:30px;border-radius:10px;border:1px solid rgba(248,113,113,.38);background:rgba(248,113,113,.13);color:#fecaca;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto}
+.entry-missing-toggle:hover{background:rgba(248,113,113,.24)}
+.entry-missing-list{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.entry-missing{position:relative!important;padding:9px 96px 9px 10px!important}
+.entry-missing-add{position:absolute;right:10px;top:50%;transform:translateY(-50%);padding:7px 13px;border-radius:13px;border:1px solid rgba(147,197,253,.48);background:linear-gradient(135deg,rgba(219,234,254,.42),rgba(96,165,250,.24));box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 8px 18px rgba(59,130,246,.16);backdrop-filter:blur(12px);color:#dbeafe;font-size:12px;font-weight:900;cursor:pointer;opacity:1;pointer-events:auto;transition:transform .16s ease}
+.entry-missing:hover .entry-missing-add,.entry-missing:focus-within .entry-missing-add,.entry-missing.show-add-btn .entry-missing-add{transform:translateY(-50%) scale(1.03)}
+.entry-missing-add:disabled{opacity:.55;cursor:not-allowed}
+.entry-missing-add:hover{background:linear-gradient(135deg,rgba(219,234,254,.58),rgba(96,165,250,.34));color:#fff}
+.entry-offering-warning{border-color:rgba(251,191,36,.5)!important;background:linear-gradient(180deg,rgba(120,53,15,.28),rgba(120,53,15,.12))!important;box-shadow:0 0 0 1px rgba(251,191,36,.14) inset!important}
+.entry-offering-badge{display:inline-flex;margin-top:6px;padding:3px 8px;border-radius:999px;background:rgba(251,191,36,.14);color:#fde68a;font-size:12px;font-weight:800;border:1px solid rgba(251,191,36,.3)}
+.area-title-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:2px}
+.area-title-row .card-title{margin:0}
+.area-church-badge{display:inline-flex;align-items:center;max-width:145px;padding:2px 7px;border-radius:999px;border:1px solid rgba(248,113,113,.42);background:linear-gradient(135deg,rgba(248,113,113,.24),rgba(127,29,29,.14));box-shadow:inset 0 1px 0 rgba(255,255,255,.14);backdrop-filter:blur(10px);color:#fecaca!important;font-size:10px;font-weight:800;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.paper #participantSelect,.paper #addParticipantBtn{border:1px solid rgba(59,130,246,.34)!important;background:linear-gradient(135deg,rgba(219,234,254,.92),rgba(147,197,253,.56))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.78),0 8px 18px rgba(37,99,235,.16)!important;backdrop-filter:blur(12px)!important;color:#1e3a8a!important;font-weight:900!important}
+.paper #participantSelect option{background:#eff6ff!important;color:#1e3a8a!important}
+.paper #addParticipantBtn:hover{background:linear-gradient(135deg,rgba(191,219,254,.96),rgba(96,165,250,.62))!important}
+.paper .field-toggle,.paper .line-input,.paper .date-input{border:0!important;border-bottom:1px solid transparent!important;background:transparent!important;box-shadow:none!important;border-radius:0!important;color:#1d4ed8!important;font-weight:900!important}
+.paper .field-toggle{padding-right:28px!important}
+.paper .line-input,.paper .date-input{padding:0!important}
+.paper .field-toggle i{color:#1d4ed8!important}
+.log-card{position:relative;padding-right:116px!important}
+.restore-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);border:1px solid rgba(120,214,154,.45);background:rgba(120,214,154,.14);color:#baf7ce;border-radius:10px;padding:7px 10px;font-size:12px;font-weight:800;cursor:pointer}
+.restore-btn:hover{background:rgba(120,214,154,.24)}
+.restore-btn:disabled{opacity:.65;cursor:not-allowed}
+/* Pastor sidebar polish */
+.pastor-side .list{padding-right:6px;scrollbar-width:thin;scrollbar-color:rgba(147,197,253,.55) rgba(255,255,255,.06)}
+.list::-webkit-scrollbar{width:8px;height:8px}
+.list::-webkit-scrollbar-track{background:rgba(255,255,255,.06);border-radius:999px}
+.list::-webkit-scrollbar-thumb{background:linear-gradient(180deg,rgba(147,197,253,.85),rgba(93,167,255,.5));border-radius:999px;border:2px solid rgba(20,31,49,.9)}
+.list::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,rgba(191,219,254,.95),rgba(96,165,250,.75))}
+.pastor-week{border:1px solid rgba(147,197,253,.22);border-radius:18px;padding:10px;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025));box-shadow:0 12px 28px rgba(0,0,0,.12);margin-bottom:14px}
+.pastor-week-head{padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.09);margin-bottom:9px!important}
+.pastor-card{padding:10px 12px!important;border-radius:14px!important;margin-bottom:8px!important;box-shadow:none!important;background:rgba(255,255,255,.045)!important}
+.pastor-card-title{font-size:18px!important;line-height:1.25!important;margin-bottom:2px!important}
+.pastor-card-meta{font-size:12px!important;line-height:1.35!important;color:#cfe1ff!important}
+.pastor-offering{margin-top:4px!important;font-size:13px!important;line-height:1.35!important}
+</style>
+</head>
+<body>
+<div id="loginScreen" class="login-wrap">
+  <div class="login-card glass">
+    <div class="brand"><i class="ri-file-list-3-line"></i><span>របាយការណ៍ពួកជំនុំតាមផ្ទះ</span></div>
+    <div class="field"><label>Email</label><input id="loginEmail" class="input-dark" type="email"></div>
+    <div class="field"><label>Key</label><div class="password-login-row"><div class="key-input-wrap"><input id="loginPassword" class="input-dark" type="password"><button id="toggleKeyBtn" class="key-toggle" type="button" aria-label="Show key"><i class="ri-eye-line"></i></button></div><button id="loginBtn" class="btn primary icon-login" type="button" aria-label="Login"><i class="ri-key-line"></i></button></div></div>
+    <label class="remember-login"><input id="rememberLogin" type="checkbox"><span>Remember Login</span></label>
+    <div id="loginStatus" class="status"></div>
+  </div>
+</div>
+
+<div id="app" class="app hidden">
+  <div class="nav glass">
+    <div class="nav-left"><div class="nav-left-title"><i class="ri-stack-line"></i> <span>របាយការណ៍ពួកជំនុំតាមផ្ទះ</span></div><button id="mobileThemeBtn" class="mobile-theme-btn" type="button" title="Toggle mobile compact theme" aria-label="Toggle mobile compact theme"><i class="ri-contrast-2-line"></i></button><button id="skeletonToggleBtn" class="skeleton-toggle-btn hidden" type="button" title="Toggle skeleton loading" aria-label="Toggle skeleton loading"><i class="ri-loader-4-line"></i></button><input id="skeletonDurationInput" class="skeleton-duration-input hidden" type="number" min="1" max="20" step="1" title="Skeleton seconds" aria-label="Skeleton seconds"></div>
+    <div class="nav-center">
+      <div id="navChurchSwitchWrap" class="nav-church-switch-wrap hidden">
+        <button id="navSwitchChurch" class="nav-tab church-switch-active" data-page="switchChurch">All Churches</button>
+        <div id="navChurchDropdown" class="nav-church-dropdown"></div>
+      </div>
+      <button class="nav-tab active" data-page="form">Form</button>
+      <button id="navPastor" class="nav-tab hidden" data-page="pastor">Pastor</button>
+      <button id="navViewAllForms" class="nav-tab hidden" data-page="viewAllForms">សំណូមពរអធិស្ឋានវាលស្មៅទាំងអស់</button>
+      <button id="navMembers" class="nav-tab hidden" data-page="members">Members</button>
+      <button id="navManager" class="nav-tab hidden" data-page="manager">Manager</button>
+      <button id="navGroupManagers" class="nav-tab hidden" data-page="groupManagers">Group Managers</button>
+      <button id="navManageChurch" class="nav-tab hidden" data-page="manageChurch">Manage Church</button>
+      <button id="navDashboard" class="nav-tab hidden" data-page="dashboard">Dashboard</button>
+    </div>
+    <div class="nav-right"><span id="userInfo"></span><button id="logoutBtn" class="btn small">Logout</button></div>
+  </div>
+
+  <section id="pageForm" class="page active">
+    <div class="layout">
+      <div class="panel-body entry-sidebar">
+        <div class="search"><i class="ri-search-eye-line"></i><input id="entrySearch" class="input-dark" placeholder="Search..."></div>
+        <div id="entryList" class="list"></div>
+      </div>
+      <div class="panel glass">
+        <div class="workspace">
+          <div class="toolbar">
+            <button id="paperFullscreenBtn" class="glass-icon-btn" type="button" aria-label="Preview paper fullscreen"><i class="ri-fullscreen-line"></i></button>
+            <div class="btn-row">
+              <button id="newEntryBtn" class="btn primary hidden">New</button>
+              <button id="saveEntryBtn" class="btn primary hidden">Save</button>
+              <button id="deleteEntryBtn" class="btn danger hidden">Delete</button>
+              <button id="exportBtn" class="btn">Export PDF</button>
+            </div>
+          </div>
+          <div id="emptyForm" class="empty"><i class="ri-file-paper-2-line"></i><div>Select entry or create new form.</div></div>
+          <div id="formBox" class="shell hidden"></div>
+          <div id="formStatus" class="status"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pageMembers" class="page">
+    <div class="layout">
+      <div class="panel-body entry-sidebar"><div class="search"><i class="ri-search-eye-line"></i><input id="memberAreaSearch" class="input-dark" placeholder="Search..."></div><div id="memberAreaList" class="list"></div></div>
+      <div class="panel glass"><div class="workspace"><div class="toolbar"><span></span><div class="btn-row manager-actions"><button id="editMembersBtn" class="btn primary">Edit</button><button id="saveMembersBtn" class="btn primary hidden">Save</button></div></div><div id="memberBox" class="shell"></div><div id="memberStatus" class="status"></div></div></div>
+    </div>
+  </section>
+  <section id="pageManager" class="page">
+    <div class="layout">
+      <div class="panel-body entry-sidebar"><div class="search"><i class="ri-search-eye-line"></i><input id="areaSearch" class="input-dark" placeholder="Search..."></div><div id="areaList" class="list"></div></div>
+      <div class="panel glass"><div class="workspace"><div class="toolbar"><span></span><div class="btn-row manager-actions"><button id="newAreaBtn" class="btn primary">New Area</button><button id="saveAreaBtn" class="btn primary">Save</button><button id="deleteAreaBtn" class="btn danger hidden">Delete</button></div></div><div id="managerBox" class="shell"></div><div id="managerStatus" class="status"></div></div></div>
+    </div>
+  </section>
+
+  <section id="pageGroupManagers" class="page">
+    <div class="panel glass">
+      <div class="workspace">
+        <div class="manager-card">
+          <div class="gm-panel-head">
+            <div>
+              <h3 class="gm-panel-title">Group Managers</h3>
+              <div class="gm-panel-note">Admin can assign available areas for each Group Manager to view. Own areas remain editable when the GM is the area owner.</div>
+            </div>
+          </div>
+          <div id="gmUserList"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pageSwitchChurch" class="page">
+    <div class="panel glass">
+      <div class="workspace">
+        <div class="manager-card">
+          <div class="gm-panel-head">
+            <div>
+              <h3 class="gm-panel-title glass-blue-title">ជ្រើសរើសព្រះវិហារ​(ពួកជំនុំ)</h3>
+              <div class="gm-panel-note">Choose which church the admin is working inside. Manager, Group Managers, Form, Pastor, and Dashboard will follow this switch.</div>
+            </div>
+          </div>
+          <div id="switchChurchList" class="gm-area-list"></div>
+          <div id="switchChurchStatus" class="status"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pageManageChurch" class="page">
+    <div class="layout">
+      <div class="panel-body entry-sidebar"><div class="search"><i class="ri-search-eye-line"></i><input id="churchSearch" class="input-dark" placeholder="Search..."></div><div id="churchList" class="list"></div></div>
+      <div class="panel glass"><div class="workspace"><div class="toolbar"><span></span><div class="btn-row manager-actions"><button id="newChurchBtn" class="btn primary">New Church</button><button id="saveChurchBtn" class="btn primary">Save</button><button id="deleteChurchBtn" class="btn danger hidden">Delete</button></div></div><div id="churchBox" class="shell"></div><div id="churchStatus" class="status"></div></div></div>
+    </div>
+  </section>
+
+  <section id="pagePastor" class="page">
+    <div class="pastor-layout">
+      <div class="panel-body pastor-side">
+        <div class="search"><i class="ri-search-eye-line"></i><input id="pastorSearch" class="input-dark" placeholder="Search..."></div>
+        <div id="pastorWeekList" class="list"></div>
+      </div>
+      <div class="panel glass"><div class="workspace"><div id="pastorPreview" class="pastor-preview">Select a card or copy a week.</div><div id="pastorStatus" class="pastor-status"></div></div></div>
+    </div>
+  </section>
+
+  <section id="pageViewAllForms" class="page">
+    <div class="pastor-layout">
+      <div class="panel-body pastor-side">
+        <div class="search"><i class="ri-search-eye-line"></i><input id="viewAllFormsSearch" class="input-dark" placeholder="Search..."></div>
+        <div id="viewAllFormsList" class="list"></div>
+      </div>
+      <div class="panel glass">
+        <div class="workspace">
+          <div id="viewAllFormsPreview" class="pastor-preview">ជ្រើសរើសរបាយការណ៍ដើម្បីមើលសំណូមពរ។</div>
+          <div id="viewAllFormsStatus" class="pastor-status"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pageDashboard" class="page">
+    <div class="stats"><div class="stat glass"><small>Entries</small><b id="statEntries">0</b></div><div class="stat glass"><small>វាលស្មៅ</small><b id="statAreas">0</b></div><div class="stat glass"><small>Members</small><b id="statMembers">0</b></div><div class="stat glass"><small>Logs</small><b id="statLogs">0</b></div></div>
+    <div class="dash-grid"><div class="panel glass"><div class="panel-head panel-head-actions"><h3>Recent Activity</h3><button id="clearActivityBtn" class="clear-activity-btn">Clear Activity</button></div><div class="panel-body"><div id="activityList" class="list"></div></div></div><div class="panel glass"><div class="panel-head"><h3>Overview</h3></div><div id="dashboardOverview" class="panel-body card-meta">Dashboard stats update from Firebase.</div></div></div>
+  </section>
+</div>
+
+<div id="printArea" class="print-only"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getDatabase, ref, onValue, get, push, set, remove, query as dbQuery, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig={apiKey:"AIzaSyCnY3d8RMsKDKcBVZQso-sI67Kh5jNiQMM",authDomain:"thythet-prayinfo.firebaseapp.com",databaseURL:"https://thythet-prayinfo-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"thythet-prayinfo",storageBucket:"thythet-prayinfo.firebasestorage.app",messagingSenderId:"118558680253",appId:"1:118558680253:web:1a15f0dbfdf293e7c5c3d4"};
+const ADMIN_UID="tbZLZ0VJE2PHk3XS2QWwzqRLitd2";
+const PASTOR_CHURCH_NAME="ក្រុមជំនុំ យ៉ូស្វេ";
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getDatabase(app);
+window.db = db;
+window.ref = ref;
+window.remove = remove;
+const $=id=>document.getElementById(id);
+let user=null,role="viewer",allowedUsers={},pastorChurches={},fieldAreas={},entries={},deletedEntries={},auditLogs={},appRatings={},currentEntryId=null,currentViewAllFormId=null,currentAreaId=null,currentChurchId=null,currentMemberAreaId=null,selectedAreaId="",selectedChurchId="",selectedParticipants=[],availableMembers=[],prayerRequests=[],unsubscribeFns=[],scopedUnsubscribeFns=[],entryUnsubscribeFns=[],scopedEntriesByArea={},entryAreaKey="",memberEditMode=false,missingExpandedWeeks={};
+
+function isAdmin(){return role==="admin"}
+function isEditor(){return role==="editor"}
+function isGroupManager(){return role==="groupManager"}
+function isPastor(){return role==="pastor"}
+function displayRoleName(r){if(r==="groupManager")return"រដ្ឋបាលក្រុម";if(r==="pastor")return"Pastor";return r||""}
+function getCurrentAllowedUser(){return user ? (allowedUsers[user.uid]||{}) : {}}
+function hasAssignedArea(areaId){return !!areaId && !!user && (getCurrentAllowedUser().fieldAreas?.[areaId]===true || fieldAreas[areaId]?.assignedGroupManagerUid===user.uid)}
+function ownsArea(areaId){return !!areaId && !!user && (fieldAreas[areaId]?.ownerUid||"")===user.uid}
+function churchName(id){return pastorChurches[id]?.name||id||"All Churches"}
+function areaMatchesSelectedChurch(area){return !selectedChurchId || (area?.churchId||"")===selectedChurchId}
+function userMatchesSelectedChurch(uid,u){
+  if(!selectedChurchId)return true;
+  if((u?.churchId||"")===selectedChurchId)return true;
+  return Object.entries(u?.fieldAreas||{}).some(([areaId,val])=>val===true && (fieldAreas[areaId]?.churchId||"")===selectedChurchId);
+}
+function getCurrentUserChurchId(){
+  const allowedChurch=getCurrentAllowedUser().churchId||"";
+  if(allowedChurch)return allowedChurch;
+  if(!user)return "";
+  const email=(user.email||"").toLowerCase();
+  const owned=Object.entries(pastorChurches||{}).find(([id,c])=>(c?.ownerUid||"")===user.uid || (c?.ownerEmail||"").toLowerCase()===email);
+  return owned?.[0]||"";
+}
+function canViewArea(areaId){
+  const area=fieldAreas[areaId]||{};
+  if(isAdmin())return areaMatchesSelectedChurch(area);
+  if(isPastor())return !!area.churchId && area.churchId===getCurrentUserChurchId();
+  return ownsArea(areaId) || hasAssignedArea(areaId);
+}
+function canEditArea(areaId=selectedAreaId){
+  if(isAdmin()) return true;
+  if(!areaId || !ownsArea(areaId)) return false;
+  const area=fieldAreas[areaId]||{};
+  // Editors can edit only areas where they are the real owner.
+  if(isEditor()) return area.ownerRole!=="groupManager";
+  // Group Managers can view assigned areas, but can edit only their own original area.
+  if(isGroupManager()) return area.ownerRole==="groupManager" && area.ownerUid===user.uid;
+  return false;
+}
+function canViewEntry(e){if(!e)return false;if(isAdmin()&&selectedChurchId)return (e.churchId||fieldAreas[e.fieldAreaId]?.churchId||"")===selectedChurchId;if(isPastor())return !!(e.churchId||fieldAreas[e.fieldAreaId]?.churchId) && (e.churchId||fieldAreas[e.fieldAreaId]?.churchId)===getCurrentUserChurchId();return canViewArea(e?.fieldAreaId)}
+function getEditableAreaIds(){return Object.keys(fieldAreas).filter(id=>canEditArea(id))}
+function canEdit(){return isAdmin() || getEditableAreaIds().length>0}
+function getOwnedAreaIds(){return Object.keys(fieldAreas).filter(id=>ownsArea(id))}
+function getAssignedAreaIds(){return Object.keys(getCurrentAllowedUser().fieldAreas||{}).filter(id=>fieldAreas[id])}
+function getDefaultOwnedAreaId(){let ids=getEditableAreaIds();return ids.length===1?ids[0]:""}
+window.prayInfoIsAdmin=isAdmin;
+window.prayInfoGetUser=()=>user;
+window.prayInfoGetAppRating=()=>{
+  if(!user)return 0;
+  return Number(appRatings?.[user.uid]?.rating)||0;
+};
+window.prayInfoSaveAppRating=async value=>{
+  if(!user)throw new Error("Not logged in");
+  value=Math.max(1,Math.min(5,Number(value)||0));
+  const payload={
+    uid:user.uid,
+    rating:value,
+    ratingCount:value,
+    email:user.email||"",
+    name:getCurrentAllowedUser()?.name||"",
+    role:role||"",
+    updatedAt:Date.now()
+  };
+  await set(ref(db,`appRatings/${user.uid}`),payload);
+  appRatings[user.uid]=payload;
+  renderStats();
+  return payload;
+};
+function status(el,t,good=false){el.textContent=t||"";el.style.color=good?"var(--success)":"var(--muted)"}
+function clearNode(el){if(el)el.textContent=""}
+function appendTextNode(parent,tag,className,text){let el=document.createElement(tag);if(className)el.className=className;el.textContent=text||"";parent.appendChild(el);return el}
+function appendMetaEmpty(parent,text){clearNode(parent);appendTextNode(parent,"div","card-meta",text)}
+function buildRatingStars(rating,className="dashboard-rating-stars"){
+  const wrap=document.createElement("span");
+  wrap.className=className;
+  const value=Math.max(0,Math.min(5,Number(rating)||0));
+  for(let i=1;i<=5;i++){
+    const icon=document.createElement("i");
+    icon.className=i<=value?"ri-star-fill filled":"ri-star-line";
+    wrap.appendChild(icon);
+  }
+  return wrap;
+}
+function ratingUserLabel(uid,ratingData={}){
+  const allowed=allowedUsers[uid]||{};
+  return ratingData.name || allowed.name || ratingData.email || allowed.email || uid;
+}
+function formatRatingDate(timestamp){
+  if(!timestamp)return "";
+  try{return new Date(timestamp).toLocaleString()}
+  catch(e){return ""}
+}
+async function getRole(u){if(!u)return"viewer";if(u.uid===ADMIN_UID)return"admin";const s=await get(ref(db,`allowedUsers/${u.uid}/role`));return s.exists()?s.val():"viewer"}
+function log(action,id,data){if(!user)return;push(ref(db,"auditLogs"),{action,entryId:id||"",fieldArea:data?.fieldArea||data?.name||"",user:{uid:user.uid,email:user.email,role},timestamp:Date.now()})}
+function renderUserInfo(){
+  if(!$("userInfo")||!user)return;
+  const churchLabel=isAdmin()?` • <button id="cycleChurchBadge" class="church-nav-badge clickable" type="button" title="Click to switch to next church">${churchName(selectedChurchId)}</button>`:"";
+  $("userInfo").innerHTML=`${user.email} • <span class="role-label">${displayRoleName(role)}</span>${churchLabel}`;
+  $("cycleChurchBadge")?.addEventListener("click",cycleSelectedChurch);
+}
+function getChurchCycleIds(){return ["",...Object.keys(pastorChurches||{})]}
+function cycleSelectedChurch(){
+  if(!isAdmin())return;
+  const ids=getChurchCycleIds();
+  if(!ids.length)return;
+  const currentIndex=ids.indexOf(selectedChurchId);
+  selectedChurchId=ids[(currentIndex+1)%ids.length]||"";
+  currentChurchId=selectedChurchId||currentChurchId;
+  refreshAfterDataChange();
+}
+function applyMobileTheme(){
+  const compact=localStorage.getItem("prayinfoMobileTheme")==="compact";
+  document.body.classList.toggle("mobile-compact",compact);
+  $("mobileThemeBtn")?.classList.toggle("active",compact);
+}
+function toggleMobileTheme(){
+  const compact=!document.body.classList.contains("mobile-compact");
+  localStorage.setItem("prayinfoMobileTheme",compact?"compact":"default");
+  applyMobileTheme();
+  setTimeout(fitMobilePaper,50);
+}
+applyMobileTheme();
+$("mobileThemeBtn")?.addEventListener("click",toggleMobileTheme);
+
+let skeletonEnabled=localStorage.getItem("prayinfoSkeletonEnabled")==="true";
+let skeletonDurationMs=Math.max(1000,Math.min(20000,Number(localStorage.getItem("prayinfoSkeletonDurationMs")||5000)));
+const skeletonSeen=new Set();
+const skeletonActive=new Set();
+function applySkeletonToggle(){
+  const btn=$("skeletonToggleBtn");
+  const input=$("skeletonDurationInput");
+  if(!btn)return;
+  btn.classList.toggle("hidden",!isAdmin());
+  btn.classList.toggle("active",isAdmin()&&skeletonEnabled);
+  btn.title=skeletonEnabled?"Skeleton loading: On":"Skeleton loading: Off";
+  if(input){
+    input.classList.toggle("hidden",!isAdmin());
+    input.value=String(Math.round(skeletonDurationMs/1000));
+  }
+}
+function toggleSkeleton(){
+  if(!isAdmin())return;
+  skeletonEnabled=!skeletonEnabled;
+  localStorage.setItem("prayinfoSkeletonEnabled",skeletonEnabled?"true":"false");
+  skeletonSeen.clear();
+  skeletonActive.clear();
+  applySkeletonToggle();
+  renderEntryList();
+}
+function skeletonMarkup(type="list"){
+  if(type==="form"){
+    const rows=Array.from({length:10},()=>`<div class="skeleton-table-row"></div>`).join("");
+    return `<div class="skeleton-paper"><div class="skeleton-line short" style="margin-left:auto;margin-right:auto;height:24px"></div><div class="skeleton-grid"><div class="skeleton-line mid"></div><div class="skeleton-line mid"></div><div class="skeleton-line mid"></div></div><div class="skeleton-line long"></div>${rows}<div class="skeleton-line mid" style="margin-top:22px"></div><div class="skeleton-line short"></div></div>`;
+  }
+  return `<div class="skeleton-shell">${Array.from({length:5},(_,i)=>`<div class="skeleton-card"><div class="skeleton-line ${i%2?"mid":"long"}"></div><div class="skeleton-line short"></div><div class="skeleton-line mid"></div></div>`).join("")}</div>`;
+}
+function showSkeletonOnce(key,target,type,afterRender,delay=skeletonDurationMs){
+  if(!isAdmin()||!skeletonEnabled||!target||skeletonSeen.has(key))return false;
+  if(skeletonActive.has(key))return true;
+  skeletonSeen.add(key);
+  skeletonActive.add(key);
+  clearNode(target);
+  target.innerHTML=skeletonMarkup(type);
+  target.classList.remove("hidden");
+  setTimeout(()=>{
+    skeletonActive.delete(key);
+    afterRender?.();
+  },delay);
+  return true;
+}
+$("skeletonToggleBtn")?.addEventListener("click",toggleSkeleton);
+$("skeletonDurationInput")?.addEventListener("change",e=>{
+  const seconds=Math.max(1,Math.min(20,Number(e.target.value)||5));
+  skeletonDurationMs=seconds*1000;
+  localStorage.setItem("prayinfoSkeletonDurationMs",String(skeletonDurationMs));
+  e.target.value=String(seconds);
+});
+
+function loadRememberedLogin(){
+  try{
+    const saved=JSON.parse(localStorage.getItem("prayinfoRememberLogin")||"null");
+    if(!saved)return;
+    $("loginEmail").value=saved.email||"";
+    $("loginPassword").value=saved.password||"";
+    $("rememberLogin").checked=true;
+  }catch(e){}
+}
+function saveRememberedLogin(){
+  if(!$("rememberLogin")?.checked){
+    localStorage.removeItem("prayinfoRememberLogin");
+    return;
+  }
+  localStorage.setItem("prayinfoRememberLogin",JSON.stringify({email:$("loginEmail").value.trim(),password:$("loginPassword").value}));
+}
+loadRememberedLogin();
+$("rememberLogin")?.addEventListener("change",()=>{if(!$("rememberLogin").checked)localStorage.removeItem("prayinfoRememberLogin")});
+$("loginBtn").onclick=async()=>{try{status($("loginStatus"),"Logging in...");saveRememberedLogin();await signInWithEmailAndPassword(auth,$("loginEmail").value.trim(),$("loginPassword").value)}catch(e){status($("loginStatus"),"Error invalid.")}};
+["loginEmail","loginPassword"].forEach(id=>$(id)?.addEventListener("keydown",e=>{if(e.key==="Enter"){$("loginBtn").click();}}));
+$("toggleKeyBtn").onclick=()=>{let input=$("loginPassword"),icon=$("toggleKeyBtn").querySelector("i"),show=input.type==="password";input.type=show?"text":"password";icon.className=show?"ri-eye-off-line":"ri-eye-line";$("toggleKeyBtn").setAttribute("aria-label",show?"Hide key":"Show key")};
+$("logoutBtn").onclick=()=>{if(confirm("Are you sure to Logout?"))signOut(auth)};
+document.querySelectorAll(".nav-tab").forEach(b=>b.onclick=()=>showPage(b.dataset.page));
+function showPage(p){if(isPastor()&&!isAdmin()&&p!=="pastor"&&p!=="viewAllForms")p="pastor";if((p==="pastor"||p==="viewAllForms")&&!(isPastor()||isAdmin()))p="form";if(p==="viewAllForms"&&isAdmin())p="pastor";if((p==="manager"||p==="dashboard"||p==="groupManagers"||p==="switchChurch"||p==="manageChurch")&&!isAdmin())p="form";if(p==="members"&&!(isEditor() || (isGroupManager() && getOwnedAreaIds().length>0)))p="form";document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));$("page"+p[0].toUpperCase()+p.slice(1)).classList.add("active");document.querySelectorAll(".nav-tab").forEach(x=>x.classList.toggle("active",x.dataset.page===p));renderActivePage();}
+function updateNavTabs(){if(!$("navMembers"))return;document.querySelector(`[data-page="form"]`)?.classList.toggle("hidden",isPastor()&&!isAdmin());$("navPastor")?.classList.toggle("hidden",!(isPastor()||isAdmin()));$("navViewAllForms")?.classList.toggle("hidden",!(isPastor()&&!isAdmin()));$("navMembers").classList.toggle("hidden",!(isEditor() || (isGroupManager() && getOwnedAreaIds().length>0)));$("navManager").classList.toggle("hidden",!isAdmin());$("navGroupManagers").classList.toggle("hidden",!isAdmin());$("navChurchSwitchWrap")?.classList.toggle("hidden",!isAdmin());$("navSwitchChurch")?.classList.toggle("hidden",!isAdmin());$("navManageChurch")?.classList.toggle("hidden",!isAdmin());$("navDashboard").classList.toggle("hidden",!isAdmin());applySkeletonToggle();if($("navSwitchChurch")){$("navSwitchChurch").textContent=isAdmin()?churchName(selectedChurchId):"Switch Church";$("navSwitchChurch").classList.toggle("church-switch-active",isAdmin());$("navSwitchChurch").title=isAdmin()?`Switch Church: ${churchName(selectedChurchId)}`:"Switch Church";}renderNavChurchDropdown();}
+
+onAuthStateChanged(auth,async u=>{clearSubscriptions();user=u;if(!u){role="viewer";allowedUsers={};pastorChurches={};fieldAreas={};entries={};deletedEntries={};auditLogs={};appRatings={};currentEntryId=null;currentViewAllFormId=null;currentAreaId=null;currentChurchId=null;currentMemberAreaId=null;selectedChurchId="";memberEditMode=false;$("loginScreen").classList.remove("hidden");$("app").classList.add("hidden");return}role=await getRole(u);$("loginScreen").classList.add("hidden");$("app").classList.remove("hidden");renderUserInfo();updateNavTabs();if(isPastor()&&!isAdmin())showPage("pastor");else if(!isAdmin()&&!isEditor()&&!isGroupManager())showPage("form");updateAccess();subscribe();});
+
+function clearEntrySubscriptions(){entryUnsubscribeFns.forEach(fn=>{try{fn()}catch(e){}});entryUnsubscribeFns=[];scopedEntriesByArea={};entryAreaKey=""}
+function clearScopedSubscriptions(){scopedUnsubscribeFns.forEach(fn=>{try{fn()}catch(e){}});scopedUnsubscribeFns=[]}
+function clearSubscriptions(){clearScopedSubscriptions();clearEntrySubscriptions();unsubscribeFns.forEach(fn=>{try{fn()}catch(e){}});unsubscribeFns=[]}
+let refreshTimer=null;
+function activePageName(){
+  const active=document.querySelector(".page.active");
+  return active?.id?.replace(/^page/,"").replace(/^./,c=>c.toLowerCase())||"form";
+}
+function renderActivePage(){
+  const page=activePageName();
+  if(page==="form")renderEntryList();
+  else if(page==="manager")renderAreaList();
+  else if(page==="members"){renderMemberAreaList();renderMemberManager();}
+  else if(page==="groupManagers")renderGMUsers();
+  else if(page==="pastor")renderPastorList();
+  else if(page==="viewAllForms")renderViewAllForms();
+  else if(page==="switchChurch")renderSwitchChurchList();
+  else if(page==="manageChurch")renderChurchList();
+  else if(page==="dashboard")renderStats();
+}
+function performRefreshAfterDataChange(){
+  refreshTimer=null;
+  updateNavTabs();
+  renderActivePage();
+  updateAccess();
+  renderUserInfo();
+}
+function refreshAfterDataChange(){
+  if(refreshTimer)return;
+  refreshTimer=setTimeout(performRefreshAfterDataChange,40);
+}
+function getAllowedAreaIdsForCurrentUser(){return Object.keys(getCurrentAllowedUser().fieldAreas||{}).filter(Boolean)}
+function subscribeEntriesForAreaIds(areaIds){
+  const ids=[...new Set(areaIds.filter(Boolean))].sort();
+  const key=ids.join("|");
+  if(key===entryAreaKey)return;
+  clearEntrySubscriptions();
+  entryAreaKey=key;
+  entries={};
+  if(!ids.length){refreshAfterDataChange();return;}
+  ids.forEach(areaId=>{
+    const entryQuery=dbQuery(ref(db,"prayinfoEntries"),orderByChild("fieldAreaId"),equalTo(areaId));
+    entryUnsubscribeFns.push(onValue(entryQuery,s=>{
+      scopedEntriesByArea[areaId]=s.val()||{};
+      entries=Object.assign({},...Object.values(scopedEntriesByArea));
+      refreshAfterDataChange();
+    },e=>{
+      console.error("entries scoped read failed",areaId,e);
+      scopedEntriesByArea[areaId]={};
+      entries=Object.assign({},...Object.values(scopedEntriesByArea));
+      refreshAfterDataChange();
+    }));
+  });
+}
+function subscribeEditorScopedData(){
+  clearScopedSubscriptions();
+  clearEntrySubscriptions();
+  fieldAreas={};
+  entries={};
+  const areaIds=getAllowedAreaIdsForCurrentUser();
+  if(!areaIds.length){refreshAfterDataChange();return;}
+  areaIds.forEach(areaId=>{
+    scopedUnsubscribeFns.push(onValue(ref(db,`fieldAreas/${areaId}`),s=>{
+      if(s.exists()) fieldAreas[areaId]=s.val(); else delete fieldAreas[areaId];
+      refreshAfterDataChange();
+    },e=>{console.error("fieldAreas scoped read failed",areaId,e);delete fieldAreas[areaId];refreshAfterDataChange();}));
+  });
+  subscribeEntriesForAreaIds(areaIds);
+}
+function subscribe(){
+  clearSubscriptions();
+  const ratingRef=isAdmin()?ref(db,"appRatings"):ref(db,`appRatings/${user.uid}`);
+  const ratingUnsub=onValue(ratingRef,s=>{
+    appRatings=isAdmin()?(s.val()||{}):{[user.uid]:s.val()||{}};
+    renderStats();
+    if(window.renderAppRatingStars)window.renderAppRatingStars();
+  },e=>{console.error("appRatings read failed",e);});
+  if(isAdmin() || isPastor()){
+    unsubscribeFns=[
+      ratingUnsub,
+      onValue(ref(db,isAdmin()?"allowedUsers":`allowedUsers/${user.uid}`),s=>{allowedUsers=isAdmin()?(s.val()||{}):{[user.uid]:s.val()||{}};if(isAdmin()||isPastor())subscribeEntriesForAreaIds(Object.entries(fieldAreas).filter(([id])=>canViewArea(id)).map(([id])=>id));refreshAfterDataChange()},e=>{console.error("allowedUsers read failed",e);if(!isAdmin())status($("pastorStatus"),"Cannot read pastor user permission. Check allowedUsers role/rules.");}),
+      onValue(ref(db,"pastorChurches"),s=>{pastorChurches=s.val()||{};if(isPastor())subscribeEntriesForAreaIds(Object.entries(fieldAreas).filter(([id])=>canViewArea(id)).map(([id])=>id));refreshAfterDataChange()},e=>{console.error("pastorChurches read failed",e);}),
+      onValue(ref(db,"fieldAreas"),s=>{fieldAreas=s.val()||{};subscribeEntriesForAreaIds(Object.entries(fieldAreas).filter(([id,a])=>canViewArea(id)).map(([id])=>id));refreshAfterDataChange()},e=>{console.error("fieldAreas read failed",e);status($("pastorStatus"),"Cannot read areas. Check Firebase rules for pastor.");})
+    ];
+    if(isAdmin()) unsubscribeFns.push(onValue(ref(db,"auditLogs"),s=>{auditLogs=s.val()||{};renderStats();renderLogs()}),onValue(ref(db,"deletedEntries"),s=>{deletedEntries=s.val()||{};renderLogs()}));
+    return;
+  }
+  unsubscribeFns=[ratingUnsub,onValue(ref(db,`allowedUsers/${user.uid}`),s=>{
+    allowedUsers={[user.uid]:s.val()||{}};
+    subscribeEditorScopedData();
+    refreshAfterDataChange();
+  })];
+  auditLogs={};renderStats();
+}
+function updateAccess(){
+  let areaCanEdit=canEditArea();
+  $("newEntryBtn").classList.toggle("hidden",!canEdit());
+  $("saveEntryBtn").classList.toggle("hidden",!areaCanEdit);
+  $("deleteEntryBtn").classList.toggle("hidden",!isAdmin()||!currentEntryId);
+  if($("fieldToggle"))$("fieldToggle").disabled=!areaCanEdit;
+  ["currentDate","specialNote","offering","participantSelect","addParticipantBtn"].forEach(id=>{if($(id))$(id).disabled=!areaCanEdit;});
+  document.querySelectorAll("#prayerRows textarea").forEach(ta=>ta.disabled=!areaCanEdit);
+  if($("addParticipantBtn"))$("addParticipantBtn").style.display=areaCanEdit?"":"none";
+  if(window.installClearActivityButton)window.installClearActivityButton()
+}
+
+
+
+function fitMobilePaper(){
+  const formBox = $("formBox");
+  const paper = formBox?.querySelector(".paper");
+  if(!formBox || !paper) return;
+  if(window.innerWidth > 760){
+    paper.style.transform = "";
+    paper.style.width = "";
+    paper.style.maxWidth = "";
+    paper.style.marginLeft = "";
+    paper.style.marginRight = "";
+    formBox.style.height = "";
+    return;
+  }
+  const styles=getComputedStyle(formBox);
+  const padLeft=parseFloat(styles.paddingLeft)||0;
+  const padRight=parseFloat(styles.paddingRight)||0;
+  const gutter=document.body.classList.contains("mobile-compact")?10:18;
+  const boxWidth = Math.max(280, formBox.clientWidth - padLeft - padRight - gutter * 2);
+  const baseWidth = 900;
+  const scale = Math.min(1, boxWidth / baseWidth);
+  const scaledWidth=baseWidth * scale;
+  const side=Math.max(gutter,(formBox.clientWidth - padLeft - padRight - scaledWidth) / 2);
+  paper.style.width = baseWidth + "px";
+  paper.style.maxWidth = baseWidth + "px";
+  paper.style.transform = `scale(${scale})`;
+  paper.style.transformOrigin = "top left";
+  paper.style.marginLeft = side + "px";
+  paper.style.marginRight = side + "px";
+  formBox.style.height = (paper.scrollHeight * scale + 20) + "px";
+  formBox.style.overflow = "hidden";
+}
+window.addEventListener("resize", fitMobilePaper);
+
+function formHTML(){return `<main class="paper"><h1>ពួកជំនុំតាមផ្ទះ</h1><section class="subhead"><div><label class="inline"><span>វាលស្មៅ៖</span><div class="field-picker" id="fieldPicker"><button type="button" class="field-toggle" id="fieldToggle"><span id="fieldValue">ជ្រើសរើស</span> <i class="ri-arrow-down-s-line"></i></button><div class="field-panel"><input id="fieldSearch" class="field-search" placeholder="ស្វែងរក..."><div id="fieldList" class="field-list"></div></div></div></label></div><div class="center"><label class="inline"><span>អ្នកគង្វាល៖</span><input id="pastorName" class="line-input" readonly></label></div><div class="right"><label class="inline"><span>កាលបរិច្ឆេទ៖</span><input id="currentDate" class="line-input date-input" type="date"></label></div></section><table><colgroup><col style="width:150px"><col></colgroup><tr><td class="label-cell">អ្នកចូលរួម <span class="participant-count" id="participantCount">(0នាក់)</span></td><td class="field-cell"><div class="participant-wrap"><span>ឈ្មោះ៖</span><div style="flex:1"><div id="selectedParticipant" class="selected-participant">សូមជ្រើសឈ្មោះពីបញ្ជី</div><div class="select-row"><select id="participantSelect"></select><button type="button" id="addParticipantBtn" class="add-btn">+ Add</button></div></div></div></td></tr><tr><td colspan="2"><table class="inner-table"><colgroup><col style="width:66px"><col style="width:250px"><col></colgroup><thead><tr class="prayer-header"><th class="number-col">លេខ</th><th class="name-col">ឈ្មោះ</th><th>សំណូមពរអធិស្ឋាន</th></tr></thead><tbody id="prayerRows"></tbody></table></td></tr><tr class="gap-row"><td colspan="2"></td></tr><tr><td class="label-cell bottom-label">រឿងពិសេស</td><td class="field-cell single-line"><textarea id="specialNote"></textarea></td></tr><tr><td class="label-cell bottom-label">ដង្វាយ</td><td class="field-cell single-line"><textarea id="offering"></textarea></td></tr></table></main>`}
+function openNewForm(){currentEntryId=null;selectedAreaId="";selectedParticipants=[];availableMembers=[];prayerRequests=Array(12).fill("");$("emptyForm").classList.add("hidden");$("formBox").classList.remove("hidden");$("formBox").innerHTML=formHTML();$("currentDate").value=new Date().toISOString().slice(0,10);bindForm();let defaultAreaId=getDefaultOwnedAreaId();if(defaultAreaId)selectArea(defaultAreaId);updateAccess();setTimeout(fitMobilePaper,50)}
+$("newEntryBtn").onclick=openNewForm;
+function openNewEntryForArea(areaId){
+  if(!areaId)return;
+  if(!canEditArea(areaId)){
+    status($("pastorStatus")||$("formStatus"),"No permission to add entry for this area.");
+    return;
+  }
+  showPage("form");
+  openNewForm();
+  selectArea(areaId);
+  status($("formStatus"),"Ready to add entry.",true);
+}
+function appendMissingAddButton(card,areaId){
+  const addBtn=document.createElement("button");
+  addBtn.type="button";
+  addBtn.className="entry-missing-add";
+  addBtn.textContent="បញ្ចូល";
+  addBtn.disabled=!canEditArea(areaId);
+  addBtn.onclick=event=>{event.stopPropagation();openNewEntryForArea(areaId)};
+  card.appendChild(addBtn);
+}
+function bindForm(){
+  renderFields();
+  renderParticipants();
+  renderRows();
+  $("fieldToggle").onclick=()=>{if(!canEditArea())return;$("fieldPicker").classList.toggle("open")};
+  $("fieldSearch").oninput=()=>renderFields($("fieldSearch").value);
+  $("participantSelect").onchange=()=>{
+    let n=$("participantSelect").value;
+    if(n && !selectedParticipants.includes(n)){
+      selectedParticipants.push(n);
+      renderParticipants();
+      renderRows();
+    }
+  };
+  $("addParticipantBtn").onclick=async()=>{
+    let n=$("participantSelect").value;
+    let manuallyAdded=false;
+    if(!n){
+      n=prompt("បញ្ចូលឈ្មោះថ្មី");
+      if(n){
+        n=n.trim();
+        manuallyAdded=!!n && !availableMembers.includes(n);
+        if(manuallyAdded) availableMembers.push(n);
+      }
+    }
+    if(manuallyAdded && selectedAreaId && canEditArea()){
+      let memberRef=push(ref(db,`fieldAreas/${selectedAreaId}/members`));
+      await set(memberRef,{name:n});
+      status($("formStatus"),"បានបន្ថែមសមាជិកទៅវាលស្មៅនេះ។",true);
+    }
+    if(n && !selectedParticipants.includes(n)){
+      selectedParticipants.push(n);
+      renderParticipants();
+      renderRows();
+    }
+  };
+}
+function renderFields(q=""){let list=$("fieldList");if(!list)return;list.innerHTML="";Object.entries(fieldAreas).filter(([id,a])=>canViewArea(id)&&(a.name||"").toLowerCase().includes(q.toLowerCase())).forEach(([id,a])=>{let b=document.createElement("button");b.className="field-option";b.textContent=a.name;b.onclick=()=>selectArea(id);list.appendChild(b)});if(isEditor()&&getOwnedAreaIds().length===1){$("fieldToggle").disabled=true;$("fieldPicker").classList.remove("open")}}
+function selectArea(id){let a=fieldAreas[id];if(!a)return;if(!canViewArea(id)){status($("formStatus"),"អ្នកមិនមានសិទ្ធិមើលវាលស្មៅនេះទេ។");return}selectedAreaId=id;$("fieldValue").textContent=a.name;$("pastorName").value=a.pastorName||"";$("fieldPicker").classList.remove("open");availableMembers=Object.values(a.members||{}).map(m=>m.name).filter(Boolean);selectedParticipants=[];prayerRequests=Array(12).fill("");renderParticipants();renderRows();updateAccess()}
+function removeParticipant(index){if(index<0||index>=selectedParticipants.length)return;selectedParticipants.splice(index,1);prayerRequests.splice(index,1);while(prayerRequests.length<12)prayerRequests.push("");renderParticipants();renderRows()}
+function renderParticipants(){if(!$("participantCount"))return;$("participantCount").textContent=`(${selectedParticipants.length}នាក់)`;let box=$("selectedParticipant");clearNode(box);if(selectedParticipants.length){selectedParticipants.forEach((name,index)=>{let pill=appendTextNode(box,"span","pill",name);if(canEdit()){let removeBtn=document.createElement("button");removeBtn.type="button";removeBtn.className="pill-remove";removeBtn.setAttribute("aria-label","Remove participant");removeBtn.textContent="×";removeBtn.onclick=()=>removeParticipant(index);pill.appendChild(removeBtn)}})}else{box.textContent="សូមជ្រើសឈ្មោះពីបញ្ជី"}let sel=$("participantSelect");sel.textContent="";let empty=document.createElement("option");empty.value="";empty.textContent="ជ្រើសរើស";sel.appendChild(empty);availableMembers.filter(n=>!selectedParticipants.includes(n)).forEach(n=>{let o=document.createElement("option");o.value=n;o.textContent=n;sel.appendChild(o)})}
+function renderRows(){let body=$("prayerRows");if(!body)return;body.textContent="";let total=Math.max(12,selectedParticipants.length);for(let i=0;i<total;i++){let tr=document.createElement("tr");tr.className="prayer-row";let num=document.createElement("td");num.className="number-col";num.textContent=selectedParticipants[i]?String(i+1):"";let nameCell=document.createElement("td");nameCell.className="name-col";appendTextNode(nameCell,"div","name-display",selectedParticipants[i]||"");let fieldCell=document.createElement("td");fieldCell.className="field-cell";let ta=document.createElement("textarea");ta.dataset.i=String(i);ta.value=prayerRequests[i]||"";ta.disabled=!canEditArea();ta.oninput=()=>prayerRequests[i]=ta.value;fieldCell.appendChild(ta);tr.append(num,nameCell,fieldCell);body.appendChild(tr)}setTimeout(fitMobilePaper,30);["currentDate","specialNote","offering"].forEach(id=>$(id).disabled=!canEditArea());$("participantSelect").disabled=!canEditArea();$("addParticipantBtn").style.display=canEditArea()?"":"none"}
+function collect(){
+  let a=fieldAreas[selectedAreaId]||{};
+  let old=currentEntryId?(entries[currentEntryId]||{}):{};
+  let fieldText=(a.name || $("fieldValue")?.textContent || "").trim();
+  let pastorText=(a.pastorName || $("pastorName")?.value || "").trim();
+  return{churchId:old.churchId||a.churchId||selectedChurchId||"",churchName:old.churchName||a.churchName||churchName(a.churchId||selectedChurchId),fieldAreaId:selectedAreaId||"",fieldArea:fieldText,pastorName:pastorText,currentDate:$("currentDate")?.value||"",participants:[...selectedParticipants],prayerRequests:[...prayerRequests],specialNote:$("specialNote")?.value||"",offering:$("offering")?.value||"",updatedAt:Date.now(),updatedBy:user?.email||""}
+}
+$("saveEntryBtn").onclick=async()=>{if(!canEditArea()){status($("formStatus"),"អ្នកអាចកែបានតែវាលស្មៅរបស់អ្នកប៉ុណ្ណោះ។");return}let d=collect();if(!d.fieldArea||!d.currentDate){status($("formStatus"),"ជ្រើសវាលស្មៅ និងកាលបរិច្ឆេទ។");return}if(!String(d.offering||"").trim()){alert("សូមបញ្ចូល ចំនួនដង្វាយ!")}if(currentEntryId){await set(ref(db,`prayinfoEntries/${currentEntryId}`),{...(entries[currentEntryId]||{}),...d});log("update",currentEntryId,d);status($("formStatus"),"Updated.",true)}else{let r=push(ref(db,"prayinfoEntries"));currentEntryId=r.key;await set(r,{...d,createdAt:Date.now(),createdBy:user.email});log("create",currentEntryId,d);status($("formStatus"),"Saved.",true)}updateAccess()}
+$("deleteEntryBtn").onclick=async()=>{if(!isAdmin()||!currentEntryId)return;if(!confirm("Delete this entry?"))return;let old=entries[currentEntryId];await set(ref(db,`deletedEntries/${currentEntryId}`),{...old,deletedAt:Date.now(),deletedBy:user.email});await remove(ref(db,`prayinfoEntries/${currentEntryId}`));log("delete",currentEntryId,old);currentEntryId=null;$("formBox").classList.add("hidden");$("emptyForm").classList.remove("hidden");updateAccess()}
+function openEntry(id){
+  let e=entries[id];
+  if(!e)return;
+  if(!canViewEntry(e)){status($("formStatus"),"អ្នកអាចមើលបានតែវាលស្មៅរបស់អ្នកប៉ុណ្ណោះ។");return}
+  currentEntryId=id;
+  $("emptyForm").classList.add("hidden");
+  $("formBox").classList.remove("hidden");
+  $("formBox").innerHTML=formHTML();
+  bindForm();
+  selectedAreaId=e.fieldAreaId||"";
+  if(!selectedAreaId && e.fieldArea){
+    let found=Object.entries(fieldAreas).find(([fid,a])=>(a.name||"")===e.fieldArea);
+    if(found) selectedAreaId=found[0];
+  }
+  availableMembers=Object.values(fieldAreas[selectedAreaId]?.members||{}).map(m=>m.name).filter(Boolean);
+  selectedParticipants=Array.isArray(e.participants)?[...e.participants]:[];
+  // Include saved participant names in available list so edit view can still show them
+  selectedParticipants.forEach(n=>{if(n && !availableMembers.includes(n)) availableMembers.push(n)});
+  prayerRequests=Array.from({length:Math.max(12,(e.prayerRequests||[]).length)},(_,i)=>(e.prayerRequests||[])[i]||"");
+  $("fieldValue").textContent=e.fieldArea||fieldAreas[selectedAreaId]?.name||"";
+  $("pastorName").value=e.pastorName||fieldAreas[selectedAreaId]?.pastorName||"";
+  $("currentDate").value=e.currentDate||"";
+  $("specialNote").value=e.specialNote||"";
+  $("offering").value=e.offering||"";
+  renderParticipants();
+  renderRows();
+  updateAccess();
+  renderEntryList();
+  setTimeout(fitMobilePaper,50)
+}
+function renderEntryList(){
+  let list=$("entryList");
+  if(showSkeletonOnce(`entryList:${selectedChurchId||"all"}`,list,"list",renderEntryList))return;
+  let q=($("entrySearch").value||"").toLowerCase();
+  const visibleAreas=Object.entries(fieldAreas||{})
+    .filter(([id,a])=>canViewArea(id))
+    .map(([id,a])=>({id,...a}))
+    .filter(a=>(`${a.name||""} ${a.pastorName||""}`).toLowerCase().includes(q));
+  let arr=Object.entries(entries).map(([id,d])=>({id,...d}))
+    .filter(canViewEntry)
+    .filter(e=>(`${e.fieldArea||""} ${e.pastorName||""}`).toLowerCase().includes(q))
+    .sort((a,b)=>dateFromEntry(b)-dateFromEntry(a) || (b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0));
+  if(!arr.length && !visibleAreas.length){appendMetaEmpty(list,"No entries.");return}
+  const groups={};
+  arr.forEach(e=>{const key=weekKeyForEntry(e);(groups[key] ||= []).push(e)});
+  const currentWeekKey=isoDate(getWeekStart(new Date()));
+  if(visibleAreas.length && !groups[currentWeekKey]) groups[currentWeekKey]=[];
+  clearNode(list);
+  Object.keys(groups).sort().reverse().forEach((key,index)=>{
+    const wrap=document.createElement("section");wrap.className="pastor-week entry-week";
+    const head=document.createElement("div");head.className="pastor-week-head entry-week-head";
+    const h=document.createElement("h3");const currentWeekKeyNow=isoDate(getWeekStart(new Date()));const weekName=key===currentWeekKeyNow?"អាទិត្យនេះ":(index===0?"អាទិត្យចុងក្រោយ":"អាទិត្យមុន");h.textContent=`${weekName}៖ ${weekLabel(key)}`;
+    head.appendChild(h);wrap.appendChild(head);
+    const submittedAreaIds=new Set(groups[key].map(e=>e.fieldAreaId).filter(Boolean));
+    groups[key].forEach(e=>{
+      let div=document.createElement("div");const offeringMissing=!String(e.offering||"").trim();div.className="card-list entry-preview pastor-card"+(e.id===currentEntryId?" active":"")+(offeringMissing?" entry-offering-warning":"");
+      div.setAttribute("role","button");div.tabIndex=0;
+      appendTextNode(div,"div","card-title",`វាលស្មៅ៖ ${e.fieldArea||"No area"}`);
+      appendTextNode(div,"div","card-meta",`${e.currentDate||""} • អ្នកគង្វាល៖ ${e.pastorName||""} • ${(e.participants||[]).length}នាក់`);if(offeringMissing)appendTextNode(div,"div","entry-offering-badge","មិនទាន់បញ្ចូលចំនួនដង្វាយ");
+      div.onclick=()=>openEntry(e.id);
+      div.onkeydown=event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();openEntry(e.id)}};
+      wrap.appendChild(div);
+    });
+    const missingAreas=visibleAreas.filter(a=>!submittedAreaIds.has(a.id));
+    if(missingAreas.length){
+      const expanded=!!missingExpandedWeeks[key];
+      const summary=document.createElement("div");summary.className="entry-missing-summary";
+      appendTextNode(summary,"span","",`នៅសល់ ${missingAreas.length} វាលស្មៅទៀត`);
+      const toggle=document.createElement("button");toggle.type="button";toggle.className="entry-missing-toggle";toggle.setAttribute("aria-label",expanded?"Collapse missing areas":"Expand missing areas");toggle.innerHTML=expanded?'<i class="ri-arrow-up-s-line"></i>':'<i class="ri-arrow-down-s-line"></i>';
+      toggle.onclick=()=>{missingExpandedWeeks[key]=!expanded;renderEntryList();};
+      summary.appendChild(toggle);wrap.appendChild(summary);
+      if(expanded){
+        const missingList=document.createElement("div");missingList.className="entry-missing-list";
+        missingAreas.forEach(a=>{
+          const missing=document.createElement("div");missing.className="card-list entry-preview pastor-card entry-missing";
+          appendTextNode(missing,"div","card-title",`វាលស្មៅ៖ ${a.name||"No area"}`);
+          appendTextNode(missing,"div","entry-missing-badge","មិនទាន់បញ្ចូលរបាយការណ៍");
+          appendMissingAddButton(missing,a.id);
+          missingList.appendChild(missing);
+        });
+        wrap.appendChild(missingList);
+      }
+    }
+    list.appendChild(wrap);
+  });
+}
+$("entrySearch").oninput=renderEntryList;
+$("paperFullscreenBtn").onclick=()=>{
+  let enabled=document.body.classList.toggle("paper-fullscreen");
+  let icon=$("paperFullscreenBtn").querySelector("i");
+  icon.className=enabled?"ri-fullscreen-exit-line":"ri-fullscreen-line";
+  $("paperFullscreenBtn").setAttribute("aria-label",enabled?"Exit paper fullscreen":"Preview paper fullscreen");
+  setTimeout(fitMobilePaper,50);
+};
+function renderPrintArea(d){
+  $("printArea").innerHTML=formHTML();
+  let pv=$("printArea");
+  pv.querySelector("#fieldValue").textContent=d.fieldArea;
+  const fieldPicker=pv.querySelector("#fieldPicker");
+  if(fieldPicker){
+    const fieldText=document.createElement("span");
+    fieldText.id="printFieldAreaText";
+    fieldText.className="print-field-area-text";
+    fieldText.textContent=d.fieldArea||"";
+    fieldPicker.replaceWith(fieldText);
+  }
+  pv.querySelector("#pastorName").value=d.pastorName;
+  pv.querySelector("#currentDate").value=d.currentDate;
+  let participantBox=pv.querySelector("#selectedParticipant");
+  participantBox.textContent="";
+  d.participants.forEach(n=>appendTextNode(participantBox,"span","pill",n));
+  pv.querySelector("#participantCount").textContent=`(${d.participants.length}នាក់)`;
+  let body=pv.querySelector("#prayerRows");
+  body.textContent="";
+  for(let i=0;i<Math.max(12,d.participants.length);i++){
+    let tr=document.createElement("tr");
+    tr.className="prayer-row";
+    let num=document.createElement("td");
+    num.className="number-col";
+    num.textContent=d.participants[i]?String(i+1):"";
+    let nameCell=document.createElement("td");
+    nameCell.className="name-col";
+    appendTextNode(nameCell,"div","name-display",d.participants[i]||"");
+    let fieldCell=document.createElement("td");
+    fieldCell.className="field-cell";
+    let ta=document.createElement("textarea");
+    ta.value=d.prayerRequests[i]||"";
+    fieldCell.appendChild(ta);
+    tr.append(num,nameCell,fieldCell);
+    body.appendChild(tr);
+  }
+  pv.querySelector("#specialNote").value=d.specialNote;
+  pv.querySelector("#offering").value=d.offering;
+}
+$("exportBtn").onclick=()=>{
+  if(!$("formBox").innerHTML){status($("formStatus"),"Open form first.");return}
+  let d=collect();
+  renderPrintArea(d);
+  if(window.finalPrintPrepare)window.finalPrintPrepare();
+  window.print();
+};
+
+const KHMER_MONTHS=["មករា","កុម្ភៈ","មិនា","មេសា","ឧសភា","មិថុនា","កក្កដា","សីហា","កញ្ញា","តុលា","វិច្ឆិកា","ធ្នូ"];function monthOptions(value){let current=String(value||"");return `<option value="">ខែ</option>`+KHMER_MONTHS.map((m,i)=>`<option value="${i+1}"${current===String(i+1)||current===m?" selected":""}>${m}</option>`).join("")}
+function switchToChurch(id){
+  selectedChurchId=id||"";
+  currentEntryId=null;
+  currentAreaId=null;
+  currentMemberAreaId=null;
+  if(isAdmin()||isPastor()) subscribeEntriesForAreaIds(Object.entries(fieldAreas).filter(([areaId])=>canViewArea(areaId)).map(([areaId])=>areaId));
+  if($("formBox"))$("formBox").classList.add("hidden");
+  if($("emptyForm"))$("emptyForm").classList.remove("hidden");
+  updateNavTabs();
+  renderUserInfo();
+  refreshAfterDataChange();
+  status($("switchChurchStatus"),`Current church: ${churchName(selectedChurchId)}`,true);
+}
+function renderNavChurchDropdown(){
+  const menu=$("navChurchDropdown");
+  if(!menu)return;
+  clearNode(menu);
+  if(!isAdmin())return;
+  const options=[{id:"",name:"All Churches/Unassigned"},...Object.entries(pastorChurches||{}).sort((a,b)=>(a[1].name||"").localeCompare(b[1].name||"")).map(([id,c])=>({id,name:c.name||id}))];
+  options.forEach(opt=>{
+    const b=document.createElement("button");
+    b.type="button";
+    b.className="nav-church-option"+(selectedChurchId===opt.id?" active":"");
+    b.innerHTML=`<span></span>${selectedChurchId===opt.id?'<i class="ri-check-line"></i>':""}`;
+    b.querySelector("span").textContent=opt.name;
+    b.onclick=e=>{e.preventDefault();e.stopPropagation();switchToChurch(opt.id);};
+    menu.appendChild(b);
+  });
+}
+function renderSwitchChurchList(){
+  const list=$("switchChurchList");
+  if(!list||!isAdmin())return;
+  clearNode(list);
+  const all=document.createElement("button");
+  all.type="button";
+  all.className="gm-area-item"+(!selectedChurchId?" active":"");
+  all.textContent="All Churches/Unassigned";
+  all.onclick=()=>switchToChurch("");
+  list.appendChild(all);
+  Object.entries(pastorChurches||{}).sort((a,b)=>(a[1].name||"").localeCompare(b[1].name||"")).forEach(([id,c])=>{
+    const b=document.createElement("button");
+    b.type="button";
+    b.className="gm-area-item"+(selectedChurchId===id?" active":"");
+    b.textContent=c.name||id;
+    b.onclick=()=>switchToChurch(id);
+    list.appendChild(b);
+  });
+  if(!Object.keys(pastorChurches||{}).length)appendTextNode(list,"div","gm-empty","No churches yet. Open Manage Church to create one.");
+}
+function renderChurchManager(){
+  if(!isAdmin()){if($("churchBox"))$("churchBox").textContent="";return;}
+  const box=$("churchBox");
+  if(!box)return;
+  const c=currentChurchId?pastorChurches[currentChurchId]||{}:{};
+  box.innerHTML=`<div class="manager-card"><div class="grid2"><div><label class="light-label">Church Name</label><input id="churchNameInput" class="input-light" placeholder="Joshua Church"></div><div><label class="light-label">Church Pastor UID</label><input id="churchOwnerUid" class="input-light" placeholder="Firebase UID"></div><div><label class="light-label">Church Pastor Email</label><input id="churchOwnerEmail" class="input-light" placeholder="pastor@email.com"></div><div><label class="light-label">Church Pastor Name</label><input id="churchOwnerName" class="input-light" placeholder="Display name"></div></div></div>`;
+  $("churchNameInput").value=c.name||"";
+  $("churchOwnerUid").value=c.ownerUid||"";
+  $("churchOwnerEmail").value=c.ownerEmail||"";
+  $("churchOwnerName").value=c.ownerName||"";
+}
+function renderChurchList(){
+  const list=$("churchList");
+  if(!list||!isAdmin())return;
+  const q=($("churchSearch")?.value||"").toLowerCase();
+  const arr=Object.entries(pastorChurches||{}).map(([id,c])=>({id,...c})).filter(c=>(`${c.name||""} ${c.ownerEmail||""} ${c.ownerName||""}`).toLowerCase().includes(q));
+  if(!arr.length){appendMetaEmpty(list,"No churches.");return}
+  clearNode(list);
+  arr.forEach(c=>{
+    const div=document.createElement("div");
+    div.className="card-list"+(c.id===currentChurchId?" active":"");
+    appendTextNode(div,"div","card-title",c.name||c.id);
+    appendTextNode(div,"div","card-meta",`${c.ownerEmail||c.ownerUid||""} • ${Object.values(fieldAreas||{}).filter(a=>a.churchId===c.id).length} areas`);
+    div.onclick=()=>{currentChurchId=c.id;selectedChurchId=c.id;renderChurchList();renderChurchManager();renderSwitchChurchList();$("deleteChurchBtn")?.classList.remove("hidden");refreshAfterDataChange()};
+    list.appendChild(div);
+  });
+}
+$("churchSearch")?.addEventListener("input",renderChurchList);
+$("newChurchBtn")?.addEventListener("click",()=>{currentChurchId=null;renderChurchManager();$("deleteChurchBtn")?.classList.add("hidden");status($("churchStatus"),"")});
+$("saveChurchBtn")?.addEventListener("click",async()=>{
+  if(!isAdmin())return;
+  const d={name:$("churchNameInput")?.value.trim()||"",ownerUid:$("churchOwnerUid")?.value.trim()||"",ownerEmail:$("churchOwnerEmail")?.value.trim()||"",ownerName:$("churchOwnerName")?.value.trim()||"",updatedAt:Date.now(),updatedBy:user?.email||""};
+  if(!d.name){status($("churchStatus"),"Enter church name.");return}
+  try{
+    let id=currentChurchId;
+    if(!id){const r=push(ref(db,"pastorChurches"));id=r.key;d.createdAt=Date.now();}
+    await set(ref(db,`pastorChurches/${id}`),{...(pastorChurches[id]||{}),...d});
+    if(d.ownerUid){
+      await set(ref(db,`allowedUsers/${d.ownerUid}/role`),"pastor");
+      await set(ref(db,`allowedUsers/${d.ownerUid}/name`),d.ownerName||d.name);
+      await set(ref(db,`allowedUsers/${d.ownerUid}/email`),d.ownerEmail);
+      await set(ref(db,`allowedUsers/${d.ownerUid}/churchId`),id);
+    }
+    pastorChurches[id]={...(pastorChurches[id]||{}),...d};
+    currentChurchId=id;selectedChurchId=id;renderChurchList();renderChurchManager();renderSwitchChurchList();refreshAfterDataChange();status($("churchStatus"),"Saved.",true);
+  }catch(e){status($("churchStatus"),`Save failed: ${e.message||String(e)}`)}
+});
+$("deleteChurchBtn")?.addEventListener("click",async()=>{
+  if(!isAdmin()||!currentChurchId)return;
+  if(Object.values(fieldAreas||{}).some(a=>a.churchId===currentChurchId)){status($("churchStatus"),"Move this church's areas before deleting.");return}
+  if(!confirm("Delete church?"))return;
+  await remove(ref(db,`pastorChurches/${currentChurchId}`));
+  delete pastorChurches[currentChurchId];currentChurchId=null;selectedChurchId="";renderChurchList();renderChurchManager();renderSwitchChurchList();refreshAfterDataChange();$("deleteChurchBtn")?.classList.add("hidden");status($("churchStatus"),"Deleted.",true);
+});
+function renderMemberAreaList(){let list=$("memberAreaList");if(!list)return;if(!(isEditor() || isGroupManager())){clearNode(list);return}let q=($("memberAreaSearch")?.value||"").toLowerCase();let arr=getOwnedAreaIds().map(id=>({id,...fieldAreas[id]})).filter(a=>(`${a.name||""} ${a.pastorName||""}`).toLowerCase().includes(q));if(!arr.length){appendMetaEmpty(list,"មិនមានវាលស្មៅដែលបានកំណត់។");return}if(!currentMemberAreaId||!ownsArea(currentMemberAreaId))currentMemberAreaId=arr[0].id;clearNode(list);arr.forEach(a=>{let div=document.createElement("div");div.className="card-list entry-preview"+(a.id===currentMemberAreaId?" active":"");appendTextNode(div,"div","card-title",`វាលស្មៅ៖ ${a.name||""}`);appendTextNode(div,"div","card-meta",`អ្នកគង្វាល៖ ${a.pastorName||""} • ${Object.keys(a.members||{}).length} members`);div.onclick=()=>{currentMemberAreaId=a.id;memberEditMode=false;renderMemberAreaList();renderMemberManager()};list.appendChild(div)})}
+function getOwnMemberData(row){return{name:row.querySelector(".own-mem")?.value.trim()||"",birthDay:row.querySelector(".own-birth-day")?.value||"",birthMonth:row.querySelector(".own-birth-month")?.value||""}}
+function updateMemberEditControls(){let editing=memberEditMode;$("editMembersBtn")?.classList.toggle("hidden",editing);$("saveMembersBtn")?.classList.toggle("hidden",!editing);if($("saveMembersBtn"))$("saveMembersBtn").textContent=editing?"Update":"Save";document.querySelectorAll("#ownMembersBox .member-row").forEach(row=>{row.classList.toggle("editing",editing);row.querySelectorAll("input,select").forEach(input=>input.disabled=!editing)});["addOwnMember","pasteOwnMembers"].forEach(id=>{if($(id))$(id).classList.toggle("hidden",!editing)})}
+function showRestoreMember(data,index){let el=$("memberStatus");if(!el)return;el.textContent="";let wrap=document.createElement("span");wrap.textContent="Member removed. ";let btn=appendTextNode(wrap,"button","btn small","Redo");btn.type="button";btn.onclick=()=>{let box=$("ownMembersBox");addOwnMemberRow(data);let row=box.lastElementChild;if(index<box.children.length-1)box.insertBefore(row,box.children[index]);el.textContent="";updateMemberEditControls()};el.appendChild(wrap)}
+function addOwnMemberRow(v){let box=$("ownMembersBox");if(!box)return;let data=typeof v==="string"?{name:v}:v||{};let row=document.createElement("div");row.className="member-row";let input=document.createElement("input");input.className="input-light member-name own-mem";input.value=data.name||"";let birth=document.createElement("div");birth.className="birth-wrap";birth.innerHTML=`<i class="ri-cake-line"></i><input class="input-light birth-input own-birth-day" type="number" min="1" max="31" placeholder="Day"><select class="input-light birth-input birth-month-select own-birth-month">${monthOptions(data.birthMonth)}</select>`;birth.querySelector(".own-birth-day").value=data.birthDay||"";let button=document.createElement("button");button.type="button";button.className="member-remove";button.setAttribute("aria-label","Remove member");button.innerHTML=`<i class="ri-close-circle-line"></i>`;button.onclick=()=>{if(!confirm("Are you sure to delete?"))return;let index=[...box.children].indexOf(row);let data=getOwnMemberData(row);row.remove();showRestoreMember(data,index)};row.append(input,birth,button);box.appendChild(row);updateMemberEditControls()}
+function collectOwnMembers(){let members={};[...document.querySelectorAll("#ownMembersBox .member-row")].forEach((row,i)=>{let name=row.querySelector(".own-mem")?.value.trim()||"";if(!name)return;members[`member_${String(Object.keys(members).length+1).padStart(3,"0")}`]={name,birthDay:row.querySelector(".own-birth-day")?.value||"",birthMonth:row.querySelector(".own-birth-month")?.value||""}});return members}
+function renderMemberManager(){let box=$("memberBox");if(!box)return;if(!(isEditor() || isGroupManager())){box.textContent="";return}let ids=getOwnedAreaIds();if(!ids.length){box.innerHTML=`<div class="manager-card"><div class="empty">មិនមានវាលស្មៅដែលបានកំណត់។</div></div>`;return}if(!currentMemberAreaId||!ownsArea(currentMemberAreaId))currentMemberAreaId=ids[0];let a=fieldAreas[currentMemberAreaId]||{};box.innerHTML=`<div class="manager-card"><div class="grid2"><div><label class="light-label">វាលស្មៅ</label><input id="ownAreaName" class="input-light" disabled></div><div><label class="light-label">អ្នកគង្វាល</label><input id="ownPastorName" class="input-light" disabled></div></div><div class="section"><h3>Members</h3><div class="btn-row"><button id="addOwnMember" class="btn small primary">Add</button><button id="pasteOwnMembers" class="btn small">Paste List</button></div><br><div id="ownMembersBox"></div></div></div>`;$("ownAreaName").value=a.name||"";$("ownPastorName").value=a.pastorName||"";$("addOwnMember").onclick=()=>addOwnMemberRow("");$("pasteOwnMembers").onclick=()=>{let raw=prompt("Paste names, one per line");if(!raw)return;$("ownMembersBox").innerHTML="";raw.split("\n").map(x=>x.trim()).filter(Boolean).forEach(addOwnMemberRow);updateMemberEditControls()};Object.values(a.members||{}).forEach(m=>addOwnMemberRow(m));updateMemberEditControls()}
+$("memberAreaSearch").oninput=renderMemberAreaList;$("editMembersBtn").onclick=()=>{memberEditMode=true;status($("memberStatus"),"");updateMemberEditControls()};$("saveMembersBtn").onclick=async()=>{if(!(isEditor() || isGroupManager())||!ownsArea(currentMemberAreaId)){status($("memberStatus"),"អ្នកអាចកែបានតែវាលស្មៅរបស់អ្នកប៉ុណ្ណោះ។");return}try{await set(ref(db,`fieldAreas/${currentMemberAreaId}/members`),collectOwnMembers());memberEditMode=false;status($("memberStatus"),"Updated.",true);renderMemberManager()}catch(e){status($("memberStatus"),`Update failed: ${e.message}`)}};
+function renderAreaManager(){
+  if(!isAdmin()){if($("managerBox"))$("managerBox").textContent="";return;}
+  $("managerBox").innerHTML=`<div class="manager-card"><div class="grid2"><div><label class="light-label">វាលស្មៅ</label><input id="areaName" class="input-light"></div><div><label class="light-label">អ្នកគង្វាល</label><input id="areaPastor" class="input-light"></div><div><label class="light-label">Owner UID</label><input id="areaOwnerUid" class="input-light" placeholder="Paste Firebase UID"></div><div><label class="light-label">Owner Name</label><input id="areaOwnerName" class="input-light" readonly></div><div><label class="light-label">Owner Email</label><input id="areaOwnerEmail" class="input-light" placeholder="example@email.com"></div><div><label class="light-label">Owner Role</label><select id="areaOwnerRole" class="input-light"><option value="editor">Editor</option><option value="viewer">Viewer</option><option value="groupManager">Group Manager</option><option value="pastor">Pastor</option></select></div><div><label class="light-label">Church</label><input id="areaChurchDisplay" class="input-light" disabled></div><div><label class="light-label">Move Area To Church</label><div class="btn-row"><select id="areaMoveChurch" class="input-light"></select><button id="moveAreaChurchBtn" class="btn small primary" type="button">Move</button></div></div></div><div class="section"><h3>Members</h3><div class="btn-row"><button id="addMember" class="btn small primary">Add</button><button id="pasteMembers" class="btn small">Paste List</button></div><br><div id="membersBox"></div></div><pre id="preview" class="json-box">{}</pre></div>`;
+  renderAreaChurchControls();
+  $("addMember").onclick=()=>addMemberRow("");
+  $("pasteMembers").onclick=()=>{let raw=prompt("Paste names, one per line");if(!raw)return;$("membersBox").innerHTML="";raw.split("\n").map(x=>x.trim()).filter(Boolean).forEach(addMemberRow);preview()};
+  ["areaName","areaOwnerUid","areaOwnerEmail","areaOwnerRole"].forEach(id=>$(id).oninput=preview);$("areaPastor").oninput=()=>{$("areaOwnerName").value=$("areaPastor").value;preview()};
+  addMemberRow("");
+  preview();
+  // Group Manager assignment is now in separate tab.
+}
+function renderAreaChurchControls(area={}){
+  const display=$("areaChurchDisplay");
+  const sel=$("areaMoveChurch");
+  if(display)display.value=churchName(area.churchId||selectedChurchId||"");
+  if(sel){
+    sel.innerHTML=`<option value="">All Churches / Unassigned</option>`+Object.entries(pastorChurches||{}).sort((a,b)=>(a[1].name||"").localeCompare(b[1].name||"")).map(([id,c])=>`<option value="${id}">${c.name||id}</option>`).join("");
+    sel.value=area.churchId||selectedChurchId||"";
+  }
+  const btn=$("moveAreaChurchBtn");
+  if(btn)btn.onclick=moveCurrentAreaToChurch;
+}
+async function moveCurrentAreaToChurch(){
+  if(!isAdmin()||!currentAreaId){status($("managerStatus"),"Open an area first.");return}
+  const churchId=$("areaMoveChurch")?.value||"";
+  const previousChurchId=selectedChurchId;
+  const movedAreaName=fieldAreas[currentAreaId]?.name||"Area";
+  const patch={...(fieldAreas[currentAreaId]||{}),churchId,churchName:churchName(churchId),updatedAt:Date.now()};
+  try{
+    await set(ref(db,`fieldAreas/${currentAreaId}`),patch);
+    fieldAreas[currentAreaId]=patch;
+    selectedChurchId=previousChurchId;
+    renderAreaList();
+    renderSwitchChurchList();
+    $("formBox")?.classList.add("hidden");
+    $("emptyForm")?.classList.remove("hidden");
+    currentAreaId=null;
+    renderAreaManager();
+    $("deleteAreaBtn")?.classList.add("hidden");
+    status($("managerStatus"),`${movedAreaName} moved to ${churchName(churchId)}.`,true);
+  }catch(e){status($("managerStatus"),`Move failed: ${e.message||String(e)}`)}
+}
+function addMemberRow(v){let data=typeof v==="string"?{name:v}:v||{};let row=document.createElement("div");row.className="member-row editing";let input=document.createElement("input");input.className="input-light member-name mem";input.value=data.name||"";let birth=document.createElement("div");birth.className="birth-wrap";birth.innerHTML=`<i class="ri-cake-line"></i><input class="input-light birth-input birth-day" type="number" min="1" max="31" placeholder="Day"><select class="input-light birth-input birth-month-select birth-month">${monthOptions(data.birthMonth)}</select>`;birth.querySelector(".birth-day").value=data.birthDay||"";let button=document.createElement("button");button.type="button";button.className="member-remove editing";button.setAttribute("aria-label","Remove member");button.innerHTML=`<i class="ri-close-circle-line"></i>`;button.onclick=()=>{if(!confirm("Are you sure to delete?"))return;row.remove();preview()};input.oninput=preview;birth.querySelectorAll("input,select").forEach(i=>i.oninput=preview);row.append(input,birth,button);$("membersBox").appendChild(row)}
+function collectArea(){let members={};[...document.querySelectorAll("#membersBox .member-row")].forEach(row=>{let name=row.querySelector(".mem")?.value.trim()||"";if(!name)return;members[`member_${String(Object.keys(members).length+1).padStart(3,"0")}`]={name,birthDay:row.querySelector(".birth-day")?.value||"",birthMonth:row.querySelector(".birth-month")?.value||""}});return{name:$("areaName")?.value.trim()||"",churchId:selectedChurchId||"",churchName:churchName(selectedChurchId),pastorName:$("areaPastor")?.value.trim()||"",ownerUid:$("areaOwnerUid")?.value.trim()||"",ownerName:$("areaPastor")?.value.trim()||"",ownerEmail:$("areaOwnerEmail")?.value.trim()||"",ownerRole:$("areaOwnerRole")?.value||"editor",members,updatedAt:Date.now()}}
+function preview(){if($("preview"))$("preview").textContent=JSON.stringify(collectArea(),null,2)}
+function renderAreaList(){
+  if(!isAdmin()){let list=$("areaList");if(list)clearNode(list);return;}
+  let q=($("areaSearch").value||"").toLowerCase();
+  let arr=Object.entries(fieldAreas).map(([id,d])=>({id,...d})).filter(a=>areaMatchesSelectedChurch(a)).filter(a=>(`${a.name||""} ${a.pastorName||""} ${a.ownerEmail||""} ${displayRoleName(a.ownerRole)||""} ${churchName(a.churchId)}`).toLowerCase().includes(q));
+  let list=$("areaList");
+  if(!arr.length){appendMetaEmpty(list,"No areas.");return}
+  clearNode(list);
+  arr.forEach(a=>{
+    let div=document.createElement("div");
+    div.className="card-list";
+    const titleRow=document.createElement("div");
+    titleRow.className="area-title-row";
+    appendTextNode(titleRow,"div","card-title",`វាលស្មៅ៖ ${a.name||""}`);
+    appendTextNode(titleRow,"span","area-church-badge",churchName(a.churchId));
+    div.appendChild(titleRow);
+    let meta=appendTextNode(div,"div","card-meta",`អ្នកគង្វាល៖ ${a.pastorName||""} • ${Object.keys(a.members||{}).length} members${a.ownerEmail?` • Owner: ${a.ownerEmail}`:""}`);
+    if(a.ownerRole){
+      meta.appendChild(document.createTextNode(" • "));
+      appendTextNode(meta,"span","role-label",displayRoleName(a.ownerRole));
+    }
+    div.onclick=()=>openArea(a.id);
+    list.appendChild(div);
+  });
+}$("areaSearch").oninput=renderAreaList;$("newAreaBtn").onclick=()=>{currentAreaId=null;renderAreaManager();$("deleteAreaBtn").classList.add("hidden")};
+function openArea(id){currentAreaId=id;let a=fieldAreas[id];selectedChurchId=a.churchId||selectedChurchId;renderAreaManager();$("areaName").value=a.name||"";$("areaPastor").value=a.pastorName||"";$("areaOwnerUid").value=a.ownerUid||"";$("areaOwnerName").value=a.pastorName||"";$("areaOwnerEmail").value=a.ownerEmail||allowedUsers[a.ownerUid]?.email||"";$("areaOwnerRole").value=a.ownerRole||allowedUsers[a.ownerUid]?.role||"editor";renderAreaChurchControls(a);$("membersBox").innerHTML="";Object.values(a.members||{}).forEach(m=>addMemberRow(m));$("deleteAreaBtn").classList.remove("hidden");preview()}
+async function removeAreaAccess(areaId,uids=null){
+  const targets=Array.isArray(uids)?uids:Object.keys(allowedUsers||{});
+  const writes=[];
+  targets.forEach(uid=>{
+    if(uid && allowedUsers?.[uid]?.fieldAreas?.[areaId]===true) writes.push(remove(ref(db,`allowedUsers/${uid}/fieldAreas/${areaId}`)));
+  });
+  await Promise.all(writes);
+}
+async function saveOwnerAccess(areaId,d,previousOwnerUid=""){
+  if(previousOwnerUid && previousOwnerUid!==d.ownerUid) await removeAreaAccess(areaId,[previousOwnerUid]);
+  if(!d.ownerUid)return false;
+  await set(ref(db,`allowedUsers/${d.ownerUid}/role`),d.ownerRole||"editor");
+  await set(ref(db,`allowedUsers/${d.ownerUid}/name`),d.ownerName||"");
+  await set(ref(db,`allowedUsers/${d.ownerUid}/email`),d.ownerEmail||"");
+  await set(ref(db,`allowedUsers/${d.ownerUid}/churchId`),d.churchId||"");
+  if(d.ownerRole==="pastor"){
+    await set(ref(db,`allowedUsers/${d.ownerUid}/fieldAreas`),null);
+  }else{
+    await set(ref(db,`allowedUsers/${d.ownerUid}/fieldAreas/${areaId}`),true);
+  }
+  allowedUsers[d.ownerUid]={...(allowedUsers[d.ownerUid]||{}),role:d.ownerRole||"editor",name:d.ownerName||"",email:d.ownerEmail||"",churchId:d.churchId||"",fieldAreas:d.ownerRole==="pastor"?{}:{...((allowedUsers[d.ownerUid]||{}).fieldAreas||{}),[areaId]:true}};
+  return true;
+}
+$("saveAreaBtn").onclick=async()=>{if(!isAdmin())return;let d=collectArea();if(!d.name||!d.pastorName){status($("managerStatus"),"បញ្ចូលវាលស្មៅ និងអ្នកគង្វាល។");return}if(d.ownerRole==="pastor"&&!d.ownerUid){status($("managerStatus"),"Saved to area only. Add Firebase UID later if you want rules-based pastor login.",true)}if(currentAreaId){let previousOwnerUid=fieldAreas[currentAreaId]?.ownerUid||"";await set(ref(db,`fieldAreas/${currentAreaId}`),{...(fieldAreas[currentAreaId]||{}),...d});await saveOwnerAccess(currentAreaId,d,previousOwnerUid);fieldAreas[currentAreaId]={...(fieldAreas[currentAreaId]||{}),...d};renderAreaList();renderPastorList();status($("managerStatus"),"Updated.",true)}else{let r=push(ref(db,"fieldAreas"));currentAreaId=r.key;let createdAt=Date.now();await set(r,{...d,createdAt});await saveOwnerAccess(currentAreaId,d);fieldAreas[currentAreaId]={...d,createdAt};renderAreaList();renderPastorList();status($("managerStatus"),"Saved.",true)}};
+$("deleteAreaBtn").onclick=async()=>{if(!isAdmin()||!currentAreaId)return;if(confirm("Delete area?")){let areaId=currentAreaId;await removeAreaAccess(areaId);await remove(ref(db,`fieldAreas/${areaId}`));currentAreaId=null;renderAreaManager();$("deleteAreaBtn").classList.add("hidden")}};
+
+
+/* ===== GM SYSTEM START - FIXED SAVE + REALTIME LOCK ===== */
+function getGMDisplayName(uid,gm){return gm?.name || gm?.email || uid}
+function gmSafeId(uid){return String(uid||"").replace(/[^a-zA-Z0-9_-]/g,"_")}
+function getGMBaseUsers(){
+  const map={};
+  Object.entries(allowedUsers||{}).forEach(([uid,u])=>{
+    if(u && u.role==="groupManager") map[uid]={...u,uid,fieldAreas:{...(u.fieldAreas||{})}};
+  });
+  Object.entries(fieldAreas||{}).forEach(([areaId,a])=>{
+    if(!a) return;
+
+    // Saved assignment from Group Managers tab.
+    // This is stored under fieldAreas too, so it survives refresh even if allowedUsers cache is slow.
+    if(a.assignedGroupManagerUid){
+      const gmUid=a.assignedGroupManagerUid;
+      if(!map[gmUid]) map[gmUid]={uid:gmUid,role:"groupManager",name:a.assignedGroupManagerName||"",email:a.assignedGroupManagerEmail||"",churchId:a.churchId||"",fieldAreas:{}};
+      map[gmUid].role="groupManager";
+      map[gmUid].name=map[gmUid].name || a.assignedGroupManagerName || "";
+      map[gmUid].email=map[gmUid].email || a.assignedGroupManagerEmail || "";
+      map[gmUid].churchId=map[gmUid].churchId || a.churchId || "";
+      map[gmUid].fieldAreas={...(map[gmUid].fieldAreas||{}),[areaId]:true};
+    }
+
+    // Also detect original GM owner areas.
+    if(a.ownerRole==="groupManager" && a.ownerUid){
+      if(!map[a.ownerUid]) map[a.ownerUid]={uid:a.ownerUid,role:"groupManager",name:a.ownerName||"",email:a.ownerEmail||"",churchId:a.churchId||"",fieldAreas:{}};
+      map[a.ownerUid].role="groupManager";
+      map[a.ownerUid].name=map[a.ownerUid].name || a.ownerName || "";
+      map[a.ownerUid].email=map[a.ownerUid].email || a.ownerEmail || "";
+      map[a.ownerUid].churchId=map[a.ownerUid].churchId || a.churchId || "";
+      map[a.ownerUid].fieldAreas={...(map[a.ownerUid].fieldAreas||{}),[areaId]:true};
+    }
+  });
+  return map;
+}
+function collectGMAreaOwners(users){
+  const usedAreas={};
+  Object.entries(users||{}).forEach(([uid,u])=>{
+    if(u.role==="groupManager" && u.fieldAreas){
+      Object.entries(u.fieldAreas).forEach(([areaId,val])=>{if(val===true)usedAreas[areaId]=uid});
+    }
+  });
+  return usedAreas;
+}
+function setGMStatus(uid,msg,good=false){
+  const el=$("gmStatus_"+gmSafeId(uid));
+  if(el){el.textContent=msg||"";el.style.color=good?"#15803d":"#4b5563";}
+}
+function getGMCheckedData(uid){
+  const data={};
+  document.querySelectorAll(".gm-area-check").forEach(cb=>{if(cb.dataset.uid===uid && cb.checked)data[cb.dataset.area]=true;});
+  Object.entries(fieldAreas||{}).forEach(([areaId,a])=>{if(a?.ownerRole==="groupManager" && a?.ownerUid===uid)data[areaId]=true;});
+  return data;
+}
+async function saveGMUserData(uid,{silent=false}={}){
+  if(!isAdmin()){
+    if(!silent) alert("Admin only.");
+    return;
+  }
+  setGMStatus(uid,"Saving to Firebase...");
+
+  try{
+    const users=getGMBaseUsers();
+    const gm=users[uid]||allowedUsers[uid]||{};
+    const checkedData=getGMCheckedData(uid);
+    const existingData={...((gm.fieldAreas||allowedUsers[uid]?.fieldAreas)||{})};
+    const data=selectedChurchId ? Object.fromEntries(Object.entries(existingData).filter(([areaId,val])=>val===true && !areaMatchesSelectedChurch(fieldAreas[areaId]||{}))) : {};
+    Object.assign(data,checkedData);
+    const gmChurchId=selectedChurchId || gm.churchId || allowedUsers[uid]?.churchId || "";
+
+    const usedAreas=collectGMAreaOwners(users);
+    let conflict=null;
+    Object.keys(data).forEach(areaId=>{
+      if(selectedChurchId && !areaMatchesSelectedChurch(fieldAreas[areaId]||{})) return;
+      if(usedAreas[areaId] && usedAreas[areaId]!==uid){
+        conflict={areaId,ownerUid:usedAreas[areaId],owner:users[usedAreas[areaId]]||{}};
+      }
+    });
+    if(conflict){
+      const areaName=fieldAreas[conflict.areaId]?.name||conflict.areaId;
+      const ownerName=getGMDisplayName(conflict.ownerUid,conflict.owner);
+      setGMStatus(uid,`Not saved: ${areaName} is already assigned to ${ownerName}.`);
+      if(!silent) alert(`⚠ Area already assigned:\n${areaName}\n\nOwner: ${ownerName}`);
+      renderGMUsers();
+      return;
+    }
+
+    await set(ref(db,`allowedUsers/${uid}/role`),"groupManager");
+    await set(ref(db,`allowedUsers/${uid}/name`),gm.name||allowedUsers[uid]?.name||"");
+    await set(ref(db,`allowedUsers/${uid}/email`),gm.email||allowedUsers[uid]?.email||"");
+    await set(ref(db,`allowedUsers/${uid}/churchId`),gmChurchId);
+    await set(ref(db,`allowedUsers/${uid}/fieldAreas`),data);
+    await set(ref(db,`allowedUsers/${uid}/updatedAt`),Date.now());
+    await set(ref(db,`allowedUsers/${uid}/updatedBy`),user?.email||"");
+
+    // IMPORTANT: Mirror GM assignment inside fieldAreas.
+    // The UI reads this after refresh, and Firebase rules already allow admin to write fieldAreas.
+    const gmName=gm.name||allowedUsers[uid]?.name||"";
+    const gmEmail=gm.email||allowedUsers[uid]?.email||"";
+    const writes=[];
+    Object.entries(fieldAreas||{}).forEach(([areaId,a])=>{
+      if(selectedChurchId && !areaMatchesSelectedChurch(a)) return;
+      const selected=data[areaId]===true;
+      const ownedByThisGM=a?.ownerRole==="groupManager" && a?.ownerUid===uid;
+      if(selected){
+        writes.push(set(ref(db,`fieldAreas/${areaId}/assignedGroupManagerUid`),uid));
+        writes.push(set(ref(db,`fieldAreas/${areaId}/assignedGroupManagerName`),gmName));
+        writes.push(set(ref(db,`fieldAreas/${areaId}/assignedGroupManagerEmail`),gmEmail));
+      }else if(a?.assignedGroupManagerUid===uid && !ownedByThisGM){
+        writes.push(set(ref(db,`fieldAreas/${areaId}/assignedGroupManagerUid`),null));
+        writes.push(set(ref(db,`fieldAreas/${areaId}/assignedGroupManagerName`),null));
+        writes.push(set(ref(db,`fieldAreas/${areaId}/assignedGroupManagerEmail`),null));
+      }
+    });
+    await Promise.all(writes);
+
+    const verifySnap=await get(ref(db,`allowedUsers/${uid}/fieldAreas`));
+    const savedData=verifySnap.val()||{};
+    const wantedKeys=Object.keys(data).sort();
+    const savedKeys=Object.keys(savedData).filter(k=>savedData[k]===true).sort();
+    const mirrorSnap=await get(ref(db,"fieldAreas"));
+    const mirrorAreas=mirrorSnap.val()||{};
+    const mirrorKeys=Object.keys(mirrorAreas).filter(areaId=>mirrorAreas[areaId]?.assignedGroupManagerUid===uid || (mirrorAreas[areaId]?.ownerRole==="groupManager" && mirrorAreas[areaId]?.ownerUid===uid)).sort();
+    const verified=JSON.stringify(wantedKeys)===JSON.stringify(savedKeys) || JSON.stringify(wantedKeys)===JSON.stringify(mirrorKeys);
+
+    if(!verified){
+      console.warn("GM save verification failed",{uid,wanted:data,saved:savedData,mirrorKeys});
+      setGMStatus(uid,"Save failed: Firebase did not keep the selected areas.");
+      if(!silent) alert("Save failed: Firebase did not keep the selected areas. Please check Firebase rules / UID.");
+      return;
+    }
+
+    allowedUsers[uid]={...(allowedUsers[uid]||{}),role:"groupManager",name:gm.name||"",email:gm.email||"",churchId:gmChurchId,fieldAreas:data};
+    renderGMUsers();
+    setGMStatus(uid,silent?"Auto saved to Firebase ✔":"Saved to Firebase ✔",true);
+  }catch(e){
+    console.error("GM save error",e);
+    setGMStatus(uid,`Save failed: ${e.message||String(e)}`);
+    if(!silent) alert(e.message||String(e));
+  }
+}
+window.saveGMUser=saveGMUserData;
+function renderGMUsers(){
+  if(!isAdmin())return;
+  const box=$("gmUserList"); if(!box)return;
+  const users=getGMBaseUsers();
+  const groupManagers=Object.entries(users).filter(([uid,u])=>u.role==="groupManager" && userMatchesSelectedChurch(uid,u));
+  box.innerHTML="";
+  if(!groupManagers.length){
+    appendTextNode(box,"div","gm-empty",selectedChurchId?`No Group Managers in ${churchName(selectedChurchId)} yet.`:"No Group Manager users yet. Set an area Owner Role to Group Manager, then Save in Manager tab.");
+    return;
+  }
+  const usedAreas=collectGMAreaOwners(users);
+  groupManagers.forEach(([uid,u])=>{
+    const card=document.createElement("div"); card.className="gm-card";
+    const header=document.createElement("div"); header.className="gm-header";
+    const info=document.createElement("div"); info.className="gm-info";
+    appendTextNode(info,"div","gm-name",u.name||"No Name");
+    appendTextNode(info,"div","gm-email",u.email||uid);
+    const assignedCount=Object.entries(u.fieldAreas||{}).filter(([areaId,val])=>val===true && areaMatchesSelectedChurch(fieldAreas[areaId]||{})).length;
+    const badge=document.createElement("span"); badge.className="gm-badge"; badge.innerHTML=`<i class="ri-shield-user-line"></i> ${assignedCount} area${assignedCount===1?"":"s"}`; info.appendChild(badge);
+    const saveBtn=document.createElement("button"); saveBtn.className="btn small primary"; saveBtn.type="button"; saveBtn.textContent="Save"; saveBtn.onclick=()=>saveGMUserData(uid);
+    header.append(info,saveBtn);
+    const list=document.createElement("div"); list.className="gm-area-list";
+    Object.entries(fieldAreas||{}).filter(([areaId,area])=>areaMatchesSelectedChurch(area)).forEach(([areaId,area])=>{
+      const assigned=u.fieldAreas?.[areaId]===true;
+      const ownerUid=usedAreas[areaId];
+      const usedByOther=ownerUid && ownerUid!==uid;
+      const owner=usedByOther ? (users[ownerUid]||{}) : null;
+      const label=document.createElement("label"); label.className="gm-area-item"+(usedByOther?" disabled":"");
+      const cb=document.createElement("input"); cb.type="checkbox"; cb.className="gm-area-check"; cb.dataset.uid=uid; cb.dataset.area=areaId; cb.checked=assigned; cb.disabled=!!usedByOther; cb.onchange=()=>saveGMUserData(uid,{silent:true});
+      label.appendChild(cb); appendTextNode(label,"span","",area.name||areaId);
+      if(usedByOther) appendTextNode(label,"span","gm-area-owner",getGMDisplayName(ownerUid,owner));
+      list.appendChild(label);
+    });
+    if(!list.children.length) appendTextNode(list,"div","gm-empty","No areas found.");
+    const statusDiv=document.createElement("div"); statusDiv.className="gm-save-status"; statusDiv.id="gmStatus_"+gmSafeId(uid);
+    card.append(header,list,statusDiv); box.appendChild(card);
+  });
+}
+/* ===== GM SYSTEM END ===== */
+
+function dateFromEntry(e){const d=new Date(`${e.currentDate||""}T00:00:00`);return Number.isNaN(d.getTime())?new Date(e.updatedAt||e.createdAt||Date.now()):d}
+function isoDate(d){const y=d.getFullYear();const m=String(d.getMonth()+1).padStart(2,"0");const day=String(d.getDate()).padStart(2,"0");return `${y}-${m}-${day}`}
+function getWeekStart(d){const x=new Date(d);const day=x.getDay()||7;x.setDate(x.getDate()-day+1);x.setHours(0,0,0,0);return x}
+function weekKeyForEntry(e){return isoDate(getWeekStart(dateFromEntry(e)))}
+function displayPastorDate(d){return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}`}function weekLabel(key){const start=new Date(`${key}T00:00:00`);const end=new Date(start);end.setDate(start.getDate()+6);return `${displayPastorDate(start)} — ${displayPastorDate(end)}`}
+function offeringNumber(v){const m=String(v||"").replace(/,/g,"").match(/\d+(?:\.\d+)?/);return m?Number(m[0]):0}
+function pastorEntryLine(e){const count=(e.participants||[]).length;const offering=offeringNumber(e.offering);const offeringText=offering?`${offering}៛`:"00៛";return `🌳 ${e.fieldArea||"No area"} ${count}នាក់ ដង្វាយ: ${offeringText}`}
+function pastorReportChurchName(items=[]){
+  const churchId=selectedChurchId || getCurrentUserChurchId() || items.find(e=>e?.churchId)?.churchId || items.map(e=>fieldAreas[e?.fieldAreaId]?.churchId).find(Boolean) || "";
+  const raw=churchName(churchId);
+  if(!churchId && raw==="All Churches")return PASTOR_CHURCH_NAME;
+  return raw.trim().startsWith("ក្រុមជំនុំ") ? raw : `ក្រុមជំនុំ ${raw}`;
+}
+function pastorWeekText(items,key){const total=items.reduce((s,e)=>s+offeringNumber(e.offering),0);const usd=(total/4000).toFixed(2);const entryLines=items.map(pastorEntryLine).join("\n");return `💒 ${pastorReportChurchName(items)} (${weekLabel(key)})\n${entryLines}\n\nសរុបវាលស្មៅ ${items.length} 🎁 Total: ${total}៛ = ${usd}$`}
+async function copyPastorText(text){try{await navigator.clipboard.writeText(text);status($("pastorStatus"),"Copied for Messenger.",true)}catch(e){$("pastorPreview").textContent=text;status($("pastorStatus"),"Copy failed. Text is in preview.");}}
+function renderPastorList(){
+  const list=$("pastorWeekList");
+  if(!list)return;
+  if(!(isPastor()||isAdmin())){clearNode(list);return;}
+  const q=($("pastorSearch")?.value||"").toLowerCase();
+  const visibleAreas=Object.entries(fieldAreas||{})
+    .map(([id,a])=>({id,...a}))
+    .filter(a=>canViewArea(a.id))
+    .filter(a=>(`${a.name||""} ${a.pastorName||""}`).toLowerCase().includes(q));
+  const all=Object.entries(entries||{}).map(([id,d])=>({id,...d}))
+    .filter(canViewEntry)
+    .filter(e=>(`${e.fieldArea||""} ${e.pastorName||""} ${e.offering||""}`).toLowerCase().includes(q))
+    .sort((a,b)=>dateFromEntry(b)-dateFromEntry(a));
+  if(!all.length && !visibleAreas.length){appendMetaEmpty(list,"No pastor entries.");if($("pastorPreview"))$("pastorPreview").textContent="No data yet.";return;}
+  const groups={};
+  all.forEach(e=>{const key=weekKeyForEntry(e);(groups[key] ||= []).push(e)});
+  const currentWeekKey=isoDate(getWeekStart(new Date()));
+  if(visibleAreas.length && !groups[currentWeekKey]) groups[currentWeekKey]=[];
+  clearNode(list);
+  const firstKey=Object.keys(groups).sort().reverse()[0];
+  if(firstKey&&$("pastorPreview"))$("pastorPreview").textContent=pastorWeekText(groups[firstKey],firstKey);
+  Object.keys(groups).sort().reverse().forEach((key,index)=>{
+    const wrap=document.createElement("section");wrap.className="pastor-week";
+    const head=document.createElement("div");head.className="pastor-week-head";
+    const h=document.createElement("h3");h.textContent=`អាទិត្យ៖ ${weekLabel(key)}`;
+    const copyWeek=document.createElement("button");copyWeek.className="btn small copy-week-btn";copyWeek.type="button";copyWeek.textContent=index===0?"COPY អាទិត្យចុងក្រោយ":"COPY អាទិត្យមុន";copyWeek.onclick=()=>{const text=pastorWeekText(groups[key],key);$("pastorPreview").textContent=text;copyPastorText(text)};
+    head.append(copyWeek,h);wrap.appendChild(head);
+    const submittedAreaIds=new Set(groups[key].map(e=>e.fieldAreaId).filter(Boolean));
+    groups[key].forEach(e=>{
+      const card=document.createElement("div");const offeringMissing=!String(e.offering||"").trim();card.className="pastor-card"+(offeringMissing?" entry-offering-warning":"");
+      appendTextNode(card,"div","pastor-card-title",`វាលស្មៅ៖ ${e.fieldArea||"No area"}`);
+      appendTextNode(card,"div","pastor-card-meta",`${e.currentDate||""} • អ្នកគង្វាល៖ ${e.pastorName||""} • ${(e.participants||[]).length}នាក់`);
+      appendTextNode(card,"div","pastor-offering",`ដង្វាយ៖ ${e.offering||"-"}`);if(offeringMissing)appendTextNode(card,"div","entry-offering-badge","មិនទាន់បញ្ចូលចំនួនដង្វាយ");
+      wrap.appendChild(card);
+    });
+    const missingAreas=visibleAreas.filter(a=>!submittedAreaIds.has(a.id));
+    if(missingAreas.length){
+      const expanded=!!missingExpandedWeeks[key];
+      const summary=document.createElement("div");summary.className="entry-missing-summary";
+      appendTextNode(summary,"span","",`នៅសល់ ${missingAreas.length} វាលស្មៅទៀត`);
+      const toggle=document.createElement("button");toggle.type="button";toggle.className="entry-missing-toggle";toggle.setAttribute("aria-label",expanded?"Collapse missing areas":"Expand missing areas");toggle.innerHTML=expanded?'<i class="ri-arrow-up-s-line"></i>':'<i class="ri-arrow-down-s-line"></i>';
+      toggle.onclick=()=>{missingExpandedWeeks[key]=!expanded;renderPastorList();};
+      summary.appendChild(toggle);wrap.appendChild(summary);
+      if(expanded){
+        const missingList=document.createElement("div");missingList.className="entry-missing-list";
+        missingAreas.forEach(a=>{
+          const missing=document.createElement("div");missing.className="pastor-card entry-missing";
+          appendTextNode(missing,"div","pastor-card-title",`វាលស្មៅ៖ ${a.name||"No area"}`);
+          appendTextNode(missing,"div","entry-missing-badge","មិនទាន់បញ្ចូលរបាយការណ៍");
+          appendMissingAddButton(missing,a.id);
+          missingList.appendChild(missing);
+        });
+        wrap.appendChild(missingList);
+      }
+    }
+    list.appendChild(wrap);
+  });
+}
+$("pastorSearch")?.addEventListener("input",renderPastorList);
+function prayerRequestLines(e){
+  const participants=Array.isArray(e?.participants)?e.participants:[];
+  const requests=Array.isArray(e?.prayerRequests)?e.prayerRequests:[];
+  const total=Math.max(participants.length,requests.filter(Boolean).length);
+  if(!total)return "មិនមានសំណូមពរ។";
+  return Array.from({length:total},(_,i)=>{
+    const name=participants[i]||`លេខ ${i+1}`;
+    const request=requests[i]||"-";
+    return `${i+1}. ${name}\n   ${request}`;
+  }).join("\n\n");
+}
+function viewAllFormText(e){
+  const area=fieldAreas[e?.fieldAreaId]||{};
+  const church=e?.churchName||churchName(e?.churchId||area.churchId||getCurrentUserChurchId());
+  return `💒 ${church}\nវាលស្មៅ៖ ${e?.fieldArea||area.name||"No area"}\nអ្នកគង្វាល៖ ${e?.pastorName||area.pastorName||""}\nកាលបរិច្ឆេទ៖ ${e?.currentDate||""}\nអ្នកចូលរួម៖ ${(e?.participants||[]).length}នាក់\nដង្វាយ៖ ${e?.offering||"-"}\n\nសំណូមពរអធិស្ឋាន\n${prayerRequestLines(e)}\n\nរឿងពិសេស៖ ${e?.specialNote||"-"}`;
+}
+function renderViewAllFormPreview(e){
+  const box=$("viewAllFormsPreview");
+  if(!box)return;
+  if(!e){box.textContent="ជ្រើសរើសរបាយការណ៍ដើម្បីមើលសំណូមពរ។";return;}
+  const area=fieldAreas[e?.fieldAreaId]||{};
+  const church=e?.churchName||churchName(e?.churchId||area.churchId||getCurrentUserChurchId());
+  const participants=Array.isArray(e?.participants)?e.participants:[];
+  const requests=Array.isArray(e?.prayerRequests)?e.prayerRequests:[];
+  const total=Math.max(participants.length,requests.filter(Boolean).length);
+  clearNode(box);
+  box.classList.add("view-form-board");
+
+  const head=document.createElement("div");
+  head.className="view-form-head";
+  appendTextNode(head,"div","view-form-church",`💒 ${church}`);
+  appendTextNode(head,"div","view-form-meta",`វាលស្មៅ៖ ${e?.fieldArea||area.name||"No area"} • អ្នកគង្វាល៖ ${e?.pastorName||area.pastorName||""}`);
+  appendTextNode(head,"div","view-form-meta",`កាលបរិច្ឆេទ៖ ${e?.currentDate||""} • អ្នកចូលរួម៖ ${participants.length}នាក់ • ដង្វាយ៖ ${e?.offering||"-"}`);
+  box.appendChild(head);
+
+  const grid=document.createElement("div");
+  grid.className="request-card-grid";
+  if(!total){
+    appendTextNode(grid,"div","request-empty","មិនមានសំណូមពរ។");
+  }else{
+    for(let i=0;i<total;i++){
+      const card=document.createElement("div");
+      card.className="request-member-card";
+      const title=document.createElement("div");
+      title.className="request-member-name";
+      appendTextNode(title,"span","request-number",String(i+1));
+      appendTextNode(title,"span","",participants[i]||`លេខ ${i+1}`);
+      card.appendChild(title);
+      appendTextNode(card,"div","request-member-text",requests[i]||"-");
+      grid.appendChild(card);
+    }
+  }
+  box.appendChild(grid);
+
+  if(String(e?.specialNote||"").trim()){
+    const special=document.createElement("div");
+    special.className="view-form-special";
+    const label=document.createElement("b");
+    label.textContent="រឿងពិសេស៖ ";
+    special.appendChild(label);
+    special.appendChild(document.createTextNode(e.specialNote));
+    box.appendChild(special);
+  }
+}
+function openViewAllForm(id){
+  const e=entries[id];
+  if(!e||!canViewEntry(e))return;
+  currentViewAllFormId=id;
+  renderViewAllFormPreview(e);
+  status($("viewAllFormsStatus"),"");
+  renderViewAllForms();
+}
+function renderViewAllForms(){
+  const list=$("viewAllFormsList");
+  if(!list)return;
+  if(!(isPastor()&&!isAdmin())){clearNode(list);return;}
+  const q=($("viewAllFormsSearch")?.value||"").toLowerCase();
+  const arr=Object.entries(entries||{}).map(([id,d])=>({id,...d}))
+    .filter(canViewEntry)
+    .filter(e=>{
+      const haystack=`${e.fieldArea||""} ${e.pastorName||""} ${e.currentDate||""} ${(e.participants||[]).join(" ")} ${(e.prayerRequests||[]).join(" ")}`.toLowerCase();
+      return haystack.includes(q);
+    })
+    .sort((a,b)=>dateFromEntry(b)-dateFromEntry(a) || (b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0));
+  if(!arr.length){
+    appendMetaEmpty(list,"មិនទាន់មានរបាយការណ៍ក្នុងពួកជំនុំនេះ។");
+    if($("viewAllFormsPreview")){$("viewAllFormsPreview").classList.remove("view-form-board");$("viewAllFormsPreview").textContent="មិនទាន់មានរបាយការណ៍ក្នុងពួកជំនុំនេះ។";}
+    return;
+  }
+  if(!currentViewAllFormId || !arr.some(e=>e.id===currentViewAllFormId))currentViewAllFormId=arr[0].id;
+  clearNode(list);
+  arr.forEach(e=>{
+    const card=document.createElement("div");
+    card.className="card-list entry-preview pastor-card"+(e.id===currentViewAllFormId?" active":"");
+    card.setAttribute("role","button");
+    card.tabIndex=0;
+    appendTextNode(card,"div","card-title",`វាលស្មៅ៖ ${e.fieldArea||"No area"}`);
+    appendTextNode(card,"div","card-meta",`${e.currentDate||""} • អ្នកគង្វាល៖ ${e.pastorName||""} • ${(e.participants||[]).length}នាក់`);
+    appendTextNode(card,"div","pastor-offering",`ដង្វាយ៖ ${e.offering||"-"}`);
+    card.onclick=()=>openViewAllForm(e.id);
+    card.onkeydown=event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();openViewAllForm(e.id)}};
+    list.appendChild(card);
+  });
+  const selected=entries[currentViewAllFormId];
+  if(selected&&$("viewAllFormsPreview"))renderViewAllFormPreview(selected);
+}
+$("viewAllFormsSearch")?.addEventListener("input",renderViewAllForms);
+function getChurchStats(churchId){
+  const areas=Object.entries(fieldAreas||{}).filter(([id,a])=>churchId ? (a?.churchId||"")===churchId : true);
+  const areaIds=new Set(areas.map(([id])=>id));
+  const churchEntries=Object.values(entries||{}).filter(e=>{
+    if(!churchId)return true;
+    return (e?.churchId||fieldAreas[e?.fieldAreaId]?.churchId||"")===churchId;
+  });
+  return{
+    entries:churchEntries.length,
+    areas:areas.length,
+    members:areas.reduce((sum,[id,a])=>sum+Object.keys(a?.members||{}).length,0),
+    areaIds
+  };
+}
+function renderStats(){
+  const stats=getChurchStats(selectedChurchId);
+  $("statEntries").textContent=stats.entries;
+  $("statAreas").textContent=stats.areas;
+  $("statMembers").textContent=stats.members;
+  $("statLogs").textContent=Object.keys(auditLogs).length;
+
+  const overview=$("dashboardOverview");
+  if(!overview)return;
+  clearNode(overview);
+  appendTextNode(overview,"div","card-meta",`Current view: ${churchName(selectedChurchId)}`);
+
+  const rows=Object.entries(pastorChurches||{}).map(([id,c])=>({id,name:c?.name||id,...getChurchStats(id)}));
+  const unassignedAreas=Object.entries(fieldAreas||{}).filter(([id,a])=>!(a?.churchId||""));
+  if(unassignedAreas.length){
+    rows.push({
+      id:"",
+      name:"Unassigned / old data",
+      entries:Object.values(entries||{}).filter(e=>!(e?.churchId||fieldAreas[e?.fieldAreaId]?.churchId||"")).length,
+      areas:unassignedAreas.length,
+      members:unassignedAreas.reduce((sum,[id,a])=>sum+Object.keys(a?.members||{}).length,0)
+    });
+  }
+  if(!rows.length){
+    appendTextNode(overview,"div","card-meta","No churches yet.");
+  }
+  rows.forEach((r,index)=>{
+    const line=document.createElement("div");
+    line.className="card-list";
+    appendTextNode(line,"div","card-title",`${index+1}. ${r.name}`);
+    appendTextNode(line,"div","card-meta",`Entries: ${r.entries} • Areas: ${r.areas} • Members: ${r.members}`);
+    overview.appendChild(line);
+  });
+  if(isAdmin()){
+    const ratings=Object.entries(appRatings||{})
+      .filter(([uid,data])=>data && Number(data.rating)>0)
+      .sort((a,b)=>(b[1].updatedAt||0)-(a[1].updatedAt||0));
+    appendTextNode(overview,"div","card-meta","User ratings");
+    if(!ratings.length){
+      appendTextNode(overview,"div","card-meta","No user ratings yet.");
+      return;
+    }
+    ratings.forEach(([uid,data],index)=>{
+      const line=document.createElement("div");
+      line.className="card-list rating-card";
+      appendTextNode(line,"div","card-title",`${index+1}. ${ratingUserLabel(uid,data)}`);
+      const meta=document.createElement("div");
+      meta.className="card-meta";
+      meta.appendChild(buildRatingStars(data.rating));
+      meta.appendChild(document.createTextNode(`${Number(data.rating)||0}/5 stars • ${data.email||allowedUsers[uid]?.email||uid}`));
+      line.appendChild(meta);
+      appendTextNode(line,"div","card-meta",`Rated: ${formatRatingDate(data.updatedAt) || "-"}`);
+      overview.appendChild(line);
+    });
+  }
+}
+async function restoreDeletedEntry(entryId){
+  if(!isAdmin()||!entryId)return;
+  const old=deletedEntries[entryId];
+  if(!old){alert("Deleted entry backup not found.");return;}
+  if(entries[entryId]&&!confirm("This entry id already exists. Restore and overwrite it?"))return;
+  const restored={...old,restoredAt:Date.now(),restoredBy:user?.email||""};
+  delete restored.deletedAt;
+  delete restored.deletedBy;
+  try{
+    await set(ref(db,`prayinfoEntries/${entryId}`),restored);
+    await remove(ref(db,`deletedEntries/${entryId}`));
+    log("restore",entryId,restored);
+    alert("Restored.");
+  }catch(e){
+    console.error("restore failed",e);
+    alert(`Restore failed: ${e.message||String(e)}`);
+  }
+}
+function renderLogs(){
+  let arr=Object.values(auditLogs).sort((a,b)=>(b.timestamp||0)-(a.timestamp||0)).slice(0,30);
+  let list=$("activityList");
+  if(!arr.length){appendMetaEmpty(list,"No logs.");return}
+  clearNode(list);
+  arr.forEach(l=>{
+    let div=document.createElement("div");
+    div.className="card-list log-card";
+    appendTextNode(div,"div","card-title",`${(l.action||"").toUpperCase()} • ${l.fieldArea||""}`);
+    appendTextNode(div,"div","card-meta",`${l.user?.email||""} • ${new Date(l.timestamp||Date.now()).toLocaleString()}`);
+    if((l.action||"").toLowerCase()==="delete"&&l.entryId&&deletedEntries[l.entryId]){
+      const btn=document.createElement("button");
+      btn.type="button";
+      btn.className="restore-btn";
+      btn.textContent="Restore";
+      btn.onclick=async event=>{event.stopPropagation();btn.disabled=true;btn.textContent="Restoring...";await restoreDeletedEntry(l.entryId);};
+      div.appendChild(btn);
+    }
+    list.appendChild(div);
+  })
+}
+renderChurchManager();
+renderAreaManager();
+</script>
+
+<script>
+(function(){
+  async function clearActivityLogs(){
+    if(!(window.prayInfoIsAdmin && window.prayInfoIsAdmin())){
+      alert("Admin only.");
+      return;
+    }
+
+    const ok = confirm("Clear all activity logs? This will delete auditLogs from Firebase.");
+    if(!ok) return;
+
+    try{
+      if(window.db && window.ref && window.remove){
+        await window.remove(window.ref(window.db, "auditLogs"));
+      }else{
+        alert("Firebase database is not available.");
+        return;
+      }
+
+      const activityList = document.getElementById("activityList");
+      if(activityList){
+        activityList.textContent = "";
+        const empty = document.createElement("div");
+        empty.className = "card-meta";
+        empty.textContent = "No logs.";
+        activityList.appendChild(empty);
+      }
+
+      const statLogs = document.getElementById("statLogs");
+      if(statLogs) statLogs.textContent = "0";
+
+      alert("Activity cleared successfully.");
+    }catch(err){
+      alert("Clear activity error: " + (err.message || err));
+    }
+  }
+
+  function installClearActivityButton(){
+    let btn = document.getElementById("clearActivityBtn");
+    if(btn){
+      btn.classList.toggle("hidden", !(window.prayInfoIsAdmin && window.prayInfoIsAdmin()));
+    }
+    if(btn && !btn.dataset.boundClear){
+      btn.dataset.boundClear = "1";
+      btn.addEventListener("click", clearActivityLogs);
+    }
+  }
+
+  window.installClearActivityButton = installClearActivityButton;
+  document.addEventListener("DOMContentLoaded", installClearActivityButton);
+  document.addEventListener("click", function(){ setTimeout(installClearActivityButton, 50); }, true);
+})();
+</script>
+
+
+<script>
+(function(){
+  const DEFAULT_PRAYER_ROW_HEIGHT = 52;
+
+  function autoGrowPrayerTextarea(ta){
+    if(!ta) return;
+    ta.style.height = DEFAULT_PRAYER_ROW_HEIGHT + "px";
+    const newHeight = Math.max(DEFAULT_PRAYER_ROW_HEIGHT, ta.scrollHeight);
+    ta.style.height = newHeight + "px";
+    const tr = ta.closest("tr");
+    const td = ta.closest("td");
+    if(td){td.style.height = newHeight + "px";td.style.minHeight = DEFAULT_PRAYER_ROW_HEIGHT + "px";}
+    if(tr){tr.style.height = newHeight + "px";tr.style.minHeight = DEFAULT_PRAYER_ROW_HEIGHT + "px";}
+  }
+
+  function normalizePrayerRows(){
+    document.querySelectorAll("#prayerRows tr").forEach(row=>{
+      const ta = row.querySelector("textarea");
+      if(ta){autoGrowPrayerTextarea(ta);return;}
+      row.style.height = DEFAULT_PRAYER_ROW_HEIGHT + "px";
+      row.style.minHeight = DEFAULT_PRAYER_ROW_HEIGHT + "px";
+    });
+  }
+
+  function installParticipantCorner(){
+    const select = document.getElementById("participantSelect");
+    const add = document.getElementById("addParticipantBtn");
+    if(!select || !add) return;
+    const row = select.closest(".select-row") || select.closest(".select-with-add");
+    if(row) row.classList.add("participant-controls");
+  }
+
+  function setNameColumnWidth(){
+    document.querySelectorAll(".inner-table colgroup col:nth-child(2)").forEach(col=>col.setAttribute("style","width:180px"));
+    document.querySelectorAll(".prayer-header .name-col, #prayerRows .name-col").forEach(el=>el.style.width="150px");
+  }
+
+  function alignPrayerRows(){
+    setNameColumnWidth();
+    document.querySelectorAll("#prayerRows tr").forEach(row=>{
+      const num = row.querySelector(".number-col");
+      const nameCell = row.querySelector(".name-col");
+      const nameDisplay = row.querySelector(".name-display");
+      if(num){num.style.textAlign="center";num.style.verticalAlign="middle";}
+      if(nameCell){nameCell.style.width="150px";nameCell.style.verticalAlign="middle";}
+      if(nameDisplay){nameDisplay.style.display="flex";nameDisplay.style.alignItems="center";nameDisplay.style.minHeight=DEFAULT_PRAYER_ROW_HEIGHT + "px";}
+    });
+  }
+
+  function removePrintArtifacts(){
+    document.querySelectorAll(".print-textarea-value").forEach(el=>el.remove());
+    document.querySelectorAll("textarea.print-hidden-textarea").forEach(ta=>ta.classList.remove("print-hidden-textarea"));
+    document.querySelectorAll("#prayerRows .print-gap-row,#prayerRows .print-separator-row").forEach(row=>row.remove());
+    document.querySelectorAll("#prayerRows tr.print-hide-empty").forEach(row=>row.classList.remove("print-hide-empty"));
+  }
+
+  function preparePrintTextareaValues(){
+    document.querySelectorAll("#prayerRows textarea").forEach(ta=>{
+      const div = document.createElement("div");
+      div.className = "print-textarea-value";
+      div.textContent = ta.value || "";
+      ta.classList.add("print-hidden-textarea");
+      ta.after(div);
+      const tr = ta.closest("tr");
+      if(tr) tr.style.height = "auto";
+    });
+  }
+
+  function rowHasData(row){
+    const name = row.querySelector(".name-display")?.textContent?.trim() || "";
+    const number = row.querySelector(".number-col")?.textContent?.trim() || "";
+    const textarea = row.querySelector("textarea")?.value?.trim() || "";
+    const printText = row.querySelector(".print-textarea-value")?.textContent?.trim() || "";
+    return !!(name || number || textarea || printText);
+  }
+
+  function markEmptyRowsForPrint(){
+    document.querySelectorAll("#prayerRows tr").forEach(row=>{
+      row.classList.toggle("print-hide-empty", !rowHasData(row));
+    });
+  }
+
+  function addPrintGapRow(){
+    const tbody = document.getElementById("prayerRows");
+    if(!tbody) return;
+    const rows = Array.from(tbody.querySelectorAll("tr")).filter(row=>!row.classList.contains("print-gap-row") && !row.classList.contains("print-separator-row"));
+    let lastDataRow = null;
+    rows.forEach(row=>{if(rowHasData(row)) lastDataRow=row;});
+    if(!lastDataRow) lastDataRow = rows[0] || null;
+    if(!lastDataRow) return;
+    const gap = document.createElement("tr");
+    gap.className = "print-gap-row";
+    const td = document.createElement("td");
+    td.colSpan = 3;
+    td.innerHTML = "&nbsp;";
+    gap.appendChild(td);
+    lastDataRow.insertAdjacentElement("afterend", gap);
+  }
+
+  function getFieldAreaText(){
+    const printText = document.querySelector("#printArea #printFieldAreaText");
+    if(printText?.textContent?.trim()) return printText.textContent.trim();
+    const printFieldValue = document.querySelector("#printArea #fieldValue");
+    if(printFieldValue?.textContent?.trim()) return printFieldValue.textContent.trim();
+    const fieldValue = document.getElementById("fieldValue") || document.getElementById("fieldAreaValue");
+    return fieldValue?.textContent?.trim() || "";
+  }
+
+  function ensurePrintFieldAreaText(){
+    let printText = document.querySelector("#printArea #printFieldAreaText");
+    if(printText){
+      printText.textContent = getFieldAreaText();
+      return;
+    }
+    const fieldValue = document.querySelector("#printArea #fieldValue") || document.getElementById("fieldValue") || document.getElementById("fieldAreaValue");
+    if(!fieldValue) return;
+    printText = document.createElement("span");
+    printText.id = "printFieldAreaText";
+    printText.className = "print-field-area-text";
+    fieldValue.after(printText);
+    printText.textContent = getFieldAreaText();
+  }
+
+  function cleanPdfNamePart(value){return (value||"").replace(/[⌄▾▼:]/g,"").replace(/\s+/g,"").trim()}
+  function normalizeDateForFileName(rawDate){
+    rawDate = (rawDate || "").trim();
+    if(!rawDate) return new Date().toISOString().slice(0,10);
+    if(/^\d{4}-\d{2}-\d{2}$/.test(rawDate)) return rawDate;
+    if(rawDate.includes("/")){
+      const parts = rawDate.split("/").map(p=>p.padStart(2,"0"));
+      if(parts.length===3 && parts[2].length===4) return `${parts[2]}-${parts[0]}-${parts[1]}`;
+    }
+    return rawDate.replace(/[^\d-]/g,"");
+  }
+  function setPrayInfoPdfFileName(){
+    const area = cleanPdfNamePart(getFieldAreaText() || "Unknown");
+    const date = normalizeDateForFileName(document.getElementById("currentDate")?.value || "");
+    document.title = `ពួកជំនុំតាមផ្ទះ-វាលស្មៅ${area}-${date}.pdf`;
+  }
+
+  function finalTableFix(){installParticipantCorner();alignPrayerRows();normalizePrayerRows();ensurePrintFieldAreaText();}
+  function finalPrintPrepare(){removePrintArtifacts();finalTableFix();preparePrintTextareaValues();markEmptyRowsForPrint();addPrintGapRow();setPrayInfoPdfFileName();}
+  function scheduleFormTableFix(){
+    if(!document.getElementById("pageForm")?.classList.contains("active"))return;
+    if(!document.querySelector("#formBox .paper"))return;
+    setTimeout(finalTableFix,80);
+  }
+
+  document.addEventListener("input", e=>{if(e.target?.matches?.("#prayerRows textarea")) autoGrowPrayerTextarea(e.target)}, true);
+  document.addEventListener("click", scheduleFormTableFix, true);
+  document.addEventListener("change", scheduleFormTableFix, true);
+  document.addEventListener("DOMContentLoaded", finalTableFix);
+  window.addEventListener("resize", finalTableFix);
+  window.addEventListener("beforeprint", finalPrintPrepare);
+  window.addEventListener("afterprint", removePrintArtifacts);
+
+  window.normalizePrayerRows = normalizePrayerRows;
+  window.finalPrintPrepare = finalPrintPrepare;
+  window.setPrayInfoPdfFileName = setPrayInfoPdfFileName;
+})();
+
+
+/* ===== Print Name Column Width Controller (Default 140px) =====
+   - Small input box at bottom-right
+   - Controls Name column width
+   - Works on screen preview + print (#printArea)
+   - Hidden automatically when printing
+============================================================== */
+
+(function(){
+
+  // ===== Default width =====
+  let printNameWidth = 100;
+
+  // ===== Inject print CSS =====
+  const style = document.createElement("style");
+  style.innerHTML = `
+    @media print{
+      #printNameWidthControl,
+      #appInfoPopup{
+        display:none!important;
+      }
+
+      #printArea .inner-table{
+        table-layout:fixed!important;
+        width:100%!important;
+      }
+
+      #printArea .inner-table col:nth-child(2),
+      #printArea .prayer-header th:nth-child(2),
+      #printArea #prayerRows td:nth-child(2),
+      #printArea .name-col{
+        width:var(--print-name-width,140px)!important;
+        max-width:var(--print-name-width,140px)!important;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+
+  // ===== Create circular width settings button =====
+  const box = document.createElement("button");
+  box.id = "printNameWidthControl";
+  box.type = "button";
+  box.innerHTML = '<i class="ri-equalizer-3-line"></i>';
+  box.title = "Print name column width";
+
+  box.style.cssText = `
+    position:fixed;
+    right:16px;
+    bottom:16px;
+    z-index:99999;
+    width:28px;
+    height:28px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,.25);
+    background:rgba(255,255,255,.12);
+    color:#eaf3ff;
+    align-items:center;
+    justify-content:center;
+    font-size:14px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 8px 18px rgba(0,0,0,.22);
+    backdrop-filter:blur(14px);
+    cursor:pointer;
+    touch-action:manipulation;
+    outline:none;
+    display:none;
+  `;
+  const popup = document.createElement("div");
+  popup.id = "appInfoPopup";
+  popup.innerHTML = `
+    <button id="appInfoCloseBtn" class="app-popup-close" type="button" aria-label="Close Appinfo"><i class="ri-close-line"></i></button>
+    <label class="app-info-label">Name column width</label>
+    <div class="app-info-input-row">
+      <input id="printNameWidthInput" class="app-info-input" type="text" inputmode="numeric" value="100">
+      <div class="app-info-stepper">
+        <button id="printNameWidthUp" type="button" aria-label="Increase width"><i class="ri-arrow-up-s-line"></i></button>
+        <button id="printNameWidthDown" type="button" aria-label="Decrease width"><i class="ri-arrow-down-s-line"></i></button>
+      </div>
+    </div>
+    <div class="app-info-title">Appinfo</div>
+    <div id="appRatingStars" class="app-rating-stars" aria-label="Rate this app">
+      <button type="button" data-rating="1">☆</button>
+      <button type="button" data-rating="2">☆</button>
+      <button type="button" data-rating="3">☆</button>
+      <button type="button" data-rating="4">☆</button>
+      <button type="button" data-rating="5">☆</button>
+    </div>
+    <div id="appRatingStatus" class="app-rating-status"></div>
+    <div id="appInfoDeveloper" class="app-info-developer"></div>
+  `;
+  popup.style.cssText = `
+    position:fixed;
+    right:16px;
+    bottom:52px;
+    z-index:99999;
+    width:min(210px,calc(100vw - 32px));
+    padding:10px;
+    border-radius:15px;
+    border:1px solid rgba(255,255,255,.22);
+    background:linear-gradient(180deg,rgba(31,41,55,.86),rgba(15,23,42,.78));
+    color:#eaf3ff;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 18px 42px rgba(0,0,0,.34);
+    backdrop-filter:blur(18px);
+    display:none;
+  `;
+
+  function updatePrintNameWidthControl(){
+    const app = document.getElementById("app");
+    const visible=app && !app.classList.contains("hidden");
+    box.style.display = visible ? "inline-flex" : "none";
+    if(!visible) popup.style.display="none";
+  }
+
+  document.body.appendChild(box);
+  document.body.appendChild(popup);
+  const popupStyle=document.createElement("style");
+  popupStyle.textContent=`
+    #appInfoPopup{touch-action:none}
+    #appInfoPopup .app-popup-close{position:absolute;top:7px;right:7px;width:22px;height:22px;border:1px solid rgba(255,255,255,.18);border-radius:999px;background:rgba(255,255,255,.08);color:#eaf3ff;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer}
+    #appInfoPopup .app-popup-close:hover{background:rgba(248,113,113,.22);color:#fecaca}
+    #appInfoPopup .app-popup-close i{font-size:14px;line-height:1}
+    #appInfoPopup .app-info-title{text-align:center;font-size:13px;font-weight:900;margin:10px 0 0;color:#f8fafc}
+    #appInfoPopup.dragging{cursor:grabbing;user-select:none}
+    #appInfoPopup .app-info-label{display:block;text-align:center;font-size:11px;font-weight:800;color:#bfdbfe;margin-bottom:6px}
+    #appInfoPopup .app-info-input-row{display:flex;width:max-content;margin:0 auto;align-items:stretch;border:1px solid rgba(147,197,253,.36);border-radius:11px;background:linear-gradient(135deg,rgba(219,234,254,.18),rgba(59,130,246,.1));box-shadow:inset 0 1px 0 rgba(255,255,255,.16);overflow:hidden}
+    #appInfoPopup .app-info-input{width:52px;border:0;background:transparent;color:#eaf3ff;padding:6px 7px;outline:none;font-weight:900}
+    #appInfoPopup .app-info-input:focus{border-color:rgba(147,197,253,.75);box-shadow:0 0 0 3px rgba(59,130,246,.16),inset 0 1px 0 rgba(255,255,255,.16)}
+    #appInfoPopup .app-info-stepper{display:flex;flex-direction:column;border-left:1px solid rgba(147,197,253,.28)}
+    #appInfoPopup .app-info-stepper button{width:28px;height:18px;border:0;background:rgba(255,255,255,.08);color:#dbeafe;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer}
+    #appInfoPopup .app-info-stepper button:hover{background:rgba(147,197,253,.2)}
+    #appInfoPopup .app-info-stepper button+button{border-top:1px solid rgba(147,197,253,.22)}
+    #appInfoPopup .app-info-stepper i{font-size:16px;line-height:1}
+    #appInfoPopup .app-rating-stars{display:flex;justify-content:center;gap:3px;margin-top:7px}
+    #appInfoPopup .app-rating-stars button{width:22px;height:22px;border:0;border-radius:999px;background:transparent;color:#94a3b8;display:inline-flex;align-items:center;justify-content:center;padding:0;cursor:pointer}
+    #appInfoPopup .app-rating-stars button:hover{background:rgba(250,204,21,.12)}
+    #appInfoPopup .app-rating-stars button.filled{color:#facc15;text-shadow:0 0 10px rgba(250,204,21,.38)}
+    #appInfoPopup .app-rating-stars i{font-size:16px;line-height:1}
+    #appInfoPopup .app-rating-status{text-align:center;min-height:13px;margin-top:2px;font-size:9px;color:#bfdbfe}
+    #appInfoPopup .app-info-developer{text-align:center;margin-top:10px;font-size:10px;color:#cbd5e1;font-weight:800}
+  `;
+  document.head.appendChild(popupStyle);
+  updatePrintNameWidthControl();
+  const appEl = document.getElementById("app");
+  if(appEl) new MutationObserver(updatePrintNameWidthControl).observe(appEl,{attributes:true,attributeFilter:["class"]});
+  document.addEventListener("DOMContentLoaded",updatePrintNameWidthControl);
+
+  // ===== Apply width to both preview + print =====
+  function applyPrintNameWidth(){
+    document.documentElement.style.setProperty("--print-name-width", printNameWidth + "px");
+
+    // Update colgroup
+    document.querySelectorAll(
+      "#formBox .inner-table col:nth-child(2), #printArea .inner-table col:nth-child(2)"
+    ).forEach(el=>{
+      el.style.width = printNameWidth + "px";
+    });
+
+    // Update table cells
+    document.querySelectorAll(
+      "#formBox .prayer-header th:nth-child(2), #formBox #prayerRows td:nth-child(2), #formBox .name-col, " +
+      "#printArea .prayer-header th:nth-child(2), #printArea #prayerRows td:nth-child(2), #printArea .name-col"
+    ).forEach(el=>{
+      el.style.width = printNameWidth + "px";
+      el.style.maxWidth = printNameWidth + "px";
+    });
+  }
+
+  function developerYearText(){
+    const base=2026;
+    const year=new Date().getFullYear();
+    return year>base ? `${base} - ${year}` : `${base}`;
+  }
+  function getMyRating(){
+    if(!user)return 0;
+    return Number(appRatings?.[user.uid]?.rating)||0;
+  }
+  function renderAppRatingStars(){
+    const stars=document.getElementById("appRatingStars");
+    if(!stars)return;
+    clearNode(stars);
+    const rating=getMyRating();
+    for(let i=1;i<=5;i++){
+      const btn=document.createElement("button");
+      btn.type="button";
+      btn.dataset.rating=String(i);
+      btn.className=i<=rating?"filled":"";
+      btn.setAttribute("aria-label",`Rate ${i} stars`);
+      btn.innerHTML=`<i class="${i<=rating?"ri-star-fill":"ri-star-line"}"></i>`;
+      stars.appendChild(btn);
+    }
+  }
+  window.renderAppRatingStars=renderAppRatingStars;
+  async function saveAppRating(value){
+    if(!user)return;
+    value=Math.max(1,Math.min(5,Number(value)||0));
+    const payload={
+      uid:user.uid,
+      rating:value,
+      ratingCount:value,
+      email:user.email||"",
+      name:getCurrentAllowedUser()?.name||"",
+      role:role||"",
+      updatedAt:Date.now()
+    };
+    const statusEl=document.getElementById("appRatingStatus");
+    try{
+      if(statusEl)statusEl.textContent="Saving...";
+      await set(ref(db,`appRatings/${user.uid}`),payload);
+      appRatings[user.uid]=payload;
+      renderAppRatingStars();
+      renderStats();
+      if(statusEl)statusEl.textContent="Saved.";
+    }catch(e){
+      console.error("rating save failed",e);
+      if(statusEl)statusEl.textContent="Cannot save rating.";
+    }
+  }
+  function renderAppInfo(){
+    const input=document.getElementById("printNameWidthInput");
+    if(input) input.value=String(printNameWidth);
+    const developer=document.getElementById("appInfoDeveloper");
+    if(developer) developer.textContent=`Developer: THY THET © ${developerYearText()}`;
+    const ratingStatus=document.getElementById("appRatingStatus");
+    if(ratingStatus)ratingStatus.textContent=getMyRating() ? "Thank you." : "";
+    renderAppRatingStars();
+  }
+  function placePopupNearButton(){
+    const rect=box.getBoundingClientRect();
+    const gap=8;
+    popup.style.left=Math.min(Math.max(8,rect.right-popup.offsetWidth),window.innerWidth-popup.offsetWidth-8)+"px";
+    popup.style.top=Math.max(8,rect.top-popup.offsetHeight-gap)+"px";
+    popup.style.right="auto";
+    popup.style.bottom="auto";
+  }
+  let popupDragState=null;
+  function openAppInfoPopup(event){
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
+    renderAppInfo();
+    popup.style.setProperty("display","block","important");
+    placePopupNearButton();
+    popup.dataset.open="true";
+  }
+  function closeAppInfoPopup(event){
+    event?.stopPropagation?.();
+    popup.style.display="none";
+  }
+  popup.addEventListener("pointerdown",event=>{
+    if(event.target.closest("button,input,select,textarea,[data-rating]"))return;
+    popupDragState={id:event.pointerId,offsetX:event.clientX-popup.getBoundingClientRect().left,offsetY:event.clientY-popup.getBoundingClientRect().top};
+    popup.setPointerCapture(event.pointerId);
+    popup.classList.add("dragging");
+    event.stopPropagation();
+  });
+  popup.addEventListener("pointermove",event=>{
+    if(!popupDragState||popupDragState.id!==event.pointerId)return;
+    const x=Math.min(Math.max(8,event.clientX-popupDragState.offsetX),window.innerWidth-popup.offsetWidth-8);
+    const y=Math.min(Math.max(8,event.clientY-popupDragState.offsetY),window.innerHeight-popup.offsetHeight-8);
+    popup.style.left=x+"px";
+    popup.style.top=y+"px";
+    popup.style.right="auto";
+    popup.style.bottom="auto";
+  });
+  popup.addEventListener("pointerup",event=>{
+    if(popupDragState&&popupDragState.id===event.pointerId){
+      popup.releasePointerCapture(event.pointerId);
+      popupDragState=null;
+      popup.classList.remove("dragging");
+      event.stopPropagation();
+    }
+  });
+  popup.addEventListener("pointercancel",()=>{
+    popupDragState=null;
+    popup.classList.remove("dragging");
+  });
+  function setPrintNameWidth(value){
+    value=Number(value);
+    if(!value) return;
+    if(value < 80) value = 80;
+    if(value > 260) value = 260;
+    printNameWidth = value;
+    applyPrintNameWidth();
+    const input=document.getElementById("printNameWidthInput");
+    if(input) input.value=String(printNameWidth);
+  }
+
+  // ===== Popup change =====
+  box.addEventListener("pointerdown", openAppInfoPopup);
+  box.addEventListener("mousedown", openAppInfoPopup);
+  box.addEventListener("touchstart", openAppInfoPopup, {passive:false});
+  box.addEventListener("click", function(event){
+    openAppInfoPopup(event);
+  });
+  box.addEventListener("pointerup", function(event){
+    openAppInfoPopup(event);
+  });
+  box.addEventListener("touchend", function(event){
+    event.preventDefault();
+    openAppInfoPopup(event);
+  });
+  popup.addEventListener("click",event=>event.stopPropagation());
+  popup.addEventListener("input",event=>{if(event.target?.id==="printNameWidthInput")setPrintNameWidth(event.target.value)});
+  popup.addEventListener("click",event=>{
+    if(event.target.closest("#appInfoCloseBtn"))closeAppInfoPopup(event);
+    const ratingBtn=event.target.closest("[data-rating]");
+    if(ratingBtn)saveAppRating(ratingBtn.dataset.rating);
+    if(event.target.closest("#printNameWidthUp"))setPrintNameWidth(printNameWidth+5);
+    if(event.target.closest("#printNameWidthDown"))setPrintNameWidth(printNameWidth-5);
+  });
+
+  // ===== Ensure applied before print =====
+  const oldPrint = window.print;
+  window.print = function(){
+    applyPrintNameWidth();
+    oldPrint.call(window);
+  };
+
+  // ===== Fix Export PDF (because printArea renders late) =====
+  const exportBtn = document.getElementById("exportBtn");
+  if(exportBtn){
+    exportBtn.addEventListener("click",()=>{
+      setTimeout(applyPrintNameWidth,80);
+      setTimeout(applyPrintNameWidth,150);
+    });
+  }
+
+  // ===== Initial apply =====
+  applyPrintNameWidth();
+
+})();
+
+/* ===== Recreated Appinfo + Name Width Control ===== */
+(function(){
+  let nameWidth=Number(localStorage.getItem("prayinfoNameColumnWidth")||100);
+  let popupDrag=null;
+  let localRating=Number(localStorage.getItem("prayinfoAppRating")||0);
+  let lastRatingPointerAt=0;
+
+  document.getElementById("printNameWidthControl")?.remove();
+  document.getElementById("appInfoPopup")?.remove();
+  document.getElementById("appInfoCssToggle")?.remove();
+
+  const toggle=document.createElement("input");
+  toggle.id="appInfoCssToggle";
+  toggle.type="checkbox";
+
+  const btn=document.createElement("label");
+  btn.id="printNameWidthControl";
+  btn.htmlFor="appInfoCssToggle";
+  btn.innerHTML='<i class="ri-equalizer-3-line"></i>';
+  btn.setAttribute("aria-label","Open Appinfo");
+  btn.title="Appinfo";
+
+  const popup=document.createElement("div");
+  popup.id="appInfoPopup";
+  popup.innerHTML=`
+    <button id="appInfoCloseBtn" class="app-popup-close" type="button" aria-label="Close">×</button>
+    <label class="app-info-label">Name column width</label>
+    <div class="app-info-input-row">
+      <input id="printNameWidthInput" class="app-info-input" type="text" inputmode="numeric" value="${nameWidth}">
+      <div class="app-info-stepper">
+        <button id="printNameWidthUp" type="button" aria-label="Increase"><i class="ri-arrow-up-s-line"></i></button>
+        <button id="printNameWidthDown" type="button" aria-label="Decrease"><i class="ri-arrow-down-s-line"></i></button>
+      </div>
+    </div>
+    <div class="app-info-title">Appinfo</div>
+    <div id="appRatingStars" class="app-rating-stars" aria-label="Rate this app">
+      <button type="button" data-rating="1" aria-label="Rate 1 star"><i class="ri-star-line"></i></button>
+      <button type="button" data-rating="2" aria-label="Rate 2 stars"><i class="ri-star-line"></i></button>
+      <button type="button" data-rating="3" aria-label="Rate 3 stars"><i class="ri-star-line"></i></button>
+      <button type="button" data-rating="4" aria-label="Rate 4 stars"><i class="ri-star-line"></i></button>
+      <button type="button" data-rating="5" aria-label="Rate 5 stars"><i class="ri-star-line"></i></button>
+    </div>
+    <div id="appRatingStatus" class="app-rating-status"></div>
+    <div id="appInfoDeveloper" class="app-info-developer"></div>
+  `;
+
+  const style=document.createElement("style");
+  style.textContent=`
+    #appInfoCssToggle{position:fixed!important;left:-9999px!important;opacity:0!important;pointer-events:none!important}
+    #printNameWidthControl{position:fixed!important;right:16px!important;bottom:16px!important;z-index:2147483000!important;width:30px!important;height:30px!important;border-radius:999px!important;border:1px solid rgba(255,255,255,.28)!important;background:rgba(255,255,255,.14)!important;color:#eaf3ff!important;display:none;align-items:center!important;justify-content:center!important;padding:0!important;cursor:pointer!important;pointer-events:auto!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 8px 18px rgba(0,0,0,.28)!important;backdrop-filter:blur(14px)!important}
+    #printNameWidthControl i{font-size:15px!important;line-height:1!important}
+    #appInfoPopup{position:fixed!important;right:16px;bottom:54px;z-index:2147483001!important;width:min(220px,calc(100vw - 32px));padding:12px 10px 10px;border-radius:16px;border:1px solid rgba(255,255,255,.24);background:linear-gradient(180deg,rgba(31,41,55,.92),rgba(15,23,42,.86));color:#eaf3ff;box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 18px 42px rgba(0,0,0,.38);backdrop-filter:blur(18px);display:none;pointer-events:auto;touch-action:none}
+    #appInfoCssToggle:checked ~ #appInfoPopup{display:block!important}
+    #appInfoPopup.open{display:block!important}
+    #appInfoPopup.dragging{cursor:grabbing;user-select:none}
+    #appInfoPopup .app-popup-close{position:absolute;top:7px;right:7px;width:22px;height:22px;border:1px solid rgba(255,255,255,.18);border-radius:999px;background:rgba(255,255,255,.08);color:#eaf3ff;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer}
+    #appInfoPopup .app-popup-close:hover{background:rgba(248,113,113,.22);color:#fecaca}
+    #appInfoPopup .app-info-label{display:block;text-align:center;font-size:11px;font-weight:800;color:#bfdbfe;margin:2px 22px 7px}
+    #appInfoPopup .app-info-input-row{display:flex;width:max-content;margin:0 auto;align-items:stretch;border:1px solid rgba(147,197,253,.42);border-radius:12px;background:linear-gradient(135deg,rgba(219,234,254,.18),rgba(59,130,246,.1));box-shadow:inset 0 1px 0 rgba(255,255,255,.16);overflow:hidden}
+    #appInfoPopup .app-info-input{width:56px;border:0;background:transparent;color:#eaf3ff;padding:6px 7px;outline:none;font-weight:900;text-align:center}
+    #appInfoPopup .app-info-stepper{display:flex;flex-direction:column;border-left:1px solid rgba(147,197,253,.28)}
+    #appInfoPopup .app-info-stepper button{width:28px;height:18px;border:0;background:rgba(255,255,255,.08);color:#dbeafe;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer}
+    #appInfoPopup .app-info-stepper button+button{border-top:1px solid rgba(147,197,253,.22)}
+    #appInfoPopup .app-info-title{text-align:center;font-size:13px;font-weight:900;margin:10px 0 0;color:#f8fafc}
+    #appInfoPopup .app-rating-stars{display:flex;justify-content:center;gap:3px;margin-top:7px}
+    #appInfoPopup .app-rating-stars button{width:24px;height:24px;border:0;border-radius:999px;background:transparent;color:#94a3b8;display:inline-flex;align-items:center;justify-content:center;padding:0;cursor:pointer;font-size:18px;line-height:1}
+    #appInfoPopup .app-rating-stars i{font-size:18px!important;line-height:1!important;font-family:remixicon!important}
+    #appInfoPopup .app-rating-stars button:hover{background:rgba(250,204,21,.12)}
+    #appInfoPopup .app-rating-stars button.filled{color:#facc15;text-shadow:0 0 10px rgba(250,204,21,.38)}
+    #appInfoPopup .app-rating-status{text-align:center;min-height:13px;margin-top:2px;font-size:9px;color:#bfdbfe}
+    #appInfoPopup .app-info-developer{text-align:center;margin-top:10px;font-size:10px;color:#cbd5e1;font-weight:800}
+  `;
+  document.head.appendChild(style);
+  document.body.append(toggle,btn,popup);
+
+  function isAppVisible(){
+    const app=document.getElementById("app");
+    return app && !app.classList.contains("hidden");
+  }
+  function updateButtonVisibility(){
+    btn.style.display=isAppVisible()?"inline-flex":"none";
+    if(!isAppVisible())toggle.checked=false;
+  }
+  function applyWidth(){
+    nameWidth=Math.max(80,Math.min(260,Number(nameWidth)||100));
+    localStorage.setItem("prayinfoNameColumnWidth",String(nameWidth));
+    document.documentElement.style.setProperty("--print-name-width",nameWidth+"px");
+    document.querySelectorAll("#formBox .inner-table col:nth-child(2),#printArea .inner-table col:nth-child(2)").forEach(el=>el.style.width=nameWidth+"px");
+    document.querySelectorAll("#formBox .prayer-header th:nth-child(2),#formBox #prayerRows td:nth-child(2),#formBox .name-col,#printArea .prayer-header th:nth-child(2),#printArea #prayerRows td:nth-child(2),#printArea .name-col").forEach(el=>{
+      el.style.width=nameWidth+"px";
+      el.style.maxWidth=nameWidth+"px";
+    });
+    const input=document.getElementById("printNameWidthInput");
+    if(input)input.value=String(nameWidth);
+  }
+  function developerYearText(){
+    const base=2026;
+    const year=new Date().getFullYear();
+    return year>base?`${base} - ${year}`:`${base}`;
+  }
+  function getSavedRating(){
+    return Number(window.prayInfoGetAppRating?.())||localRating||0;
+  }
+  function renderStars(previewValue){
+    const box=document.getElementById("appRatingStars");
+    if(!box)return;
+    if(!box.querySelector("[data-rating]")){
+      for(let i=1;i<=5;i++){
+        const star=document.createElement("button");
+        star.type="button";
+        star.dataset.rating=String(i);
+        star.setAttribute("aria-label",`Rate ${i} star${i===1?"":"s"}`);
+        star.innerHTML='<i class="ri-star-line"></i>';
+        box.appendChild(star);
+      }
+    }
+    const current=Math.max(0,Math.min(5,Number(previewValue ?? getSavedRating())||0));
+    box.querySelectorAll("[data-rating]").forEach(star=>{
+      const value=Number(star.dataset.rating)||0;
+      star.classList.toggle("filled",value<=current);
+      star.innerHTML=`<i class="${value<=current?"ri-star-fill":"ri-star-line"}"></i>`;
+      star.title=`Rate ${value}`;
+    });
+  }
+  window.renderAppRatingStars=renderStars;
+  function renderPopup(){
+    applyWidth();
+    const developer=document.getElementById("appInfoDeveloper");
+    if(developer)developer.textContent=`Developer: THY THET © ${developerYearText()}`;
+    const status=document.getElementById("appRatingStatus");
+    const saved=getSavedRating();
+    if(status)status.textContent=saved?`Rated ${saved}/5`:"សូមជួយដាក់ពន្ទុអោយខ្ញុំ!";
+    renderStars();
+  }
+  function openPopup(){
+    renderPopup();
+    popup.classList.add("open");
+  }
+  function closePopup(event){
+    event?.stopPropagation?.();
+    popup.classList.remove("open","dragging");
+    toggle.checked=false;
+    popupDrag=null;
+  }
+  async function saveRating(value){
+    value=Math.max(1,Math.min(5,Number(value)||0));
+    const status=document.getElementById("appRatingStatus");
+    localRating=value;
+    localStorage.setItem("prayinfoAppRating",String(value));
+    renderStars(value);
+    try{
+      if(status)status.textContent="Saving...";
+      if(!window.prayInfoGetUser?.())throw new Error("Not logged in");
+      await window.prayInfoSaveAppRating(value);
+      renderStars();
+      if(status)status.textContent=window.prayInfoIsAdmin?.()?`Saved to Firebase ${value}/5.`:`Rate Saved ${value}/5.`;
+    }catch(e){
+      console.error("rating save failed",e);
+      if(status)status.textContent="Cannot save rating.";
+    }
+  }
+
+  toggle.addEventListener("change",()=>{if(toggle.checked)openPopup();else closePopup();});
+  btn.addEventListener("click",()=>setTimeout(()=>{if(toggle.checked)openPopup();},0));
+  popup.addEventListener("click",event=>{
+    event.stopPropagation();
+    if(event.target.closest("#appInfoCloseBtn"))return closePopup(event);
+    const rating=event.target.closest("[data-rating]");
+    if(rating){
+      event.preventDefault();
+      if(Date.now()-lastRatingPointerAt<450)return;
+      return saveRating(rating.dataset.rating);
+    }
+    if(event.target.closest("#printNameWidthUp")){nameWidth+=5;applyWidth();}
+    if(event.target.closest("#printNameWidthDown")){nameWidth-=5;applyWidth();}
+  });
+  popup.addEventListener("input",event=>{
+    if(event.target?.id==="printNameWidthInput"){nameWidth=event.target.value;applyWidth();}
+  });
+  popup.addEventListener("pointerdown",event=>{
+    if(event.target.closest("button,input,select,textarea,label,[data-rating],#appInfoCloseBtn"))return;
+    popupDrag={id:event.pointerId,offsetX:event.clientX-popup.getBoundingClientRect().left,offsetY:event.clientY-popup.getBoundingClientRect().top};
+    popup.setPointerCapture(event.pointerId);
+    popup.classList.add("dragging");
+    event.stopPropagation();
+  });
+  popup.addEventListener("pointermove",event=>{
+    if(!popupDrag||popupDrag.id!==event.pointerId)return;
+    const x=Math.min(Math.max(8,event.clientX-popupDrag.offsetX),window.innerWidth-popup.offsetWidth-8);
+    const y=Math.min(Math.max(8,event.clientY-popupDrag.offsetY),window.innerHeight-popup.offsetHeight-8);
+    popup.style.left=x+"px";
+    popup.style.top=y+"px";
+    popup.style.right="auto";
+    popup.style.bottom="auto";
+  });
+  popup.addEventListener("pointerup",event=>{
+    const rating=event.target.closest("[data-rating]");
+    if(rating){
+      event.preventDefault();
+      event.stopPropagation();
+      lastRatingPointerAt=Date.now();
+      return saveRating(rating.dataset.rating);
+    }
+    if(popupDrag&&popupDrag.id===event.pointerId){
+      popup.releasePointerCapture(event.pointerId);
+      popupDrag=null;
+      popup.classList.remove("dragging");
+    }
+  });
+
+  updateButtonVisibility();
+  applyWidth();
+  const app=document.getElementById("app");
+  if(app)new MutationObserver(updateButtonVisibility).observe(app,{attributes:true,attributeFilter:["class"]});
+  window.addEventListener("beforeprint",applyWidth);
+  document.getElementById("exportBtn")?.addEventListener("click",()=>{setTimeout(applyWidth,90);setTimeout(applyWidth,160);});
+})();
+  
+</script>
+
+
+  
+</body>
+</html>
