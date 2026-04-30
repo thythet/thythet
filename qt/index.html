@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>PDF Swipe Viewer</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Kantumruy+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#101925;
+      --panel:rgba(255,255,255,.075);
+      --panel2:rgba(255,255,255,.12);
+      --border:rgba(255,255,255,.13);
+      --text:#ffffff;
+      --muted:#b8c4d6;
+      --blue:#8ec8ff;
+      --danger:#ff6b7a;
+      --safe-top:env(safe-area-inset-top);
+      --safe-bottom:env(safe-area-inset-bottom);
+    }
+
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+
+    html,body{
+      margin:0;
+      width:100%;
+      height:100%;
+      overflow:hidden;
+      font-family:"DM Sans","Kantumruy Pro",system-ui,sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(106,168,255,.18), transparent 32%),
+        radial-gradient(circle at bottom right, rgba(61,104,163,.22), transparent 30%),
+        var(--bg);
+      color:var(--text);
+    }
+
+    body{position:fixed;inset:0}
+    button,input,textarea{font:inherit}
+    button{border:0;cursor:pointer}
+
+    .app{
+      height:100dvh;
+      display:flex;
+      flex-direction:column;
+      padding-top:var(--safe-top);
+      max-width:620px;
+      margin:0 auto;
+      background:rgba(8,15,25,.18);
+      border-left:1px solid rgba(255,255,255,.06);
+      border-right:1px solid rgba(255,255,255,.06);
+    }
+
+    /* ===== APP HEADER - START ===== */
+    .app-header{
+      height:64px;
+      flex:0 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 12px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      background:rgba(16,25,37,.82);
+      backdrop-filter:blur(18px);
+      -webkit-backdrop-filter:blur(18px);
+      z-index:20;
+    }
+
+    .brand{
+      min-width:0;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .brand-icon{
+      width:40px;
+      height:40px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      flex:0 0 auto;
+      background:linear-gradient(145deg, rgba(142,200,255,.22), rgba(255,255,255,.06));
+      border:1px solid var(--border);
+      color:#dff1ff;
+      font-size:21px;
+    }
+
+    .brand h1{
+      margin:0;
+      font-size:16px;
+      line-height:1.15;
+      font-weight:800;
+      letter-spacing:-.03em;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width:230px;
+    }
+
+    .brand p{
+      margin:3px 0 0;
+      color:var(--muted);
+      font-size:11px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width:230px;
+    }
+
+    .header-actions{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex:0 0 auto;
+    }
+
+    .icon-btn{
+      width:40px;
+      height:40px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      background:rgba(255,255,255,.08);
+      border:1px solid var(--border);
+      color:#fff;
+      font-size:20px;
+    }
+
+    .icon-btn:active{
+      transform:scale(.96);
+      background:rgba(142,200,255,.18);
+    }
+    /* ===== APP HEADER - END ===== */
+
+    /* ===== PDFJS VIEWER - START ===== */
+    .viewer-shell{
+      flex:1 1 auto;
+      min-height:0;
+      position:relative;
+      display:flex;
+      flex-direction:column;
+      padding:10px 10px 82px;
+    }
+
+    .page-stage{
+      position:relative;
+      flex:1 1 auto;
+      min-height:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      border-radius:22px;
+      background:rgba(0,0,0,.28);
+      border:1px solid rgba(255,255,255,.11);
+      box-shadow:0 18px 50px rgba(0,0,0,.24);
+      touch-action:pan-y;
+    }
+
+    .canvas-wrap{
+      position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      width:100%;
+      height:100%;
+      overflow:auto;
+      padding:14px;
+      scroll-behavior:smooth;
+    }
+
+    #pdfCanvas{
+      display:block;
+      max-width:none;
+      background:#fff;
+      border-radius:3px;
+      box-shadow:0 8px 28px rgba(0,0,0,.28);
+      transform-origin:center center;
+    }
+
+    .loading,
+    .empty{
+      position:absolute;
+      inset:0;
+      display:grid;
+      place-items:center;
+      padding:22px;
+      text-align:center;
+      background:rgba(10,16,25,.22);
+      z-index:5;
+    }
+
+    .state-card{
+      width:min(330px,100%);
+      padding:24px 20px;
+      border-radius:24px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.13);
+    }
+
+    .state-card i{
+      font-size:44px;
+      color:var(--blue);
+    }
+
+    .state-card h2{
+      margin:12px 0 6px;
+      font-size:21px;
+      letter-spacing:-.03em;
+    }
+
+    .state-card p{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.6;
+    }
+
+    .spinner{
+      width:34px;
+      height:34px;
+      margin:0 auto 14px;
+      border-radius:50%;
+      border:3px solid rgba(255,255,255,.18);
+      border-top-color:#fff;
+      animation:spin .75s linear infinite;
+    }
+
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .bottom-bar{
+      position:absolute;
+      left:18px;
+      right:18px;
+      bottom:calc(12px + var(--safe-bottom));
+      height:58px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:8px;
+      border-radius:22px;
+      background:rgba(18,28,42,.88);
+      border:1px solid rgba(255,255,255,.13);
+      box-shadow:0 14px 44px rgba(0,0,0,.28);
+      backdrop-filter:blur(20px);
+      -webkit-backdrop-filter:blur(20px);
+      z-index:15;
+    }
+
+    .bar-btn{
+      width:42px;
+      height:42px;
+      border-radius:16px;
+      display:grid;
+      place-items:center;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.1);
+      color:#fff;
+      font-size:20px;
+    }
+
+    .bar-btn:disabled{
+      opacity:.38;
+    }
+
+    .page-counter{
+      min-width:88px;
+      text-align:center;
+      color:#dce8f6;
+      font-weight:800;
+      font-size:15px;
+      letter-spacing:.02em;
+    }
+
+    .hint{
+      position:absolute;
+      top:14px;
+      left:50%;
+      transform:translateX(-50%);
+      z-index:8;
+      display:none;
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(0,0,0,.42);
+      color:rgba(255,255,255,.88);
+      font-size:12px;
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
+    }
+
+    .hint.show{display:block}
+    .hide{display:none!important}
+    /* ===== PDFJS VIEWER - END ===== */
+
+    /* ===== ADMIN BOTTOM SHEET - START ===== */
+    .sheet-overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.48);
+      backdrop-filter:blur(5px);
+      -webkit-backdrop-filter:blur(5px);
+      z-index:50;
+      opacity:0;
+      pointer-events:none;
+      transition:.22s ease;
+    }
+
+    .sheet-overlay.show{
+      opacity:1;
+      pointer-events:auto;
+    }
+
+    .admin-sheet{
+      position:fixed;
+      left:50%;
+      bottom:0;
+      width:min(620px,100%);
+      z-index:60;
+      max-height:88dvh;
+      padding:10px 12px calc(14px + var(--safe-bottom));
+      border-radius:28px 28px 0 0;
+      background:rgba(18,28,42,.96);
+      border:1px solid rgba(255,255,255,.13);
+      box-shadow:0 -24px 70px rgba(0,0,0,.38);
+      backdrop-filter:blur(24px);
+      -webkit-backdrop-filter:blur(24px);
+      transform:translate(-50%,108%);
+      transition:.26s ease;
+      overflow-y:auto;
+    }
+
+    .admin-sheet.show{
+      transform:translate(-50%,0);
+    }
+
+    .sheet-handle{
+      width:46px;
+      height:5px;
+      border-radius:99px;
+      background:rgba(255,255,255,.25);
+      margin:0 auto 13px;
+    }
+
+    .sheet-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+
+    .sheet-head h2{
+      margin:0;
+      font-size:20px;
+      letter-spacing:-.03em;
+    }
+
+    .status{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:7px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);
+      color:#dbe8f8;
+      font-size:12px;
+      white-space:nowrap;
+    }
+
+    .field{margin-top:12px}
+
+    .field label{
+      display:block;
+      color:#dce7f5;
+      font-size:13px;
+      font-weight:700;
+      margin:0 0 7px;
+    }
+
+    .field input,
+    .field textarea{
+      width:100%;
+      border:1px solid rgba(255,255,255,.13);
+      outline:none;
+      border-radius:17px;
+      background:rgba(255,255,255,.07);
+      color:#fff;
+      padding:14px;
+      font-size:15px;
+    }
+
+    .field textarea{
+      min-height:86px;
+      resize:vertical;
+      line-height:1.45;
+    }
+
+    .field input::placeholder,
+    .field textarea::placeholder{
+      color:rgba(220,231,245,.45);
+    }
+
+    .actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-top:14px;
+    }
+
+    .actions.single{grid-template-columns:1fr}
+
+    .btn{
+      min-height:48px;
+      border-radius:17px;
+      font-weight:800;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      color:#fff;
+      background:rgba(255,255,255,.1);
+      border:1px solid rgba(255,255,255,.13);
+    }
+
+    .btn.primary{
+      color:#0b1726;
+      background:#fff;
+    }
+
+    .btn.danger{
+      color:#ffe5e8;
+      background:rgba(255,107,122,.16);
+      border-color:rgba(255,107,122,.28);
+    }
+
+    .message{
+      display:none;
+      margin-top:12px;
+      padding:12px 13px;
+      border-radius:16px;
+      background:rgba(142,200,255,.12);
+      border:1px solid rgba(142,200,255,.18);
+      color:#e7f4ff;
+      font-size:13px;
+      line-height:1.5;
+    }
+
+    .message.show{display:block}
+    /* ===== ADMIN BOTTOM SHEET - END ===== */
+
+    @media(max-width:420px){
+      .brand h1,.brand p{max-width:178px}
+      .viewer-shell{padding-left:8px;padding-right:8px}
+      .bottom-bar{left:12px;right:12px}
+      .bar-btn{width:40px;height:40px}
+      .page-counter{min-width:76px}
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon"><i class="ri-file-pdf-2-line"></i></div>
+        <div>
+          <h1 id="headerTitle">PDF Viewer</h1>
+          <p id="headerSub">Swipe document reader</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <a class="icon-btn hide" id="openPdfBtn" href="#" target="_blank" rel="noopener" aria-label="Open PDF">
+          <i class="ri-external-link-line"></i>
+        </a>
+        <button class="icon-btn" id="adminBtn" type="button" aria-label="Open admin">
+          <i class="ri-shield-keyhole-line"></i>
+        </button>
+      </div>
+    </header>
+
+    <section class="viewer-shell">
+      <div class="page-stage" id="pageStage">
+        <div class="hint" id="hint">Swipe left/right to change page</div>
+
+        <div class="canvas-wrap" id="canvasWrap">
+          <canvas id="pdfCanvas"></canvas>
+        </div>
+
+        <div class="loading" id="loadingState">
+          <div class="state-card">
+            <div class="spinner"></div>
+            <h2>Loading PDF</h2>
+            <p>Please wait...</p>
+          </div>
+        </div>
+
+        <div class="empty hide" id="emptyState">
+          <div class="state-card">
+            <i class="ri-file-search-line"></i>
+            <h2>No PDF yet</h2>
+            <p>Login as admin, paste your PDF link, then save.</p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="bottom-bar">
+        <button class="bar-btn" id="prevBtn" type="button" aria-label="Previous page">
+          <i class="ri-arrow-left-s-line"></i>
+        </button>
+
+        <button class="bar-btn" id="zoomOutBtn" type="button" aria-label="Zoom out">
+          <i class="ri-subtract-line"></i>
+        </button>
+
+        <div class="page-counter">
+          <span id="pageNum">0</span> / <span id="pageTotal">0</span>
+        </div>
+
+        <button class="bar-btn" id="zoomInBtn" type="button" aria-label="Zoom in">
+          <i class="ri-add-line"></i>
+        </button>
+
+        <button class="bar-btn" id="nextBtn" type="button" aria-label="Next page">
+          <i class="ri-arrow-right-s-line"></i>
+        </button>
+      </nav>
+    </section>
+  </main>
+
+  <div class="sheet-overlay" id="sheetOverlay"></div>
+
+  <aside class="admin-sheet" id="adminSheet">
+    <div class="sheet-handle"></div>
+
+    <div class="sheet-head">
+      <h2>Admin</h2>
+      <span class="status" id="loginStatus"><i class="ri-lock-line"></i> Not logged in</span>
+    </div>
+
+    <div id="loginBox">
+      <div class="field">
+        <label for="email">Admin Email</label>
+        <input id="email" type="email" placeholder="thythet455@gmail.com" autocomplete="email">
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="Firebase password" autocomplete="current-password">
+      </div>
+
+      <div class="actions single">
+        <button class="btn primary" id="loginBtn" type="button">
+          <i class="ri-login-circle-line"></i> Login
+        </button>
+      </div>
+    </div>
+
+    <div id="saveBox" class="hide">
+      <div class="field">
+        <label for="pdfName">PDF Title</label>
+        <input id="pdfName" type="text" placeholder="Quiet Time PDF">
+      </div>
+
+      <div class="field">
+        <label for="pdfUrlInput">PDF File Link</label>
+        <textarea id="pdfUrlInput" placeholder="https://thythet.com/qt/QT.pdf"></textarea>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="previewBtn" type="button">
+          <i class="ri-eye-line"></i> Preview
+        </button>
+
+        <button class="btn primary" id="savePdfBtn" type="button">
+          <i class="ri-save-3-line"></i> Save
+        </button>
+
+        <button class="btn danger" id="logoutBtn" type="button" style="grid-column:1 / -1;">
+          <i class="ri-logout-circle-r-line"></i> Logout
+        </button>
+      </div>
+    </div>
+
+    <div class="message" id="messageBox"></div>
+  </aside>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs" type="module"></script>
+
+  <script type="module">
+    /* =========================================================
+       PDF.JS - NO IFRAME, NO BROWSER PDF TOOLBAR
+       ========================================================= */
+    import * as pdfjsLib from "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs";
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
+
+    /* =========================================================
+       FIREBASE CONFIG - SAME AS YOUR AUDIO APP
+       ========================================================= */
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCZgQBrY5cwGpCra0gBqs1ZDkJPugewHhc",
+      authDomain: "thythet-podcast.firebaseapp.com",
+      databaseURL: "https://thythet-podcast-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "thythet-podcast",
+      storageBucket: "thythet-podcast.firebasestorage.app",
+      messagingSenderId: "164940506015",
+      appId: "1:164940506015:web:3860e938d888f424b693aa",
+      measurementId: "G-GZRDKL1N0R"
+    };
+
+    const ADMIN_EMAIL = "thythet455@gmail.com";
+    const PDF_DATA_PATH = "pdfViewer/current";
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    const $ = id => document.getElementById(id);
+
+    const headerTitle = $("headerTitle");
+    const headerSub = $("headerSub");
+    const openPdfBtn = $("openPdfBtn");
+    const pageStage = $("pageStage");
+    const canvasWrap = $("canvasWrap");
+    const canvas = $("pdfCanvas");
+    const ctx = canvas.getContext("2d", { alpha:false });
+    const loadingState = $("loadingState");
+    const emptyState = $("emptyState");
+    const hint = $("hint");
+
+    const prevBtn = $("prevBtn");
+    const nextBtn = $("nextBtn");
+    const zoomInBtn = $("zoomInBtn");
+    const zoomOutBtn = $("zoomOutBtn");
+    const pageNum = $("pageNum");
+    const pageTotal = $("pageTotal");
+
+    const adminBtn = $("adminBtn");
+    const sheetOverlay = $("sheetOverlay");
+    const adminSheet = $("adminSheet");
+    const loginStatus = $("loginStatus");
+    const loginBox = $("loginBox");
+    const saveBox = $("saveBox");
+    const email = $("email");
+    const password = $("password");
+    const loginBtn = $("loginBtn");
+    const logoutBtn = $("logoutBtn");
+    const previewBtn = $("previewBtn");
+    const savePdfBtn = $("savePdfBtn");
+    const pdfName = $("pdfName");
+    const pdfUrlInput = $("pdfUrlInput");
+    const messageBox = $("messageBox");
+
+    let pdfDoc = null;
+    let currentPage = 1;
+    let currentScale = 1;
+    let currentUrl = "";
+    let isRendering = false;
+    let pendingPage = null;
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchStartTime = 0;
+
+    function openSheet(){
+      sheetOverlay.classList.add("show");
+      adminSheet.classList.add("show");
+    }
+
+    function closeSheet(){
+      sheetOverlay.classList.remove("show");
+      adminSheet.classList.remove("show");
+    }
+
+    function showMessage(text){
+      messageBox.textContent = text;
+      messageBox.classList.add("show");
+    }
+
+    function clearMessage(){
+      messageBox.textContent = "";
+      messageBox.classList.remove("show");
+    }
+
+    function showHint(){
+      hint.classList.add("show");
+      clearTimeout(showHint.timer);
+      showHint.timer = setTimeout(() => hint.classList.remove("show"), 1800);
+    }
+
+    function isPdfUrl(url){
+      try{
+        const parsed = new URL(url);
+        return parsed.protocol.startsWith("http") && parsed.pathname.toLowerCase().includes(".pdf");
+      }catch(e){
+        return false;
+      }
+    }
+
+    function setLoading(show){
+      loadingState.classList.toggle("hide", !show);
+    }
+
+    function updateButtons(){
+      const total = pdfDoc ? pdfDoc.numPages : 0;
+      pageNum.textContent = total ? currentPage : 0;
+      pageTotal.textContent = total;
+      prevBtn.disabled = !pdfDoc || currentPage <= 1;
+      nextBtn.disabled = !pdfDoc || currentPage >= total;
+      zoomOutBtn.disabled = !pdfDoc || currentScale <= .72;
+      zoomInBtn.disabled = !pdfDoc || currentScale >= 2.2;
+    }
+
+    async function renderPage(pageNumber){
+      if(!pdfDoc) return;
+
+      if(isRendering){
+        pendingPage = pageNumber;
+        return;
+      }
+
+      isRendering = true;
+      setLoading(true);
+
+      try{
+        const page = await pdfDoc.getPage(pageNumber);
+
+        const baseViewport = page.getViewport({ scale: 1 });
+        const stageWidth = Math.max(260, pageStage.clientWidth - 28);
+        const stageHeight = Math.max(260, pageStage.clientHeight - 28);
+
+        const fitWidthScale = stageWidth / baseViewport.width;
+        const fitHeightScale = stageHeight / baseViewport.height;
+        const fitScale = Math.min(fitWidthScale, fitHeightScale);
+
+        const finalScale = fitScale * currentScale * window.devicePixelRatio;
+        const viewport = page.getViewport({ scale: finalScale });
+
+        canvas.width = Math.floor(viewport.width);
+        canvas.height = Math.floor(viewport.height);
+
+        canvas.style.width = Math.floor(viewport.width / window.devicePixelRatio) + "px";
+        canvas.style.height = Math.floor(viewport.height / window.devicePixelRatio) + "px";
+
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        await page.render({
+          canvasContext: ctx,
+          viewport
+        }).promise;
+
+        currentPage = pageNumber;
+        updateButtons();
+
+        requestAnimationFrame(() => {
+          canvasWrap.scrollTop = 0;
+          canvasWrap.scrollLeft = Math.max(0, (canvasWrap.scrollWidth - canvasWrap.clientWidth) / 2);
+        });
+      }catch(error){
+        showMessage("Render failed: " + error.message);
+      }finally{
+        isRendering = false;
+        setLoading(false);
+
+        if(pendingPage !== null){
+          const next = pendingPage;
+          pendingPage = null;
+          renderPage(next);
+        }
+      }
+    }
+
+    async function loadPdfDocument(data){
+      const title = data?.title || "PDF Viewer";
+      const url = data?.url || "";
+
+      headerTitle.textContent = title;
+      pdfName.value = data?.title || "";
+      pdfUrlInput.value = url || "";
+
+      if(!url){
+        pdfDoc = null;
+        currentPage = 1;
+        currentScale = 1;
+        currentUrl = "";
+        headerTitle.textContent = "PDF Viewer";
+        headerSub.textContent = "No PDF saved yet";
+        openPdfBtn.classList.add("hide");
+        emptyState.classList.remove("hide");
+        setLoading(false);
+        updateButtons();
+        return;
+      }
+
+      currentUrl = url;
+      headerSub.textContent = "Loading document...";
+      openPdfBtn.href = url;
+      openPdfBtn.classList.remove("hide");
+      emptyState.classList.add("hide");
+      setLoading(true);
+
+      try{
+        pdfDoc = await pdfjsLib.getDocument({
+          url,
+          withCredentials: false
+        }).promise;
+
+        currentPage = 1;
+        currentScale = 1;
+        headerSub.textContent = "Swipe left/right • " + pdfDoc.numPages + " pages";
+        updateButtons();
+        await renderPage(currentPage);
+        showHint();
+      }catch(error){
+        pdfDoc = null;
+        headerSub.textContent = "PDF load failed";
+        emptyState.classList.remove("hide");
+        showMessage("PDF load failed. Check PDF URL and CORS. " + error.message);
+      }finally{
+        setLoading(false);
+      }
+    }
+
+    function goToPage(page){
+      if(!pdfDoc) return;
+      const total = pdfDoc.numPages;
+      const safePage = Math.min(Math.max(1, page), total);
+      if(safePage !== currentPage){
+        renderPage(safePage);
+      }
+    }
+
+    prevBtn.addEventListener("click", () => goToPage(currentPage - 1));
+    nextBtn.addEventListener("click", () => goToPage(currentPage + 1));
+
+    zoomInBtn.addEventListener("click", () => {
+      if(!pdfDoc) return;
+      currentScale = Math.min(2.25, currentScale + .18);
+      renderPage(currentPage);
+    });
+
+    zoomOutBtn.addEventListener("click", () => {
+      if(!pdfDoc) return;
+      currentScale = Math.max(.72, currentScale - .18);
+      renderPage(currentPage);
+    });
+
+    pageStage.addEventListener("touchstart", (e) => {
+      if(!e.touches.length) return;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchStartTime = Date.now();
+    }, { passive:true });
+
+    pageStage.addEventListener("touchend", (e) => {
+      if(!pdfDoc || !e.changedTouches.length) return;
+
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      const dy = e.changedTouches[0].clientY - touchStartY;
+      const dt = Date.now() - touchStartTime;
+
+      const isSwipe = Math.abs(dx) > 56 && Math.abs(dx) > Math.abs(dy) * 1.25 && dt < 520;
+
+      if(isSwipe){
+        if(dx < 0) goToPage(currentPage + 1);
+        else goToPage(currentPage - 1);
+      }
+    }, { passive:true });
+
+    window.addEventListener("resize", () => {
+      clearTimeout(window.__resizePdfTimer);
+      window.__resizePdfTimer = setTimeout(() => {
+        if(pdfDoc) renderPage(currentPage);
+      }, 220);
+    });
+
+    adminBtn.addEventListener("click", openSheet);
+    sheetOverlay.addEventListener("click", closeSheet);
+
+    loginBtn.addEventListener("click", async () => {
+      clearMessage();
+
+      const userEmail = email.value.trim();
+      const userPassword = password.value;
+
+      if(!userEmail || !userPassword){
+        showMessage("Please enter email and password.");
+        return;
+      }
+
+      try{
+        await signInWithEmailAndPassword(auth, userEmail, userPassword);
+        showMessage("Login successful.");
+      }catch(error){
+        showMessage("Login failed: " + error.message);
+      }
+    });
+
+    logoutBtn.addEventListener("click", async () => {
+      await signOut(auth);
+      showMessage("Logged out.");
+    });
+
+    previewBtn.addEventListener("click", async () => {
+      clearMessage();
+
+      const title = pdfName.value.trim() || "PDF Preview";
+      const url = pdfUrlInput.value.trim();
+
+      if(!isPdfUrl(url)){
+        showMessage("Please paste a valid PDF link. Example: https://thythet.com/qt/QT.pdf");
+        return;
+      }
+
+      await loadPdfDocument({ title, url });
+      showMessage("Preview loaded. Tap Save to publish.");
+    });
+
+    savePdfBtn.addEventListener("click", async () => {
+      clearMessage();
+
+      const user = auth.currentUser;
+
+      if(!user || user.email !== ADMIN_EMAIL){
+        showMessage("Only admin can save PDF.");
+        return;
+      }
+
+      const title = pdfName.value.trim() || "PDF Document";
+      const url = pdfUrlInput.value.trim();
+
+      if(!isPdfUrl(url)){
+        showMessage("Please paste a valid direct PDF URL ending with .pdf");
+        return;
+      }
+
+      try{
+        await set(ref(db, PDF_DATA_PATH), {
+          title,
+          url,
+          updatedAt: Date.now(),
+          updatedBy: user.email
+        });
+
+        showMessage("Saved successfully.");
+        setTimeout(closeSheet, 550);
+      }catch(error){
+        showMessage("Save failed: " + error.message);
+      }
+    });
+
+    onAuthStateChanged(auth, (user) => {
+      clearMessage();
+
+      if(user && user.email === ADMIN_EMAIL){
+        loginStatus.innerHTML = '<i class="ri-shield-check-line"></i> Admin online';
+        loginBox.classList.add("hide");
+        saveBox.classList.remove("hide");
+        email.value = user.email || "";
+      }else{
+        loginStatus.innerHTML = '<i class="ri-lock-line"></i> Not logged in';
+        loginBox.classList.remove("hide");
+        saveBox.classList.add("hide");
+
+        if(user && user.email !== ADMIN_EMAIL){
+          showMessage("This account is not admin.");
+          signOut(auth);
+        }
+      }
+    });
+
+    onValue(ref(db, PDF_DATA_PATH), async (snapshot) => {
+      const data = snapshot.val();
+      await loadPdfDocument(data);
+    }, (error) => {
+      headerSub.textContent = "Firebase read error";
+      showMessage("Firebase read error: " + error.message);
+    });
+
+    updateButtons();
+  </script>
+</body>
+</html>
