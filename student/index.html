@@ -578,7 +578,7 @@ const isPage = name => activePage() === name;
 function watch(path, target, sourceRef=ref(db,path)){
   onValue(sourceRef, snap=>{
     state[target]=snap.val()||{};
-    if(target==="themeBackgrounds") applyThemeBackgroundSettings();
+    if(target==="themeBackgroundsSettings" || target==="themeBackgroundsUser") applyThemeBackgroundSettings();
     if(target==="themeOptions") applyThemeOptionSettings();
     renderAll();
   }, err=>{
@@ -586,7 +586,8 @@ function watch(path, target, sourceRef=ref(db,path)){
   });
 }
 function loadData(){
-  watch("settings/themeBackgrounds","themeBackgrounds");
+  watch("settings/themeBackgrounds","themeBackgroundsSettings");
+  watch(`users/${ADMIN_UID}/appSettings/themeBackgrounds`,"themeBackgroundsUser");
   watch("settings/themeOptions","themeOptions");
   if(canAdmin()){
     watch("churches","churches");
@@ -818,7 +819,14 @@ function renderSelects(){
 const themeChoices=()=>window.SSTheme?.themes || [];
 const localThemeBackgrounds=()=>window.SSTheme?.localThemeBackgrounds?.() || {};
 const normalizeThemeBackgrounds=data=>window.SSTheme?.normalizeBackgrounds?.(data || {}) || {};
-const mergedThemeBackgrounds=()=>normalizeThemeBackgrounds({...localThemeBackgrounds(), ...(state.themeBackgrounds||{})});
+const churchThemeBackgrounds=()=>{
+  if(canAdmin()){
+    return normalizeThemeBackgrounds(Object.values(state.churches||{}).reduce((all,church)=>({...all,...(church?.appSettings?.themeBackgrounds||{})}),{}));
+  }
+  return normalizeThemeBackgrounds(state.churches?.appSettings?.themeBackgrounds || {});
+};
+const onlineThemeBackgrounds=()=>normalizeThemeBackgrounds({...(state.themeBackgroundsSettings||{}), ...(state.themeBackgroundsUser||{}), ...churchThemeBackgrounds()});
+const mergedThemeBackgrounds=()=>normalizeThemeBackgrounds({...localThemeBackgrounds(), ...onlineThemeBackgrounds()});
 const themeImages=theme=>window.SSTheme?.themeImages?.(theme) || mergedThemeBackgrounds()[theme]?.images || [];
 const isVideoBackground=url=>window.SSTheme?.isVideoUrl?.(url) || /\.(mp4|webm|ogg|ogv|mov|m4v)(\?.*)?$/i.test(String(url||""));
 const localThemeOptions=()=>window.SSTheme?.localThemeOptions?.() || {};
@@ -826,7 +834,9 @@ const normalizeThemeOptions=data=>window.SSTheme?.normalizeThemeOptions?.(data |
 const mergedThemeOptions=()=>normalizeThemeOptions({...state.themeOptions, ...localThemeOptions()});
 const themeOption=theme=>mergedThemeOptions()[theme] || {textColor:"",fontSize:"default",bgBlur:false};
 function applyThemeBackgroundSettings(){
-  state.themeBackgrounds=normalizeThemeBackgrounds(state.themeBackgrounds);
+  state.themeBackgroundsSettings=normalizeThemeBackgrounds(state.themeBackgroundsSettings);
+  state.themeBackgroundsUser=normalizeThemeBackgrounds(state.themeBackgroundsUser);
+  state.themeBackgrounds=onlineThemeBackgrounds();
   window.SS_THEME_BACKGROUNDS = state.themeBackgrounds || {};
   if(window.SSApplyThemeBackgrounds) window.SSApplyThemeBackgrounds(state.themeBackgrounds||{});
   renderThemeBackgroundAdmin();
@@ -1144,12 +1154,33 @@ async function saveThemeBackgroundData(next,statusText=tr("saved")){
   next=normalizeThemeBackgrounds(next);
   const savedGlobal=await write("settings/themeBackgrounds",next,null,null,false);
   if(savedGlobal){
-    state.themeBackgrounds=next;
+    state.themeBackgroundsSettings=next;
     applyThemeBackgroundSettings();
     showStatus("themeBgStatus",statusText,true);
+    return;
+  }
+  const churchIds=Object.entries(state.churches||{}).filter(([,church])=>church && typeof church==="object").map(([id])=>id);
+  let savedChurchCount=0;
+  for(const churchId of churchIds){
+    const ok=await write(`churches/${churchId}/appSettings/themeBackgrounds`,next,null,null,false);
+    if(ok) savedChurchCount++;
+  }
+  if(savedChurchCount){
+    Object.keys(state.churches||{}).forEach(churchId=>{
+      state.churches[churchId].appSettings={...(state.churches[churchId].appSettings||{}),themeBackgrounds:next};
+    });
+    applyThemeBackgroundSettings();
+    showStatus("themeBgStatus","Saved online for users",true);
+    return;
+  }
+  const savedUserFallback=await write(`users/${ADMIN_UID}/appSettings/themeBackgrounds`,next,null,null,false);
+  if(savedUserFallback){
+    state.themeBackgroundsUser=next;
+    applyThemeBackgroundSettings();
+    showStatus("themeBgStatus","Saved online",true);
   }else{
     window.SSTheme?.setLocalThemeBackgrounds?.(next);
-    showStatus("themeBgStatus","Saved on this device",true);
+    showStatus("themeBgStatus","Online save failed. Saved on this device only.",false);
     renderThemeBackgroundAdmin();
   }
 }

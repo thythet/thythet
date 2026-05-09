@@ -3,10 +3,7 @@
   const localBgStorageKey = "ss_theme_backgrounds_local";
   const localBgSelectedKey = "ss_theme_backgrounds_selected";
   const localThemeOptionsKey = "ss_theme_options_local";
-  const builtInBackgrounds = {
-    "apple-liquid": { images:["./assets/img/apple-liquid-bg.png"], videos:[], selected:"" },
-    "glassy": { images:["./assets/img/apple-liquid-bg.png"], videos:[], selected:"" }
-  };
+  const builtInBackgrounds = {};
   const themes = [
     ["glassy","Glassy",["#081426","#5da7ff","#7a79ff","#22c55e"]],
     ["standard","Standard",["#f7f9fc","#2563eb","#4f46e5","#16a34a"]],

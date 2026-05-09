@@ -261,9 +261,7 @@ body[data-color-theme]:not([data-color-theme="glassy"]) .meter i{
   background:linear-gradient(90deg,var(--green),var(--blue))!important;
 }
 body[data-color-theme][data-color-theme="apple-liquid"]{
-  background:
-    linear-gradient(180deg,rgba(255,255,255,.2),rgba(245,248,255,.34)),
-    url("./assets/img/apple-liquid-bg.png") center/cover fixed no-repeat!important;
+  background:linear-gradient(135deg,#f8fafc,#e5eef8 45%,#fff7ed)!important;
 }
 body[data-color-theme][data-color-theme="apple-liquid"]::before{
   content:"";
@@ -271,9 +269,7 @@ body[data-color-theme][data-color-theme="apple-liquid"]::before{
   inset:0;
   z-index:-1;
   pointer-events:none;
-  background:
-    linear-gradient(180deg,rgba(255,255,255,.18),rgba(245,248,255,.3)),
-    url("./assets/img/apple-liquid-bg.png") center/cover no-repeat;
+  background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(245,248,255,.3));
 }
 body[data-color-theme][data-color-theme="apple-liquid"] .glass,
 body[data-color-theme][data-color-theme="apple-liquid"] .panel,

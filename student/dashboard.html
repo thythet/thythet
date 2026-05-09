@@ -85,9 +85,18 @@ const DASHBOARD_ADMINS=[ADMIN_UID];
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getDatabase(app),$=id=>document.getElementById(id);
 const READ_CONCURRENCY=24;
 const state={churches:{},classes:{},students:{},attendance:{},stats:[],monthChart:null,classChart:null,loadedKeys:new Set(),lang:localStorage.getItem('dashboardLang')||'en',role:'guest',churchId:null,userName:''};
-onValue(ref(db,'settings/themeBackgrounds'),snap=>{
-  window.SS_THEME_BACKGROUNDS=snap.val()||{};
+let dashboardThemeBackgroundsSettings={}, dashboardThemeBackgroundsUser={}, dashboardThemeBackgroundsChurch={};
+function applyDashboardThemeBackgrounds(){
+  window.SS_THEME_BACKGROUNDS={...dashboardThemeBackgroundsSettings,...dashboardThemeBackgroundsUser,...dashboardThemeBackgroundsChurch};
   if(window.SSApplyThemeBackgrounds) window.SSApplyThemeBackgrounds(window.SS_THEME_BACKGROUNDS);
+}
+onValue(ref(db,'settings/themeBackgrounds'),snap=>{
+  dashboardThemeBackgroundsSettings=snap.val()||{};
+  applyDashboardThemeBackgrounds();
+});
+onValue(ref(db,`users/${ADMIN_UID}/appSettings/themeBackgrounds`),snap=>{
+  dashboardThemeBackgroundsUser=snap.val()||{};
+  applyDashboardThemeBackgrounds();
 });
 onValue(ref(db,'settings/themeOptions'),snap=>{
   window.SS_THEME_OPTIONS=snap.val()||{};
@@ -237,6 +246,8 @@ async function loadData(){
           state.churchId ? readLabeled('students?churchId='+state.churchId,()=>readByChurch('students',state.churchId)) : Promise.resolve({})
         ]);
     Object.assign(state,{churches,classes,students,attendance:{},loadedKeys:new Set()});
+    dashboardThemeBackgroundsChurch=Object.values(churches||{}).reduce((all,church)=>({...all,...(church?.appSettings?.themeBackgrounds||{})}),{});
+    applyDashboardThemeBackgrounds();
     buildFilters();
     renderShellData();
     setBusy('Loading...');
