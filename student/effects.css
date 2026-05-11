@@ -1,0 +1,185 @@
+body[data-effect-mode="none"] *{
+  animation-duration:.01ms!important;
+  animation-iteration-count:1!important;
+  scroll-behavior:auto!important;
+}
+body[data-effect-mode="soft"] .page.active{animation:effectFadeUp .28s ease both}
+body[data-effect-mode="soft"] .card,
+body[data-effect-mode="soft"] .panel,
+body[data-effect-mode="soft"] .theme-card,
+body[data-effect-mode="soft"] .effect-card{transition:transform .18s ease,box-shadow .18s ease,background .18s ease}
+
+body[data-effect-mode="pop"] .btn:active,
+body[data-effect-mode="pop"] .nav-btn:active,
+body[data-effect-mode="pop"] .card:active,
+body[data-effect-mode="pop"] .theme-card:active,
+body[data-effect-mode="pop"] .effect-card:active{transform:scale(.94)!important}
+body[data-effect-mode="pop"] .page.active{animation:effectPop .24s cubic-bezier(.2,.9,.2,1) both}
+
+body[data-effect-mode="smooth"] .page.active{animation:effectFadeUp .42s cubic-bezier(.2,.8,.2,1) both}
+body[data-effect-mode="smooth"] .btn,
+body[data-effect-mode="smooth"] .nav-btn,
+body[data-effect-mode="smooth"] .card,
+body[data-effect-mode="smooth"] .panel,
+body[data-effect-mode="smooth"] .input{transition-duration:.32s!important}
+
+body[data-effect-mode="kids"] .page.active{animation:effectBounceIn .42s cubic-bezier(.2,.9,.2,1) both}
+body[data-effect-mode="kids"] .check.on,
+body[data-effect-mode="kids"] .theme-card.active,
+body[data-effect-mode="kids"] .effect-card.active{animation:effectWiggle .38s ease both}
+
+body[data-effect-mode="focus"] .nav-btn.active,
+body[data-effect-mode="focus"] .theme-card.active,
+body[data-effect-mode="focus"] .effect-card.active,
+body[data-effect-mode="focus"] .check.on{
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--blue) 22%,transparent),0 0 26px color-mix(in srgb,var(--blue) 22%,transparent)!important;
+}
+
+body[data-effect-mode="fast"] .btn,
+body[data-effect-mode="fast"] .nav-btn,
+body[data-effect-mode="fast"] .card,
+body[data-effect-mode="fast"] .panel,
+body[data-effect-mode="fast"] .input{transition-duration:.09s!important}
+body[data-effect-mode="fast"] .page.active{animation:effectFadeUp .14s ease-out both}
+
+body[data-effect-mode="calm"] .page.active{animation:effectCalm .18s ease both}
+body[data-effect-mode="calm"] .btn,
+body[data-effect-mode="calm"] .nav-btn,
+body[data-effect-mode="calm"] .card,
+body[data-effect-mode="calm"] .panel{transition:opacity .16s ease!important}
+
+body[data-effect-mode="apple"]{
+  scroll-behavior:smooth;
+}
+body[data-effect-mode="apple"] .page.active{animation:effectApplePage .46s cubic-bezier(.22,1,.36,1) both}
+body[data-effect-mode="apple"] .top{transition:transform .48s cubic-bezier(.22,1,.36,1),box-shadow .48s cubic-bezier(.22,1,.36,1)}
+body[data-effect-mode="apple"] .btn,
+body[data-effect-mode="apple"] .nav-btn,
+body[data-effect-mode="apple"] .input,
+body[data-effect-mode="apple"] .card,
+body[data-effect-mode="apple"] .panel,
+body[data-effect-mode="apple"] .student-card,
+body[data-effect-mode="apple"] .theme-card,
+body[data-effect-mode="apple"] .effect-card{
+  transition:transform .48s cubic-bezier(.22,1,.36,1),opacity .48s cubic-bezier(.22,1,.36,1),box-shadow .48s cubic-bezier(.22,1,.36,1),background .32s ease,border-color .32s ease!important;
+}
+body[data-effect-mode="apple"] .btn:active,
+body[data-effect-mode="apple"] .nav-btn:active,
+body[data-effect-mode="apple"] .theme-card:active,
+body[data-effect-mode="apple"] .effect-card:active{
+  transform:scale(.975)!important;
+}
+body[data-effect-mode="apple"] .apple-reveal{
+  opacity:0;
+  transform:translateY(24px) scale(.985);
+}
+body[data-effect-mode="apple"] .apple-reveal.is-visible{
+  opacity:1;
+  transform:translateY(0) scale(1);
+  transition-delay:var(--apple-delay,0ms)!important;
+}
+body[data-effect-mode="apple"] #page-attendance .apple-reveal,
+body[data-effect-mode="apple"] #page-students .apple-reveal,
+body[data-effect-mode="apple-smooth"] #page-attendance .apple-reveal,
+body[data-effect-mode="apple-smooth"] #page-students .apple-reveal{
+  opacity:1!important;
+  transform:none!important;
+  filter:none!important;
+  transition:none!important;
+}
+body[data-effect-mode="apple"] #page-attendance.page.active,
+body[data-effect-mode="apple"] #page-students.page.active,
+body[data-effect-mode="apple-smooth"] #page-attendance.page.active,
+body[data-effect-mode="apple-smooth"] #page-students.page.active{
+  animation:none!important;
+}
+body[data-effect-mode="apple"] #page-attendance .att-card,
+body[data-effect-mode="apple"] #page-students .student-card,
+body[data-effect-mode="apple-smooth"] #page-attendance .att-card,
+body[data-effect-mode="apple-smooth"] #page-students .student-card{
+  transition:transform .2s cubic-bezier(.2,.8,.2,1),box-shadow .2s ease,background .18s ease!important;
+}
+body[data-effect-mode="apple"] #page-attendance.att-soft-ready .panel,
+body[data-effect-mode="apple"] #page-attendance.att-soft-ready #attList,
+body[data-effect-mode="apple"] #page-students.att-soft-ready .panel,
+body[data-effect-mode="apple"] #page-students.att-soft-ready #studentList,
+body[data-effect-mode="apple-smooth"] #page-attendance.att-soft-ready .panel,
+body[data-effect-mode="apple-smooth"] #page-attendance.att-soft-ready #attList,
+body[data-effect-mode="apple-smooth"] #page-students.att-soft-ready .panel,
+body[data-effect-mode="apple-smooth"] #page-students.att-soft-ready #studentList{
+  animation:attendanceSoftIn .22s cubic-bezier(.2,.8,.2,1) both;
+}
+body[data-effect-mode="apple"] .effect-preview span{animation:effectAppleFloat 1.9s cubic-bezier(.22,1,.36,1) infinite alternate}
+
+body[data-effect-mode="apple-smooth"]{
+  scroll-behavior:smooth;
+}
+body[data-effect-mode="apple-smooth"] .page.active{animation:effectAppleSmoothPage .72s cubic-bezier(.16,1,.3,1) both}
+body[data-effect-mode="apple-smooth"] .top{transition:transform .72s cubic-bezier(.16,1,.3,1),box-shadow .72s cubic-bezier(.16,1,.3,1)}
+body[data-effect-mode="apple-smooth"] .btn,
+body[data-effect-mode="apple-smooth"] .nav-btn,
+body[data-effect-mode="apple-smooth"] .input,
+body[data-effect-mode="apple-smooth"] .card,
+body[data-effect-mode="apple-smooth"] .panel,
+body[data-effect-mode="apple-smooth"] .student-card,
+body[data-effect-mode="apple-smooth"] .theme-card,
+body[data-effect-mode="apple-smooth"] .effect-card{
+  transition:transform .78s cubic-bezier(.16,1,.3,1),opacity .78s cubic-bezier(.16,1,.3,1),box-shadow .64s cubic-bezier(.16,1,.3,1),background .42s ease,border-color .42s ease!important;
+}
+body[data-effect-mode="apple-smooth"] .btn:active,
+body[data-effect-mode="apple-smooth"] .nav-btn:active,
+body[data-effect-mode="apple-smooth"] .theme-card:active,
+body[data-effect-mode="apple-smooth"] .effect-card:active{
+  transform:scale(.982)!important;
+}
+body[data-effect-mode="apple-smooth"] .apple-reveal{
+  opacity:0;
+  transform:translateY(34px) scale(.972);
+  filter:blur(3px);
+}
+body[data-effect-mode="apple-smooth"] .apple-reveal.is-visible{
+  opacity:1;
+  transform:translateY(0) scale(1);
+  filter:blur(0);
+  transition-delay:var(--apple-delay,0ms)!important;
+}
+body[data-effect-mode="apple-smooth"] .effect-preview span{animation:effectAppleFloat 2.6s cubic-bezier(.16,1,.3,1) infinite alternate}
+
+.effect-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:10px}
+.effect-card{min-height:132px;padding:10px;border-radius:20px;border:1px solid var(--line);background:var(--glass);color:var(--text);display:grid;grid-template-rows:1fr auto;gap:9px;text-align:left;box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+.effect-card.active{border-color:var(--green);box-shadow:0 0 0 4px color-mix(in srgb,var(--green) 20%,transparent),inset 0 1px 0 rgba(255,255,255,.2)}
+.effect-preview{position:relative;min-height:76px;padding:8px;border-radius:15px;background:linear-gradient(135deg,color-mix(in srgb,var(--blue) 16%,transparent),color-mix(in srgb,var(--green) 14%,transparent));border:1px solid var(--line);overflow:hidden}
+.effect-preview span{position:absolute;border-radius:999px;background:var(--blue)}
+.effect-preview span:nth-child(1){width:18px;height:18px;left:14px;top:15px}
+.effect-preview span:nth-child(2){width:34px;height:10px;right:14px;top:20px;background:var(--violet)}
+.effect-preview span:nth-child(3){height:12px;left:14px;right:14px;bottom:16px;background:var(--green)}
+.effect-name{font-size:12px;font-weight:1000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body[data-effect-mode="soft"] .effect-preview span{animation:effectFloat 1.8s ease-in-out infinite alternate}
+body[data-effect-mode="pop"] .effect-preview span{animation:effectPop 1s ease-in-out infinite alternate}
+body[data-effect-mode="smooth"] .effect-preview span{animation:effectSlide 2.6s cubic-bezier(.2,.8,.2,1) infinite alternate}
+body[data-effect-mode="kids"] .effect-preview span{animation:effectWiggle 1.1s ease-in-out infinite alternate}
+body[data-effect-mode="focus"] .effect-preview{box-shadow:0 0 22px color-mix(in srgb,var(--blue) 26%,transparent)}
+body[data-effect-mode="fast"] .effect-preview span{animation:effectSlide .72s ease-in-out infinite alternate}
+body[data-effect-mode="calm"] .effect-preview span{animation:effectCalm 2s ease-in-out infinite alternate}
+body[data-effect-mode="apple"] .effect-preview span{animation:effectAppleFloat 1.9s cubic-bezier(.22,1,.36,1) infinite alternate}
+body[data-effect-mode="apple-smooth"] .effect-preview span{animation:effectAppleFloat 2.6s cubic-bezier(.16,1,.3,1) infinite alternate}
+
+@keyframes effectFadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes effectPop{from{opacity:.88;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+@keyframes effectBounceIn{0%{opacity:0;transform:translateY(12px) scale(.98)}65%{opacity:1;transform:translateY(-2px) scale(1.01)}100%{transform:translateY(0) scale(1)}}
+@keyframes effectWiggle{0%,100%{transform:rotate(0) scale(1)}35%{transform:rotate(-2deg) scale(1.02)}70%{transform:rotate(2deg) scale(1.02)}}
+@keyframes effectFloat{from{transform:translateY(0)}to{transform:translateY(-6px)}}
+@keyframes effectSlide{from{transform:translateX(-5px)}to{transform:translateX(5px)}}
+@keyframes effectCalm{from{opacity:.72}to{opacity:1}}
+@keyframes effectApplePage{from{opacity:0;transform:translateY(12px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes effectAppleSmoothPage{from{opacity:0;transform:translateY(18px) scale(.985);filter:blur(2px)}to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
+@keyframes effectAppleFloat{from{transform:translateY(4px) scale(.98)}to{transform:translateY(-5px) scale(1.02)}}
+@keyframes attendanceSoftIn{from{opacity:.82;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+
+@media (prefers-reduced-motion:reduce){
+  body *{
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.01ms!important;
+  }
+}
