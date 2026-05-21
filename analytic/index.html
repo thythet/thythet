@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Audio analytics dashboard for ស្ដាប់ព្រះបន្ទូល." />
+  <title>Audio Analytics • ស្ដាប់ព្រះបន្ទូល</title>
+  <link rel="icon" type="image/svg+xml" href="https://thythet.com/assets/audio/mic-fill.svg?v=2">
+  <link rel="preconnect" href="https://thythet.com">
+  <link rel="preconnect" href="https://thythet.github.io">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box}
+    :root{
+      --bg:#101925;--panel:rgba(255,255,255,.07);--panel2:rgba(255,255,255,.045);
+      --line:rgba(255,255,255,.12);--line2:rgba(255,255,255,.2);--text:#f5f7fb;
+      --muted:#aeb7c5;--blue:#0a84ff;--cyan:#62d6ff;--orange:#ff9f0a;--red:#ff453a;
+      --green:#30d158;--radius:24px;--shadow:0 20px 60px rgba(0,0,0,.35);
+    }
+    body{
+      margin:0;min-height:100vh;font-family:'Kantumruy Pro',system-ui,sans-serif;color:var(--text);
+      background:
+        radial-gradient(circle at 12% -10%,rgba(106,168,255,.2),transparent 30%),
+        radial-gradient(circle at 90% 10%,rgba(98,214,255,.13),transparent 26%),
+        radial-gradient(circle at 70% 100%,rgba(94,92,230,.15),transparent 32%),
+        var(--bg);
+    }
+    body.gray{
+      --bg:#111315;--panel:rgba(255,255,255,.06);--panel2:rgba(255,255,255,.04);
+      background:radial-gradient(circle at top left,rgba(255,255,255,.06),transparent 28%),#111315;
+    }
+    .wrap{width:min(1180px,100%);margin:auto;padding:28px 18px 90px}
+    .topbar,.card,.table-card,.login-card{
+      border:1px solid var(--line);background:var(--panel);backdrop-filter:blur(18px) saturate(140%);
+      -webkit-backdrop-filter:blur(18px) saturate(140%);box-shadow:var(--shadow);
+    }
+    .topbar{
+      position:sticky;top:12px;z-index:20;border-radius:28px;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:14px
+    }
+    .brand{display:flex;align-items:center;gap:12px;min-width:0}
+    .logo{width:48px;height:48px;border-radius:18px;display:grid;place-items:center;background:linear-gradient(145deg,rgba(10,132,255,.35),rgba(98,214,255,.16));border:1px solid rgba(255,255,255,.18);font-size:24px}
+    .brand h1{font-size:18px;margin:0;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .brand p{font-size:12px;margin:2px 0 0;color:var(--muted);line-height:1.45}
+    .actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+    button,.btn,input,select{
+      font-family:inherit;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.08);color:#fff;
+      min-height:42px;padding:10px 13px;outline:0
+    }
+    button,.btn{cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:700;transition:.2s ease;text-decoration:none}
+    button:hover,.btn:hover{background:rgba(10,132,255,.22);transform:translateY(-1px)}
+    .primary{background:rgba(10,132,255,.24);border-color:rgba(10,132,255,.4)}
+    .danger{background:rgba(255,69,58,.12);border-color:rgba(255,69,58,.28);color:#ffd8d8}
+    .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:18px}
+    .card{border-radius:var(--radius);padding:18px;overflow:hidden;position:relative}
+    .card:before{content:'';position:absolute;inset:-40% -20%;background:linear-gradient(90deg,transparent,rgba(98,214,255,.08),transparent);transform:translateX(-60%);pointer-events:none}
+    .card:hover:before{animation:sweep 1.8s ease}
+    @keyframes sweep{to{transform:translateX(60%)}}
+    .metric-title{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:800;display:flex;gap:8px;align-items:center}
+    .metric-value{font-size:30px;font-weight:800;margin-top:8px;line-height:1.1}
+    .metric-sub{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5}
+    .layout{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;margin-top:14px}
+    .table-card{border-radius:var(--radius);padding:16px;overflow:hidden}
+    .section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+    .section-head h2{font-size:16px;margin:0;display:flex;gap:8px;align-items:center}
+    .tools{display:flex;gap:8px;flex-wrap:wrap}
+    .tools input,.tools select{height:40px;min-height:40px;font-size:13px;max-width:210px}
+    .rank-list{display:flex;flex-direction:column;gap:10px}
+    .rank-item{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px;border-radius:18px;background:var(--panel2);border:1px solid rgba(255,255,255,.08)}
+    .rank-no{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(10,132,255,.18);color:#bfe1ff;font-weight:800}
+    .rank-title{font-size:13px;font-weight:800;line-height:1.45;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .rank-sub{font-size:11px;color:var(--muted);line-height:1.45;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .rank-val{text-align:right;font-size:13px;font-weight:800;white-space:nowrap}
+    .bar{height:7px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:7px}
+    .bar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--blue),var(--cyan));width:0%}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:12px 10px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left;font-size:12px;vertical-align:middle}
+    th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+    td strong{font-size:13px}
+    .device-id{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:#d9e7f8;font-size:11px;word-break:break-all}
+    .pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:5px 8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08);white-space:nowrap}
+    .empty{padding:22px;text-align:center;color:var(--muted);line-height:1.7}
+    .login-overlay{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(7,12,20,.64);backdrop-filter:blur(14px)}
+    .login-overlay.show{display:flex}
+    .login-card{width:min(420px,100%);border-radius:28px;padding:22px}
+    .login-card h2{margin:0 0 8px;font-size:21px}
+    .login-card p{margin:0 0 16px;color:var(--muted);line-height:1.7;font-size:13px}
+    .field{display:flex;flex-direction:column;gap:7px;margin-bottom:11px}
+    .field label{font-size:12px;color:var(--muted);font-weight:800}
+    .field input{width:100%}
+    .status{min-height:18px;color:var(--muted);font-size:12px;line-height:1.6;margin-top:10px}
+    .mini-note{margin-top:14px;padding:12px;border-radius:18px;background:rgba(255,159,10,.08);border:1px solid rgba(255,159,10,.18);font-size:12px;line-height:1.7;color:#ffe1aa}
+    .code-panel{display:none;margin-top:14px}
+    .code-panel.show{display:block}
+    pre{margin:0;max-height:420px;overflow:auto;padding:16px;border-radius:18px;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.1);font-size:11px;line-height:1.6;color:#dcecff;white-space:pre-wrap}
+    .footer{margin-top:16px;color:var(--muted);font-size:12px;text-align:center}
+    @media(max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.layout{grid-template-columns:1fr}.topbar{position:relative;top:0}.brand h1{white-space:normal}}
+    @media(max-width:560px){.wrap{padding:12px 8px 80px}.grid{grid-template-columns:1fr}.topbar{border-radius:22px;align-items:flex-start}.actions{width:100%;justify-content:flex-start}.topbar{flex-direction:column}.table-card,.card{border-radius:20px}.section-head{align-items:flex-start;flex-direction:column}.tools input,.tools select{max-width:100%;width:100%}th:nth-child(5),td:nth-child(5){display:none}}
+  </style>
+</head>
+<body>
+  <div class="login-overlay show" id="loginOverlay">
+    <div class="login-card">
+      <h2><i class="ri-lock-2-line"></i> Analytics Login</h2>
+      <p>Sign in with your Firebase admin account to view device-level audio analytics.</p>
+      <div class="field"><label>Email</label><input id="emailInput" type="email" placeholder="admin@email.com" autocomplete="username"></div>
+      <div class="field"><label>Password</label><input id="passwordInput" type="password" placeholder="Password" autocomplete="current-password"></div>
+      <button class="primary" id="loginBtn"><i class="ri-login-circle-line"></i> Login</button>
+      <div class="status" id="loginStatus"></div>
+      <div class="mini-note">
+        This dashboard reads <b>deviceAnalytics</b>, <b>trackAnalytics</b>, and your existing <b>playCounts / likeCounts / shareCounts / visitors</b>.
+      </div>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo"><i class="ri-bar-chart-grouped-line"></i></div>
+        <div>
+          <h1>Audio Analytics Dashboard</h1>
+          <p>Device listening time • shares • likes • track performance</p>
+        </div>
+      </div>
+      <div class="actions">
+        <button id="refreshBtn"><i class="ri-refresh-line"></i> Refresh</button>
+        <button id="themeBtn"><i class="ri-moon-clear-line"></i> Theme</button>
+        <button id="patchBtn"><i class="ri-code-s-slash-line"></i> Tracker Code</button>
+        <button class="danger" id="logoutBtn"><i class="ri-logout-circle-line"></i> Logout</button>
+      </div>
+    </header>
+
+    <section class="grid">
+      <div class="card"><div class="metric-title"><i class="ri-time-line"></i>Total Listen Time</div><div class="metric-value" id="totalListen">0m</div><div class="metric-sub" id="listenSub">From deviceAnalytics</div></div>
+      <div class="card"><div class="metric-title"><i class="ri-share-forward-line"></i>Total Shares</div><div class="metric-value" id="totalShares">0</div><div class="metric-sub">Per-device share actions</div></div>
+      <div class="card"><div class="metric-title"><i class="ri-heart-3-line"></i>Total Likes</div><div class="metric-value" id="totalLikes">0</div><div class="metric-sub">Per-device like actions</div></div>
+      <div class="card"><div class="metric-title"><i class="ri-smartphone-line"></i>Known Devices</div><div class="metric-value" id="totalDevices">0</div><div class="metric-sub" id="visitorSub">Including visitors node</div></div>
+    </section>
+
+    <section class="layout">
+      <div class="table-card">
+        <div class="section-head">
+          <h2><i class="ri-trophy-line"></i> Top Devices</h2>
+          <div class="tools">
+            <input id="searchInput" placeholder="Search device or track...">
+            <select id="sortSelect">
+              <option value="listen">Sort by listen time</option>
+              <option value="share">Sort by shares</option>
+              <option value="like">Sort by likes</option>
+              <option value="last">Sort by last seen</option>
+            </select>
+          </div>
+        </div>
+        <div style="overflow:auto">
+          <table>
+            <thead><tr><th>Device</th><th>Listen</th><th>Shares</th><th>Likes</th><th>Last Seen</th></tr></thead>
+            <tbody id="deviceTable"></tbody>
+          </table>
+        </div>
+        <div class="empty" id="deviceEmpty">No device analytics yet. Add the tracker code to your main index file.</div>
+      </div>
+
+      <div class="table-card">
+        <div class="section-head"><h2><i class="ri-medal-line"></i> Winners</h2></div>
+        <div class="rank-list" id="winnerList"></div>
+      </div>
+    </section>
+
+    <section class="layout">
+      <div class="table-card">
+        <div class="section-head"><h2><i class="ri-music-2-line"></i> Top Tracks by Listening Time</h2></div>
+        <div class="rank-list" id="trackListenList"></div>
+      </div>
+
+      <div class="table-card">
+        <div class="section-head"><h2><i class="ri-heart-pulse-line"></i> Top Tracks by Likes / Shares</h2></div>
+        <div class="rank-list" id="trackActionList"></div>
+      </div>
+    </section>
+
+    <section class="table-card code-panel" id="codePanel">
+      <div class="section-head">
+        <h2><i class="ri-code-box-line"></i> Add this tracker code into your main audio index</h2>
+        <button id="copyCodeBtn"><i class="ri-file-copy-line"></i> Copy</button>
+      </div>
+      <pre id="patchCode"></pre>
+    </section>
+
+    <div class="footer">Developed by Thet • Analytics for thythet.com audio system</div>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+    import { getDatabase, ref, get, onValue, update, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCZgQBrY5cwGpCra0gBqs1ZDkJPugewHhc",
+      authDomain: "thythet-podcast.firebaseapp.com",
+      databaseURL: "https://thythet-podcast-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "thythet-podcast",
+      storageBucket: "thythet-podcast.firebasestorage.app",
+      messagingSenderId: "164940506015",
+      appId: "1:164940506015:web:3860e938d888f424b693aa",
+      measurementId: "G-GZRDKL1N0R"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    const $ = (id) => document.getElementById(id);
+    const els = {
+      loginOverlay:$('loginOverlay'), email:$('emailInput'), pass:$('passwordInput'), login:$('loginBtn'), loginStatus:$('loginStatus'),
+      logout:$('logoutBtn'), refresh:$('refreshBtn'), theme:$('themeBtn'), patch:$('patchBtn'), search:$('searchInput'), sort:$('sortSelect'),
+      totalListen:$('totalListen'), totalShares:$('totalShares'), totalLikes:$('totalLikes'), totalDevices:$('totalDevices'), listenSub:$('listenSub'), visitorSub:$('visitorSub'),
+      table:$('deviceTable'), empty:$('deviceEmpty'), winners:$('winnerList'), trackListen:$('trackListenList'), trackAction:$('trackActionList'),
+      codePanel:$('codePanel'), patchCode:$('patchCode'), copyCode:$('copyCodeBtn')
+    };
+
+    let state = { devices:{}, tracks:{}, visitors:{}, playCounts:{}, likeCounts:{}, shareCounts:{} };
+
+    const TRACKER_CODE = `/* ===== START: Device analytics tracker for audio system =====
+   Paste this INSIDE your existing <script type="module"> after db, DEVICE_ID, safeKey(),
+   currentIndex, playlist, audio, increaseShareCount(), and toggleLike() already exist.
+   It writes:
+   - deviceAnalytics/{DEVICE_ID}
+   - trackAnalytics/{trackKey}/devices/{DEVICE_ID}
+============================================================ */
+
+let __analyticsTimer = null;
+let __analyticsLastSentAt = 0;
+let __analyticsLastTrackKey = '';
+
+function analyticsNow(){ return Date.now(); }
+
+function analyticsUpdate(pathData){
+  return update(ref(db), pathData).catch(err => console.warn('Analytics update failed:', err));
+}
+
+function analyticsTrackListen(file, ms){
+  if (!file || !ms || ms < 1000) return;
+  const key = safeKey(file);
+  const devicePath = 'deviceAnalytics/' + DEVICE_ID;
+  const trackDevicePath = 'trackAnalytics/' + key + '/devices/' + DEVICE_ID;
+  const now = analyticsNow();
+
+  analyticsUpdate({
+    [devicePath + '/lastSeen']: now,
+    [devicePath + '/totalListenMs']: increment(ms),
+    [devicePath + '/tracks/' + key + '/listenMs']: increment(ms),
+    [devicePath + '/tracks/' + key + '/lastListenedAt']: now,
+    [trackDevicePath + '/listenMs']: increment(ms),
+    [trackDevicePath + '/lastListenedAt']: now
+  });
+}
+
+function startDeviceListenAnalytics(){
+  stopDeviceListenAnalytics();
+  __analyticsLastSentAt = analyticsNow();
+  __analyticsTimer = setInterval(() => {
+    if (!audio || audio.paused || currentIndex < 0 || !playlist[currentIndex]) return;
+    const now = analyticsNow();
+    const diff = Math.min(now - __analyticsLastSentAt, 15000);
+    __analyticsLastSentAt = now;
+    analyticsTrackListen(playlist[currentIndex].file, diff);
+  }, 10000);
+}
+
+function stopDeviceListenAnalytics(){
+  if (__analyticsTimer) clearInterval(__analyticsTimer);
+  __analyticsTimer = null;
+}
+
+audio.addEventListener('play', startDeviceListenAnalytics);
+audio.addEventListener('pause', stopDeviceListenAnalytics);
+audio.addEventListener('ended', stopDeviceListenAnalytics);
+
+const __oldIncreaseShareCount = increaseShareCount;
+increaseShareCount = function(file){
+  __oldIncreaseShareCount(file);
+  if (!file) return;
+  const key = getPrimaryShareCounterKey(file);
+  const now = analyticsNow();
+  analyticsUpdate({
+    ['deviceAnalytics/' + DEVICE_ID + '/lastSeen']: now,
+    ['deviceAnalytics/' + DEVICE_ID + '/totalShares']: increment(1),
+    ['deviceAnalytics/' + DEVICE_ID + '/tracks/' + key + '/shares']: increment(1),
+    ['trackAnalytics/' + key + '/devices/' + DEVICE_ID + '/shares']: increment(1),
+    ['trackAnalytics/' + key + '/devices/' + DEVICE_ID + '/lastSharedAt']: now
+  });
+};
+
+const __oldToggleLike = toggleLike;
+toggleLike = function(file){
+  const wasLiked = isTrackLiked(file);
+  __oldToggleLike(file);
+  if (!file || wasLiked) return;
+  const key = safeKey(file);
+  const now = analyticsNow();
+  analyticsUpdate({
+    ['deviceAnalytics/' + DEVICE_ID + '/lastSeen']: now,
+    ['deviceAnalytics/' + DEVICE_ID + '/totalLikes']: increment(1),
+    ['deviceAnalytics/' + DEVICE_ID + '/tracks/' + key + '/likes']: increment(1),
+    ['trackAnalytics/' + key + '/devices/' + DEVICE_ID + '/likes']: increment(1),
+    ['trackAnalytics/' + key + '/devices/' + DEVICE_ID + '/lastLikedAt']: now
+  });
+};
+
+/* Firebase import needed:
+   import { ..., update, increment } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
+===== END: Device analytics tracker ===== */`;
+
+    els.patchCode.textContent = TRACKER_CODE;
+
+    function formatMs(ms){
+      ms = Number(ms || 0);
+      const h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000), s = Math.floor((ms % 60000) / 1000);
+      if (h) return h + 'h ' + m + 'm';
+      if (m) return m + 'm ' + s + 's';
+      return s + 's';
+    }
+    function shortId(id){ return id ? id.slice(0,8) + '…' + id.slice(-5) : 'unknown'; }
+    function fmtDate(v){ if(!v) return '—'; const d = new Date(Number(v)); return isNaN(d) ? '—' : d.toLocaleString(); }
+    function num(v){ return Number(v || 0); }
+    function esc(s){ return String(s ?? '').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
+
+    async function loadAll(){
+      const paths = ['deviceAnalytics','trackAnalytics','visitors','playCounts','likeCounts','shareCounts','playlistItems'];
+      const snaps = await Promise.all(paths.map(p => get(ref(db,p)).catch(()=>null)));
+      paths.forEach((p,i)=> state[p === 'deviceAnalytics' ? 'devices' : p === 'trackAnalytics' ? 'tracks' : p] = snaps[i]?.exists() ? snaps[i].val() : {});
+      render();
+    }
+
+    function deviceRows(){
+      const q = els.search.value.trim().toLowerCase();
+      const rows = Object.entries(state.devices || {}).map(([id,d]) => ({id,...d,
+        totalListenMs:num(d.totalListenMs), totalShares:num(d.totalShares), totalLikes:num(d.totalLikes), lastSeen:num(d.lastSeen)
+      }));
+      return rows.filter(r => !q || r.id.toLowerCase().includes(q) || JSON.stringify(r.tracks || {}).toLowerCase().includes(q))
+        .sort((a,b)=>{
+          const s = els.sort.value;
+          if(s === 'share') return b.totalShares - a.totalShares;
+          if(s === 'like') return b.totalLikes - a.totalLikes;
+          if(s === 'last') return b.lastSeen - a.lastSeen;
+          return b.totalListenMs - a.totalListenMs;
+        });
+    }
+
+    function trackRows(){
+      const rows = [];
+      for (const [key,t] of Object.entries(state.tracks || {})){
+        const devices = t.devices || {};
+        let listen=0, shares=0, likes=0, count=0;
+        Object.values(devices).forEach(d => { listen += num(d.listenMs); shares += num(d.shares); likes += num(d.likes); count++; });
+        rows.push({key, listen, shares, likes, devices:count});
+      }
+      return rows.sort((a,b)=>b.listen-a.listen);
+    }
+
+    function render(){
+      const rows = deviceRows();
+      const allDevices = Object.keys(state.devices || {}).length;
+      const visitorCount = Object.keys(state.visitors || {}).length;
+      const totalListen = rows.reduce((a,b)=>a+b.totalListenMs,0);
+      const totalShares = rows.reduce((a,b)=>a+b.totalShares,0);
+      const totalLikes = rows.reduce((a,b)=>a+b.totalLikes,0);
+
+      els.totalListen.textContent = formatMs(totalListen);
+      els.totalShares.textContent = totalShares;
+      els.totalLikes.textContent = totalLikes;
+      els.totalDevices.textContent = Math.max(allDevices, visitorCount);
+      els.listenSub.textContent = allDevices ? `${allDevices} devices tracked` : 'Waiting for tracker data';
+      els.visitorSub.textContent = `${visitorCount} visitors in existing node`;
+
+      els.empty.style.display = rows.length ? 'none' : 'block';
+      els.table.innerHTML = rows.map(r => `
+        <tr>
+          <td><strong>${shortId(r.id)}</strong><div class="device-id">${esc(r.id)}</div></td>
+          <td><span class="pill"><i class="ri-time-line"></i>${formatMs(r.totalListenMs)}</span></td>
+          <td><span class="pill"><i class="ri-share-forward-line"></i>${r.totalShares}</span></td>
+          <td><span class="pill"><i class="ri-heart-3-line"></i>${r.totalLikes}</span></td>
+          <td>${fmtDate(r.lastSeen)}</td>
+        </tr>`).join('');
+
+      const maxListen = Math.max(1, ...rows.map(r=>r.totalListenMs));
+      const winners = [
+        ['Longest listening device','ri-time-line',rows.slice().sort((a,b)=>b.totalListenMs-a.totalListenMs)[0], r=>formatMs(r.totalListenMs), 'listen'],
+        ['Most shared device','ri-share-forward-line',rows.slice().sort((a,b)=>b.totalShares-a.totalShares)[0], r=>r.totalShares + ' shares', 'share'],
+        ['Most liked device','ri-heart-3-line',rows.slice().sort((a,b)=>b.totalLikes-a.totalLikes)[0], r=>r.totalLikes + ' likes', 'like']
+      ];
+      els.winners.innerHTML = winners.map((w,i)=> w[2] ? rankItem(i+1, w[0], shortId(w[2].id), w[3](w[2]), w[4]==='listen' ? w[2].totalListenMs/maxListen*100 : 100) : `<div class="empty">No ${w[0].toLowerCase()} yet.</div>`).join('');
+
+      const tracks = trackRows();
+      const maxTrackListen = Math.max(1, ...tracks.map(t=>t.listen));
+      els.trackListen.innerHTML = tracks.slice(0,8).map((t,i)=>rankItem(i+1, t.key, `${t.devices} devices`, formatMs(t.listen), t.listen/maxTrackListen*100)).join('') || '<div class="empty">No track listening analytics yet.</div>';
+      const actions = tracks.slice().sort((a,b)=>(b.likes+b.shares)-(a.likes+a.shares));
+      const maxActions = Math.max(1, ...actions.map(t=>t.likes+t.shares));
+      els.trackAction.innerHTML = actions.slice(0,8).map((t,i)=>rankItem(i+1, t.key, `${t.likes} likes • ${t.shares} shares`, `${t.likes+t.shares} actions`, (t.likes+t.shares)/maxActions*100)).join('') || '<div class="empty">No like/share analytics yet.</div>';
+    }
+
+    function rankItem(no,title,sub,value,pct){
+      return `<div class="rank-item">
+        <div class="rank-no">${no}</div>
+        <div><div class="rank-title">${esc(title)}</div><div class="rank-sub">${esc(sub)}</div><div class="bar"><span style="width:${Math.max(3,Math.min(100,pct))}%"></span></div></div>
+        <div class="rank-val">${esc(value)}</div>
+      </div>`;
+    }
+
+    els.login.onclick = async () => {
+      els.login.disabled = true; els.loginStatus.textContent = 'Signing in...';
+      try{ await signInWithEmailAndPassword(auth, els.email.value.trim(), els.pass.value); els.loginStatus.textContent = 'Login successful.'; }
+      catch(e){ els.loginStatus.textContent = 'Login failed: ' + (e.code || e.message); }
+      finally{ els.login.disabled = false; }
+    };
+    els.logout.onclick = () => signOut(auth);
+    els.refresh.onclick = loadAll;
+    els.theme.onclick = () => document.body.classList.toggle('gray');
+    els.patch.onclick = () => els.codePanel.classList.toggle('show');
+    els.copyCode.onclick = async () => { await navigator.clipboard.writeText(TRACKER_CODE); els.copyCode.innerHTML = '<i class="ri-check-line"></i> Copied'; setTimeout(()=>els.copyCode.innerHTML='<i class="ri-file-copy-line"></i> Copy',1500); };
+    els.search.oninput = render;
+    els.sort.onchange = render;
+
+    onAuthStateChanged(auth, (user) => {
+      els.loginOverlay.classList.toggle('show', !user);
+      if (user) {
+        loadAll();
+        onValue(ref(db,'deviceAnalytics'), snap => { state.devices = snap.exists()?snap.val():{}; render(); });
+        onValue(ref(db,'trackAnalytics'), snap => { state.tracks = snap.exists()?snap.val():{}; render(); });
+      }
+    });
+  </script>
+</body>
+</html>
