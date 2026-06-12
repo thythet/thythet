@@ -1,0 +1,1725 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Sermon Post</title>
+  <meta name="description" content="Church sermon image and audio post platform." />
+  <meta name="theme-color" content="#081522" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    @font-face{
+      font-family:'Krasar';
+      src:url('https://thythet.com/assets/fonts/Krasar.woff') format('woff');
+      font-weight:400;
+      font-display:swap;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      min-height:100vh;
+      background:
+        radial-gradient(circle at 15% -10%, rgba(57,121,255,.20), transparent 34%),
+        radial-gradient(circle at 100% 8%, rgba(0,211,184,.13), transparent 30%),
+        #081522;
+      font-family:'Kantumruy Pro', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      color:#fff;
+      overflow-x:hidden;
+    }
+    body.auth-locked .app,
+    body.auth-locked .bottom-nav{display:none}
+
+    :root{
+      /* EDIT ONLY THESE TWO VALUES TO TUNE UI */
+      --avatar-radius:6px;
+      --card-width:390px;
+
+      /* AUTO CALCULATED */
+      --gap:calc(var(--avatar-radius) * 2);
+      --media-radius:calc(var(--avatar-radius) + var(--gap));
+      --audio-radius:var(--media-radius);
+      --card-radius:calc(var(--media-radius) + var(--gap));
+
+      --avatar-size:38px;
+      --text:#fff;
+      --muted:rgba(255,255,255,.82);
+      --soft:rgba(255,255,255,.55);
+      --line:rgba(255,255,255,.14);
+      --danger:#ff496d;
+      --blue:#72c2ff;
+    }
+
+    button,input,textarea{font-family:inherit}
+    button{cursor:pointer}
+
+    .app{
+      width:min(100%, calc(var(--card-width) + 20px));
+      margin:0 auto;
+      padding:10px 10px 74px;
+    }
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:30;
+      margin:0 -10px 10px;
+      padding:10px 10px 8px;
+      background:linear-gradient(180deg, rgba(8,21,34,.96), rgba(8,21,34,.72), transparent);
+      backdrop-filter:blur(16px);
+      -webkit-backdrop-filter:blur(16px);
+    }
+
+    .topbar-inner{
+      width:min(100%, var(--card-width));
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+
+    .brand-icon{
+      width:38px;
+      height:38px;
+      border-radius:14px;
+      background:linear-gradient(145deg, #28114f, #087064);
+      display:grid;
+      place-items:center;
+      flex:0 0 auto;
+      box-shadow:0 12px 28px rgba(0,0,0,.22);
+    }
+
+    .brand-title{
+      font-size:15px;
+      font-weight:800;
+      line-height:1.15;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .brand-sub{
+      margin-top:3px;
+      font-family:'Krasar','Kantumruy Pro',sans-serif;
+      font-size:11px;
+      color:var(--soft);
+      line-height:1.2;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .top-actions{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex:0 0 auto;
+    }
+
+    .circle-btn{
+      width:38px;
+      height:38px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.08);
+      color:#fff;
+      display:grid;
+      place-items:center;
+      padding:0;
+    }
+
+    .circle-btn svg{width:20px;height:20px;stroke-width:2}
+
+    .auth-chip{
+      max-width:116px;
+      height:38px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.08);
+      color:#fff;
+      padding:0 10px;
+      display:flex;
+      align-items:center;
+      gap:7px;
+      font-size:12px;
+      font-weight:800;
+      overflow:hidden;
+    }
+
+    .auth-chip img{
+      width:22px;
+      height:22px;
+      border-radius:50%;
+      object-fit:cover;
+      flex:0 0 auto;
+    }
+
+    .auth-chip span{
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    .notice{
+      display:none;
+      width:100%;
+      border-radius:18px;
+      padding:12px 14px;
+      margin-bottom:10px;
+      background:rgba(255,255,255,.08);
+      border:1px solid var(--line);
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.55;
+    }
+    .notice.show{display:block}
+
+    .auth-gate{
+      position:fixed;
+      inset:0;
+      z-index:100;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:28px;
+      background:
+        radial-gradient(circle at 18% 0%, rgba(57,121,255,.22), transparent 32%),
+        radial-gradient(circle at 95% 10%, rgba(0,211,184,.16), transparent 28%),
+        rgba(8,21,34,.98);
+    }
+    .auth-gate.hidden{display:none}
+    .auth-card{
+      width:min(100%, 760px);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:30px;
+    }
+    .welcome-art-btn{
+      width:min(100%, 680px);
+      border:16px solid #fff;
+      border-radius:34px;
+      background:#d9edff;
+      padding:0;
+      display:block;
+      overflow:hidden;
+      box-shadow:0 28px 70px rgba(0,0,0,.28);
+      position:relative;
+      min-height:180px;
+    }
+    .welcome-art-btn.loading::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(90deg, transparent, rgba(255,255,255,.48), transparent),
+        linear-gradient(145deg, #d8ecff, #acd6f6);
+      background-size:220% 100%, 100% 100%;
+      animation:welcomeShimmer 1.2s linear infinite;
+      z-index:1;
+    }
+    .welcome-art-btn.loading::after{
+      content:"Loading welcome...";
+      position:absolute;
+      inset:0;
+      z-index:2;
+      display:grid;
+      place-items:center;
+      color:#41637d;
+      font-size:13px;
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+    .welcome-art-btn.failed::after{
+      content:"Welcome to Sermon Post";
+      position:absolute;
+      inset:0;
+      display:grid;
+      place-items:center;
+      color:#34536c;
+      font-size:20px;
+      font-weight:800;
+    }
+    .welcome-art-btn img{
+      width:100%;
+      height:auto;
+      display:block;
+      border-radius:18px;
+      opacity:1;
+      transition:opacity .22s ease;
+    }
+    .welcome-art-btn.loading img{opacity:0}
+    .google-signin-btn{
+      min-height:64px;
+      border-radius:999px;
+      border:2px solid rgba(255,255,255,.62);
+      background:#1f1f1f;
+      color:#f5f5f5;
+      padding:0 26px 0 20px;
+      display:flex;
+      align-items:center;
+      gap:16px;
+      font-size:26px;
+      font-weight:700;
+      line-height:1;
+      box-shadow:0 18px 40px rgba(0,0,0,.28);
+    }
+    .google-signin-btn:disabled{
+      cursor:wait;
+      opacity:.72;
+    }
+    .google-signin-btn svg{
+      width:40px;
+      height:40px;
+      flex:0 0 auto;
+    }
+    .auth-loading-text{
+      color:rgba(255,255,255,.78);
+      font-size:13px;
+      min-height:18px;
+      text-align:center;
+    }
+    @keyframes welcomeShimmer{
+      to{background-position:-220% 0, 0 0}
+    }
+    @media(max-width:640px){
+      .auth-card{gap:20px}
+      .welcome-art-btn{
+        border-width:10px;
+        border-radius:24px;
+      }
+      .welcome-art-btn img{border-radius:13px}
+      .google-signin-btn{
+        min-height:52px;
+        font-size:18px;
+        padding:0 20px 0 16px;
+      }
+      .google-signin-btn svg{width:31px;height:31px}
+    }
+    .role-card,
+    .admin-panel{
+      display:none;
+      margin-bottom:10px;
+      border-radius:var(--card-radius);
+      background:rgba(255,255,255,.08);
+      border:1px solid var(--line);
+      padding:14px;
+    }
+    .role-card.show,
+    .admin-panel.show{display:block}
+    .panel-title{
+      font-size:13px;
+      font-weight:800;
+      margin-bottom:6px;
+    }
+    .panel-copy{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.55;
+      margin-bottom:10px;
+    }
+    .request-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      border-top:1px solid var(--line);
+      padding-top:10px;
+      margin-top:10px;
+    }
+    .request-meta{
+      min-width:0;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+    .request-meta strong{
+      color:#fff;
+      display:block;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .mini-btn.primary{background:rgba(114,194,255,.24)}
+    .mini-btn.danger{background:rgba(255,73,109,.18)}
+
+    .composer{
+      display:none;
+      margin-bottom:10px;
+      border-radius:var(--card-radius);
+      background:linear-gradient(145deg,#28114f,#103d69 56%,#087064);
+      padding:var(--gap);
+      overflow:hidden;
+    }
+    .composer.open{display:block}
+
+    .composer-form{
+      display:flex;
+      flex-direction:column;
+      gap:var(--gap);
+    }
+
+    .field{
+      width:100%;
+      border:0;
+      outline:0;
+      border-radius:var(--media-radius);
+      background:rgba(255,255,255,.14);
+      color:#fff;
+      padding:12px 13px;
+      font-size:13px;
+      font-weight:600;
+    }
+
+    textarea.field{
+      min-height:88px;
+      resize:vertical;
+      line-height:1.55;
+      font-family:'Krasar','Kantumruy Pro',sans-serif;
+    }
+
+    .field::placeholder{color:rgba(255,255,255,.55)}
+    .file-row{display:grid;grid-template-columns:1fr;gap:var(--gap)}
+
+    .file-box{
+      border-radius:var(--media-radius);
+      border:1px dashed rgba(255,255,255,.28);
+      background:rgba(255,255,255,.10);
+      padding:12px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.5;
+    }
+
+    .file-box input{width:100%;margin-top:8px;color:#fff}
+
+    .composer-actions{
+      display:flex;
+      gap:var(--gap);
+    }
+
+    .btn{
+      min-height:44px;
+      border:0;
+      border-radius:var(--media-radius);
+      color:#fff;
+      font-weight:800;
+      font-size:13px;
+      padding:0 14px;
+      background:rgba(255,255,255,.14);
+      flex:1;
+    }
+
+    .btn.primary{background:rgba(114,194,255,.28)}
+    .btn.danger{background:rgba(255,73,109,.20)}
+    .composer-status{
+      min-height:20px;
+      margin:2px 4px 0;
+      color:rgba(255,255,255,.82);
+      font-size:12px;
+      line-height:1.45;
+    }
+    .composer-status.error{color:#ffd0d0}
+    .composer-status.success{color:#d5ffe6}
+
+    .feed{
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    .empty{
+      padding:26px 14px;
+      text-align:center;
+      color:var(--soft);
+      font-size:13px;
+      line-height:1.7;
+    }
+
+    .post{
+      width:100%;
+      padding:var(--gap);
+      border-radius:var(--card-radius);
+      background:linear-gradient(145deg,#28114f 0%,#103d69 56%,#087064 100%);
+      overflow:hidden;
+      box-shadow:0 18px 42px rgba(0,0,0,.28);
+    }
+
+    .inner{
+      display:flex;
+      flex-direction:column;
+      gap:var(--gap);
+    }
+
+    .media{
+      position:relative;
+      aspect-ratio:1/1;
+      border-radius:var(--media-radius);
+      overflow:hidden;
+      background:#24435c;
+      isolation:isolate;
+    }
+
+    .slides{
+      height:100%;
+      display:flex;
+      overflow-x:auto;
+      scroll-snap-type:x mandatory;
+      scroll-behavior:smooth;
+      scrollbar-width:none;
+      -webkit-overflow-scrolling:touch;
+    }
+    .slides::-webkit-scrollbar{display:none}
+
+    .slide{
+      flex:0 0 100%;
+      height:100%;
+      scroll-snap-align:start;
+      background:linear-gradient(110deg,rgba(255,255,255,.08),rgba(255,255,255,.20),rgba(255,255,255,.08));
+      background-size:220% 100%;
+      animation:skeleton 1.2s ease-in-out infinite;
+    }
+
+    .slide img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+      opacity:0;
+      transition:opacity .35s ease;
+    }
+    .slide img.loaded{opacity:1}
+    @keyframes skeleton{0%{background-position:100% 0}100%{background-position:-100% 0}}
+
+    .media::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      z-index:2;
+      background:linear-gradient(180deg,rgba(0,0,0,.42),rgba(0,0,0,.05) 34%,rgba(0,0,0,.32));
+      pointer-events:none;
+    }
+
+    .top-info{
+      position:absolute;
+      left:var(--gap);
+      right:var(--gap);
+      top:var(--gap);
+      z-index:3;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:var(--gap);
+    }
+
+    .profile{
+      display:flex;
+      align-items:center;
+      gap:var(--gap);
+      min-width:0;
+      flex:1;
+    }
+
+    .avatar{
+      width:var(--avatar-size);
+      height:var(--avatar-size);
+      border-radius:var(--avatar-radius);
+      overflow:hidden;
+      flex:0 0 auto;
+      background:rgba(255,255,255,.82);
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
+    }
+
+    .avatar img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .meta{min-width:0}
+    .name{
+      font-size:14px;
+      font-weight:800;
+      line-height:1.15;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .email{
+      margin-top:4px;
+      font-size:12px;
+      line-height:1.15;
+      color:var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .media-count{
+      font-size:12px;
+      font-weight:700;
+      line-height:1;
+      padding-top:4px;
+      flex:0 0 auto;
+    }
+    .media-tools{
+      display:flex;
+      align-items:center;
+      gap:7px;
+      flex:0 0 auto;
+    }
+    .owner-tools{
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+    .icon-tool{
+      width:34px;
+      height:34px;
+      border:1px solid rgba(255,255,255,.42);
+      border-radius:11px;
+      background:rgba(0,0,0,.26);
+      color:#fff;
+      display:grid;
+      place-items:center;
+      padding:0;
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
+    }
+    .icon-tool svg{
+      width:18px;
+      height:18px;
+      stroke-width:2.25;
+    }
+    .icon-tool.delete-post-btn{
+      border-color:rgba(255,110,135,.56);
+      color:#ffd5dd;
+    }
+
+    .dots{
+      position:absolute;
+      left:50%;
+      bottom:var(--gap);
+      transform:translateX(-50%);
+      z-index:4;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .dot{
+      width:9px;
+      height:9px;
+      border-radius:999px;
+      background:rgba(255,255,255,.68);
+    }
+    .dot.active{
+      width:28px;
+      background:#fff;
+    }
+
+    .audio{
+      height:48px;
+      border-radius:var(--audio-radius);
+      background:rgba(255,255,255,.23);
+      backdrop-filter:blur(14px);
+      -webkit-backdrop-filter:blur(14px);
+      display:flex;
+      align-items:center;
+      gap:var(--gap);
+      padding:0 var(--gap);
+      overflow:hidden;
+    }
+
+    .speaker{
+      width:34px;
+      height:34px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      border:2px solid rgba(255,255,255,.78);
+      color:#fff;
+      background:transparent;
+      padding:0;
+      flex:0 0 auto;
+    }
+    .speaker svg{width:18px;height:18px}
+    .time{
+      font-size:13px;
+      font-weight:700;
+      color:#fff;
+      font-variant-numeric:tabular-nums;
+      white-space:nowrap;
+    }
+    .track{
+      flex:1;
+      height:10px;
+      min-width:0;
+      border-radius:999px;
+      background:rgba(255,255,255,.9);
+      overflow:hidden;
+    }
+    .progress{
+      width:0%;
+      height:100%;
+      background:rgba(0,0,0,.30);
+    }
+
+    .actions{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:var(--gap);
+      min-height:28px;
+      padding:0 2px;
+    }
+    .action-left,.action-right{
+      display:flex;
+      align-items:center;
+      gap:var(--gap);
+    }
+    .action{
+      border:0;
+      background:transparent;
+      padding:0;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      color:#fff;
+      font-size:13px;
+      font-weight:700;
+      line-height:1;
+      white-space:nowrap;
+    }
+    .action svg{
+      width:23px;
+      height:23px;
+      stroke:currentColor;
+      fill:none;
+      stroke-width:2;
+    }
+    .action.liked{color:var(--danger)}
+    .action.liked svg{fill:currentColor}
+    .action.saved{color:var(--blue)}
+
+    .post-content{
+      min-height:46px;
+      padding:0 2px 10px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+
+    .post-meta{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      min-width:0;
+      line-height:1.2;
+    }
+    .post-author{
+      font-size:13px;
+      font-weight:800;
+      color:#fff;
+      white-space:nowrap;
+      flex:0 0 auto;
+    }
+    .post-time{
+      color:var(--soft);
+      font-size:11px;
+      font-weight:700;
+      white-space:nowrap;
+      flex:0 0 auto;
+    }
+
+    .caption-line{
+      display:flex;
+      align-items:baseline;
+      min-width:0;
+      max-width:100%;
+      white-space:nowrap;
+      line-height:1.45;
+      font-family:'Krasar','Kantumruy Pro',sans-serif;
+      font-size:13px;
+      color:#fff;
+    }
+
+    .caption-text{
+      min-width:0;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    .more-link{
+      display:none;
+      flex:0 0 auto;
+      margin-left:4px;
+      padding:0;
+      border:0;
+      background:transparent;
+      color:rgba(255,255,255,.45);
+      font-family:'Kantumruy Pro',sans-serif;
+      font-size:11px;
+      font-weight:700;
+      line-height:1.2;
+      cursor:pointer;
+    }
+
+    .caption-line.needs-more .more-link{display:inline}
+    .caption-line.expanded{
+      display:block;
+      white-space:normal;
+    }
+    .caption-line.expanded .caption-text{
+      white-space:normal;
+      overflow:visible;
+      text-overflow:clip;
+    }
+    .caption-line.expanded .more-link{
+      display:inline;
+      margin-left:6px;
+    }
+
+    .post-menu{
+      display:flex;
+      gap:8px;
+      padding-top:2px;
+    }
+    .mini-btn{
+      border:0;
+      border-radius:12px;
+      background:rgba(255,255,255,.10);
+      color:rgba(255,255,255,.82);
+      min-height:30px;
+      padding:0 10px;
+      font-size:11px;
+      font-weight:800;
+    }
+
+    .bottom-nav{
+      position:fixed;
+      left:50%;
+      bottom:10px;
+      transform:translateX(-50%);
+      width:min(calc(100% - 20px), var(--card-width));
+      height:52px;
+      border-radius:22px;
+      background:rgba(15,29,45,.88);
+      backdrop-filter:blur(18px);
+      -webkit-backdrop-filter:blur(18px);
+      border:1px solid rgba(255,255,255,.12);
+      display:flex;
+      align-items:center;
+      justify-content:space-around;
+      z-index:40;
+      box-shadow:0 16px 36px rgba(0,0,0,.34);
+    }
+    .nav-btn{
+      width:44px;height:44px;border:0;background:transparent;color:#fff;display:grid;place-items:center;
+    }
+    .nav-btn svg{width:22px;height:22px;stroke-width:2}
+
+    @media(min-width:720px){
+      :root{--card-width:430px}
+      .app{padding-top:18px}
+    }
+  </style>
+</head>
+
+<body class="auth-locked">
+  <main class="app">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <div class="brand-icon">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18"/><path d="M5 12h14"/><path d="M7 7c3 2 7 2 10 0"/><path d="M7 17c3-2 7-2 10 0"/></svg>
+          </div>
+          <div>
+            <div class="brand-title">Sermon Post</div>
+            <div class="brand-sub">រូបភាព និងសំឡេងព្រះបន្ទូល</div>
+          </div>
+        </div>
+
+        <div class="top-actions">
+          <button class="circle-btn" id="loginBtn" title="Login">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>
+          </button>
+          <button class="circle-btn" id="composerBtn" title="Create post">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="notice show" id="notice">
+      Demo mode is active until you paste your Firebase config. The UI works now; Firebase login, database, and storage are ready in the code.
+    </div>
+
+    <section class="role-card" id="roleCard">
+      <div class="panel-title" id="roleTitle">Upload access required</div>
+      <div class="panel-copy" id="roleCopy">You can read and like posts now. Request creator access to publish sermon images or audio.</div>
+      <button class="btn primary" type="button" id="requestCreatorBtn">Request Upload Access</button>
+    </section>
+
+    <section class="composer" id="composer">
+      <form class="composer-form" id="composerForm">
+        <textarea class="field" id="captionInput" placeholder="Write caption..."></textarea>
+        <textarea class="field" id="imageLinksInput" placeholder="Paste image links, one per line. Max 5 images."></textarea>
+        <input class="field" id="audioUrlInput" placeholder="Audio URL, optional" />
+        <div class="file-row">
+          <label class="file-box">
+            Upload images to Firebase Storage, optional
+            <input type="file" id="imageFilesInput" accept="image/*" multiple>
+          </label>
+          <label class="file-box">
+            Upload audio to Firebase Storage, optional
+            <input type="file" id="audioFileInput" accept="audio/*">
+          </label>
+        </div>
+        <div class="composer-actions">
+          <button class="btn danger" type="button" id="clearFormBtn">Clear</button>
+          <button class="btn primary" type="submit">Publish</button>
+        </div>
+        <div class="composer-status" id="composerStatus" role="status" aria-live="polite"></div>
+      </form>
+    </section>
+
+    <section class="admin-panel" id="adminPanel">
+      <div class="panel-title">Creator Requests</div>
+      <div class="panel-copy">Approve trusted users before they can publish sermon content.</div>
+      <div id="adminRequestList"></div>
+    </section>
+
+    <section class="feed" id="feed"></section>
+  </main>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg></button>
+    <button class="nav-btn" title="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></button>
+    <button class="nav-btn" id="navCreateBtn" title="Create"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14"/></svg></button>
+    <button class="nav-btn" title="Saved"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1Z"/></svg></button>
+  </nav>
+
+  <section class="auth-gate" id="authGate">
+    <div class="auth-card">
+      <button class="welcome-art-btn loading" type="button" id="welcomeImageBtn" aria-label="Sign in with Google">
+        <img id="welcomeImage" src="welcome/assets/welcome.svg" alt="Welcome to Sermon Post">
+      </button>
+      <button class="google-signin-btn" type="button" id="gateLoginBtn">
+        <svg viewBox="0 0 48 48" aria-hidden="true">
+          <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.6 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.4-.4-3.5Z"/>
+          <path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 16.2 4 9.5 8.5 6.3 14.7Z"/>
+          <path fill="#4CAF50" d="M24 44c5.1 0 9.8-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9L6.1 33.2C9.3 39.6 16.1 44 24 44Z"/>
+          <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.1 5.6l6.2 5.2C37 39.1 44 34 44 24c0-1.3-.1-2.4-.4-3.5Z"/>
+        </svg>
+        <span>Sign in with Google</span>
+      </button>
+      <div class="auth-loading-text" id="authCopy">Checking your secure Google session...</div>
+    </div>
+  </section>
+
+  <script type="module">
+    /*
+      FIREBASE SETUP
+      1. Paste your Firebase config below.
+      2. Set USE_FIREBASE = true.
+      3. Create DB paths:
+         /sermonPosts
+         /sermonPostLikes
+         /sermonPostSaves
+         /members
+      4. Storage folder:
+         /sermon-posts/images
+         /sermon-posts/audio
+    */
+
+    const USE_FIREBASE = true;
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCZgQBrY5cwGpCra0gBqs1ZDkJPugewHhc",
+      authDomain: "thythet-podcast.firebaseapp.com",
+      databaseURL: "https://thythet-podcast-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "thythet-podcast",
+      storageBucket: "thythet-podcast.firebasestorage.app",
+      messagingSenderId: "164940506015",
+      appId: "1:164940506015:web:b9956ab7b1570f4b0c7172"
+    };
+
+    const ADMIN_EMAIL = "thythet455@gmail.com";
+    const CREATOR_ROLES = new Set(["admin", "content_creator", "subscriber"]);
+
+    let app, auth, db, storage, currentUser = null;
+    let currentProfile = null;
+    let userLikedPostIds = new Set();
+    let firebasePosts = [];
+    let editingPostId = "";
+    let fb = {};
+
+    if(USE_FIREBASE){
+      const appMod = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js");
+      const authMod = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js");
+      const dbMod = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js");
+      const storageMod = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js");
+
+      app = appMod.initializeApp(firebaseConfig);
+      auth = authMod.getAuth(app);
+      db = dbMod.getDatabase(app);
+      storage = storageMod.getStorage(app);
+
+      fb = {
+        ...authMod,
+        ...dbMod,
+        ...storageMod,
+        dbRef: dbMod.ref,
+        storageRef: storageMod.ref
+      };
+      document.getElementById('notice').classList.remove('show');
+
+      fb.onAuthStateChanged(auth, async user => {
+        currentUser = user;
+        currentProfile = null;
+        userLikedPostIds = new Set();
+        updateAuthUI();
+        if(user){
+          await ensureUserProfile(user);
+          await loadFirebasePosts();
+          if(isAdmin()) await loadAdminRequests();
+        }else{
+          feed.innerHTML = "";
+          composer.classList.remove('open');
+          renderAuthGate();
+        }
+      });
+    }
+
+    const icons = {
+      heart:`<svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>`,
+      share:`<svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4"/><path d="m15.4 6.5-6.8 4"/></svg>`,
+      eye:`<svg viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>`,
+      play:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`,
+      pause:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>`,
+      speaker:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15 9.5a4 4 0 0 1 0 5"/><path d="M17.5 7a7.5 7.5 0 0 1 0 10"/></svg>`,
+      edit:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>`,
+      trash:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="m19 6-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>`
+    };
+
+    const demoPosts = [
+      {
+        id:"demo1",
+        authorName:"Thy Thet",
+        authorEmail:"thythet@gmail.com",
+        authorPhoto:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
+        images:[
+          "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&w=1200&q=82",
+          "https://images.unsplash.com/photo-1490730141103-6cac27aaab94?auto=format&fit=crop&w=1200&q=82",
+          "https://images.unsplash.com/photo-1514896856000-91cb6de818e0?auto=format&fit=crop&w=1200&q=82"
+        ],
+        audioUrl:"",
+        caption:"CONTETNS HERE / CONTETNS HERE / CONTETNS HERE / CONTETNS HERE / CONTETNS HERE / CONTETNS HERE .......",
+        likes:206, shares:50, views:10,
+        createdAt:Date.now() - 4*24*60*60*1000
+      }
+    ];
+
+    const feed = document.getElementById('feed');
+    const composer = document.getElementById('composer');
+    const roleCard = document.getElementById('roleCard');
+    const adminPanel = document.getElementById('adminPanel');
+    const adminRequestList = document.getElementById('adminRequestList');
+    const authGate = document.getElementById('authGate');
+
+    function escapeHTML(str=""){
+      return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+    }
+
+    function emailHandle(email=""){
+      const local = String(email || "").split("@")[0].trim();
+      return local ? "@" + local : "@member";
+    }
+
+    function timeAgo(ms){
+      const diff = Math.max(1, Date.now() - Number(ms || Date.now()));
+      const m = Math.floor(diff/60000);
+      const h = Math.floor(m/60);
+      const d = Math.floor(h/24);
+      if(d) return d + (d === 1 ? " day ago" : " days ago");
+      if(h) return h + (h === 1 ? " hour ago" : " hours ago");
+      if(m) return m + (m === 1 ? " min ago" : " mins ago");
+      return "just now";
+    }
+
+    function isAdmin(){
+      return currentUser && currentUser.email === ADMIN_EMAIL;
+    }
+
+    function canUpload(){
+      return !!currentUser && (isAdmin() || CREATOR_ROLES.has(currentProfile?.role));
+    }
+
+    function renderAuthGate(){
+      const copy = document.getElementById('authCopy');
+
+      if(currentUser){
+        document.body.classList.remove('auth-locked');
+        authGate.classList.add('hidden');
+        copy.textContent = "";
+        return;
+      }
+
+      document.body.classList.add('auth-locked');
+      authGate.classList.remove('hidden');
+      copy.textContent = "Please sign in before viewing, liking, or requesting upload access.";
+    }
+
+    function setLoginBusy(isBusy){
+      const buttons = [document.getElementById('gateLoginBtn'), document.getElementById('welcomeImageBtn')];
+      buttons.forEach(btn => {
+        if(btn) btn.disabled = isBusy;
+      });
+      const authCopy = document.getElementById('authCopy');
+      if(authCopy && isBusy) authCopy.textContent = "Opening Google sign-in...";
+    }
+
+    function renderRoleUI(){
+      const composerButtons = [document.getElementById('composerBtn'), document.getElementById('navCreateBtn')];
+      if(!currentUser){
+        roleCard.classList.remove('show');
+        adminPanel.classList.remove('show');
+        return;
+      }
+
+      composerButtons.forEach(btn => {
+        btn.title = canUpload() ? "Create post" : "Request upload access";
+      });
+
+      if(canUpload()){
+        roleCard.classList.remove('show');
+      }else{
+        const requested = currentProfile?.status === "requested";
+        document.getElementById('roleTitle').textContent = requested ? "Request pending" : "Upload access required";
+        document.getElementById('roleCopy').textContent = requested
+          ? "Your creator request is waiting for admin approval. You can still read and like posts."
+          : "You can read and like posts now. Request creator access before publishing sermon images or audio.";
+        document.getElementById('requestCreatorBtn').textContent = requested ? "Request Sent" : "Request Upload Access";
+        document.getElementById('requestCreatorBtn').disabled = requested;
+        roleCard.classList.add('show');
+        composer.classList.remove('open');
+      }
+
+      adminPanel.classList.toggle('show', isAdmin());
+    }
+
+    async function ensureUserProfile(user){
+      if(!USE_FIREBASE || !user) return;
+      const userRef = fb.dbRef(db, `sermonUsers/${user.uid}`);
+      const snap = await fb.get(userRef);
+      const existing = snap.val() || {};
+      const admin = user.email === ADMIN_EMAIL;
+      const profile = {
+        uid:user.uid,
+        email:user.email || "",
+        name:user.displayName || "Church Member",
+        photo:user.photoURL || "",
+        role:admin ? "admin" : (existing.role || "viewer"),
+        status:admin ? "approved" : (existing.status || "viewer"),
+        requestedRole:existing.requestedRole || "",
+        updatedAt:Date.now(),
+        createdAt:existing.createdAt || Date.now()
+      };
+      await fb.update(userRef, profile);
+      currentProfile = profile;
+      renderAuthGate();
+      updateAuthUI();
+      renderRoleUI();
+    }
+
+    async function requestCreatorAccess(){
+      if(!currentUser) return renderAuthGate();
+      const userRef = fb.dbRef(db, `sermonUsers/${currentUser.uid}`);
+      await fb.update(userRef, {
+        uid:currentUser.uid,
+        email:currentUser.email || "",
+        name:currentUser.displayName || "Church Member",
+        photo:currentUser.photoURL || "",
+        role:currentProfile?.role || "viewer",
+        status:"requested",
+        requestedRole:"content_creator",
+        requestedAt:Date.now(),
+        updatedAt:Date.now()
+      });
+      currentProfile = {...(currentProfile || {}), status:"requested", requestedRole:"content_creator"};
+      renderRoleUI();
+    }
+
+    async function loadAdminRequests(){
+      if(!isAdmin()) return;
+      const snap = await fb.get(fb.dbRef(db, 'sermonUsers'));
+      const users = Object.values(snap.val() || {})
+        .filter(user => user && user.status === "requested")
+        .sort((a,b)=>(b.requestedAt || 0) - (a.requestedAt || 0));
+
+      if(!users.length){
+        adminRequestList.innerHTML = `<div class="panel-copy">No pending requests.</div>`;
+        return;
+      }
+
+      adminRequestList.innerHTML = users.map(user => `
+        <div class="request-row" data-request-uid="${escapeHTML(user.uid)}">
+          <div class="request-meta">
+            <strong>${escapeHTML(user.name || "Church Member")}</strong>
+            ${escapeHTML(user.email || "")}
+          </div>
+          <div class="post-menu">
+            <button class="mini-btn primary approve-user-btn" type="button">Approve</button>
+            <button class="mini-btn danger reject-user-btn" type="button">Reject</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function postHTML(post){
+      const images = (post.images || []).slice(0,5);
+      const firstAvatar = post.authorPhoto || "https://thythet.com/assets/audio/mic-fill.svg?v=2";
+      const safeCaption = escapeHTML(post.caption || "");
+      const audioId = "audio_" + post.id;
+      const liked = userLikedPostIds.has(post.id);
+      const canManagePost = currentUser && (currentUser.uid === post.authorUid || isAdmin());
+
+      return `
+        <article class="post" data-post-id="${post.id}">
+          <div class="inner">
+            <section class="media">
+              <div class="slides">
+                ${images.map((src,i)=>`
+                  <div class="slide">
+                    <img data-src="${escapeHTML(src)}" alt="post image ${i+1}" loading="lazy">
+                  </div>
+                `).join("")}
+              </div>
+
+              <div class="top-info">
+                <div class="profile">
+                  <div class="avatar"><img src="${escapeHTML(firstAvatar)}" alt=""></div>
+                  <div class="meta">
+                    <div class="name">${escapeHTML(post.authorName || "Church Member")}</div>
+                    <div class="email">${escapeHTML(emailHandle(post.authorEmail))}</div>
+                  </div>
+                </div>
+                <div class="media-tools">
+                  ${canManagePost ? `
+                  <div class="owner-tools">
+                    <button class="icon-tool edit-post-btn" type="button" title="Edit post" aria-label="Edit post">${icons.edit}</button>
+                    <button class="icon-tool delete-post-btn" type="button" title="Delete post" aria-label="Delete post">${icons.trash}</button>
+                  </div>` : ""}
+                  <div class="media-count">1/${Math.max(images.length,1)}</div>
+                </div>
+              </div>
+
+              ${images.length > 1 ? `
+              <div class="dots">
+                ${images.map((_,i)=>`<span class="dot ${i===0?"active":""}"></span>`).join("")}
+              </div>` : ""}
+            </section>
+
+            <section class="audio" data-audio-ui>
+              <button class="speaker" type="button" aria-label="Play">${icons.speaker}</button>
+              <span class="time current">00:00</span>
+              <div class="track"><div class="progress"></div></div>
+              <span class="time duration">00:00</span>
+              ${post.audioUrl ? `<audio id="${audioId}" preload="metadata" src="${escapeHTML(post.audioUrl)}"></audio>` : ""}
+            </section>
+
+            <section class="actions">
+              <div class="action-left">
+                <button class="action like-btn ${liked ? "liked" : ""}" type="button">${icons.heart}<span>${Number(post.likes || 0)}</span></button>
+                <button class="action share-btn" type="button">${icons.share}<span>${Number(post.shares || 0)}</span></button>
+              </div>
+              <div class="action-right">
+                <button class="action view-btn" type="button">${icons.eye}<span>${Number(post.views || 0)}</span></button>
+              </div>
+            </section>
+
+            <section class="post-content">
+              <div class="post-meta">
+                <span class="post-author">${escapeHTML(post.authorName || "Church Member")}</span>
+                <span class="post-time">${timeAgo(post.createdAt)}</span>
+              </div>
+              <div class="caption-line">
+                <span class="caption-text">${safeCaption}</span>
+                <button class="more-link" type="button">more</button>
+              </div>
+            </section>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderPosts(posts){
+      if(!posts.length){
+        feed.innerHTML = `<div class="empty">${canUpload() ? "No posts yet. Tap + to create the first sermon post." : "No sermon posts yet."}</div>`;
+        return;
+      }
+      feed.innerHTML = posts.map(postHTML).join("");
+      setupLazyImages();
+      setupSliders();
+      setupCaptions();
+      setupAudio();
+    }
+
+    function setupLazyImages(){
+      const imgs = document.querySelectorAll('img[data-src]');
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if(!entry.isIntersecting) return;
+          const img = entry.target;
+          img.src = img.dataset.src;
+          img.onload = () => img.classList.add('loaded');
+          io.unobserve(img);
+        });
+      }, {rootMargin:"260px"});
+      imgs.forEach(img => io.observe(img));
+    }
+
+    function setupSliders(){
+      document.querySelectorAll('.media').forEach(media => {
+        const slides = media.querySelector('.slides');
+        const dots = [...media.querySelectorAll('.dot')];
+        const count = media.querySelector('.media-count');
+        if(!slides) return;
+
+        slides.addEventListener('scroll', () => {
+          const active = Math.round(slides.scrollLeft / slides.clientWidth);
+          dots.forEach((dot,i)=>dot.classList.toggle('active', i === active));
+          if(count) count.textContent = `${active + 1}/${Math.max(dots.length,1)}`;
+        }, {passive:true});
+      });
+    }
+
+    function setupCaptions(){
+      document.querySelectorAll('.caption-line').forEach(line => {
+        const text = line.querySelector('.caption-text');
+        const btn = line.querySelector('.more-link');
+        if(!text || !btn) return;
+
+        requestAnimationFrame(() => {
+          const needsMore = text.scrollWidth > text.clientWidth + 2;
+          line.classList.toggle('needs-more', needsMore);
+        });
+
+        btn.addEventListener('click', () => {
+          const expanded = line.classList.toggle('expanded');
+          btn.textContent = expanded ? "less" : "more";
+        });
+      });
+    }
+
+    function setupAudio(){
+      document.querySelectorAll('[data-audio-ui]').forEach(ui => {
+        const btn = ui.querySelector('.speaker');
+        const audio = ui.querySelector('audio');
+        const current = ui.querySelector('.current');
+        const duration = ui.querySelector('.duration');
+        const progress = ui.querySelector('.progress');
+        const track = ui.querySelector('.track');
+
+        if(!audio){
+          btn.addEventListener('click',()=>alert('No audio added yet.'));
+          return;
+        }
+
+        audio.addEventListener('loadedmetadata',()=>{
+          duration.textContent = formatTime(audio.duration);
+        });
+
+        audio.addEventListener('timeupdate',()=>{
+          current.textContent = formatTime(audio.currentTime);
+          const pct = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
+          progress.style.width = pct + "%";
+        });
+
+        btn.addEventListener('click', async ()=>{
+          document.querySelectorAll('audio').forEach(a => { if(a !== audio) a.pause(); });
+          if(audio.paused) await audio.play();
+          else audio.pause();
+        });
+
+        track.addEventListener('click', e => {
+          const rect = track.getBoundingClientRect();
+          const pct = (e.clientX - rect.left) / rect.width;
+          audio.currentTime = pct * audio.duration;
+        });
+      });
+    }
+
+    function formatTime(sec){
+      if(!isFinite(sec)) return "00:00";
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return String(m).padStart(2,'0') + ":" + String(s).padStart(2,'0');
+    }
+
+    async function loadFirebasePosts(){
+      if(!USE_FIREBASE) return renderPosts(demoPosts);
+      if(!currentUser) return renderAuthGate();
+      const snap = await fb.get(fb.dbRef(db, 'sermonPosts'));
+      const val = snap.val() || {};
+      const posts = Object.entries(val).map(([id,p]) => ({id,...p})).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+      firebasePosts = posts;
+      const likeSnap = await fb.get(fb.dbRef(db, 'sermonPostLikes'));
+      const likeVal = likeSnap.val() || {};
+      userLikedPostIds = new Set(Object.entries(likeVal)
+        .filter(([, users]) => users && users[currentUser.uid])
+        .map(([postId]) => postId));
+      renderPosts(posts);
+      renderRoleUI();
+    }
+
+    async function uploadFile(file, folder){
+      if(!USE_FIREBASE) return "";
+      const clean = file.name.replace(/[^\w.\-]+/g,'_');
+      const path = `${folder}/${Date.now()}_${clean}`;
+      const fileRef = fb.storageRef(storage, path);
+      await fb.uploadBytes(fileRef, file);
+      return await fb.getDownloadURL(fileRef);
+    }
+
+    function setComposerMode(post=null){
+      const form = document.getElementById('composerForm');
+      const publishBtn = form.querySelector('button[type="submit"]');
+      const statusEl = document.getElementById('composerStatus');
+
+      editingPostId = post?.id || "";
+      publishBtn.textContent = editingPostId ? "Update" : "Publish";
+      if(statusEl){
+        statusEl.textContent = editingPostId ? "Editing existing post." : "";
+        statusEl.className = "composer-status";
+      }
+
+      if(!post) return;
+      document.getElementById('captionInput').value = post.caption || "";
+      document.getElementById('imageLinksInput').value = (post.images || []).join("\n");
+      document.getElementById('audioUrlInput').value = post.audioUrl || "";
+      document.getElementById('imageFilesInput').value = "";
+      document.getElementById('audioFileInput').value = "";
+      composer.classList.add('open');
+      composer.scrollIntoView({behavior:"smooth", block:"start"});
+    }
+
+    function resetComposer(){
+      document.getElementById('composerForm').reset();
+      setComposerMode(null);
+    }
+
+    async function publishPost(e){
+      e.preventDefault();
+      const statusEl = document.getElementById('composerStatus');
+      const publishBtn = e.target.querySelector('button[type="submit"]');
+      const setComposerStatus = (message, type="") => {
+        if(!statusEl) return;
+        statusEl.textContent = message;
+        statusEl.className = "composer-status" + (type ? " " + type : "");
+      };
+
+      const caption = document.getElementById('captionInput').value.trim();
+      const linkText = document.getElementById('imageLinksInput').value.trim();
+      const audioUrlInput = document.getElementById('audioUrlInput').value.trim();
+      const imageFiles = [...document.getElementById('imageFilesInput').files].slice(0,5);
+      const audioFile = document.getElementById('audioFileInput').files[0];
+
+      let images = linkText.split(/\n+/).map(x=>x.trim()).filter(Boolean).slice(0,5);
+      let audioUrl = audioUrlInput;
+
+      if(USE_FIREBASE){
+        try{
+        setComposerStatus("Publishing...");
+        if(publishBtn) publishBtn.disabled = true;
+        const signedInUser = auth && auth.currentUser ? auth.currentUser : currentUser;
+        currentUser = signedInUser;
+        updateAuthUI();
+
+        if(!signedInUser){
+          alert("Please login first.");
+          setComposerStatus("Please login first.", "error");
+          return;
+        }
+
+        if(!canUpload()){
+          setComposerStatus("Request upload access before publishing.", "error");
+          alert("Please request upload access first. An admin must approve your account before you can publish.");
+          renderRoleUI();
+          return;
+        }
+
+        const wasEditing = !!editingPostId;
+        const editingPost = editingPostId ? firebasePosts.find(post => post.id === editingPostId) : null;
+        if(editingPostId && !editingPost){
+          setComposerStatus("Could not find the post to edit. Refresh and try again.", "error");
+          return;
+        }
+        if(editingPost && signedInUser.uid !== editingPost.authorUid && !isAdmin()){
+          setComposerStatus("You can only edit your own posts.", "error");
+          alert("You can only edit your own posts.");
+          return;
+        }
+
+        for(const file of imageFiles){
+          if(images.length >= 5) break;
+          images.push(await uploadFile(file, 'sermon-posts/images'));
+        }
+
+        if(audioFile) audioUrl = await uploadFile(audioFile, 'sermon-posts/audio');
+
+        if(!images.length){
+          alert("Please add at least one image.");
+          setComposerStatus("Please add at least one image.", "error");
+          return;
+        }
+
+        const postRef = editingPostId
+          ? fb.dbRef(db, `sermonPosts/${editingPostId}`)
+          : fb.push(fb.dbRef(db, 'sermonPosts'));
+        const payload = {
+          authorUid:signedInUser.uid,
+          authorName:signedInUser.displayName || "Church Member",
+          authorEmail:signedInUser.email || "",
+          authorPhoto:signedInUser.photoURL || "",
+          images,
+          audioUrl,
+          caption,
+          likes:Number(editingPost?.likes || 0),
+          shares:Number(editingPost?.shares || 0),
+          views:Number(editingPost?.views || 0),
+          createdAt:editingPost?.createdAt || Date.now(),
+          updatedAt:Date.now(),
+          status:"published"
+        };
+        if(editingPost && signedInUser.uid !== editingPost.authorUid && isAdmin()){
+          payload.authorUid = editingPost.authorUid;
+          payload.authorName = editingPost.authorName || "Church Member";
+          payload.authorEmail = editingPost.authorEmail || "";
+          payload.authorPhoto = editingPost.authorPhoto || "";
+        }
+        await fb.set(postRef, payload);
+
+        e.target.reset();
+        setComposerMode(null);
+        composer.classList.remove('open');
+        setComposerStatus(wasEditing ? "Updated successfully." : "Published successfully.", "success");
+        loadFirebasePosts();
+        }catch(error){
+          console.error("Publish failed:", error);
+          const message = error && (error.code || error.message)
+            ? `${error.code || "Error"}: ${error.message || ""}`.trim()
+            : "Unknown Firebase error.";
+          setComposerStatus("Publish failed. " + message, "error");
+          alert("Publish failed.\n\n" + message + "\n\nIf this says permission_denied, update Realtime Database rules.");
+        }finally{
+          if(publishBtn) publishBtn.disabled = false;
+        }
+      }else{
+        const post = {
+          id:"local_" + Date.now(),
+          authorName:"Thy Thet",
+          authorEmail:"thythet@gmail.com",
+          authorPhoto:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
+          images: images.length ? images : demoPosts[0].images,
+          audioUrl,
+          caption: caption || "New sermon post caption...",
+          likes:0, shares:0, views:0,
+          createdAt:Date.now()
+        };
+        demoPosts.unshift(post);
+        e.target.reset();
+        composer.classList.remove('open');
+        renderPosts(demoPosts);
+      }
+    }
+
+    function updateAuthUI(){
+      const loginBtn = document.getElementById('loginBtn');
+      if(currentUser){
+        loginBtn.innerHTML = `<img src="${currentUser.photoURL || ''}" style="width:24px;height:24px;border-radius:50%;object-fit:cover" alt="">`;
+        loginBtn.title = "Logout";
+      }else{
+        loginBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>`;
+        loginBtn.title = "Login";
+      }
+    }
+
+    function handleCreateClick(){
+      if(!currentUser) return renderAuthGate();
+      if(!canUpload()){
+        renderRoleUI();
+        roleCard.scrollIntoView({behavior:"smooth", block:"center"});
+        return;
+      }
+      if(!composer.classList.contains('open')) resetComposer();
+      composer.classList.toggle('open');
+    }
+
+    document.getElementById('composerBtn').addEventListener('click', handleCreateClick);
+    document.getElementById('navCreateBtn').addEventListener('click', handleCreateClick);
+    document.getElementById('clearFormBtn').addEventListener('click', resetComposer);
+    document.getElementById('composerForm').addEventListener('submit', publishPost);
+    document.getElementById('requestCreatorBtn').addEventListener('click', requestCreatorAccess);
+
+    async function signInOrOut(){
+      if(!USE_FIREBASE){
+        alert("Demo mode. Set USE_FIREBASE = true and paste Firebase config.");
+        return;
+      }
+      if(auth.currentUser || currentUser){
+        currentUser = null;
+        currentProfile = null;
+        updateAuthUI();
+        return fb.signOut(auth);
+      }
+      try{
+        setLoginBusy(true);
+        const provider = new fb.GoogleAuthProvider();
+        const result = await fb.signInWithPopup(auth, provider);
+        currentUser = result.user || auth.currentUser;
+        updateAuthUI();
+        await ensureUserProfile(currentUser);
+        await loadFirebasePosts();
+      }catch(error){
+        const authCopy = document.getElementById('authCopy');
+        if(authCopy) authCopy.textContent = "Google sign-in was cancelled or could not open. Please try again.";
+      }finally{
+        setLoginBusy(false);
+      }
+    }
+
+    document.getElementById('loginBtn').addEventListener('click', signInOrOut);
+    document.getElementById('gateLoginBtn').addEventListener('click', signInOrOut);
+    document.getElementById('welcomeImageBtn').addEventListener('click', signInOrOut);
+    document.getElementById('welcomeImage').addEventListener('load', () => {
+      document.getElementById('welcomeImageBtn').classList.remove('loading');
+    });
+    document.getElementById('welcomeImage').addEventListener('error', () => {
+      const btn = document.getElementById('welcomeImageBtn');
+      btn.classList.remove('loading');
+      btn.classList.add('failed');
+    });
+    if(document.getElementById('welcomeImage').complete){
+      document.getElementById('welcomeImageBtn').classList.remove('loading');
+    }
+
+    adminPanel.addEventListener('click', async e => {
+      const row = e.target.closest('[data-request-uid]');
+      if(!row || !isAdmin()) return;
+      const uid = row.dataset.requestUid;
+      const approve = e.target.closest('.approve-user-btn');
+      const reject = e.target.closest('.reject-user-btn');
+      if(!approve && !reject) return;
+
+      await fb.update(fb.dbRef(db, `sermonUsers/${uid}`), approve ? {
+        role:"content_creator",
+        status:"approved",
+        approvedAt:Date.now(),
+        approvedBy:currentUser.email,
+        updatedAt:Date.now()
+      } : {
+        role:"viewer",
+        status:"rejected",
+        rejectedAt:Date.now(),
+        rejectedBy:currentUser.email,
+        updatedAt:Date.now()
+      });
+      await loadAdminRequests();
+    });
+
+    feed.addEventListener('click', async e => {
+      const postEl = e.target.closest('.post');
+      if(!postEl) return;
+      const id = postEl.dataset.postId;
+      const post = firebasePosts.find(entry => entry.id === id);
+
+      const editBtn = e.target.closest('.edit-post-btn');
+      if(editBtn){
+        if(!post) return alert("Could not find this post. Please refresh and try again.");
+        if(!currentUser || (currentUser.uid !== post.authorUid && !isAdmin())){
+          return alert("You can only edit your own posts.");
+        }
+        setComposerMode(post);
+        return;
+      }
+
+      const deleteBtn = e.target.closest('.delete-post-btn');
+      if(deleteBtn){
+        if(!post) return alert("Could not find this post. Please refresh and try again.");
+        if(!currentUser || (currentUser.uid !== post.authorUid && !isAdmin())){
+          return alert("You can only delete your own posts.");
+        }
+        const confirmed = window.confirm("Delete this sermon post? This cannot be undone.");
+        if(!confirmed) return;
+
+        deleteBtn.disabled = true;
+        try{
+          await fb.remove(fb.dbRef(db, `sermonPosts/${id}`));
+          await loadFirebasePosts();
+        }catch(error){
+          deleteBtn.disabled = false;
+          alert("Could not delete this post. Please check Firebase rules and try again.");
+        }
+        return;
+      }
+
+      const like = e.target.closest('.like-btn');
+      if(like){
+        if(!currentUser) return renderAuthGate();
+        const span = like.querySelector('span');
+        const wasLiked = userLikedPostIds.has(id);
+        like.classList.toggle('liked', !wasLiked);
+        span.textContent = Math.max(0, Number(span.textContent) + (wasLiked ? -1 : 1));
+        const likeRef = fb.dbRef(db, `sermonPostLikes/${id}/${currentUser.uid}`);
+        const countRef = fb.dbRef(db, `sermonPosts/${id}/likes`);
+        try{
+          if(wasLiked){
+            await fb.remove(likeRef);
+            await fb.runTransaction(countRef, count => Math.max(0, Number(count || 0) - 1));
+            userLikedPostIds.delete(id);
+          }else{
+            await fb.set(likeRef, {
+              email:currentUser.email || "",
+              name:currentUser.displayName || "",
+              at:Date.now()
+            });
+            await fb.runTransaction(countRef, count => Number(count || 0) + 1);
+            userLikedPostIds.add(id);
+          }
+        }catch(error){
+          like.classList.toggle('liked', wasLiked);
+          span.textContent = Math.max(0, Number(span.textContent) + (wasLiked ? 1 : -1));
+          alert("Could not update like. Please try again.");
+        }
+      }
+
+      const share = e.target.closest('.share-btn');
+      if(share){
+        const text = location.href.split('#')[0] + '#post-' + id;
+        if(navigator.share) await navigator.share({title:"Sermon Post", url:text}).catch(()=>{});
+        else await navigator.clipboard.writeText(text);
+      }
+    });
+
+    renderAuthGate();
+  </script>
+</body>
+</html>
