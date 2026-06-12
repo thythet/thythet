@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Sermon Post</title>
+  <meta name="description" content="Church sermon image and audio post platform." />
+  <meta name="theme-color" content="#081522" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    @font-face{
+      font-family:'Krasar';
+      src:url('https://thythet.com/assets/fonts/Krasar.woff') format('woff');
+      font-weight:400;
+      font-display:swap;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      min-height:100vh;
+      background:
+        radial-gradient(circle at 15% -10%, rgba(57,121,255,.20), transparent 34%),
+        radial-gradient(circle at 100% 8%, rgba(0,211,184,.13), transparent 30%),
+        #081522;
+      font-family:'Kantumruy Pro', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      color:#fff;
+      overflow-x:hidden;
+    }
+
+    :root{
+      /* EDIT ONLY THESE TWO VALUES TO TUNE UI */
+      --avatar-radius:6px;
+      --card-width:390px;
+
+      /* AUTO CALCULATED */
+      --gap:calc(var(--avatar-radius) * 2);
+      --media-radius:calc(var(--avatar-radius) + var(--gap));
+      --audio-radius:var(--media-radius);
+      --card-radius:calc(var(--media-radius) + var(--gap));
+
+      --avatar-size:38px;
+      --text:#fff;
+      --muted:rgba(255,255,255,.82);
+      --soft:rgba(255,255,255,.55);
+      --line:rgba(255,255,255,.14);
+      --danger:#ff496d;
+      --blue:#72c2ff;
+    }
+
+    button,input,textarea{font-family:inherit}
+    button{cursor:pointer}
+
+    .app{
+      width:min(100%, calc(var(--card-width) + 20px));
+      margin:0 auto;
+      padding:10px 10px 74px;
+    }
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:30;
+      margin:0 -10px 10px;
+      padding:10px 10px 8px;
+      background:linear-gradient(180deg, rgba(8,21,34,.96), rgba(8,21,34,.72), transparent);
+      backdrop-filter:blur(16px);
+      -webkit-backdrop-filter:blur(16px);
+    }
+
+    .topbar-inner{
+      width:min(100%, var(--card-width));
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+
+    .brand-icon{
+      width:38px;
+      height:38px;
+      border-radius:14px;
+      background:linear-gradient(145deg, #28114f, #087064);
+      display:grid;
+      place-items:center;
+      flex:0 0 auto;
+      box-shadow:0 12px 28px rgba(0,0,0,.22);
+    }
+
+    .brand-title{
+      font-size:15px;
+      font-weight:800;
+      line-height:1.15;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .brand-sub{
+      margin-top:3px;
+      font-family:'Krasar','Kantumruy Pro',sans-serif;
+      font-size:11px;
+      color:var(--soft);
+      line-height:1.2;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .top-actions{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex:0 0 auto;
+    }
+
+    .circle-btn{
+      width:38px;
+      height:38px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.08);
+      color:#fff;
+      display:grid;
+      place-items:center;
+      padding:0;
+    }
+
+    .circle-btn svg{width:20px;height:20px;stroke-width:2}
+
+    .auth-chip{
+      max-width:116px;
+      height:38px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.08);
+      color:#fff;
+      padding:0 10px;
+      display:flex;
+      align-items:center;
+      gap:7px;
+      font-size:12px;
+      font-weight:800;
+      overflow:hidden;
+    }
+
+    .auth-chip img{
+      width:22px;
+      height:22px;
+      border-radius:50%;
+      object-fit:cover;
+      flex:0 0 auto;
+    }
+
+    .auth-chip span{
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    .notice{
+      display:none;
+      width:100%;
+      border-radius:18px;
+      padding:12px 14px;
+      margin-bottom:10px;
+      background:rgba(255,255,255,.08);
+      border:1px solid var(--line);
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.55;
+    }
+    .notice.show{display:block}
+
+    .composer{
+      display:none;
+      margin-bottom:10px;
+      border-radius:var(--card-radius);
+      background:linear-gradient(145deg,#28114f,#103d69 56%,#087064);
+      padding:var(--gap);
+      overflow:hidden;
+    }
+    .composer.open{display:block}
+
+    .composer-form{
+      display:flex;
+      flex-direction:column;
+      gap:var(--gap);
+    }
+
+    .field{
+      width:100%;
+      border:0;
+      outline:0;
+      border-radius:var(--media-radius);
+      background:rgba(255,255,255,.14);
+      color:#fff;
+      padding:12px 13px;
+      font-size:13px;
+      font-weight:600;
+    }
+
+    textarea.field{
+      min-height:88px;
+      resize:vertical;
+      line-height:1.55;
+      font-family:'Krasar','Kantumruy Pro',sans-serif;
+    }
+
+    .field::placeholder{color:rgba(255,255,255,.55)}
+    .file-row{display:grid;grid-template-columns:1fr;gap:var(--gap)}
+
+    .file-box{
+      border-radius:var(--media-radius);
+      border:1px dashed rgba(255,255,255,.28);
+      background:rgba(255,255,255,.10);
+      padding:12px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.5;
+    }
+
+    .file-box input{width:100%;margin-top:8px;color:#fff}
+
+    .composer-actions{
+      display:flex;
+      gap:var(--gap);
+    }
+
+    .btn{
+      min-height:44px;
+      border:0;
+      border-radius:var(--media-radius);
+      color:#fff;
+      font-weight:800;
+      font-size:13px;
+      padding:0 14px;
+      background:rgba(255,255,255,.14);
+      flex:1;
+    }
+
+    .btn.primary{background:rgba(114,194,255,.28)}
+    .btn.danger{background:rgba(255,73,109,.20)}
+    .composer-status{
+      min-height:20px;
+      margin:2px 4px 0;
+      color:rgba(255,255,255,.82);
+      font-size:12px;
+      line-height:1.45;
+    }
+    .composer-status.error{color:#ffd0d0}
+    .composer-status.success{color:#d5ffe6}
+
+    .feed{
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    .empty{
+      padding:26px 14px;
+      text-align:center;
+      color:var(--soft);
+      font-size:13px;
+      line-height:1.7;
+    }
+
+    .post{
+      width:100%;
+      padding:var(--gap);
+      border-radius:var(--card-radius);
+      background:linear-gradient(145deg,#28114f 0%,#103d69 56%,#087064 100%);
+      overflow:hidden;
+      box-shadow:0 18px 42px rgba(0,0,0,.28);
+    }
+
+    .inner{
+      display:flex;
+      flex-direction:column;
+      gap:var(--gap);
+    }
+
+    .media{
+      position:relative;
+      aspect-ratio:1/1;
+      border-radius:var(--media-radius);
+      overflow:hidden;
+      background:#24435c;
+      isolation:isolate;
+    }
+
+    .slides{
+      height:100%;
+      display:flex;
+      overflow-x:auto;
+      scroll-snap-type:x mandatory;
+      scroll-behavior:smooth;
+      scrollbar-width:none;
+      -webkit-overflow-scrolling:touch;
+    }
+    .slides::-webkit-scrollbar{display:none}
+
+    .slide{
+      flex:0 0 100%;
+      height:100%;
+      scroll-snap-align:start;
+      background:linear-gradient(110deg,rgba(255,255,255,.08),rgba(255,255,255,.20),rgba(255,255,255,.08));
+      background-size:220% 100%;
+      animation:skeleton 1.2s ease-in-out infinite;
+    }
+
+    .slide img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+      opacity:0;
+      transition:opacity .35s ease;
+    }
+    .slide img.loaded{opacity:1}
+    @keyframes skeleton{0%{background-position:100% 0}100%{background-position:-100% 0}}
+
+    .media::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      z-index:2;
+      background:linear-gradient(180deg,rgba(0,0,0,.42),rgba(0,0,0,.05) 34%,rgba(0,0,0,.32));
+      pointer-events:none;
+    }
+
+    .top-info{
+      position:absolute;
+      left:var(--gap);
+      right:var(--gap);
+      top:var(--gap);
+      z-index:3;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:var(--gap);
+    }
+
+    .profile{
+      display:flex;
+      align-items:center;
+      gap:var(--gap);
+      min-width:0;
+      flex:1;
+    }
+
+    .avatar{
+      width:var(--avatar-size);
+      height:var(--avatar-size);
+      border-radius:var(--avatar-radius);
+      overflow:hidden;
+      flex:0 0 auto;
+      background:rgba(255,255,255,.82);
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
+    }
+
+    .avatar img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .meta{min-width:0}
+    .name{
+      font-size:14px;
+      font-weight:800;
+      line-height:1.15;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .email{
+      margin-top:4px;
+      font-size:12px;
+      line-height:1.15;
+      color:var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .media-count{
+      font-size:12px;
+      font-weight:700;
+      line-height:1;
+      padding-top:4px;
+      flex:0 0 auto;
+    }
+
+    .dots{
+      position:absolute;
+      left:50%;
+      bottom:var(--gap);
+      transform:translateX(-50%);
+      z-index:4;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .dot{
+      width:9px;
+      height:9px;
+      border-radius:999px;
+      background:rgba(255,255,255,.68);
+    }
+    .dot.active{
+      width:28px;
+      background:#fff;
+    }
+
+    .audio{
+      height:48px;
+      border-radius:var(--audio-radius);
+      background:rgba(255,255,255,.23);
+      backdrop-filter:blur(14px);
+      -webkit-backdrop-filter:blur(14px);
+      display:flex;
+      align-items:center;
+      gap:var(--gap);
+      padding:0 var(--gap);
+      overflow:hidden;
+    }
+
+    .speaker{
+      width:34px;
+      height:34px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      border:2px solid rgba(255,255,255,.78);
+      color:#fff;
+      background:transparent;
+      padding:0;
+      flex:0 0 auto;
+    }
+    .speaker svg{width:18px;height:18px}
+    .time{
+      font-size:13px;
+      font-weight:700;
+      color:#fff;
+      font-variant-numeric:tabular-nums;
+      white-space:nowrap;
+    }
+    .track{
+      flex:1;
+      height:10px;
+      min-width:0;
+      border-radius:999px;
+      background:rgba(255,255,255,.9);
+      overflow:hidden;
+    }
+    .progress{
+      width:0%;
+      height:100%;
+      background:rgba(0,0,0,.30);
+    }
+
+    .actions{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:var(--gap);
+      min-height:28px;
+      padding:0 2px;
+    }
+    .action-left,.action-right{
+      display:flex;
+      align-items:center;
+      gap:var(--gap);
+    }
+    .action{
+      border:0;
+      background:transparent;
+      padding:0;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      color:#fff;
+      font-size:13px;
+      font-weight:700;
+      line-height:1;
+      white-space:nowrap;
+    }
+    .action svg{
+      width:23px;
+      height:23px;
+      stroke:currentColor;
+      fill:none;
+      stroke-width:2;
+    }
+    .action.liked{color:var(--danger)}
+    .action.liked svg{fill:currentColor}
+    .action.saved{color:var(--blue)}
+
+    .post-content{
+      min-height:46px;
+      padding:0 2px 10px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+
+    .post-meta{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      min-width:0;
+      line-height:1.2;
+    }
+    .post-author{
+      font-size:13px;
+      font-weight:800;
+      color:#fff;
+      white-space:nowrap;
+      flex:0 0 auto;
+    }
+    .post-time{
+      color:var(--soft);
+      font-size:11px;
+      font-weight:700;
+      white-space:nowrap;
+      flex:0 0 auto;
+    }
+
+    .caption-line{
+      display:flex;
+      align-items:baseline;
+      min-width:0;
+      max-width:100%;
+      white-space:nowrap;
+      line-height:1.45;
+      font-family:'Krasar','Kantumruy Pro',sans-serif;
+      font-size:13px;
+      color:#fff;
+    }
+
+    .caption-text{
+      min-width:0;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    .more-link{
+      display:none;
+      flex:0 0 auto;
+      margin-left:4px;
+      padding:0;
+      border:0;
+      background:transparent;
+      color:rgba(255,255,255,.45);
+      font-family:'Kantumruy Pro',sans-serif;
+      font-size:11px;
+      font-weight:700;
+      line-height:1.2;
+      cursor:pointer;
+    }
+
+    .caption-line.needs-more .more-link{display:inline}
+    .caption-line.expanded{
+      display:block;
+      white-space:normal;
+    }
+    .caption-line.expanded .caption-text{
+      white-space:normal;
+      overflow:visible;
+      text-overflow:clip;
+    }
+    .caption-line.expanded .more-link{
+      display:inline;
+      margin-left:6px;
+    }
+
+    .post-menu{
+      display:flex;
+      gap:8px;
+      padding-top:2px;
+    }
+    .mini-btn{
+      border:0;
+      border-radius:12px;
+      background:rgba(255,255,255,.10);
+      color:rgba(255,255,255,.82);
+      min-height:30px;
+      padding:0 10px;
+      font-size:11px;
+      font-weight:800;
+    }
+
+    .bottom-nav{
+      position:fixed;
+      left:50%;
+      bottom:10px;
+      transform:translateX(-50%);
+      width:min(calc(100% - 20px), var(--card-width));
+      height:52px;
+      border-radius:22px;
+      background:rgba(15,29,45,.88);
+      backdrop-filter:blur(18px);
+      -webkit-backdrop-filter:blur(18px);
+      border:1px solid rgba(255,255,255,.12);
+      display:flex;
+      align-items:center;
+      justify-content:space-around;
+      z-index:40;
+      box-shadow:0 16px 36px rgba(0,0,0,.34);
+    }
+    .nav-btn{
+      width:44px;height:44px;border:0;background:transparent;color:#fff;display:grid;place-items:center;
+    }
+    .nav-btn svg{width:22px;height:22px;stroke-width:2}
+
+    @media(min-width:720px){
+      :root{--card-width:430px}
+      .app{padding-top:18px}
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <div class="brand-icon">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18"/><path d="M5 12h14"/><path d="M7 7c3 2 7 2 10 0"/><path d="M7 17c3-2 7-2 10 0"/></svg>
+          </div>
+          <div>
+            <div class="brand-title">Sermon Post</div>
+            <div class="brand-sub">រូបភាព និងសំឡេងព្រះបន្ទូល</div>
+          </div>
+        </div>
+
+        <div class="top-actions">
+          <button class="circle-btn" id="loginBtn" title="Login">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>
+          </button>
+          <button class="circle-btn" id="composerBtn" title="Create post">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="notice show" id="notice">
+      Demo mode is active until you paste your Firebase config. The UI works now; Firebase login, database, and storage are ready in the code.
+    </div>
+
+    <section class="composer" id="composer">
+      <form class="composer-form" id="composerForm">
+        <textarea class="field" id="captionInput" placeholder="Write caption..."></textarea>
+        <textarea class="field" id="imageLinksInput" placeholder="Paste image links, one per line. Max 5 images."></textarea>
+        <input class="field" id="audioUrlInput" placeholder="Audio URL, optional" />
+        <div class="file-row">
+          <label class="file-box">
+            Upload images to Firebase Storage, optional
+            <input type="file" id="imageFilesInput" accept="image/*" multiple>
+          </label>
+          <label class="file-box">
+            Upload audio to Firebase Storage, optional
+            <input type="file" id="audioFileInput" accept="audio/*">
+          </label>
+        </div>
+        <div class="composer-actions">
+          <button class="btn danger" type="button" id="clearFormBtn">Clear</button>
+          <button class="btn primary" type="submit">Publish</button>
+        </div>
+        <div class="composer-status" id="composerStatus" role="status" aria-live="polite"></div>
+      </form>
+    </section>
+
+    <section class="feed" id="feed"></section>
+  </main>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg></button>
+    <button class="nav-btn" title="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></button>
+    <button class="nav-btn" id="navCreateBtn" title="Create"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14"/></svg></button>
+    <button class="nav-btn" title="Saved"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1Z"/></svg></button>
+  </nav>
+
+  <script type="module">
+    /*
+      FIREBASE SETUP
+      1. Paste your Firebase config below.
+      2. Set USE_FIREBASE = true.
+      3. Create DB paths:
+         /sermonPosts
+         /sermonPostLikes
+         /sermonPostSaves
+         /members
+      4. Storage folder:
+         /sermon-posts/images
+         /sermon-posts/audio
+    */
+
+    const USE_FIREBASE = true;
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCZgQBrY5cwGpCra0gBqs1ZDkJPugewHhc",
+      authDomain: "thythet-podcast.firebaseapp.com",
+      databaseURL: "https://thythet-podcast-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "thythet-podcast",
+      storageBucket: "thythet-podcast.firebasestorage.app",
+      messagingSenderId: "164940506015",
+      appId: "1:164940506015:web:b9956ab7b1570f4b0c7172"
+    };
+
+    let app, auth, db, storage, currentUser = null;
+    let fb = {};
+
+    if(USE_FIREBASE){
+      const appMod = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js");
+      const authMod = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js");
+      const dbMod = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js");
+      const storageMod = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js");
+
+      app = appMod.initializeApp(firebaseConfig);
+      auth = authMod.getAuth(app);
+      db = dbMod.getDatabase(app);
+      storage = storageMod.getStorage(app);
+
+      fb = {...authMod, ...dbMod, ...storageMod};
+      document.getElementById('notice').classList.remove('show');
+
+      fb.onAuthStateChanged(auth, user => {
+        currentUser = user;
+        updateAuthUI();
+        loadFirebasePosts();
+      });
+    }
+
+    const icons = {
+      heart:`<svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>`,
+      share:`<svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4"/><path d="m15.4 6.5-6.8 4"/></svg>`,
+      eye:`<svg viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>`,
+      play:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`,
+      pause:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>`,
+      speaker:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15 9.5a4 4 0 0 1 0 5"/><path d="M17.5 7a7.5 7.5 0 0 1 0 10"/></svg>`
+    };
+
+    const demoPosts = [
+      {
+        id:"demo1",
+        authorName:"Thy Thet",
+        authorEmail:"thythet@gmail.com",
+        authorPhoto:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
+        images:[
+          "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&w=1200&q=82",
+          "https://images.unsplash.com/photo-1490730141103-6cac27aaab94?auto=format&fit=crop&w=1200&q=82",
+          "https://images.unsplash.com/photo-1514896856000-91cb6de818e0?auto=format&fit=crop&w=1200&q=82"
+        ],
+        audioUrl:"",
+        caption:"CONTETNS HERE / CONTETNS HERE / CONTETNS HERE / CONTETNS HERE / CONTETNS HERE / CONTETNS HERE .......",
+        likes:206, shares:50, views:10,
+        createdAt:Date.now() - 4*24*60*60*1000
+      }
+    ];
+
+    const feed = document.getElementById('feed');
+    const composer = document.getElementById('composer');
+
+    function escapeHTML(str=""){
+      return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+    }
+
+    function timeAgo(ms){
+      const diff = Math.max(1, Date.now() - Number(ms || Date.now()));
+      const m = Math.floor(diff/60000);
+      const h = Math.floor(m/60);
+      const d = Math.floor(h/24);
+      if(d) return d + (d === 1 ? " day ago" : " days ago");
+      if(h) return h + (h === 1 ? " hour ago" : " hours ago");
+      if(m) return m + (m === 1 ? " min ago" : " mins ago");
+      return "just now";
+    }
+
+    function postHTML(post){
+      const images = (post.images || []).slice(0,5);
+      const firstAvatar = post.authorPhoto || "https://thythet.com/assets/audio/mic-fill.svg?v=2";
+      const safeCaption = escapeHTML(post.caption || "");
+      const audioId = "audio_" + post.id;
+
+      return `
+        <article class="post" data-post-id="${post.id}">
+          <div class="inner">
+            <section class="media">
+              <div class="slides">
+                ${images.map((src,i)=>`
+                  <div class="slide">
+                    <img data-src="${escapeHTML(src)}" alt="post image ${i+1}" loading="lazy">
+                  </div>
+                `).join("")}
+              </div>
+
+              <div class="top-info">
+                <div class="profile">
+                  <div class="avatar"><img src="${escapeHTML(firstAvatar)}" alt=""></div>
+                  <div class="meta">
+                    <div class="name">${escapeHTML(post.authorName || "Church Member")}</div>
+                    <div class="email">${escapeHTML(post.authorEmail || "member")}</div>
+                  </div>
+                </div>
+                <div class="media-count">1/${Math.max(images.length,1)}</div>
+              </div>
+
+              ${images.length > 1 ? `
+              <div class="dots">
+                ${images.map((_,i)=>`<span class="dot ${i===0?"active":""}"></span>`).join("")}
+              </div>` : ""}
+            </section>
+
+            <section class="audio" data-audio-ui>
+              <button class="speaker" type="button" aria-label="Play">${icons.speaker}</button>
+              <span class="time current">00:00</span>
+              <div class="track"><div class="progress"></div></div>
+              <span class="time duration">00:00</span>
+              ${post.audioUrl ? `<audio id="${audioId}" preload="metadata" src="${escapeHTML(post.audioUrl)}"></audio>` : ""}
+            </section>
+
+            <section class="actions">
+              <div class="action-left">
+                <button class="action like-btn" type="button">${icons.heart}<span>${Number(post.likes || 0)}</span></button>
+                <button class="action share-btn" type="button">${icons.share}<span>${Number(post.shares || 0)}</span></button>
+              </div>
+              <div class="action-right">
+                <button class="action view-btn" type="button">${icons.eye}<span>${Number(post.views || 0)}</span></button>
+              </div>
+            </section>
+
+            <section class="post-content">
+              <div class="post-meta">
+                <span class="post-author">${escapeHTML(post.authorName || "Church Member")}</span>
+                <span class="post-time">${timeAgo(post.createdAt)}</span>
+              </div>
+              <div class="caption-line">
+                <span class="caption-text">${safeCaption}</span>
+                <button class="more-link" type="button">more</button>
+              </div>
+              ${currentUser && currentUser.uid === post.authorUid ? `
+              <div class="post-menu">
+                <button class="mini-btn delete-btn" type="button">Delete</button>
+              </div>` : ""}
+            </section>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderPosts(posts){
+      if(!posts.length){
+        feed.innerHTML = `<div class="empty">No posts yet. Tap + to create the first sermon post.</div>`;
+        return;
+      }
+      feed.innerHTML = posts.map(postHTML).join("");
+      setupLazyImages();
+      setupSliders();
+      setupCaptions();
+      setupAudio();
+    }
+
+    function setupLazyImages(){
+      const imgs = document.querySelectorAll('img[data-src]');
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if(!entry.isIntersecting) return;
+          const img = entry.target;
+          img.src = img.dataset.src;
+          img.onload = () => img.classList.add('loaded');
+          io.unobserve(img);
+        });
+      }, {rootMargin:"260px"});
+      imgs.forEach(img => io.observe(img));
+    }
+
+    function setupSliders(){
+      document.querySelectorAll('.media').forEach(media => {
+        const slides = media.querySelector('.slides');
+        const dots = [...media.querySelectorAll('.dot')];
+        const count = media.querySelector('.media-count');
+        if(!slides) return;
+
+        slides.addEventListener('scroll', () => {
+          const active = Math.round(slides.scrollLeft / slides.clientWidth);
+          dots.forEach((dot,i)=>dot.classList.toggle('active', i === active));
+          if(count) count.textContent = `${active + 1}/${Math.max(dots.length,1)}`;
+        }, {passive:true});
+      });
+    }
+
+    function setupCaptions(){
+      document.querySelectorAll('.caption-line').forEach(line => {
+        const text = line.querySelector('.caption-text');
+        const btn = line.querySelector('.more-link');
+        if(!text || !btn) return;
+
+        requestAnimationFrame(() => {
+          const needsMore = text.scrollWidth > text.clientWidth + 2;
+          line.classList.toggle('needs-more', needsMore);
+        });
+
+        btn.addEventListener('click', () => {
+          const expanded = line.classList.toggle('expanded');
+          btn.textContent = expanded ? "less" : "more";
+        });
+      });
+    }
+
+    function setupAudio(){
+      document.querySelectorAll('[data-audio-ui]').forEach(ui => {
+        const btn = ui.querySelector('.speaker');
+        const audio = ui.querySelector('audio');
+        const current = ui.querySelector('.current');
+        const duration = ui.querySelector('.duration');
+        const progress = ui.querySelector('.progress');
+        const track = ui.querySelector('.track');
+
+        if(!audio){
+          btn.addEventListener('click',()=>alert('No audio added yet.'));
+          return;
+        }
+
+        audio.addEventListener('loadedmetadata',()=>{
+          duration.textContent = formatTime(audio.duration);
+        });
+
+        audio.addEventListener('timeupdate',()=>{
+          current.textContent = formatTime(audio.currentTime);
+          const pct = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
+          progress.style.width = pct + "%";
+        });
+
+        btn.addEventListener('click', async ()=>{
+          document.querySelectorAll('audio').forEach(a => { if(a !== audio) a.pause(); });
+          if(audio.paused) await audio.play();
+          else audio.pause();
+        });
+
+        track.addEventListener('click', e => {
+          const rect = track.getBoundingClientRect();
+          const pct = (e.clientX - rect.left) / rect.width;
+          audio.currentTime = pct * audio.duration;
+        });
+      });
+    }
+
+    function formatTime(sec){
+      if(!isFinite(sec)) return "00:00";
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return String(m).padStart(2,'0') + ":" + String(s).padStart(2,'0');
+    }
+
+    async function loadFirebasePosts(){
+      if(!USE_FIREBASE) return renderPosts(demoPosts);
+      const snap = await fb.get(fb.ref(db, 'sermonPosts'));
+      const val = snap.val() || {};
+      const posts = Object.entries(val).map(([id,p]) => ({id,...p})).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+      renderPosts(posts);
+    }
+
+    async function uploadFile(file, folder){
+      if(!USE_FIREBASE) return "";
+      const clean = file.name.replace(/[^\w.\-]+/g,'_');
+      const path = `${folder}/${Date.now()}_${clean}`;
+      const fileRef = fb.storageRef(storage, path);
+      await fb.uploadBytes(fileRef, file);
+      return await fb.getDownloadURL(fileRef);
+    }
+
+    async function publishPost(e){
+      e.preventDefault();
+      const statusEl = document.getElementById('composerStatus');
+      const publishBtn = e.target.querySelector('button[type="submit"]');
+      const setComposerStatus = (message, type="") => {
+        if(!statusEl) return;
+        statusEl.textContent = message;
+        statusEl.className = "composer-status" + (type ? " " + type : "");
+      };
+
+      const caption = document.getElementById('captionInput').value.trim();
+      const linkText = document.getElementById('imageLinksInput').value.trim();
+      const audioUrlInput = document.getElementById('audioUrlInput').value.trim();
+      const imageFiles = [...document.getElementById('imageFilesInput').files].slice(0,5);
+      const audioFile = document.getElementById('audioFileInput').files[0];
+
+      let images = linkText.split(/\n+/).map(x=>x.trim()).filter(Boolean).slice(0,5);
+      let audioUrl = audioUrlInput;
+
+      if(USE_FIREBASE){
+        try{
+        setComposerStatus("Publishing...");
+        if(publishBtn) publishBtn.disabled = true;
+        const signedInUser = auth && auth.currentUser ? auth.currentUser : currentUser;
+        currentUser = signedInUser;
+        updateAuthUI();
+
+        if(!signedInUser){
+          alert("Please login first.");
+          setComposerStatus("Please login first.", "error");
+          return;
+        }
+
+        for(const file of imageFiles){
+          if(images.length >= 5) break;
+          images.push(await uploadFile(file, 'sermon-posts/images'));
+        }
+
+        if(audioFile) audioUrl = await uploadFile(audioFile, 'sermon-posts/audio');
+
+        if(!images.length){
+          alert("Please add at least one image.");
+          setComposerStatus("Please add at least one image.", "error");
+          return;
+        }
+
+        const postRef = fb.push(fb.ref(db, 'sermonPosts'));
+        await fb.set(postRef, {
+          authorUid:signedInUser.uid,
+          authorName:signedInUser.displayName || "Church Member",
+          authorEmail:signedInUser.email || "",
+          authorPhoto:signedInUser.photoURL || "",
+          images,
+          audioUrl,
+          caption,
+          likes:0,
+          shares:0,
+          views:0,
+          createdAt:Date.now(),
+          status:"published"
+        });
+
+        e.target.reset();
+        composer.classList.remove('open');
+        setComposerStatus("Published successfully.", "success");
+        loadFirebasePosts();
+        }catch(error){
+          console.error("Publish failed:", error);
+          const message = error && (error.code || error.message)
+            ? `${error.code || "Error"}: ${error.message || ""}`.trim()
+            : "Unknown Firebase error.";
+          setComposerStatus("Publish failed. " + message, "error");
+          alert("Publish failed.\n\n" + message + "\n\nIf this says permission_denied, update Realtime Database rules.");
+        }finally{
+          if(publishBtn) publishBtn.disabled = false;
+        }
+      }else{
+        const post = {
+          id:"local_" + Date.now(),
+          authorName:"Thy Thet",
+          authorEmail:"thythet@gmail.com",
+          authorPhoto:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
+          images: images.length ? images : demoPosts[0].images,
+          audioUrl,
+          caption: caption || "New sermon post caption...",
+          likes:0, shares:0, views:0,
+          createdAt:Date.now()
+        };
+        demoPosts.unshift(post);
+        e.target.reset();
+        composer.classList.remove('open');
+        renderPosts(demoPosts);
+      }
+    }
+
+    function updateAuthUI(){
+      const loginBtn = document.getElementById('loginBtn');
+      if(currentUser){
+        loginBtn.innerHTML = `<img src="${currentUser.photoURL || ''}" style="width:24px;height:24px;border-radius:50%;object-fit:cover" alt="">`;
+        loginBtn.title = "Logout";
+      }else{
+        loginBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>`;
+        loginBtn.title = "Login";
+      }
+    }
+
+    document.getElementById('composerBtn').addEventListener('click',()=>composer.classList.toggle('open'));
+    document.getElementById('navCreateBtn').addEventListener('click',()=>composer.classList.toggle('open'));
+    document.getElementById('clearFormBtn').addEventListener('click',()=>document.getElementById('composerForm').reset());
+    document.getElementById('composerForm').addEventListener('submit', publishPost);
+
+    document.getElementById('loginBtn').addEventListener('click', async ()=>{
+      if(!USE_FIREBASE){
+        alert("Demo mode. Set USE_FIREBASE = true and paste Firebase config.");
+        return;
+      }
+      if(auth.currentUser || currentUser){
+        currentUser = null;
+        updateAuthUI();
+        return fb.signOut(auth);
+      }
+      const provider = new fb.GoogleAuthProvider();
+      const result = await fb.signInWithPopup(auth, provider);
+      currentUser = result.user || auth.currentUser;
+      updateAuthUI();
+    });
+
+    feed.addEventListener('click', async e => {
+      const postEl = e.target.closest('.post');
+      if(!postEl) return;
+      const id = postEl.dataset.postId;
+
+      const like = e.target.closest('.like-btn');
+      if(like){
+        like.classList.toggle('liked');
+        const span = like.querySelector('span');
+        span.textContent = Number(span.textContent) + (like.classList.contains('liked') ? 1 : -1);
+      }
+
+      const share = e.target.closest('.share-btn');
+      if(share){
+        const text = location.href.split('#')[0] + '#post-' + id;
+        if(navigator.share) await navigator.share({title:"Sermon Post", url:text}).catch(()=>{});
+        else await navigator.clipboard.writeText(text);
+      }
+    });
+
+    loadFirebasePosts();
+  </script>
+</body>
+</html>
