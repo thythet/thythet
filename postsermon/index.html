@@ -1187,7 +1187,6 @@
       flex:0 0 auto;
     }
     .post-author{
-      display:none;
       max-width:118px;
       border-radius:999px;
       background:rgba(255,255,255,.12);
@@ -1571,12 +1570,9 @@
         userLikedPostIds = new Set();
         updateAuthUI();
         if(user){
-          try{
-            await ensureUserProfile(user);
-          }catch(error){
-            console.warn("Could not sync user profile:", error);
-          }
+          await ensureUserProfile(user);
           await loadFirebasePosts();
+          if(isAdmin()) await loadAdminRequests();
         }else{
           feed.innerHTML = "";
           composer.classList.remove('open');
@@ -1748,7 +1744,6 @@
 
       adminProfileSection.style.display = isAdmin() ? "block" : "none";
       if(!isAdmin()) updateNotificationBadge(0);
-      syncAdminSettingsUI();
       renderProfileBoard();
     }
 
@@ -1913,6 +1908,7 @@
       const liked = userLikedPostIds.has(post.id);
       const canManagePost = currentUser && (currentUser.uid === post.authorUid || isAdmin());
       const isPending = post.status === "pending";
+
       return `
         <article class="post" data-post-id="${post.id}">
           <div class="inner">
@@ -2147,38 +2143,19 @@
     async function loadFirebasePosts(){
       if(!USE_FIREBASE) return renderPosts(demoPosts);
       if(!currentUser) return renderAuthGate();
-      try{
-        const snap = await fb.get(fb.dbRef(db, 'sermonPosts'));
-        const val = snap.val() || {};
-        const posts = Object.entries(val).map(([id,p]) => ({id,...p})).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-        firebasePosts = posts;
-        const visiblePosts = posts.filter(post => post.status !== "pending" || isAdmin() || post.authorUid === currentUser.uid);
-        renderPosts(visiblePosts);
-        renderRoleUI();
-
-        try{
-          const likeSnap = await fb.get(fb.dbRef(db, 'sermonPostLikes'));
-          const likeVal = likeSnap.val() || {};
-          userLikedPostIds = new Set(Object.entries(likeVal)
-            .filter(([, users]) => users && users[currentUser.uid])
-            .map(([postId]) => postId));
-          renderPosts(visiblePosts);
-        }catch(error){
-          console.warn("Could not load post likes:", error);
-        }
-
-        if(isAdmin()){
-          try{
-            await loadAdminRequests();
-          }catch(error){
-            console.warn("Could not load admin requests:", error);
-          }
-        }
-      }catch(error){
-        console.error("Could not load sermon posts:", error);
-        feed.innerHTML = `<div class="empty">Could not load posts. Please check Firebase rules or connection.</div>`;
-        renderRoleUI();
-      }
+      const snap = await fb.get(fb.dbRef(db, 'sermonPosts'));
+      const val = snap.val() || {};
+      const posts = Object.entries(val).map(([id,p]) => ({id,...p})).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+      firebasePosts = posts;
+      const visiblePosts = posts.filter(post => post.status !== "pending" || isAdmin() || post.authorUid === currentUser.uid);
+      const likeSnap = await fb.get(fb.dbRef(db, 'sermonPostLikes'));
+      const likeVal = likeSnap.val() || {};
+      userLikedPostIds = new Set(Object.entries(likeVal)
+        .filter(([, users]) => users && users[currentUser.uid])
+        .map(([postId]) => postId));
+      renderPosts(visiblePosts);
+      renderRoleUI();
+      if(isAdmin()) await loadAdminRequests();
     }
 
     async function uploadFile(file, folder){
