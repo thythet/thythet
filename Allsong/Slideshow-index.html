@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0b0d10">
+<title>All Song — Slideshow</title>
+<style>
+  :root{
+    --bg:#080a0d;
+    --panel:#101318;
+    --panel-2:#151922;
+    --line:#252b35;
+    --text:#f5f7fa;
+    --muted:#8c96a5;
+    --accent:#d9ff5a;
+    --accent-2:#b7e82a;
+    --danger:#ff5c69;
+    --shadow:0 24px 70px rgba(0,0,0,.42);
+    --radius:18px;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--text)}
+  body{
+    font-family:Carbon, "Bahnschrift SemiBold", "Segoe UI", "Noto Sans Khmer", system-ui, sans-serif;
+    overflow:hidden;
+    letter-spacing:.01em;
+  }
+  button,input,select{font:inherit}
+
+  .app{
+    width:100%;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    background:
+      radial-gradient(circle at 15% 0%, rgba(217,255,90,.055), transparent 26%),
+      radial-gradient(circle at 100% 100%, rgba(99,115,255,.05), transparent 25%),
+      var(--bg);
+  }
+
+  .topbar{
+    flex:0 0 auto;
+    height:76px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:12px 18px;
+    border-bottom:1px solid var(--line);
+    background:rgba(8,10,13,.88);
+    backdrop-filter:blur(18px);
+    z-index:30;
+  }
+
+  .brand{
+    min-width:190px;
+    display:flex;
+    align-items:center;
+    gap:11px;
+    font-weight:900;
+    text-transform:uppercase;
+    letter-spacing:.13em;
+    font-size:14px;
+  }
+  .brand-mark{
+    width:34px;height:34px;border-radius:10px;
+    display:grid;place-items:center;
+    color:#111;
+    background:var(--accent);
+    box-shadow:0 10px 30px rgba(217,255,90,.2);
+  }
+
+  .search-wrap{
+    flex:1;
+    min-width:150px;
+    position:relative;
+  }
+  .search{
+    width:100%;
+    height:48px;
+    border:1px solid var(--line);
+    border-radius:14px;
+    background:var(--panel);
+    color:var(--text);
+    outline:none;
+    padding:0 16px 0 46px;
+    transition:.18s ease;
+  }
+  .search:focus{
+    border-color:#5f6b7a;
+    box-shadow:0 0 0 3px rgba(217,255,90,.07);
+  }
+  .search::placeholder{color:#687282}
+  .search-icon{
+    position:absolute;
+    left:16px;top:50%;
+    transform:translateY(-50%);
+    width:17px;height:17px;
+    opacity:.7;
+    pointer-events:none;
+  }
+
+  .toolbar{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+
+  .select,.icon-btn,.load-btn,.back-btn,.copy-btn{
+    height:44px;
+    border:1px solid var(--line);
+    border-radius:12px;
+    background:var(--panel);
+    color:var(--text);
+    cursor:pointer;
+    transition:.18s ease;
+  }
+  .select{
+    padding:0 12px;
+    outline:none;
+  }
+  .icon-btn{
+    width:44px;
+    display:grid;
+    place-items:center;
+  }
+  .load-btn{
+    padding:0 14px;
+    font-weight:800;
+  }
+  .select:hover,.icon-btn:hover,.load-btn:hover,.back-btn:hover,.copy-btn:hover{
+    border-color:#596372;
+    transform:translateY(-1px);
+  }
+
+  .content{
+    min-height:0;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .list-view{
+    min-height:0;
+    flex:1;
+    overflow:auto;
+    padding:20px;
+  }
+
+  .list-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    margin:4px 2px 14px;
+  }
+  .list-head h1{
+    font-size:20px;
+    margin:0;
+    font-weight:900;
+    letter-spacing:.04em;
+  }
+  .count{
+    font-size:12px;
+    color:var(--muted);
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+    gap:14px;
+    padding-bottom:25px;
+  }
+
+  .song-card{
+    position:relative;
+    min-height:150px;
+    padding:18px;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    background:linear-gradient(145deg,rgba(255,255,255,.025),rgba(255,255,255,.008));
+    cursor:pointer;
+    overflow:hidden;
+    transition:.2s ease;
+    box-shadow:0 10px 30px rgba(0,0,0,.14);
+  }
+  .song-card::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    opacity:0;
+    background:radial-gradient(circle at 0% 0%,rgba(217,255,90,.13),transparent 42%);
+    transition:.2s ease;
+  }
+  .song-card:hover{
+    transform:translateY(-3px);
+    border-color:#414956;
+    box-shadow:var(--shadow);
+  }
+  .song-card:hover::before{opacity:1}
+
+  .card-num{
+    font-size:11px;
+    color:#7d8795;
+    font-weight:900;
+    letter-spacing:.12em;
+    position:relative;
+  }
+  .card-title{
+    position:relative;
+    margin-top:14px;
+    font-size:23px;
+    line-height:1.2;
+    font-weight:900;
+    word-break:break-word;
+  }
+  .card-file{
+    position:relative;
+    margin-top:18px;
+    color:#697485;
+    font-size:11px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .empty{
+    display:grid;
+    place-items:center;
+    min-height:62vh;
+    text-align:center;
+    color:var(--muted);
+    padding:30px;
+  }
+  .empty-box{
+    max-width:650px;
+    border:1px dashed #303744;
+    border-radius:22px;
+    padding:38px 24px;
+    background:rgba(255,255,255,.01);
+  }
+  .empty h2{margin:0 0 10px;color:var(--text);font-size:24px}
+  .empty p{margin:0 0 20px;line-height:1.6}
+
+  .slideshow{
+    position:fixed;
+    inset:0;
+    z-index:100;
+    background:#050607;
+    display:none;
+    flex-direction:column;
+  }
+  .slideshow.show{display:flex}
+
+  .slide-top{
+    flex:0 0 auto;
+    min-height:70px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:12px 16px;
+    border-bottom:1px solid #1b1f26;
+    background:rgba(5,6,7,.72);
+    backdrop-filter:blur(14px);
+  }
+
+  .slide-top-left,.slide-top-right{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    min-width:0;
+  }
+
+  .back-btn{padding:0 13px;font-weight:800}
+  .slide-meta{
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+  }
+  .slide-meta-title{
+    font-size:15px;
+    font-weight:900;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:min(54vw,650px);
+  }
+  .slide-meta-sub{font-size:11px;color:#697485}
+
+  .copy-btn{
+    padding:0 14px;
+    font-weight:900;
+  }
+  .copy-btn.copied{border-color:var(--accent);color:var(--accent)}
+
+  .slide-stage{
+    flex:1;
+    min-height:0;
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:5vh 8vw 12vh;
+    overflow:hidden;
+  }
+
+  .slide-card{
+    width:min(1200px,92vw);
+    max-height:75vh;
+    overflow:auto;
+    padding:clamp(25px,5vw,70px);
+    border:1px solid #20252d;
+    border-radius:28px;
+    background:
+      linear-gradient(150deg,rgba(255,255,255,.024),rgba(255,255,255,.006)),
+      #0a0c0f;
+    box-shadow:var(--shadow);
+  }
+
+  .song-title{
+    font-size:clamp(40px,6vw,94px);
+    line-height:1.02;
+    font-weight:1000;
+    text-align:center;
+    margin:0 0 clamp(30px,5vh,60px);
+    letter-spacing:-.025em;
+    word-break:break-word;
+  }
+
+  .lyrics{
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+    text-align:center;
+  }
+  .lyric-line{
+    font-size:clamp(25px,3.3vw,52px);
+    line-height:1.28;
+    font-weight:800;
+    word-break:break-word;
+  }
+
+  .slide-controls{
+    position:absolute;
+    left:0;right:0;bottom:0;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:13px 16px calc(13px + env(safe-area-inset-bottom));
+    background:linear-gradient(to top,rgba(5,6,7,.96),rgba(5,6,7,.4),transparent);
+  }
+
+  .nav{
+    display:flex;gap:8px;
+  }
+  .nav button{
+    height:48px;
+    min-width:48px;
+    padding:0 15px;
+    border:1px solid #2b313b;
+    border-radius:14px;
+    background:#101318;
+    color:var(--text);
+    cursor:pointer;
+    font-weight:900;
+  }
+  .nav button:hover{border-color:#5d6877}
+  .nav button:disabled{opacity:.35;cursor:not-allowed}
+  .page{
+    font-size:12px;
+    color:#7f8997;
+    font-weight:800;
+    letter-spacing:.08em;
+  }
+
+  .toast{
+    position:fixed;
+    left:50%;
+    bottom:24px;
+    transform:translate(-50%,20px);
+    opacity:0;
+    pointer-events:none;
+    padding:11px 15px;
+    border:1px solid #2c333d;
+    border-radius:12px;
+    background:#11151b;
+    color:#fff;
+    box-shadow:var(--shadow);
+    transition:.2s ease;
+    z-index:300;
+    font-size:13px;
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+
+  @media (max-width:800px){
+    .topbar{height:auto;flex-wrap:wrap;padding:10px}
+    .brand{min-width:auto;flex:1}
+    .toolbar{width:100%}
+    .select{flex:1}
+    .load-btn{flex:1}
+    .grid{grid-template-columns:1fr 1fr}
+    .slide-stage{padding:3vh 4vw 13vh}
+    .slide-card{width:94vw;max-height:78vh;padding:26px 18px}
+    .song-title{font-size:clamp(32px,9vw,58px)}
+    .lyric-line{font-size:clamp(22px,6vw,38px)}
+    .slide-meta-title{max-width:45vw}
+  }
+
+  @media (max-width:550px){
+    .grid{grid-template-columns:1fr}
+    .brand{font-size:12px}
+    .toolbar{gap:6px}
+    .select,.load-btn{height:42px}
+    .search{height:44px}
+    .list-view{padding:12px}
+    .list-head{margin-top:2px}
+    .copy-btn{padding:0 10px}
+    .slide-top{padding:10px}
+  }
+</style>
+</head>
+
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">A</div>
+      <div>ALL SONG</div>
+    </div>
+
+    <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="7"></circle>
+        <path d="m20 20-3.5-3.5"></path>
+      </svg>
+      <input id="search" class="search" type="search" placeholder="Search song title..." autocomplete="off">
+    </div>
+
+    <div class="toolbar">
+      <select id="sort" class="select" aria-label="Sort songs">
+        <option value="title-asc">A → Z</option>
+        <option value="title-desc">Z → A</option>
+        <option value="file-asc">File name</option>
+        <option value="newest">Newest added</option>
+      </select>
+      <button id="loadFolder" class="load-btn">Load Songs</button>
+    </div>
+  </header>
+
+  <main class="content">
+    <section id="listView" class="list-view">
+      <div class="list-head">
+        <h1>Song Library</h1>
+        <div id="count" class="count">0 songs</div>
+      </div>
+
+      <div id="grid" class="grid"></div>
+
+      <div id="empty" class="empty">
+        <div class="empty-box">
+          <h2>Load your song JSON folder</h2>
+          <p>
+            Click <b>Load Songs</b> and choose:<br>
+            <b>D:\All-song-json\All-song-json-app\files</b>
+          </p>
+          <button class="load-btn" id="emptyLoad">Choose Folder</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<section id="slideshow" class="slideshow" aria-hidden="true">
+  <div class="slide-top">
+    <div class="slide-top-left">
+      <button class="back-btn" id="closeSlide">← Back</button>
+      <div class="slide-meta">
+        <div class="slide-meta-title" id="slideMetaTitle"></div>
+        <div class="slide-meta-sub" id="slideMetaSub"></div>
+      </div>
+    </div>
+    <div class="slide-top-right">
+      <button class="copy-btn" id="copyBtn">Copy text</button>
+    </div>
+  </div>
+
+  <div class="slide-stage">
+    <article class="slide-card">
+      <h1 id="songTitle" class="song-title"></h1>
+      <div id="lyrics" class="lyrics"></div>
+    </article>
+  </div>
+
+  <div class="slide-controls">
+    <div class="nav">
+      <button id="prevBtn" title="Previous song">← Previous</button>
+      <button id="nextBtn" title="Next song">Next →</button>
+    </div>
+    <div class="page" id="pageInfo">0 / 0</div>
+  </div>
+</section>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  "use strict";
+
+  const state = {
+    songs: [],
+    filtered: [],
+    current: -1,
+    dirHandle: null
+  };
+
+  const $ = (id) => document.getElementById(id);
+
+  const els = {
+    search: $("search"),
+    sort: $("sort"),
+    loadFolder: $("loadFolder"),
+    emptyLoad: $("emptyLoad"),
+    grid: $("grid"),
+    empty: $("empty"),
+    count: $("count"),
+    slideshow: $("slideshow"),
+    closeSlide: $("closeSlide"),
+    songTitle: $("songTitle"),
+    lyrics: $("lyrics"),
+    slideMetaTitle: $("slideMetaTitle"),
+    slideMetaSub: $("slideMetaSub"),
+    copyBtn: $("copyBtn"),
+    prevBtn: $("prevBtn"),
+    nextBtn: $("nextBtn"),
+    pageInfo: $("pageInfo"),
+    toast: $("toast")
+  };
+
+  function normalizeText(value) {
+    return String(value ?? "").replace(/\r/g, "").trim();
+  }
+
+  function songFromJson(data, fileName) {
+    const title = normalizeText(data?.title || "Untitled Song");
+
+    let lyrics = [];
+    if (Array.isArray(data?.lyrics)) {
+      lyrics = data.lyrics.map(normalizeText).filter(Boolean);
+    } else if (typeof data?.lyrics === "string") {
+      lyrics = data.lyrics.split(/\r?\n/).map(normalizeText).filter(Boolean);
+    }
+
+    return {
+      title,
+      lyrics,
+      fileName,
+      addedAt: Date.now() + Math.random()
+    };
+  }
+
+  async function readJsonFile(file) {
+    const text = await file.text();
+    return songFromJson(JSON.parse(text), file.name);
+  }
+
+  async function pickFolder() {
+    if (!("showDirectoryPicker" in window)) {
+      showToast("Use Chrome or Edge to load the song folder.");
+      return;
+    }
+
+    try {
+      const dir = await window.showDirectoryPicker({ mode: "read" });
+      state.dirHandle = dir;
+
+      const songs = [];
+
+      for await (const [name, handle] of dir.entries()) {
+        if (handle.kind !== "file" || !name.toLowerCase().endsWith(".json")) continue;
+
+        try {
+          const file = await handle.getFile();
+          const song = await readJsonFile(file);
+          songs.push(song);
+        } catch (err) {
+          console.warn("Skipped", name, err);
+        }
+      }
+
+      state.songs = songs;
+      applyFilterAndSort();
+      showToast(`${songs.length} song${songs.length === 1 ? "" : "s"} loaded`);
+    } catch (err) {
+      if (err?.name !== "AbortError") {
+        console.error(err);
+        showToast("Could not open the folder.");
+      }
+    }
+  }
+
+  function applyFilterAndSort() {
+    const query = normalizeText(els.search.value).toLocaleLowerCase();
+
+    state.filtered = state.songs.filter(song => {
+      return song.title.toLocaleLowerCase().includes(query)
+          || song.fileName.toLocaleLowerCase().includes(query);
+    });
+
+    switch (els.sort.value) {
+      case "title-desc":
+        state.filtered.sort((a,b) => b.title.localeCompare(a.title));
+        break;
+      case "file-asc":
+        state.filtered.sort((a,b) => a.fileName.localeCompare(b.fileName));
+        break;
+      case "newest":
+        state.filtered.sort((a,b) => b.addedAt - a.addedAt);
+        break;
+      default:
+        state.filtered.sort((a,b) => a.title.localeCompare(b.title));
+    }
+
+    renderList();
+  }
+
+  function renderList() {
+    els.grid.innerHTML = "";
+    els.count.textContent = `${state.filtered.length} song${state.filtered.length === 1 ? "" : "s"}`;
+
+    els.empty.style.display = state.filtered.length ? "none" : "grid";
+
+    state.filtered.forEach((song, i) => {
+      const card = document.createElement("article");
+      card.className = "song-card";
+      card.tabIndex = 0;
+      card.setAttribute("role", "button");
+
+      card.innerHTML = `
+        <div class="card-num">${String(i + 1).padStart(2, "0")}</div>
+        <div class="card-title"></div>
+        <div class="card-file"></div>
+      `;
+
+      card.querySelector(".card-title").textContent = song.title;
+      card.querySelector(".card-file").textContent = song.fileName;
+
+      card.addEventListener("click", () => openSong(i));
+      card.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          openSong(i);
+        }
+      });
+
+      els.grid.appendChild(card);
+    });
+  }
+
+  function openSong(index) {
+    if (!state.filtered.length) return;
+
+    state.current = Math.max(0, Math.min(index, state.filtered.length - 1));
+    renderSlide();
+
+    els.slideshow.classList.add("show");
+    els.slideshow.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    }
+  }
+
+  function closeSong() {
+    els.slideshow.classList.remove("show");
+    els.slideshow.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+
+    if (document.fullscreenElement && document.exitFullscreen) {
+      document.exitFullscreen().catch(() => {});
+    }
+  }
+
+  function renderSlide() {
+    const song = state.filtered[state.current];
+    if (!song) return;
+
+    els.songTitle.textContent = song.title;
+    els.slideMetaTitle.textContent = song.title;
+    els.slideMetaSub.textContent = song.fileName;
+
+    els.lyrics.innerHTML = "";
+    song.lyrics.forEach(line => {
+      const p = document.createElement("div");
+      p.className = "lyric-line";
+      p.textContent = line;
+      els.lyrics.appendChild(p);
+    });
+
+    els.pageInfo.textContent = `${state.current + 1} / ${state.filtered.length}`;
+    els.prevBtn.disabled = state.current <= 0;
+    els.nextBtn.disabled = state.current >= state.filtered.length - 1;
+  }
+
+  function move(step) {
+    const next = state.current + step;
+    if (next < 0 || next >= state.filtered.length) return;
+    state.current = next;
+    renderSlide();
+
+    document.querySelector(".slide-card")?.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+  }
+
+  async function copyCurrent() {
+    const song = state.filtered[state.current];
+    if (!song) return;
+
+    const text = [song.title, "", ...song.lyrics].join("\n");
+
+    try {
+      await navigator.clipboard.writeText(text);
+      els.copyBtn.textContent = "Copied ✓";
+      els.copyBtn.classList.add("copied");
+      showToast("Song text copied");
+      setTimeout(() => {
+        els.copyBtn.textContent = "Copy text";
+        els.copyBtn.classList.remove("copied");
+      }, 1400);
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+      showToast("Song text copied");
+    }
+  }
+
+  function showToast(message) {
+    els.toast.textContent = message;
+    els.toast.classList.add("show");
+    clearTimeout(showToast.timer);
+    showToast.timer = setTimeout(() => els.toast.classList.remove("show"), 1800);
+  }
+
+  els.loadFolder.addEventListener("click", pickFolder);
+  els.emptyLoad.addEventListener("click", pickFolder);
+  els.search.addEventListener("input", applyFilterAndSort);
+  els.sort.addEventListener("change", applyFilterAndSort);
+
+  els.closeSlide.addEventListener("click", closeSong);
+  els.prevBtn.addEventListener("click", () => move(-1));
+  els.nextBtn.addEventListener("click", () => move(1));
+  els.copyBtn.addEventListener("click", copyCurrent);
+
+  document.addEventListener("keydown", (e) => {
+    if (!els.slideshow.classList.contains("show")) return;
+
+    if (e.key === "Escape") closeSong();
+    else if (e.key === "ArrowLeft") move(-1);
+    else if (e.key === "ArrowRight") move(1);
+    else if (e.key === "c" || e.key === "C") copyCurrent();
+    else if (e.key === "Home") {
+      state.current = 0;
+      renderSlide();
+    } else if (e.key === "End") {
+      state.current = state.filtered.length - 1;
+      renderSlide();
+    }
+  });
+
+  // Allow dropping JSON files directly onto the page.
+  document.addEventListener("dragover", e => e.preventDefault());
+  document.addEventListener("drop", async (e) => {
+    e.preventDefault();
+    if (!e.dataTransfer?.files?.length) return;
+
+    const files = [...e.dataTransfer.files]
+      .filter(f => f.name.toLowerCase().endsWith(".json"));
+
+    if (!files.length) return;
+
+    const loaded = [];
+    for (const file of files) {
+      try {
+        loaded.push(await readJsonFile(file));
+      } catch (err) {
+        console.warn("Invalid JSON:", file.name, err);
+      }
+    }
+
+    state.songs = loaded;
+    applyFilterAndSort();
+    showToast(`${loaded.length} song${loaded.length === 1 ? "" : "s"} loaded`);
+  });
+})();
+</script>
+</body>
+</html>
