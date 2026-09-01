@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<title>PDF Viewer</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #111;
+    font-family: Arial, sans-serif;
+    touch-action: pan-y;
+}
+
+#viewer {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+
+#pdfCanvas {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    background: white;
+}
+
+/* Controls */
+.control {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 46px;
+    height: 70px;
+    border: none;
+    border-radius: 12px;
+    background: rgba(0,0,0,.35);
+    color: white;
+    font-size: 32px;
+    z-index: 10;
+    cursor: pointer;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+#prevBtn {
+    left: 8px;
+}
+
+#nextBtn {
+    right: 8px;
+}
+
+.control:active {
+    transform: translateY(-50%) scale(.92);
+}
+
+/* Page number */
+#pageInfo {
+    position: fixed;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,.45);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    z-index: 10;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+/* Loading */
+#loading {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    background: #111;
+    z-index: 20;
+    font-size: 14px;
+}
+
+/* Hide buttons at edges */
+.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+</style>
+</head>
+
+<body>
+
+<div id="viewer">
+    <canvas id="pdfCanvas"></canvas>
+</div>
+
+<button id="prevBtn" class="control">&#8249;</button>
+<button id="nextBtn" class="control">&#8250;</button>
+
+<div id="pageInfo"></div>
+<div id="loading">Loading PDF...</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs"
+        type="module"></script>
+
+<script type="module">
+
+import * as pdfjsLib from
+"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs";
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
+
+
+/* =========================
+   PDF FILE
+========================= */
+
+const PDF_URL = "https://thythet.com/qt/09-12-2026.pdf";
+
+
+/* =========================
+   ELEMENTS
+========================= */
+
+const canvas = document.getElementById("pdfCanvas");
+const ctx = canvas.getContext("2d", {
+    alpha: false
+});
+
+const viewer = document.getElementById("viewer");
+const prevBtn = document.getElementById("prevBtn");
+const nextBtn = document.getElementById("nextBtn");
+const pageInfo = document.getElementById("pageInfo");
+const loading = document.getElementById("loading");
+
+
+/* =========================
+   VARIABLES
+========================= */
+
+let pdf = null;
+let currentPage = 1;
+
+let rendering = false;
+let pendingPage = null;
+
+let renderTask = null;
+
+
+/* =========================
+   LOAD PDF
+========================= */
+
+async function loadPDF() {
+
+    try {
+
+        const task = pdfjsLib.getDocument({
+            url: PDF_URL,
+            disableAutoFetch: false,
+            disableStream: false
+        });
+
+        pdf = await task.promise;
+
+        loading.style.display = "none";
+
+        renderPage(currentPage);
+
+    } catch (error) {
+
+        console.error(error);
+
+        loading.textContent = "Cannot load PDF.";
+
+    }
+
+}
+
+
+/* =========================
+   RENDER PAGE
+========================= */
+
+async function renderPage(pageNumber) {
+
+    if (!pdf) return;
+
+    if (rendering) {
+        pendingPage = pageNumber;
+        return;
+    }
+
+    rendering = true;
+
+    try {
+
+        const page = await pdf.getPage(pageNumber);
+
+        const originalViewport = page.getViewport({
+            scale: 1
+        });
+
+
+        /* Available screen */
+
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
+
+
+        /* Calculate fit-to-screen scale */
+
+        const scaleX =
+            screenWidth / originalViewport.width;
+
+        const scaleY =
+            screenHeight / originalViewport.height;
+
+        const cssScale =
+            Math.min(scaleX, scaleY);
+
+
+        /*
+        Higher resolution for retina/mobile
+        Cap DPR for performance.
+        */
+
+        const dpr =
+            Math.min(window.devicePixelRatio || 1, 2);
+
+        const renderScale =
+            cssScale * dpr;
+
+
+        const viewport =
+            page.getViewport({
+                scale: renderScale
+            });
+
+
+        /* Real canvas resolution */
+
+        canvas.width =
+            Math.floor(viewport.width);
+
+        canvas.height =
+            Math.floor(viewport.height);
+
+
+        /* Visual CSS size */
+
+        canvas.style.width =
+            Math.floor(viewport.width / dpr) + "px";
+
+        canvas.style.height =
+            Math.floor(viewport.height / dpr) + "px";
+
+
+        /* Render */
+
+        renderTask = page.render({
+            canvasContext: ctx,
+            viewport: viewport
+        });
+
+        await renderTask.promise;
+
+        currentPage = pageNumber;
+
+        updateControls();
+
+    } catch (error) {
+
+        if (error?.name !== "RenderingCancelledException") {
+            console.error(error);
+        }
+
+    } finally {
+
+        rendering = false;
+
+        if (
+            pendingPage !== null &&
+            pendingPage !== currentPage
+        ) {
+
+            const next = pendingPage;
+
+            pendingPage = null;
+
+            renderPage(next);
+
+        } else {
+
+            pendingPage = null;
+
+        }
+
+    }
+
+}
+
+
+/* =========================
+   CONTROLS
+========================= */
+
+function updateControls() {
+
+    pageInfo.textContent =
+        currentPage + " / " + pdf.numPages;
+
+    prevBtn.classList.toggle(
+        "hidden",
+        currentPage <= 1
+    );
+
+    nextBtn.classList.toggle(
+        "hidden",
+        currentPage >= pdf.numPages
+    );
+
+}
+
+
+function nextPage() {
+
+    if (!pdf) return;
+
+    if (currentPage < pdf.numPages) {
+        renderPage(currentPage + 1);
+    }
+
+}
+
+
+function previousPage() {
+
+    if (!pdf) return;
+
+    if (currentPage > 1) {
+        renderPage(currentPage - 1);
+    }
+
+}
+
+
+nextBtn.addEventListener("click", nextPage);
+prevBtn.addEventListener("click", previousPage);
+
+
+/* =========================
+   SWIPE
+========================= */
+
+let startX = 0;
+let startY = 0;
+let touching = false;
+
+
+viewer.addEventListener(
+    "touchstart",
+    event => {
+
+        if (!event.touches.length) return;
+
+        startX = event.touches[0].clientX;
+        startY = event.touches[0].clientY;
+
+        touching = true;
+
+    },
+    { passive: true }
+);
+
+
+viewer.addEventListener(
+    "touchend",
+    event => {
+
+        if (!touching) return;
+
+        touching = false;
+
+        const endX =
+            event.changedTouches[0].clientX;
+
+        const endY =
+            event.changedTouches[0].clientY;
+
+
+        const distanceX =
+            endX - startX;
+
+        const distanceY =
+            endY - startY;
+
+
+        /*
+        Ignore vertical movement.
+        Minimum horizontal swipe: 50px
+        */
+
+        if (
+            Math.abs(distanceX) > 50 &&
+            Math.abs(distanceX) >
+            Math.abs(distanceY)
+        ) {
+
+            /* Swipe left */
+            if (distanceX < 0) {
+                nextPage();
+            }
+
+            /* Swipe right */
+            else {
+                previousPage();
+            }
+
+        }
+
+    },
+    { passive: true }
+);
+
+
+/* =========================
+   KEYBOARD
+========================= */
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key === "ArrowRight" ||
+            event.key === "PageDown"
+        ) {
+            nextPage();
+        }
+
+        if (
+            event.key === "ArrowLeft" ||
+            event.key === "PageUp"
+        ) {
+            previousPage();
+        }
+
+    }
+);
+
+
+/* =========================
+   SCREEN ROTATION / RESIZE
+========================= */
+
+let resizeTimer;
+
+window.addEventListener(
+    "resize",
+    () => {
+
+        clearTimeout(resizeTimer);
+
+        resizeTimer = setTimeout(() => {
+
+            if (pdf) {
+                renderPage(currentPage);
+            }
+
+        }, 150);
+
+    }
+);
+
+
+/* =========================
+   START
+========================= */
+
+loadPDF();
+
+</script>
+
+</body>
+</html>
