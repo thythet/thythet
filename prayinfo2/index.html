@@ -625,8 +625,24 @@ table{width:100%;border-collapse:collapse;table-layout:fixed;border:1px solid va
   --ps-bg:#00465a;--ps-bg2:#003847;--ps-card:#f8fafb;--ps-card2:#ffffff;--ps-text:#263238;
   --ps-muted:rgba(38,50,56,.58);--ps-soft:rgba(255,255,255,.72);
   --ps-line:rgba(0,54,70,.12);--ps-blue:#17a9c6;--ps-green:#11b872;
-  --ps-danger:#f35b6b;--ps-width:390px;
+  --ps-danger:#f35b6b;--ps-width:390px;--ps-primary:#10acc2;--ps-primary-strong:#008aa2;
+  --ps-accent:#ffd227;--ps-hover:#ef4057;--ps-success:#19a865;--ps-active:#d3ffdb;
+  --ps-tint:#eaf8fa;--ps-carousel:rgba(166,215,247,.44);--ps-surface:#fff;
+  --ps-surface-soft:#f7fbfc;--ps-control:#eef7f9;--ps-control-text:#24414a;
 }
+html[data-theme="forest"]{--ps-bg:#164b3d;--ps-bg2:#0b332c;--ps-line:rgba(18,76,58,.15);--ps-primary:#2a9d8f;--ps-primary-strong:#17776d;--ps-accent:#f4bf4f;--ps-success:#279c65;--ps-active:#d8f5df;--ps-tint:#e8f7f1;--ps-carousel:rgba(145,197,171,.42)}
+html[data-theme="rose"]{--ps-bg:#73334b;--ps-bg2:#472238;--ps-line:rgba(109,43,70,.15);--ps-primary:#d95a76;--ps-primary-strong:#ad3f5a;--ps-accent:#f1c453;--ps-success:#249b79;--ps-active:#ffe0e8;--ps-tint:#fff0f4;--ps-carousel:rgba(222,153,177,.42)}
+html[data-theme="sky"]{--ps-bg:#176b87;--ps-bg2:#0b526b;--ps-line:rgba(24,102,134,.14);--ps-primary:#3d9fc8;--ps-primary-strong:#19799f;--ps-accent:#ffd166;--ps-success:#20a978;--ps-active:#dff4ff;--ps-tint:#eaf7fd;--ps-carousel:rgba(154,211,236,.44)}
+html[data-theme="mint"]{--ps-bg:#22695d;--ps-bg2:#134b44;--ps-line:rgba(29,102,88,.14);--ps-primary:#36ad98;--ps-primary-strong:#197b6b;--ps-accent:#f1bf52;--ps-success:#2b9f68;--ps-active:#ddf7ef;--ps-tint:#e9f8f4;--ps-carousel:rgba(155,210,194,.42)}
+html[data-theme="coral"]{--ps-bg:#88414d;--ps-bg2:#5a2935;--ps-line:rgba(125,55,67,.15);--ps-primary:#e96c6c;--ps-primary-strong:#bd4d57;--ps-accent:#49b6b2;--ps-success:#269978;--ps-active:#ffe3e1;--ps-tint:#fff1ef;--ps-carousel:rgba(229,159,154,.42)}
+html[data-theme="lavender"]{--ps-bg:#594a70;--ps-bg2:#382f4d;--ps-line:rgba(84,67,111,.15);--ps-primary:#8871bf;--ps-primary-strong:#66509b;--ps-accent:#f1bf52;--ps-success:#2c9c78;--ps-active:#eee8ff;--ps-tint:#f4f0ff;--ps-carousel:rgba(190,174,220,.42)}
+html[data-theme="mono"]{--ps-bg:#465057;--ps-bg2:#292f34;--ps-line:rgba(62,73,80,.15);--ps-primary:#687b86;--ps-primary-strong:#465963;--ps-accent:#e7b94f;--ps-success:#268e68;--ps-active:#e7eef1;--ps-tint:#f0f4f5;--ps-carousel:rgba(174,188,196,.4)}
+html[data-theme="midnight"]{--ps-bg:#1b2b3a;--ps-bg2:#101a26;--ps-line:rgba(255,255,255,.13);--ps-primary:#3a9fcb;--ps-primary-strong:#72c9ee;--ps-accent:#f5bd2e;--ps-success:#27a977;--ps-active:#243f56;--ps-tint:#243746;--ps-carousel:rgba(77,116,139,.4);--ps-surface:#182633;--ps-surface-soft:#213442;--ps-control:#263c4b;--ps-control-text:#eef8fc;--ps-text:#f1f7fa;--ps-muted:rgba(226,238,244,.62)}
+html[data-theme="apple-dark"]{--ps-bg:#000;--ps-bg2:#09090a;--ps-line:rgba(255,255,255,.14);--ps-primary:#0a84ff;--ps-primary-strong:#64d2ff;--ps-accent:#ffd60a;--ps-hover:#ff453a;--ps-success:#30d158;--ps-active:#17395c;--ps-tint:#2c2c2e;--ps-carousel:rgba(58,58,60,.8);--ps-surface:#1c1c1e;--ps-surface-soft:#2c2c2e;--ps-control:#3a3a3c;--ps-control-text:#f5f5f7;--ps-text:#f5f5f7;--ps-muted:rgba(235,235,245,.6)}
+html[data-theme="amoled"]{--ps-bg:#000;--ps-bg2:#000;--ps-line:rgba(255,255,255,.13);--ps-primary:#00c987;--ps-primary-strong:#55efb5;--ps-accent:#ffcc00;--ps-success:#2fd089;--ps-active:#123d30;--ps-tint:#171b19;--ps-carousel:rgba(28,38,34,.92);--ps-surface:#0d0f0e;--ps-surface-soft:#171a18;--ps-control:#202522;--ps-control-text:#f4fff9;--ps-text:#f4fff9;--ps-muted:rgba(225,243,234,.62)}
+html[data-theme="graphite"]{--ps-bg:#29292b;--ps-bg2:#161618;--ps-line:rgba(255,255,255,.13);--ps-primary:#64d2ff;--ps-primary-strong:#9adfff;--ps-accent:#ff9f0a;--ps-success:#32d298;--ps-active:#31424b;--ps-tint:#343437;--ps-carousel:rgba(71,71,75,.78);--ps-surface:#242426;--ps-surface-soft:#303033;--ps-control:#3a3a3d;--ps-control-text:#f6f6f8;--ps-text:#f6f6f8;--ps-muted:rgba(235,235,245,.58)}
+html[data-theme="aurora"]{--ps-bg:#102a2e;--ps-bg2:#07191d;--ps-line:rgba(255,255,255,.13);--ps-primary:#3ddc97;--ps-primary-strong:#79f1bd;--ps-accent:#72d6ff;--ps-success:#3ddc97;--ps-active:#20463d;--ps-tint:#18383a;--ps-carousel:rgba(42,86,85,.75);--ps-surface:#132e33;--ps-surface-soft:#1b3a3e;--ps-control:#24474a;--ps-control-text:#edfff8;--ps-text:#edfff8;--ps-muted:rgba(220,244,236,.62)}
+html[data-theme="crimson-night"]{--ps-bg:#351922;--ps-bg2:#190d13;--ps-line:rgba(255,255,255,.13);--ps-primary:#ff6482;--ps-primary-strong:#ff9bad;--ps-accent:#f6c85f;--ps-success:#31b68a;--ps-active:#512532;--ps-tint:#42242d;--ps-carousel:rgba(91,45,58,.78);--ps-surface:#2c1920;--ps-surface-soft:#3a222b;--ps-control:#472b35;--ps-control-text:#fff5f7;--ps-text:#fff5f7;--ps-muted:rgba(248,226,232,.62)}
 html,body{background:linear-gradient(180deg,var(--ps-bg),var(--ps-bg2))!important;color:#fff!important}
 body,.login-wrap,.login-wrap *,#app,#app *,#printArea,#printArea *{font-family:'Krasar',sans-serif!important}
 #app i[class^="ri-"],#app i[class*=" ri-"],.login-wrap i[class^="ri-"],.login-wrap i[class*=" ri-"]{font-family:"remixicon"!important}
@@ -634,7 +650,7 @@ body{overflow-x:hidden}
 body::before,body::after{display:none!important}
 #app.app{width:min(100%,430px)!important;max-width:430px!important;margin:0 auto!important;padding:10px 14px 88px!important;background:transparent!important}
 #app>.nav{display:none!important}
-.ps-topbar{position:sticky;top:0;z-index:35;margin:0 -14px 14px;padding:12px 14px 10px;background:var(--ps-bg);overflow-anchor:none;transition:padding .24s ease,box-shadow .24s ease}
+.ps-topbar{position:sticky;top:0;z-index:35;margin:0 -14px 14px;padding:12px 14px 10px;background:var(--ps-bg);border-radius:0 0 30px 30px;overflow-anchor:none;transition:padding .24s ease,box-shadow .24s ease}
 .ps-topbar-inner{position:relative;width:min(100%,var(--ps-width));min-height:112px;margin:0 auto;transition:min-height .28s cubic-bezier(.22,.61,.36,1)}
 .ps-profile-chip{position:absolute;left:0;top:48px;display:flex;align-items:center;gap:14px;min-width:0;width:100%;height:64px;border:0;background:transparent;color:#fff;padding:4px 0 0;text-align:left;cursor:pointer;transition:top .28s cubic-bezier(.22,.61,.36,1),width .28s ease,height .28s ease,padding .28s ease,gap .28s ease}
 .ps-profile-avatar{position:relative;width:60px;height:60px;border-radius:50%;border:3px solid rgba(255,255,255,.92);background:#d9e3ea;color:#006f84;font-size:28px;font-weight:900;display:grid;place-items:center;flex:0 0 60px;overflow:visible;z-index:1;transition:width .28s cubic-bezier(.22,.61,.36,1),height .28s cubic-bezier(.22,.61,.36,1),flex-basis .28s cubic-bezier(.22,.61,.36,1),border-width .28s ease,font-size .28s ease}
@@ -776,7 +792,7 @@ html[lang="km"] .login-role-option{gap:4px;padding:7px 4px;font-size:12px}
 .btn:hover i,.manager-actions .btn:hover i{color:#fff!important}
 .app-brand-settings{margin-bottom:var(--gap)!important}.app-brand-settings textarea{min-height:112px;resize:vertical}.settings-head{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:var(--gap)!important;margin-bottom:var(--gap)!important}.settings-head h3{margin:0!important}
 .form-list-page{display:grid!important;gap:var(--gap)!important}.form-list-head{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:var(--gap)!important}.form-list-title{font-size:24px;font-weight:900;color:#fff}.form-list-search{position:relative;margin:0!important}.form-list-search i{color:#0098b1!important}.form-list-search .input-dark{width:100%;height:44px;border:1px solid rgba(255,255,255,.7)!important;border-radius:var(--media-radius)!important;background:#fff!important;color:var(--ps-text)!important;padding:9px 14px 9px 40px!important;box-shadow:0 8px 20px rgba(0,30,42,.1)}.form-list-search .input-dark::placeholder{color:#8a989d}.form-list-shell{display:grid!important;gap:var(--gap)!important}.form-year{background:#fff!important;color:var(--ps-text)!important;border:1px solid rgba(255,255,255,.7)!important;border-radius:var(--card-radius)!important;overflow:hidden!important}.form-year-toggle{width:100%;border:0;background:#fff;color:var(--ps-text);display:flex;align-items:center;justify-content:space-between;padding:16px 18px;font-size:22px;font-weight:900;cursor:pointer}.form-year-toggle i{font-size:24px}.form-year-body{display:grid;gap:var(--gap);padding:0 var(--gap) var(--gap)}.form-month{display:grid;gap:8px;border-radius:var(--media-radius);background:#f7fbfc;border:1px solid var(--ps-line);padding:var(--gap)}.form-month-title{font-weight:900;color:#25343a;font-size:18px}.form-week{display:grid;gap:7px}.form-week-title{font-size:13px;font-weight:900;color:#7b8a90}.form-list-row{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:8px;padding:10px;border-radius:var(--avatar-radius);background:#fff;border:1px solid var(--ps-line);color:var(--ps-text)}.form-list-avatar{width:44px;height:44px;border-radius:50%!important;background:#eaf8fa;color:#007d95;display:grid;place-items:center;font-size:22px;font-weight:900;border:2px solid #fff;overflow:hidden}.form-list-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%!important;display:block}.form-list-row-main{min-width:0}.form-list-row-title{font-size:14px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.form-list-row-meta{font-size:12px;color:#78868c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.form-list-row-actions{display:flex;align-items:center;gap:7px;flex-wrap:nowrap}.form-list-pastor-check{width:28px;height:28px;flex:0 0 28px;border-radius:50%;display:grid;place-items:center;background:#19a865;color:#fff;box-shadow:0 3px 10px rgba(25,168,101,.26)}.form-list-pastor-check.hidden{display:none!important}.form-list-pastor-check i{font-size:17px}.form-list-action{width:34px;height:34px;border:0;border-radius:var(--avatar-radius);display:grid;place-items:center;background:#eaf8fa;color:#0098b1;cursor:pointer}.form-list-action.share{background:#fff1f3;color:#ef4057}.form-list-empty{background:#fff;border-radius:var(--card-radius);padding:24px;color:var(--ps-muted);text-align:center}
-.form-list-action.delete{background:#fff1f3;color:#ef4057}.form-list-action:disabled{opacity:.6;cursor:not-allowed}
+.form-search-match{background:transparent;color:#d39d00;font-weight:900;padding:0}.form-list-action.delete{background:#fff1f3;color:#ef4057}.form-list-action:disabled{opacity:.6;cursor:not-allowed}
 .editor-forms-overlay{position:fixed!important;inset:0!important;z-index:9000!important;display:grid!important;place-items:center!important;padding:16px!important;background:rgba(0,30,40,.72)!important}
 .editor-forms-overlay.hidden{display:none!important}
 .editor-forms-dialog{width:min(100%,410px)!important;max-height:min(78vh,680px)!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;padding:var(--gap)!important;border-radius:20px!important;background:#fff!important;border:1px solid rgba(255,255,255,.8)!important;box-shadow:0 24px 58px rgba(0,25,34,.3)!important}
@@ -806,24 +822,40 @@ html[lang="km"] .login-role-option{gap:4px;padding:7px 4px;font-size:12px}
 .home-area-name{width:100%!important;font-size:14px!important;font-weight:900!important;line-height:1.25!important;display:-webkit-box!important;-webkit-line-clamp:3!important;-webkit-box-orient:vertical!important;overflow:hidden!important;overflow-wrap:anywhere!important}
 .editor-member-carousel-section{margin-top:0!important}
 .editor-member-carousel-section .home-area-carousel-title{display:flex!important;align-items:center!important;justify-content:space-between!important}
+.editor-new-member-btn{flex:0 0 72px!important;width:72px!important;height:34px!important;min-height:34px!important;padding:6px 10px!important;border:1px solid #ffd227!important;border-radius:var(--avatar-radius)!important;background:#ffd227!important;color:#263238!important;font-size:12px!important;font-weight:900!important;line-height:1!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;cursor:pointer!important}
+.editor-new-member-btn:hover,.editor-new-member-btn:focus-visible{background:#ef4057!important;border-color:#ef4057!important;color:#fff!important}
+.editor-new-member-btn:disabled{opacity:.48!important;cursor:not-allowed!important}
 .editor-member-card{height:98px!important}
 .editor-member-card .home-area-name{-webkit-line-clamp:2!important}
 .editor-member-date{width:100%;font-size:11px;font-weight:800;line-height:1.5;color:var(--ps-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .editor-member-card:hover .editor-member-date{color:#ef4057!important}
+.editor-member-card.birthday-member-card{position:relative!important;background:linear-gradient(145deg,#fff9d8 0%,#ffdd72 58%,#e7ae2c 100%)!important;border-color:#f2c248!important;color:#493409!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.48),0 6px 16px rgba(176,116,0,.2)!important}
+.editor-member-card.birthday-member-card:hover{border-color:#ef4057!important;color:#7a3700!important}
+.birthday-member-card .editor-member-date{color:#76520d!important}
+.birthday-member-card:hover .editor-member-date{color:#7a3700!important}
+.birthday-cake-icon{position:absolute!important;top:7px!important;right:7px!important;width:28px!important;height:28px!important;display:grid!important;place-items:center!important;color:#b66d00!important;font-size:24px!important;line-height:1!important;text-shadow:0 1px 0 rgba(255,255,255,.72)!important;pointer-events:none!important}
 #ownMembersBox{display:grid!important;gap:var(--gap)!important}
 #ownMembersBox .member-row{flex-wrap:wrap!important;background:#f7fbfc!important;color:var(--ps-text)!important;border:1px solid var(--ps-line)!important;border-radius:var(--card-radius)!important;padding:var(--gap)!important;margin:0!important;overflow:hidden!important}
+#ownMembersBox .member-photo-control{position:relative!important;width:44px!important;height:44px!important;flex:0 0 44px!important}
+#ownMembersBox .member-photo-avatar{width:44px!important;height:44px!important;border-radius:50%!important;display:grid!important;place-items:center!important;overflow:hidden!important;background:#10acc2;color:#fff;font-size:14px;font-weight:900!important}
+#ownMembersBox .member-photo-avatar img{width:100%!important;height:100%!important;object-fit:cover!important;display:block!important}
+#ownMembersBox .member-photo-upload{position:absolute!important;right:-4px!important;bottom:-4px!important;width:22px!important;height:22px!important;border:2px solid #fff!important;border-radius:50%!important;background:#ffd227!important;color:#5c4300!important;display:grid!important;place-items:center!important;cursor:pointer!important;z-index:2!important}
+#ownMembersBox .member-photo-upload i{font-size:12px!important}
+#ownMembersBox .member-photo-upload.uploading{opacity:.55!important;pointer-events:none!important}
 #ownMembersBox .member-name.own-mem{flex:1 0 100%!important;min-width:0!important;color:var(--ps-text)!important;border-radius:var(--media-radius)!important}
 #ownMembersBox .birth-wrap{flex:1 1 auto!important;min-width:0!important}
 #ownMembersBox .birth-wrap .input-light{border-radius:var(--media-radius)!important}
-#ownMembersBox .member-row:not(.editing){display:grid!important;grid-template-columns:1fr auto!important;align-items:center!important;padding:8px 10px!important;border-radius:var(--media-radius)!important}
+#ownMembersBox .member-row:not(.editing){display:grid!important;grid-template-columns:44px minmax(0,1fr) auto!important;align-items:center!important;gap:9px!important;padding:8px 10px!important;border-radius:var(--media-radius)!important}
 #ownMembersBox .member-row:not(.editing) .member-compact{display:grid!important;grid-template-columns:1fr auto!important;align-items:center!important;gap:8px!important;min-width:0}
+#ownMembersBox .member-row:not(.editing) .member-photo-upload{display:none!important}
 #ownMembersBox .member-row:not(.editing) .member-compact-name{font-weight:900;color:var(--ps-text)!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #ownMembersBox .member-row:not(.editing) .member-compact-date{font-size:12px;color:#819096!important;white-space:nowrap}
 #ownMembersBox .member-row:not(.editing) .member-edit-one{width:38px;height:38px;border:0;border-radius:var(--avatar-radius)!important;background:#eaf8fa!important;color:#10acc2!important;display:grid!important;place-items:center!important;cursor:pointer}
 #ownMembersBox .member-row:not(.editing) .member-edit-one i{font-size:18px!important}
 #ownMembersBox .member-row:not(.editing) .member-editor{display:none!important}
 #ownMembersBox .member-row.editing .member-compact{display:none!important}
-#ownMembersBox .member-row.editing .member-editor{display:flex!important;flex-wrap:wrap!important;gap:8px!important;width:100%!important}
+#ownMembersBox .member-row.editing .member-edit-one{display:none!important}
+#ownMembersBox .member-row.editing .member-editor{display:flex!important;flex:1 1 230px!important;flex-wrap:wrap!important;gap:8px!important;width:auto!important;min-width:0!important}
 .member-done-one{width:42px;min-height:42px;border:0;border-radius:12px;background:#eaf8fa;color:#10acc2;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}.member-done-one i{font-size:20px}
 .area-members-section{display:grid!important;gap:var(--gap)!important}
 .area-members-toggle{width:100%;border:1px solid var(--ps-line)!important;border-radius:var(--media-radius)!important;background:#f7fbfc!important;color:var(--ps-text)!important;display:flex!important;align-items:center!important;justify-content:space-between!important;padding:12px 14px!important;font-weight:900!important;cursor:pointer}
@@ -839,13 +871,44 @@ html[lang="km"] .login-role-option{gap:4px;padding:7px 4px;font-size:12px}
 .shell{background:#f7fbfc!important;border:1px solid rgba(255,255,255,.7)!important;border-radius:var(--media-radius)!important;padding:8px!important;overflow:hidden!important}
 .form-bottom-actions{display:flex;gap:8px;margin:10px 0 0}.form-bottom-actions .btn{flex:1;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:6px}
 /* The paper itself remains white and unchanged. */
-.pro-account{border-radius:var(--card-radius)!important;padding:30px!important;background:#fff!important}.pro-profile{border-radius:var(--media-radius)!important;padding:0!important;display:flex!important;align-items:center!important;gap:14px!important;background:transparent!important;border:0!important}.pro-avatar-wrap{position:relative;flex:0 0 auto}.pro-avatar{position:relative;width:58px!important;height:58px!important;border-radius:var(--avatar-radius)!important;background:#eaf8fa!important;color:#006f84;font-size:24px;font-weight:900;display:grid!important;place-items:center!important;overflow:hidden!important}.pro-avatar img{width:100%;height:100%;object-fit:cover;display:block}.avatar-edit-btn{position:absolute;right:-8px;top:-8px;width:25px;height:25px;border-radius:50%;border:2px solid #fff;background:#10acc2;color:#fff;display:grid;place-items:center;cursor:pointer;z-index:3}.avatar-edit-btn i{font-size:13px!important}.pro-profile-copy{min-width:0;flex:1}.pro-profile-name{font-size:20px!important;line-height:1.2!important;color:var(--ps-text)!important}.pro-profile-email{font-size:14px!important;color:#5f7078!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.profile-upload-status{margin-top:10px;min-height:18px;font-size:12px;color:#667780}.pro-account-list{display:grid;gap:10px;margin-top:22px!important;border:0!important;border-radius:0!important;overflow:visible!important}.pro-account-row{width:100%;border:1px solid #dfe7ea!important;border-radius:var(--media-radius)!important;padding:12px 14px!important;display:flex!important;justify-content:space-between!important;align-items:center!important;gap:8px!important;background:#fff!important;font:inherit;text-align:left}.pro-account-row span{color:#6c7b83!important}.pro-account-row b{color:var(--ps-text)!important;margin-left:auto}.account-app-row{cursor:default}.account-app-row.editable{cursor:pointer}.account-app-row.editable:hover,.account-app-row.active{background:#eaf8fa!important;border-color:rgba(16,172,194,.34)!important}.account-app-edit{display:none;color:#10acc2;font-size:18px}.account-app-row.editable .account-app-edit{display:block}.account-storage-row{cursor:pointer!important}.account-storage-row:hover,.account-storage-row.active{background:#eefaf4!important;border-color:#bfe8d5!important}.account-storage-row i{color:#19a865!important;font-size:18px}.account-storage-row.connected b{color:#138855!important}.pro-app-brand-editor,.pro-storage-setup{margin-top:var(--gap)!important;margin-bottom:0!important;padding:var(--gap)!important;border:1px solid #dfe7ea!important;border-radius:var(--media-radius)!important;background:#f7fbfc!important}.pro-app-brand-editor .grid2,.pro-storage-setup .grid2{gap:var(--gap)!important}.pro-app-brand-editor #saveAppBrandBtn,.pro-storage-setup #saveStorageSetupBtn{margin-top:var(--gap)!important;width:100%;min-height:44px;border-radius:var(--media-radius)!important}.storage-setup-actions{display:flex!important;gap:8px!important;margin-top:var(--gap)!important}.storage-setup-actions .btn{flex:1!important;min-width:0!important}.storage-setup-note{margin-top:9px;color:#718088;font-size:11px;line-height:1.45;text-align:center}.pro-account .btn.danger{background:#ef4057!important;border-color:#ef4057!important;color:#fff!important;border-radius:var(--media-radius)!important;font-weight:900!important}
+.pro-account{border-radius:var(--card-radius)!important;padding:30px!important;background:#fff!important}.pro-profile{border-radius:var(--media-radius)!important;padding:0!important;display:flex!important;align-items:center!important;gap:14px!important;background:transparent!important;border:0!important}.pro-avatar-wrap{position:relative;flex:0 0 auto}.pro-avatar{position:relative;width:58px!important;height:58px!important;border-radius:var(--avatar-radius)!important;background:#eaf8fa!important;color:#006f84;font-size:24px;font-weight:900;display:grid!important;place-items:center!important;overflow:hidden!important}.pro-avatar img{width:100%;height:100%;object-fit:cover;display:block}.avatar-edit-btn{position:absolute;right:-8px;top:-8px;width:25px;height:25px;border-radius:50%;border:2px solid #fff;background:#10acc2;color:#fff;display:grid;place-items:center;cursor:pointer;z-index:3}.avatar-edit-btn i{font-size:13px!important}.pro-profile-copy{min-width:0;flex:1}.pro-profile-name{font-size:20px!important;line-height:1.2!important;color:var(--ps-text)!important}.pro-profile-email{font-size:14px!important;color:#5f7078!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.profile-upload-status{margin-top:10px;min-height:18px;font-size:12px;color:#667780}.pro-account-list{display:grid;gap:10px;margin-top:22px!important;border:0!important;border-radius:0!important;overflow:visible!important}.pro-account-row{width:100%;border:1px solid #dfe7ea!important;border-radius:var(--media-radius)!important;padding:12px 14px!important;display:flex!important;justify-content:space-between!important;align-items:center!important;gap:8px!important;background:#fff!important;font:inherit;text-align:left}.pro-account-row span{color:#6c7b83!important}.pro-account-row b{color:var(--ps-text)!important;margin-left:auto}.account-app-row{cursor:pointer}.account-app-row:hover,.account-app-row.active{background:#eaf8fa!important;border-color:rgba(16,172,194,.34)!important}.account-app-edit{display:none;color:#10acc2;font-size:18px}.account-app-row.editable .account-app-edit{display:block}.account-storage-row{cursor:pointer!important}.account-storage-row:hover,.account-storage-row.active{background:#eefaf4!important;border-color:#bfe8d5!important}.account-storage-row i{color:#19a865!important;font-size:18px}.account-storage-row.connected b{color:#138855!important}.pro-app-brand-editor{margin-top:var(--gap)!important;margin-bottom:0!important;padding:var(--gap)!important;border:1px solid #dfe7ea!important;border-radius:var(--media-radius)!important;background:#f7fbfc!important}.pro-app-brand-editor .grid2{gap:var(--gap)!important}.pro-app-brand-editor #saveAppBrandBtn{margin-top:var(--gap)!important;width:100%;min-height:44px;border-radius:var(--media-radius)!important}.storage-setup-actions{display:flex!important;flex-wrap:wrap!important;gap:8px!important;margin-top:var(--gap)!important}.storage-setup-actions .btn{flex:1 1 112px!important;min-width:0!important}.storage-setup-note{margin-top:9px;color:#718088;font-size:11px;line-height:1.45;text-align:center}.pro-account .btn.danger{background:#ef4057!important;border-color:#ef4057!important;color:#fff!important;border-radius:var(--media-radius)!important;font-weight:900!important}
+.account-modal-open{overflow:hidden!important}.account-modal-overlay{position:fixed!important;inset:0!important;z-index:10020!important;display:grid!important;place-items:center!important;padding:16px!important;background:rgba(0,35,46,.72)!important}.account-modal-overlay.hidden{display:none!important}.account-modal-dialog{width:min(100%,390px)!important;max-height:min(82dvh,720px)!important;overflow:auto!important;padding:16px!important;border:1px solid rgba(255,255,255,.78)!important;border-radius:var(--card-radius)!important;background:#fff!important;color:var(--ps-text)!important;box-shadow:0 24px 60px rgba(0,27,38,.3)!important}.account-modal-dialog .settings-head{position:sticky!important;top:-16px!important;z-index:3!important;margin:-16px -16px 12px!important;padding:14px 16px 10px!important;background:#fff!important}.account-modal-dialog .settings-head h3{margin:0!important}.storage-modal-toolbar{display:flex!important;justify-content:flex-end!important;margin-bottom:10px!important}.storage-list{display:grid!important;gap:8px!important}.storage-list-empty{padding:16px!important;border:1px dashed #cbd9de!important;border-radius:var(--media-radius)!important;color:var(--ps-muted)!important;text-align:center!important}.storage-list-item{display:grid!important;grid-template-columns:minmax(0,1fr) 38px!important;align-items:center!important;gap:7px!important;padding:6px!important;border:1px solid #dfe7ea!important;border-radius:var(--media-radius)!important;background:#f7fbfc!important}.storage-list-item.active{border-color:#19a865!important;background:#eefaf4!important;box-shadow:inset 3px 0 #19a865!important}.storage-list-select{min-width:0!important;border:0!important;background:transparent!important;padding:7px 8px!important;text-align:left!important;color:var(--ps-text)!important;cursor:pointer!important}.storage-list-name,.storage-list-cloud{display:block!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}.storage-list-name{font-size:14px!important;font-weight:900!important}.storage-list-cloud{margin-top:2px!important;color:var(--ps-muted)!important;font-size:11px!important}.storage-list-edit{width:36px!important;height:36px!important;border:0!important;border-radius:var(--avatar-radius)!important;background:#eaf8fa!important;color:#008aa2!important;display:grid!important;place-items:center!important;cursor:pointer!important}.storage-editor{margin-top:10px!important;padding-top:10px!important;border-top:1px solid #dfe7ea!important}.storage-editor .grid2{display:grid!important;grid-template-columns:1fr!important;gap:9px!important}.app-details-copy{display:grid!important;gap:14px!important;color:#3f4d53!important;font-size:15px!important;line-height:1.75!important}.app-details-copy p{margin:0!important}.app-details-credit{padding-top:12px!important;border-top:1px solid #dfe7ea!important;color:#64757d!important}
 .account-recovery-row{cursor:pointer!important}.account-recovery-row:hover,.account-recovery-row.active{background:#eefaf4!important;border-color:#bfe8d5!important}.account-recovery-row i{color:#19a865!important;font-size:18px}.account-recovery-row.has-items b{color:#138855!important}.pro-recovery-panel{margin-top:var(--gap)!important;padding:var(--gap)!important;border:1px solid #dfe7ea!important;border-radius:var(--media-radius)!important;background:#f7fbfc!important}.recovery-list{display:grid;gap:8px}.recovery-item{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;padding:10px;border:1px solid #dfe7ea;border-radius:var(--avatar-radius);background:#fff;min-width:0}.recovery-item-copy{min-width:0}.recovery-item-title{font-size:14px;font-weight:900;color:var(--ps-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.recovery-item-meta{font-size:11px;color:var(--ps-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.recovery-restore-btn{width:36px;height:36px;border:0;border-radius:var(--avatar-radius);background:#e9fbf1;color:#138855;display:grid;place-items:center;cursor:pointer}.recovery-restore-btn i{font-size:19px}.recovery-restore-btn:disabled{opacity:.6;cursor:not-allowed}
+.account-settings-row{cursor:pointer!important}.account-settings-row:hover,.account-settings-row.active{background:var(--ps-tint)!important;border-color:color-mix(in srgb,var(--ps-primary) 38%,transparent)!important}.account-settings-row b,.account-settings-row i{color:var(--ps-primary-strong)!important}.account-settings-row i{font-size:18px!important}.appearance-intro{margin:0 0 12px;color:var(--ps-muted);font-size:12px}.appearance-theme-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.appearance-theme-option{position:relative;min-width:0;border:2px solid #dfe7ea;border-radius:var(--avatar-radius);background:#f7fbfc;color:var(--ps-text);padding:7px;text-align:left;cursor:pointer}.appearance-theme-option:hover{border-color:var(--ps-primary)}.appearance-theme-option.active{border-color:var(--ps-primary);box-shadow:0 0 0 2px color-mix(in srgb,var(--ps-primary) 18%,transparent)}.appearance-theme-swatch{height:46px;display:grid;grid-template-columns:1.35fr 1fr .55fr;border-radius:var(--avatar-radius);overflow:hidden;border:1px solid rgba(0,0,0,.06)}.appearance-theme-swatch span{display:block}.appearance-theme-name{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:7px;font-size:12px;font-weight:900}.appearance-theme-name i{color:var(--ps-primary);font-size:16px}.appearance-theme-option:not(.active) .appearance-theme-name i{visibility:hidden}.ripple-setting{margin-top:16px;padding:14px;border:1px solid #dfe7ea;border-radius:var(--media-radius);background:#f7fbfc}.ripple-setting-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.ripple-setting-title{margin:0;color:var(--ps-text);font-size:15px}.ripple-setting-copy{margin:3px 0 0;color:var(--ps-muted);font-size:11px;line-height:1.45}.ripple-setting-value{flex:0 0 auto;min-width:50px;padding:5px 8px;border-radius:var(--avatar-radius);background:var(--ps-tint);color:var(--ps-primary-strong);font-size:12px;font-weight:900;text-align:center}.ripple-size-control{width:100%;margin:14px 0 5px;accent-color:var(--ps-primary);cursor:pointer}.ripple-size-labels{display:flex;justify-content:space-between;color:var(--ps-muted);font-size:10px;font-weight:800}
 .manager-card,.gm-card,.pastor-week{background:#fff!important;border:1px solid rgba(255,255,255,.7)!important;border-radius:var(--card-radius)!important;box-shadow:none!important;color:var(--ps-text)!important}.pastor-card,.pastor-preview,.card-list,.entry-preview{background:#fff!important;border:1px solid rgba(0,54,70,.1)!important;border-radius:var(--media-radius)!important;box-shadow:none!important;color:var(--ps-text)!important}.card-list:hover,.card-list.active,.entry-preview:hover,.entry-preview.active{background:#eaf8fa!important;border-color:rgba(16,172,194,.34)!important}.pastor-card-meta,.pastor-status,.gm-panel-note,.card-meta{color:var(--ps-muted)!important}
 .bottom-nav{position:fixed!important;left:50%!important;bottom:max(10px,env(safe-area-inset-bottom))!important;transform:translateX(-50%)!important;z-index:50!important;width:min(calc(100% - 20px),390px)!important;height:62px!important;padding:7px!important;border:1px solid rgba(255,255,255,.7)!important;border-radius:var(--media-radius)!important;background:#fff!important;box-shadow:0 14px 34px rgba(0,30,42,.22)!important;display:grid!important;grid-template-columns:repeat(5,1fr)!important;gap:4px!important}
 .bottom-tab{min-width:0!important;height:48px!important;border:0!important;border-radius:10px!important;background:transparent!important;color:#8a989d!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:2px!important;padding:0!important;font-size:9px!important;font-weight:700!important}.bottom-tab span{max-width:100%;line-height:1.1;text-align:center;overflow-wrap:anywhere}.bottom-tab i{font-size:20px!important}.bottom-tab.active{background:#d3ffdb!important;color:#008aa2!important}.bottom-tab.active i{color:#00a9c4!important}.bottom-tab.create-tab i{font-size:34px!important;line-height:1;color:#ffd227!important}.bottom-tab.create-tab.active{background:transparent!important;color:#008aa2!important}.bottom-tab.create-tab span{font-size:9px!important}
 #printNameWidthControl{width:48px;height:34px;border-radius:var(--media-radius);border:1px solid var(--ps-line);background:#0b1c2b;color:#fff;text-align:center;font-size:12px;outline:none}
 .login-wrap{min-height:100dvh!important;background:linear-gradient(180deg,var(--ps-bg),var(--ps-bg2))!important;padding:22px!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:var(--gap)!important;overflow:auto!important}.login-card,.login-auth-card{width:min(100%,390px)!important;background:#fff!important;border:1px solid rgba(255,255,255,.7)!important;box-shadow:none!important;color:var(--ps-text)!important}.login-card{border-radius:var(--card-radius)!important;padding:30px 26px!important}.login-auth-card{padding:6px!important;border-radius:var(--media-radius)!important}.login-card .brand{color:var(--ps-text)!important;margin-bottom:0!important}.login-copy{color:var(--ps-muted)!important;margin-top:16px!important}.login-info-toggle{margin:16px auto 0!important;border:1px solid var(--ps-line)!important;background:#eaf8fa!important;color:#008aa2!important;border-radius:var(--media-radius)!important;min-height:34px!important;padding:7px 12px!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;font-weight:900!important;cursor:pointer}.login-info-toggle:hover{background:#ef4057!important;border-color:#ef4057!important;color:#fff!important}.login-role-card{width:min(100%,390px)!important;background:#fff!important;border:1px solid rgba(255,255,255,.7)!important;border-radius:var(--media-radius)!important;padding:10px!important;color:var(--ps-text)!important}.login-role-label{font-size:12px;font-weight:900;color:#667780;margin:0 0 8px 4px}.login-role-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.login-role-option{position:relative;min-height:44px;border:1px solid var(--ps-line);background:#f7fbfc;color:var(--ps-text);border-radius:var(--media-radius);display:flex;align-items:center;justify-content:center;gap:7px;padding:8px;cursor:pointer;font-weight:900}.login-role-option input{position:absolute;opacity:0;pointer-events:none}.login-role-check{width:20px;height:20px;border-radius:50%;border:2px solid #cbd8de;background:#fff;display:grid;place-items:center;flex:0 0 auto}.login-role-check::after{content:"";width:9px;height:9px;border-radius:50%;background:#10acc2;opacity:0}.login-role-option:has(input:checked){background:#eaf8fa;border-color:#10acc2;color:#008aa2}.login-role-option:has(input:checked) .login-role-check{border-color:#10acc2}.login-role-option:has(input:checked) .login-role-check::after{opacity:1}.google-btn{width:100%!important;min-height:48px!important;padding:10px 14px!important;background:#f7fbfc!important;color:var(--ps-text)!important;border:0!important;border-radius:calc(var(--media-radius) - 6px)!important;box-shadow:none!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:10px!important;font-size:16px!important;font-weight:800!important}.google-g{width:22px!important;height:22px!important;flex:0 0 auto!important}.login-status-out,.login-note{width:min(100%,390px)!important;color:rgba(255,255,255,.72)!important;margin:0!important}.login-status-out{min-height:20px}.login-note{font-size:15px;text-align:center!important}
+html[data-theme] .btn.primary,html[data-theme] .btn.save,html[data-theme] #pageForm .toolbar #newEntryBtn,html[data-theme] #pageForm .toolbar #saveEntryBtn{background:var(--ps-primary)!important;border-color:var(--ps-primary)!important;color:#fff!important}
+html[data-theme] .pro-balance-chip,html[data-theme] .avatar-edit-btn,html[data-theme] #ownMembersBox .member-photo-avatar{background:var(--ps-primary)!important}
+html[data-theme] .pastor-mode-switch:hover,html[data-theme] .pastor-mode-switch.active{background:var(--ps-primary-strong)!important}
+html[data-theme] .ps-circle-btn.active,html[data-theme] .ps-language-btn.active,html[data-theme] .bottom-tab.active,html[data-theme] .bottom-tab.create-tab.active,html[data-theme] .login-info-toggle,html[data-theme] .form-list-action,html[data-theme] .account-app-edit{color:var(--ps-primary-strong)!important}
+html[data-theme] .bottom-tab.active{background:var(--ps-active)!important}html[data-theme] .bottom-tab.active i{color:var(--ps-primary)!important}
+html[data-theme] .bottom-tab.create-tab i,html[data-theme] .editor-new-member-btn,html[data-theme] .editor-forms-year-btn,html[data-theme] #ownMembersBox .member-photo-upload{background:var(--ps-accent)!important;border-color:var(--ps-accent)!important}
+html[data-theme] .bottom-tab.create-tab i{background:transparent!important;color:var(--ps-accent)!important}
+html[data-theme] .home-area-carousel{background:var(--ps-carousel)!important}
+html[data-theme] .pro-action i,html[data-theme] .area-card-avatar,html[data-theme] .form-list-avatar,html[data-theme] .form-list-action,html[data-theme] .pro-avatar,html[data-theme] #ownMembersBox .member-edit-one,html[data-theme] .member-done-one{background:var(--ps-tint)!important;color:var(--ps-primary-strong)!important}
+html[data-theme] .account-app-row:hover,html[data-theme] .account-app-row.active,html[data-theme] .card-list:hover,html[data-theme] .card-list.active,html[data-theme] .entry-preview:hover,html[data-theme] .entry-preview.active{background:var(--ps-tint)!important;border-color:color-mix(in srgb,var(--ps-primary) 36%,transparent)!important}
+html[data-theme] .login-role-check::after{background:var(--ps-primary)!important}html[data-theme] .login-role-option:has(input:checked){background:var(--ps-tint)!important;border-color:var(--ps-primary)!important;color:var(--ps-primary-strong)!important}html[data-theme] .login-role-option:has(input:checked) .login-role-check{border-color:var(--ps-primary)!important}
+html[data-theme] #pageForm .layout,html[data-theme] #pageManager .layout,html[data-theme] #pageManageChurch .layout{background:color-mix(in srgb,var(--ps-bg2) 56%,transparent)!important}
+html[data-theme] body.paper-fullscreen #pageForm,html[data-theme] body.paper-fullscreen #pageForm .layout,html[data-theme] body.paper-fullscreen #pageForm .panel,html[data-theme] body.paper-fullscreen #pageForm .workspace,html[data-theme] .form-list-preview-overlay{background:var(--ps-bg2)!important}
+html[data-theme-mode="dark"] .pro-balance-card,html[data-theme-mode="dark"] .pro-action,html[data-theme-mode="dark"] .panel,html[data-theme-mode="dark"] .card,html[data-theme-mode="dark"] .stat,html[data-theme-mode="dark"] .manage-section,html[data-theme-mode="dark"] .member-card,html[data-theme-mode="dark"] .pro-account,html[data-theme-mode="dark"] .pro-account-row,html[data-theme-mode="dark"] .entry-sidebar,html[data-theme-mode="dark"] .form-year,html[data-theme-mode="dark"] .form-year-toggle,html[data-theme-mode="dark"] .form-list-row,html[data-theme-mode="dark"] .home-area-card,html[data-theme-mode="dark"] .manager-card,html[data-theme-mode="dark"] .gm-card,html[data-theme-mode="dark"] .pastor-week,html[data-theme-mode="dark"] .pastor-card,html[data-theme-mode="dark"] .pastor-preview,html[data-theme-mode="dark"] .card-list,html[data-theme-mode="dark"] .entry-preview,html[data-theme-mode="dark"] .bottom-nav,html[data-theme-mode="dark"] .toolbar,html[data-theme-mode="dark"] .notification-popover,html[data-theme-mode="dark"] .editor-forms-dialog,html[data-theme-mode="dark"] .form-list-preview-toolbar,html[data-theme-mode="dark"] .account-modal-dialog,html[data-theme-mode="dark"] .account-modal-dialog .settings-head,html[data-theme-mode="dark"] .login-card,html[data-theme-mode="dark"] .login-auth-card,html[data-theme-mode="dark"] .login-role-card,html[data-theme-mode="dark"] #pageMembers .panel.member-workspace-panel,html[data-theme-mode="dark"] #pageManager .panel.manager-workspace-panel,html[data-theme-mode="dark"] #pageManageChurch .panel.church-workspace-panel{background:var(--ps-surface)!important;color:var(--ps-text)!important;border-color:var(--ps-line)!important}
+html[data-theme-mode="dark"] .form-month,html[data-theme-mode="dark"] .form-list-empty,html[data-theme-mode="dark"] .shell,html[data-theme-mode="dark"] #formBox.shell,html[data-theme-mode="dark"] .form-list-preview-paper,html[data-theme-mode="dark"] #ownMembersBox .member-row,html[data-theme-mode="dark"] #membersBox .member-row,html[data-theme-mode="dark"] .area-members-toggle,html[data-theme-mode="dark"] .pro-recovery-panel,html[data-theme-mode="dark"] .recovery-item,html[data-theme-mode="dark"] .storage-list-item,html[data-theme-mode="dark"] .appearance-theme-option,html[data-theme-mode="dark"] .input-dark,html[data-theme-mode="dark"] .input-light,html[data-theme-mode="dark"] .login-role-option,html[data-theme-mode="dark"] .google-btn,html[data-theme-mode="dark"] .notification-item{background:var(--ps-surface-soft)!important;color:var(--ps-text)!important;border-color:var(--ps-line)!important}
+html[data-theme-mode="dark"] .input-light:disabled,html[data-theme-mode="dark"] .member-row input:disabled,html[data-theme-mode="dark"] .member-row select:disabled{background:var(--ps-control)!important;color:var(--ps-muted)!important}html[data-theme-mode="dark"] select.input-light option,html[data-theme-mode="dark"] select.input-dark option{background:var(--ps-surface)!important;color:var(--ps-text)!important}
+html[data-theme-mode="dark"] .btn,html[data-theme-mode="dark"] .glass-icon-btn,html[data-theme-mode="dark"] .clear-activity-btn{background:var(--ps-control)!important;color:var(--ps-control-text)!important;border-color:var(--ps-line)!important}html[data-theme-mode="dark"] .btn:hover,html[data-theme-mode="dark"] .glass-icon-btn:hover{background:color-mix(in srgb,var(--ps-primary) 28%,var(--ps-control))!important}
+html[data-theme-mode="dark"] .pro-balance-value,html[data-theme-mode="dark"] .pro-balance-title,html[data-theme-mode="dark"] .pro-action b,html[data-theme-mode="dark"] .pro-summary-card,html[data-theme-mode="dark"] .pro-summary-card strong,html[data-theme-mode="dark"] .pro-summary-card small,html[data-theme-mode="dark"] .pro-profile-name,html[data-theme-mode="dark"] .form-month-title,html[data-theme-mode="dark"] .form-week-title,html[data-theme-mode="dark"] .form-list-row-title,html[data-theme-mode="dark"] .recovery-item-title,html[data-theme-mode="dark"] .storage-list-name,html[data-theme-mode="dark"] .appearance-theme-option{color:var(--ps-text)!important}
+html[data-theme-mode="dark"] .pro-balance-meta,html[data-theme-mode="dark"] .pro-profile-email,html[data-theme-mode="dark"] .profile-upload-status,html[data-theme-mode="dark"] .pro-account-row span,html[data-theme-mode="dark"] .form-list-row-meta,html[data-theme-mode="dark"] .form-week-title,html[data-theme-mode="dark"] .member-compact-date,html[data-theme-mode="dark"] .storage-list-cloud,html[data-theme-mode="dark"] .storage-setup-note,html[data-theme-mode="dark"] .app-details-copy,html[data-theme-mode="dark"] .app-details-credit,html[data-theme-mode="dark"] .appearance-intro,html[data-theme-mode="dark"] .recovery-item-meta{color:var(--ps-muted)!important}
+html[data-theme-mode="dark"] .account-app-row:hover,html[data-theme-mode="dark"] .account-app-row.active,html[data-theme-mode="dark"] .account-storage-row:hover,html[data-theme-mode="dark"] .account-storage-row.active,html[data-theme-mode="dark"] .account-recovery-row:hover,html[data-theme-mode="dark"] .account-recovery-row.active,html[data-theme-mode="dark"] .account-settings-row:hover,html[data-theme-mode="dark"] .account-settings-row.active{background:var(--ps-tint)!important;border-color:var(--ps-primary)!important}
+html[data-theme-mode="dark"] .form-list-search .input-dark,html[data-theme-mode="dark"] .home-area-card,html[data-theme-mode="dark"] #pageMembers #memberAreaList .panel-body.entry-sidebar.member-area-card{background:var(--ps-surface)!important;color:var(--ps-text)!important;border-color:var(--ps-line)!important}
+html[data-theme-mode="dark"] .bottom-tab{color:var(--ps-muted)!important}html[data-theme-mode="dark"] .bottom-tab.active{color:var(--ps-primary-strong)!important}
+html[data-theme-mode="dark"] .ripple-setting{background:var(--ps-surface-soft)!important;border-color:var(--ps-line)!important}html[data-theme-mode="dark"] .ripple-setting-title{color:var(--ps-text)!important}html[data-theme-mode="dark"] .ripple-setting-copy,html[data-theme-mode="dark"] .ripple-size-labels{color:var(--ps-muted)!important}
+*{-webkit-tap-highlight-color:transparent}
+.app-ripple-relative{position:relative!important}
+.app-ripple-surface{position:absolute;inset:0;z-index:20;border-radius:inherit;overflow:hidden;pointer-events:none;color:inherit}
+.app-ripple-wave{position:absolute;border-radius:50%;background:radial-gradient(circle,currentColor 0%,currentColor 24%,rgba(255,255,255,.08) 52%,transparent 76%);filter:blur(1.6px);opacity:0;transform:scale(.2);will-change:transform,opacity;animation:appRippleTouch .4s cubic-bezier(.2,.7,.3,1)}
+@keyframes appRippleTouch{0%{opacity:.18;transform:scale(.2)}62%{opacity:.11;transform:scale(.88)}100%{opacity:0;transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){.app-ripple-wave{animation-duration:.18s}}
 .hidden{display:none!important}
 @media(max-width:760px){#app.app{padding-top:0!important}.page{width:100%!important}.ps-profile-email{max-width:180px}.toolbar{top:64px!important}.bottom-nav{width:calc(100% - 20px)!important}.paper-wrap{padding:6px!important}}
 @media(min-width:900px){#app.app{width:min(100%,430px)!important;max-width:430px!important}.ps-topbar-inner,.page,.bottom-nav{max-width:390px!important}}
@@ -916,7 +979,19 @@ body.paper-fullscreen #paperExitFullscreenBtn{display:inline-flex!important;alig
 @keyframes bootProgressMove{0%{transform:translateX(-110%)}50%{transform:translateX(95%)}100%{transform:translateX(300%)}}
 @media(prefers-reduced-motion:reduce){.boot-progress::after{animation-duration:2s}}
 </style>
-
+<script>
+try{
+  const savedTheme=localStorage.getItem("prayinfoTheme");
+  const themes=["ocean","forest","rose","sky","mint","coral","lavender","mono","midnight","apple-dark","amoled","graphite","aurora","crimson-night"];
+  const darkThemes=["midnight","apple-dark","amoled","graphite","aurora","crimson-night"];
+  const theme=themes.includes(savedTheme)?savedTheme:"ocean";
+  const savedRippleSize=Number(localStorage.getItem("prayinfoRippleSize"));
+  const rippleSize=Number.isFinite(savedRippleSize)&&savedRippleSize>=50&&savedRippleSize<=150?savedRippleSize:100;
+  document.documentElement.dataset.theme=theme;
+  document.documentElement.dataset.themeMode=darkThemes.includes(theme)?"dark":"light";
+  document.documentElement.dataset.rippleScale=String(rippleSize/100);
+}catch(e){document.documentElement.dataset.theme="ocean";document.documentElement.dataset.themeMode="light";document.documentElement.dataset.rippleScale="1"}
+</script>
 </head>
 <body>
 <div id="bootProgress" class="boot-progress" role="progressbar" aria-label="Loading Prayinfo Pro" aria-valuetext="Loading"></div>
@@ -1033,7 +1108,7 @@ body.paper-fullscreen #paperExitFullscreenBtn{display:inline-flex!important;alig
     <div class="form-list-page">
       <div class="form-list-head">
         <div class="form-list-title">Forms</div>
-        <button id="formListNewBtn" class="btn primary" type="button"><i class="ri-add-line"></i> New</button>
+        <button id="formListNewBtn" class="btn primary" type="button">New</button>
       </div>
       <div id="formListAreaCarouselSection" class="home-area-carousel-section form-list-area-carousel-section hidden">
         <div class="home-area-carousel-title">Areas</div>
@@ -1103,7 +1178,7 @@ body.paper-fullscreen #paperExitFullscreenBtn{display:inline-flex!important;alig
 
   <section id="pageMembers" class="page">
     <div class="layout">
-      <div class="member-area-browser"><div id="editorMemberCarouselSection" class="home-area-carousel-section editor-member-carousel-section hidden"><div class="home-area-carousel-title">Members</div><div id="editorMemberCarousel" class="home-area-carousel"></div></div><div class="search"><i class="ri-search-eye-line"></i><input id="memberAreaSearch" class="input-dark" placeholder="Search..."></div><div id="memberAreaList" class="list"></div></div>
+      <div class="member-area-browser"><div id="editorMemberCarouselSection" class="home-area-carousel-section editor-member-carousel-section hidden"><div class="home-area-carousel-title"><span class="home-area-carousel-title-label">Members</span><button id="editorNewMemberBtn" class="editor-new-member-btn" type="button">New</button></div><div id="editorMemberCarousel" class="home-area-carousel"></div></div><div class="search"><i class="ri-search-eye-line"></i><input id="memberAreaSearch" class="input-dark" placeholder="Search..."></div><div id="memberAreaList" class="list"></div></div>
       <div id="memberWorkspacePanel" class="panel glass member-workspace-panel hidden"><div class="workspace"><div class="toolbar"><button id="closeMemberWorkspaceBtn" class="glass-icon-btn manager-close-btn" type="button" aria-label="Close member workspace"><i class="ri-close-line"></i></button><div id="memberWorkspaceAvatar" class="member-workspace-avatar"></div><div class="btn-row manager-actions"><button id="editMembersBtn" class="btn primary">Edit</button><button id="saveMembersBtn" class="btn primary hidden">Save</button></div></div><div id="memberBox" class="shell"></div><div id="memberStatus" class="status"></div></div></div>
     </div>
   </section>
@@ -1182,9 +1257,10 @@ body.paper-fullscreen #paperExitFullscreenBtn{display:inline-flex!important;alig
       <div class="pro-account-list">
         <div class="pro-account-row"><span>Role</span><b id="accountRole">viewer</b></div>
         <div class="pro-account-row"><span>Church</span><b id="accountChurch">—</b></div>
-        <button id="accountAppBrandRow" class="pro-account-row account-app-row" type="button"><span>App</span><b id="accountAppName">Prayinfo Pro</b><i class="ri-edit-2-line account-app-edit" aria-hidden="true"></i></button>
+        <button id="accountAppBrandRow" class="pro-account-row account-app-row" type="button" aria-haspopup="dialog" aria-expanded="false"><span>App</span><b id="accountAppName">Prayinfo Pro</b><i class="ri-edit-2-line account-app-edit" aria-hidden="true"></i></button>
         <button id="accountStorageRow" class="pro-account-row account-storage-row" type="button" aria-expanded="false"><span>Storage</span><b id="accountStorageLabel">Set Up Storage</b><i class="ri-cloud-line" aria-hidden="true"></i></button>
         <button id="accountRecoveryRow" class="pro-account-row account-recovery-row" type="button" aria-expanded="false"><span>Recovery</span><b id="accountRecoveryCount">0 deleted</b><i class="ri-history-line" aria-hidden="true"></i></button>
+        <button id="accountSettingsRow" class="pro-account-row account-settings-row" type="button" aria-haspopup="dialog" aria-expanded="false"><span>Settings</span><b id="accountThemeLabel">Ocean</b><i class="ri-settings-4-line" aria-hidden="true"></i></button>
       </div>
       <div id="accountAppBrandEditor" class="app-brand-settings pro-app-brand-editor hidden">
         <div class="settings-head">
@@ -1195,16 +1271,6 @@ body.paper-fullscreen #paperExitFullscreenBtn{display:inline-flex!important;alig
         <div class="section"><label class="light-label">Login Description</label><textarea id="appBrandCopy" class="input-light"></textarea></div>
         <button id="saveAppBrandBtn" class="btn small primary" type="button"><i class="ri-save-3-line"></i> Save Brand</button>
         <div id="appBrandStatus" class="status"></div>
-      </div>
-      <div id="accountStorageSetup" class="pro-storage-setup hidden">
-        <div class="settings-head">
-          <h3>Cloudinary Storage</h3>
-          <button id="closeStorageSetupBtn" class="glass-icon-btn manager-close-btn" type="button" aria-label="Close storage setup"><i class="ri-close-line"></i></button>
-        </div>
-        <div class="grid2"><div><label class="light-label" for="storageCloudName">Cloud Name</label><input id="storageCloudName" class="input-light" autocomplete="off"></div><div><label class="light-label" for="storageUploadPreset">Unsigned Upload Preset</label><input id="storageUploadPreset" class="input-light" autocomplete="off"></div></div>
-        <div class="storage-setup-actions"><a class="btn small" href="https://cloudinary.com/users/register_free" target="_blank" rel="noopener noreferrer"><i class="ri-external-link-line"></i> Create Storage</a><button id="saveStorageSetupBtn" class="btn small primary" type="button"><i class="ri-save-3-line"></i> Save Setup</button></div>
-        <div class="storage-setup-note">Use an unsigned upload preset. Never enter an API secret.</div>
-        <div id="storageSetupStatus" class="status"></div>
       </div>
       <div id="accountRecoveryPanel" class="pro-recovery-panel hidden">
         <div class="settings-head">
@@ -1225,6 +1291,66 @@ body.paper-fullscreen #paperExitFullscreenBtn{display:inline-flex!important;alig
     <button id="bottomManage" class="bottom-tab" data-go="manager"><i class="ri-settings-3-line"></i><span>Manage</span></button>
     <button class="bottom-tab" data-go="account"><i class="ri-user-3-line"></i><span>Account</span></button>
   </nav>
+</div>
+
+<div id="accountStorageSetup" class="account-modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="storageSetupTitle">
+  <div class="account-modal-dialog storage-modal-dialog">
+    <div class="settings-head">
+      <h3 id="storageSetupTitle">Cloudinary Storage</h3>
+      <button id="closeStorageSetupBtn" class="glass-icon-btn manager-close-btn" type="button" aria-label="Close storage setup"><i class="ri-close-line"></i></button>
+    </div>
+    <div class="storage-modal-toolbar"><button id="addStorageBtn" class="btn small primary" type="button"><i class="ri-add-line"></i><span>New Storage</span></button></div>
+    <div id="storageList" class="storage-list"></div>
+    <div id="storageEditor" class="storage-editor hidden">
+      <div class="grid2">
+        <div><label class="light-label" for="storageName">Storage Name</label><input id="storageName" class="input-light" autocomplete="off" placeholder="My Cloudinary"></div>
+        <div><label class="light-label" for="storageCloudName">Cloud Name</label><input id="storageCloudName" class="input-light" autocomplete="off"></div>
+        <div><label class="light-label" for="storageUploadPreset">Unsigned Upload Preset</label><input id="storageUploadPreset" class="input-light" autocomplete="off"></div>
+      </div>
+      <div class="storage-setup-actions">
+        <a class="btn small" href="https://cloudinary.com/users/register_free" target="_blank" rel="noopener noreferrer"><i class="ri-external-link-line"></i><span>Create Storage</span></a>
+        <button id="cancelStorageEditorBtn" class="btn small" type="button">Cancel</button>
+        <button id="saveStorageSetupBtn" class="btn small primary" type="button"><i class="ri-save-3-line"></i><span>Save Setup</span></button>
+      </div>
+      <div class="storage-setup-note">Use an unsigned upload preset. Never enter an API secret.</div>
+    </div>
+    <div id="storageSetupStatus" class="status"></div>
+  </div>
+</div>
+
+<div id="appDetailsOverlay" class="account-modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="appDetailsTitle">
+  <div class="account-modal-dialog app-details-dialog">
+    <div class="settings-head">
+      <h3 id="appDetailsTitle">ព័ត៌មានកម្មវិធី</h3>
+      <button id="closeAppDetailsBtn" class="glass-icon-btn manager-close-btn" type="button" aria-label="Close app details"><i class="ri-close-line"></i></button>
+    </div>
+    <div class="app-details-copy">
+      <p>កម្មវិធីនេះត្រូវបានបង្កើតឡើងសម្រាប់ជួយសម្រួលដល់អ្នកគង្វាល ក្នុងការផ្ញើរបាយការណ៍ពួកជំនុំតាមផ្ទះ ទៅកាន់គ្រូគង្វាល និងរដ្ឋបាលក្រុម។</p>
+      <p class="app-details-credit">បង្កើត ថ្ងៃអង្គារ ទី ០១ ខែ កញ្ញា ឆ្នាំ២០២៦<br>ដោយអ្នកគង្វាលថេត។ រក្សាសិទ្ធិ។</p>
+    </div>
+  </div>
+</div>
+
+<div id="accountSettingsOverlay" class="account-modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="accountSettingsTitle">
+  <div class="account-modal-dialog appearance-dialog">
+    <div class="settings-head">
+      <h3 id="accountSettingsTitle">Appearance</h3>
+      <button id="closeAccountSettingsBtn" class="glass-icon-btn manager-close-btn" type="button" aria-label="Close settings"><i class="ri-close-line"></i></button>
+    </div>
+    <p id="appearanceIntro" class="appearance-intro">Choose a theme for Prayinfo Pro.</p>
+    <div id="appearanceThemeGrid" class="appearance-theme-grid"></div>
+    <section class="ripple-setting" aria-labelledby="rippleTouchTitle">
+      <div class="ripple-setting-head">
+        <div>
+          <h4 id="rippleTouchTitle" class="ripple-setting-title">Ripple touch</h4>
+          <p id="rippleTouchCopy" class="ripple-setting-copy">Adjust the size of touch feedback.</p>
+        </div>
+        <output id="rippleSizeValue" class="ripple-setting-value" for="rippleSizeControl">100%</output>
+      </div>
+      <input id="rippleSizeControl" class="ripple-size-control" type="range" min="50" max="150" step="10" value="100" aria-label="Ripple touch size">
+      <div class="ripple-size-labels" aria-hidden="true"><span id="rippleSmallLabel">Small</span><span id="rippleDefaultLabel">Default</span><span id="rippleLargeLabel">Large</span></div>
+    </section>
+  </div>
 </div>
 
 <div id="printArea" class="print-only"></div>
@@ -1250,15 +1376,37 @@ window.db = db;
 window.ref = ref;
 window.remove = remove;
 const $=id=>document.getElementById(id);
-let user=null,role="viewer",pastorActingAsEditor=false,selectedLoginRole="",registeredUser=false,allowedUsers={},allowedEmails={},pastorChurches={},fieldAreas={},entries={},deletedEntries={},auditLogs={},appBrand={...DEFAULT_APP_BRAND},appBrandEditorOpen=false,storageSetupOpen=false,recoveryOpen=false,cloudinarySettings={cloudName:CLOUDINARY_CLOUD_NAME,uploadPreset:CLOUDINARY_UPLOAD_PRESET},currentEntryId=null,currentAreaId=null,currentChurchId=null,currentMemberAreaId=null,selectedAreaId="",selectedChurchId="",resolvedPastorChurchId="",selectedParticipants=[],availableMembers=[],prayerRequests=[],unsubscribeFns=[],scopedUnsubscribeFns=[],entryUnsubscribeFns=[],deletedEntryUnsubscribeFns=[],appBrandUnsubscribe=null,storageSettingsUnsubscribe=null,notificationStateUnsubscribe=null,notificationClearedAt=0,notificationReadIds=new Map(),photoLookupKeys=new Set(),scopedEntriesByArea={},scopedDeletedEntriesByArea={},pastorAreaSources={},entryAreaKey="",deletedEntryAreaKey="",pastorScopedChurchId="",memberEditMode=false,memberDirty=false,memberWorkspaceOpen=false,areaMembersOpen=false,formDirty=false,formListPreviewEntryId="",formListPreviewEditing=false,formListPreviewDirty=false,formListAreaFilterId="",formsPopupAreaId="",formsPopupYear=new Date().getFullYear(),missingExpandedWeeks={},viewedEntryLogKeys=new Set(),refreshQueued=false,dataHydrated=false,dataSkeletonStartedAt=0;
+let user=null,role="viewer",pastorActingAsEditor=false,selectedLoginRole="",registeredUser=false,allowedUsers={},allowedEmails={},pastorChurches={},fieldAreas={},entries={},deletedEntries={},auditLogs={},appBrand={...DEFAULT_APP_BRAND},appBrandEditorOpen=false,appDetailsOpen=false,storageSetupOpen=false,storageEditorOpen=false,storageEditorId="",cloudinaryStorageState={activeId:"",items:{}},recoveryOpen=false,settingsOpen=false,cloudinarySettings={cloudName:CLOUDINARY_CLOUD_NAME,uploadPreset:CLOUDINARY_UPLOAD_PRESET},currentEntryId=null,currentAreaId=null,currentChurchId=null,currentMemberAreaId=null,selectedAreaId="",selectedChurchId="",resolvedPastorChurchId="",selectedParticipants=[],availableMembers=[],prayerRequests=[],unsubscribeFns=[],scopedUnsubscribeFns=[],entryUnsubscribeFns=[],deletedEntryUnsubscribeFns=[],appBrandUnsubscribe=null,storageSettingsUnsubscribe=null,notificationStateUnsubscribe=null,notificationClearedAt=0,notificationReadIds=new Map(),photoLookupKeys=new Set(),scopedEntriesByArea={},scopedDeletedEntriesByArea={},pastorAreaSources={},entryAreaKey="",deletedEntryAreaKey="",pastorScopedChurchId="",memberEditMode=false,memberDirty=false,memberWorkspaceOpen=false,areaMembersOpen=false,formDirty=false,formListPreviewEntryId="",formListPreviewEditing=false,formListPreviewDirty=false,formListAreaFilterId="",formsPopupAreaId="",formsPopupYear=new Date().getFullYear(),missingExpandedWeeks={},viewedEntryLogKeys=new Set(),refreshQueued=false,dataHydrated=false,dataSkeletonStartedAt=0;
 
 const LANGUAGE_STORAGE_KEY="prayinfoLanguage";
+const THEME_STORAGE_KEY="prayinfoTheme";
+const RIPPLE_SIZE_STORAGE_KEY="prayinfoRippleSize";
+const APP_THEMES=[
+  {id:"ocean",labelKey:"themeOcean",colors:["#00465a","#10acc2","#ffd227"]},
+  {id:"forest",labelKey:"themeForest",colors:["#164b3d","#2a9d8f","#f4bf4f"]},
+  {id:"rose",labelKey:"themeRose",colors:["#73334b","#d95a76","#f1c453"]},
+  {id:"sky",labelKey:"themeSky",colors:["#176b87","#3d9fc8","#ffd166"]},
+  {id:"mint",labelKey:"themeMint",colors:["#22695d","#36ad98","#f1bf52"]},
+  {id:"coral",labelKey:"themeCoral",colors:["#88414d","#e96c6c","#49b6b2"]},
+  {id:"lavender",labelKey:"themeLavender",colors:["#594a70","#8871bf","#f1bf52"]},
+  {id:"mono",labelKey:"themeMono",colors:["#465057","#687b86","#e7b94f"]},
+  {id:"midnight",labelKey:"themeMidnight",colors:["#101a26","#3a9fcb","#f5bd2e"],dark:true},
+  {id:"apple-dark",labelKey:"themeAppleDark",colors:["#000000","#0a84ff","#ffd60a"],dark:true},
+  {id:"amoled",labelKey:"themeAmoled",colors:["#000000","#00c987","#ffcc00"],dark:true},
+  {id:"graphite",labelKey:"themeGraphite",colors:["#242426","#64d2ff","#ff9f0a"],dark:true},
+  {id:"aurora",labelKey:"themeAurora",colors:["#102a2e","#3ddc97","#72d6ff"],dark:true},
+  {id:"crimson-night",labelKey:"themeCrimsonNight",colors:["#351922","#ff6482","#f6c85f"],dark:true}
+];
 let appLanguage="en";
+let appTheme=document.documentElement.dataset.theme||"ocean";
+let rippleSize=Math.round((Number(document.documentElement.dataset.rippleScale)||1)*100);
 try{appLanguage=localStorage.getItem(LANGUAGE_STORAGE_KEY)==="kh"?"kh":"en"}catch(e){}
 const UI_TEXT={
-  en:{currentChurch:"Current Church",pastor:"Pastor",editor:"Editor",admin:"Admin",groupManager:"Group Manager",viewer:"Viewer",reports:"Reports",areas:"Areas",members:"Members",forms:"Forms",dashboard:"Dashboard",manage:"Manage",home:"Home",member:"Member",createForm:"Create Form",account:"Account",activity:"Activity",church:"Church",groupManagers:"Group Managers",switchChurch:"Switch Church",reportsManagement:"Reports & Management",formList:"Form List",search:"Search...",newArea:"New Area",newChurch:"New Church",new:"New",save:"Save",delete:"Delete",update:"Update",edit:"Edit",exportPdf:"Export PDF",exit:"Exit",submit:"Submit",submitted:"Submitted",allForms:"All Forms",all:"All",role:"Role",app:"App",storage:"Storage",setupStorage:"Set Up Storage",connected:"Storage Ready",recovery:"Recovery",deletedForms:"Deleted Forms",deletedCount:"{count} deleted",noDeletedForms:"No deleted forms.",deletedForm:"Deleted form",deleted:"Deleted",restoreForm:"Restore form",noDate:"No date",signOut:"Sign out",entries:"Entries",logs:"Logs",recentActivity:"Recent Activity",clearActivity:"Clear Activity",overview:"Overview",selectForm:"Select entry or create new form.",noFormsInYear:"No forms in {year}.",noAreaForms:"No forms for this area yet.",noFormsYet:"No forms yet.",noAreasYet:"No areas yet.",noAreaName:"No area name",groupManagersNote:"Assign church areas for each Group Manager to view.",switchChurchNote:"Choose which church the admin is working inside.",selectPastorCard:"Select a card or copy a week.",showInfo:"Show info",hideInfo:"Hide info",selectRegisteredRole:"Select your registered role",loginGroup:"Group",continueGoogle:"Continue with Google",secureSignIn:"Secure Firebase sign-in",loginInfoCopy:"House Church prayer requests and reports.\nSign in with the Google account registered by your Pastor.",openingGoogle:"Opening Google sign-in...",checkingAdmin:"Checking Admin account...",selectRoleFirst:"Please select your role first.",notRegistered:"You're not registered yet. Please check with your Pastor.",roleMismatch:"Selected role does not match your registered role. Please choose {role}.",unauthorizedDomain:"Add this website domain in Firebase Authentication settings.",googleFailed:"Google sign-in failed. Please try again."},
-  kh:{currentChurch:"ពួកជំនុំ បច្ចុប្បន្ន",pastor:"គ្រូគង្វាល",editor:"អ្នកគង្វាល",admin:"អ្នកគ្រប់គ្រង",groupManager:"រដ្ឋបាល",viewer:"អ្នកមើល",reports:"របាយ",areas:"វាលស្មៅ",members:"សមាជិក",forms:"បញ្ជី",dashboard:"ផ្ទាំងសង្ខេប",manage:"គ្រប់គ្រង",home:"ទំព័រដើម",member:"សមាជិក",createForm:"បង្កើតរបាយ",account:"គណនី",activity:"សកម្មភាព",church:"ពួកជំនុំ",groupManagers:"អ្នកគ្រប់គ្រងក្រុម",switchChurch:"ប្ដូរពួកជំនុំ",reportsManagement:"របាយ និងការគ្រប់គ្រង",formList:"បញ្ជីរបាយ",search:"ស្វែងរក...",newArea:"បង្កើតវាលស្មៅ",newChurch:"បង្កើតពួកជំនុំ",new:"ថ្មី",save:"រក្សាទុក",delete:"លុប",update:"ធ្វើបច្ចុប្បន្នភាព",edit:"កែ",exportPdf:"នាំចេញ PDF",exit:"ចាកចេញ",submit:"ដាក់ស្នើ",submitted:"បានដាក់ស្នើ",allForms:"របាយទាំងអស់",all:"ទាំងអស់",role:"តួនាទី",app:"កម្មវិធី",storage:"កន្លែងផ្ទុក",setupStorage:"រៀបចំកន្លែងផ្ទុក",connected:"រួចរាល់",recovery:"ស្ដារឡើងវិញ",deletedForms:"របាយដែលបានលុប",deletedCount:"បានលុប {count}",noDeletedForms:"មិនមានរបាយដែលបានលុប។",deletedForm:"របាយដែលបានលុប",deleted:"បានលុប",restoreForm:"ស្ដាររបាយ",noDate:"គ្មានកាលបរិច្ឆេទ",signOut:"ចាកចេញ",entries:"របាយ",logs:"កំណត់ត្រា",recentActivity:"សកម្មភាពថ្មីៗ",clearActivity:"សម្អាតសកម្មភាព",overview:"ទិដ្ឋភាពទូទៅ",selectForm:"ជ្រើសរបាយ ឬបង្កើតរបាយថ្មី។",noFormsInYear:"មិនមានរបាយក្នុងឆ្នាំ {year}។",noAreaForms:"វាលស្មៅនេះមិនទាន់មានរបាយ។",noFormsYet:"មិនទាន់មានរបាយ។",noAreasYet:"មិនទាន់មានវាលស្មៅ។",noAreaName:"គ្មានឈ្មោះវាលស្មៅ",groupManagersNote:"កំណត់វាលស្មៅឱ្យអ្នកគ្រប់គ្រងក្រុមមើល។",switchChurchNote:"ជ្រើសពួកជំនុំដែលអ្នកគ្រប់គ្រងកំពុងធ្វើការ។",selectPastorCard:"ជ្រើសកាត ឬចម្លងរបាយប្រចាំសប្ដាហ៍។",showInfo:"បង្ហាញព័ត៌មាន",hideInfo:"លាក់ព័ត៌មាន",selectRegisteredRole:"ជ្រើសរើសតួនាទីដែលបានចុះឈ្មោះ",loginGroup:"រដ្ឋបាល",continueGoogle:"បន្តជាមួយ Google",secureSignIn:"ការចូលតាម Firebase ដោយសុវត្ថិភាព",loginInfoCopy:"សំណូមពរអធិស្ឋាន និងរបាយការណ៍ពួកជំនុំតាមផ្ទះ។\nចូលដោយប្រើគណនី Google ដែលបានចុះឈ្មោះជាមួយគ្រូគង្វាលរបស់អ្នក។",openingGoogle:"កំពុងបើកការចូលតាម Google...",checkingAdmin:"កំពុងពិនិត្យគណនីអ្នកគ្រប់គ្រង...",selectRoleFirst:"សូមជ្រើសរើសតួនាទីរបស់អ្នកជាមុន។",notRegistered:"អ្នកមិនទាន់បានចុះឈ្មោះទេ។ សូមទាក់ទងគ្រូគង្វាលរបស់អ្នក។",roleMismatch:"តួនាទីដែលបានជ្រើសមិនត្រូវនឹងតួនាទីដែលបានចុះឈ្មោះទេ។ សូមជ្រើស {role}។",unauthorizedDomain:"សូមបន្ថែមដូម៉ែននេះក្នុងការកំណត់ Firebase Authentication។",googleFailed:"ការចូលតាម Google មិនបានជោគជ័យ។ សូមព្យាយាមម្ដងទៀត។"}
+  en:{currentChurch:"Current Church",pastor:"Pastor",editor:"Editor",admin:"Admin",groupManager:"Group Manager",viewer:"Viewer",reports:"Reports",areas:"Areas",members:"Members",forms:"Forms",dashboard:"Dashboard",manage:"Manage",home:"Home",member:"Member",createForm:"Create Form",account:"Account",activity:"Activity",church:"Church",groupManagers:"Group Managers",switchChurch:"Switch Church",reportsManagement:"Reports & Management",formList:"Form List",search:"Search...",newArea:"New Area",newChurch:"New Church",new:"New",save:"Save",delete:"Delete",update:"Update",edit:"Edit",exportPdf:"Export PDF",exit:"Exit",submit:"Submit",submitted:"Submitted",allForms:"All Forms",all:"All",role:"Role",app:"App",storage:"Storage",setupStorage:"Set Up Storage",connected:"Storage Ready",recovery:"Recovery",settings:"Settings",appearance:"Appearance",chooseTheme:"Choose a theme for Prayinfo Pro.",rippleTouch:"Ripple touch",rippleTouchCopy:"Adjust the size of touch feedback.",small:"Small",defaultSize:"Default",large:"Large",themeOcean:"Ocean",themeForest:"Forest",themeRose:"Rose",themeMidnight:"Midnight",deletedForms:"Deleted Forms",deletedCount:"{count} deleted",noDeletedForms:"No deleted forms.",deletedForm:"Deleted form",deleted:"Deleted",restoreForm:"Restore form",noDate:"No date",signOut:"Sign out",entries:"Entries",logs:"Logs",recentActivity:"Recent Activity",clearActivity:"Clear Activity",overview:"Overview",selectForm:"Select entry or create new form.",noFormsInYear:"No forms in {year}.",noAreaForms:"No forms for this area yet.",noFormsYet:"No forms yet.",noAreasYet:"No areas yet.",noAreaName:"No area name",groupManagersNote:"Assign church areas for each Group Manager to view.",switchChurchNote:"Choose which church the admin is working inside.",selectPastorCard:"Select a card or copy a week.",showInfo:"Show info",hideInfo:"Hide info",selectRegisteredRole:"Select your registered role",loginGroup:"Group",continueGoogle:"Continue with Google",secureSignIn:"Secure Firebase sign-in",loginInfoCopy:"House Church prayer requests and reports.\nSign in with the Google account registered by your Pastor.",openingGoogle:"Opening Google sign-in...",checkingAdmin:"Checking Admin account...",selectRoleFirst:"Please select your role first.",notRegistered:"You're not registered yet. Please check with your Pastor.",roleMismatch:"Selected role does not match your registered role. Please choose {role}.",unauthorizedDomain:"Add this website domain in Firebase Authentication settings.",googleFailed:"Google sign-in failed. Please try again."},
+  kh:{currentChurch:"ពួកជំនុំ បច្ចុប្បន្ន",pastor:"គ្រូគង្វាល",editor:"អ្នកគង្វាល",admin:"អ្នកគ្រប់គ្រង",groupManager:"រដ្ឋបាល",viewer:"អ្នកមើល",reports:"របាយ",areas:"វាលស្មៅ",members:"សមាជិក",forms:"បញ្ជី",dashboard:"ផ្ទាំងសង្ខេប",manage:"គ្រប់គ្រង",home:"ទំព័រដើម",member:"សមាជិក",createForm:"បង្កើតរបាយ",account:"គណនី",activity:"សកម្មភាព",church:"ពួកជំនុំ",groupManagers:"អ្នកគ្រប់គ្រងក្រុម",switchChurch:"ប្ដូរពួកជំនុំ",reportsManagement:"របាយ និងការគ្រប់គ្រង",formList:"បញ្ជីរបាយ",search:"ស្វែងរក...",newArea:"បង្កើតវាលស្មៅ",newChurch:"បង្កើតពួកជំនុំ",new:"បង្កើតថ្មី",save:"រក្សាទុក",delete:"លុប",update:"ធ្វើបច្ចុប្បន្នភាព",edit:"កែ",exportPdf:"នាំចេញ PDF",exit:"ចាកចេញ",submit:"ដាក់ស្នើ",submitted:"បានដាក់ស្នើ",allForms:"របាយទាំងអស់",all:"ទាំងអស់",role:"តួនាទី",app:"កម្មវិធី",storage:"កន្លែងផ្ទុក",setupStorage:"រៀបចំកន្លែងផ្ទុក",connected:"រួចរាល់",recovery:"ស្ដារឡើងវិញ",settings:"ការកំណត់",appearance:"រូបរាង",chooseTheme:"ជ្រើសរើសរូបរាងសម្រាប់ Prayinfo Pro។",rippleTouch:"ការប៉ះរលក",rippleTouchCopy:"កែទំហំប្រតិកម្មពេលប៉ះ។",small:"តូច",defaultSize:"លំនាំដើម",large:"ធំ",themeOcean:"សមុទ្រ",themeForest:"ព្រៃបៃតង",themeRose:"ផ្កាឈូក",themeMidnight:"រាត្រី",deletedForms:"របាយដែលបានលុប",deletedCount:"បានលុប {count}",noDeletedForms:"មិនមានរបាយដែលបានលុប។",deletedForm:"របាយដែលបានលុប",deleted:"បានលុប",restoreForm:"ស្ដាររបាយ",noDate:"គ្មានកាលបរិច្ឆេទ",signOut:"ចាកចេញ",entries:"របាយ",logs:"កំណត់ត្រា",recentActivity:"សកម្មភាពថ្មីៗ",clearActivity:"សម្អាតសកម្មភាព",overview:"ទិដ្ឋភាពទូទៅ",selectForm:"ជ្រើសរបាយ ឬបង្កើតរបាយថ្មី។",noFormsInYear:"មិនមានរបាយក្នុងឆ្នាំ {year}។",noAreaForms:"វាលស្មៅនេះមិនទាន់មានរបាយ។",noFormsYet:"មិនទាន់មានរបាយ។",noAreasYet:"មិនទាន់មានវាលស្មៅ។",noAreaName:"គ្មានឈ្មោះវាលស្មៅ",groupManagersNote:"កំណត់វាលស្មៅឱ្យអ្នកគ្រប់គ្រងក្រុមមើល។",switchChurchNote:"ជ្រើសពួកជំនុំដែលអ្នកគ្រប់គ្រងកំពុងធ្វើការ។",selectPastorCard:"ជ្រើសកាត ឬចម្លងរបាយប្រចាំសប្ដាហ៍។",showInfo:"បង្ហាញព័ត៌មាន",hideInfo:"លាក់ព័ត៌មាន",selectRegisteredRole:"ជ្រើសរើសតួនាទីដែលបានចុះឈ្មោះ",loginGroup:"រដ្ឋបាល",continueGoogle:"បន្តជាមួយ Google",secureSignIn:"ការចូលតាម Firebase ដោយសុវត្ថិភាព",loginInfoCopy:"សំណូមពរអធិស្ឋាន និងរបាយការណ៍ពួកជំនុំតាមផ្ទះ។\nចូលដោយប្រើគណនី Google ដែលបានចុះឈ្មោះជាមួយគ្រូគង្វាលរបស់អ្នក។",openingGoogle:"កំពុងបើកការចូលតាម Google...",checkingAdmin:"កំពុងពិនិត្យគណនីអ្នកគ្រប់គ្រង...",selectRoleFirst:"សូមជ្រើសរើសតួនាទីរបស់អ្នកជាមុន។",notRegistered:"អ្នកមិនទាន់បានចុះឈ្មោះទេ។ សូមទាក់ទងគ្រូគង្វាលរបស់អ្នក។",roleMismatch:"តួនាទីដែលបានជ្រើសមិនត្រូវនឹងតួនាទីដែលបានចុះឈ្មោះទេ។ សូមជ្រើស {role}។",unauthorizedDomain:"សូមបន្ថែមដូម៉ែននេះក្នុងការកំណត់ Firebase Authentication។",googleFailed:"ការចូលតាម Google មិនបានជោគជ័យ។ សូមព្យាយាមម្ដងទៀត។"}
 };
+Object.assign(UI_TEXT.en,{themeSky:"Sky",themeMint:"Mint",themeCoral:"Coral",themeLavender:"Lavender",themeMono:"Monochrome",themeAppleDark:"Apple Dark",themeAmoled:"AMOLED",themeGraphite:"Graphite",themeAurora:"Aurora",themeCrimsonNight:"Crimson Night"});
+Object.assign(UI_TEXT.kh,{themeSky:"មេឃ",themeMint:"ជីអង្កាម",themeCoral:"ផ្កាថ្ម",themeLavender:"ឡាវេនឌ័រ",themeMono:"ឯកពណ៌",themeAppleDark:"Apple ងងឹត",themeAmoled:"AMOLED",themeGraphite:"ក្រាហ្វីត",themeAurora:"អូរ៉ូរ៉ា",themeCrimsonNight:"រាត្រីក្រហម"});
 function t(key){return UI_TEXT[appLanguage]?.[key]||UI_TEXT.en[key]||key}
 function tf(key,values={}){return Object.entries(values).reduce((text,[name,value])=>text.replaceAll(`{${name}}`,String(value)),t(key))}
 function setControlLabel(id,key){
@@ -1279,9 +1427,9 @@ function applyLanguage(){
     [".pro-balance-title","currentChurch"],[".pro-summary-card:nth-child(1) small","reports"],[".pro-summary-card:nth-child(2) small","areas"],[".pro-summary-card:nth-child(3) small","members"],
     [".pro-action[data-go='formList'] b","forms"],[".pro-action[data-go='members'] b","members"],[".pro-action[data-go='dashboard'] b","dashboard"],[".pro-action[data-go='manager'] b","manage"],
     ["#homeAreaCarouselSection .home-area-carousel-title","areas"],["#homeEditorMemberCarouselSection .home-area-carousel-title","members"],[".pro-pill[data-go='pastor'] span","pastor"],[".pro-pill[data-go='dashboard'] span","activity"],["#homeGroupManagersBtn span","groupManagers"],[".pro-pill[data-go='manageChurch'] span","church"],[".pro-home-section-title","reportsManagement"],
-    ["#pageFormList .form-list-title","forms"],["#formListAreaCarouselSection .home-area-carousel-title","areas"],["#editorMemberCarouselSection .home-area-carousel-title","members"],["#pageForm .empty div","selectForm"],
+    ["#pageFormList .form-list-title","forms"],["#formListAreaCarouselSection .home-area-carousel-title","areas"],["#editorMemberCarouselSection .home-area-carousel-title-label","members"],["#pageForm .empty div","selectForm"],
     ["#pageDashboard .stat:nth-child(1) small","entries"],["#pageDashboard .stat:nth-child(2) small","areas"],["#pageDashboard .stat:nth-child(3) small","members"],["#pageDashboard .stat:nth-child(4) small","logs"],["#pageDashboard .panel-head-actions h3","recentActivity"],["#pageDashboard .dash-grid .panel:nth-child(2) h3","overview"],
-    ["#pageAccount .pro-account-list>.pro-account-row:nth-child(1)>span","role"],["#pageAccount .pro-account-list>.pro-account-row:nth-child(2)>span","church"],["#accountAppBrandRow>span","app"],["#accountStorageRow>span","storage"],["#accountRecoveryRow>span","recovery"],["#accountRecoveryPanel .settings-head h3","deletedForms"],
+    ["#pageAccount .pro-account-list>.pro-account-row:nth-child(1)>span","role"],["#pageAccount .pro-account-list>.pro-account-row:nth-child(2)>span","church"],["#accountAppBrandRow>span","app"],["#accountStorageRow>span","storage"],["#accountRecoveryRow>span","recovery"],["#accountSettingsRow>span","settings"],["#accountRecoveryPanel .settings-head h3","deletedForms"],["#accountSettingsTitle","appearance"],["#appearanceIntro","chooseTheme"],["#rippleTouchTitle","rippleTouch"],["#rippleTouchCopy","rippleTouchCopy"],["#rippleSmallLabel","small"],["#rippleDefaultLabel","defaultSize"],["#rippleLargeLabel","large"],
     [".bottom-tab[data-go='home'] span","home"],["#bottomMembers span","member"],[".bottom-tab.create-tab span","createForm"],[".bottom-tab[data-go='account'] span","account"],
     ["#pageGroupManagers .gm-panel-title","groupManagers"],["#pageGroupManagers .gm-panel-note","groupManagersNote"],["#pageSwitchChurch .gm-panel-title","switchChurch"],["#pageSwitchChurch .gm-panel-note","switchChurchNote"]
   ];
@@ -1293,14 +1441,16 @@ function applyLanguage(){
   if(googleLoginLabel)googleLoginLabel.textContent=t("continueGoogle");
   const placeholders=[["memberAreaSearch","search"],["areaSearch","search"],["churchSearch","search"],["pastorSearch","search"],["formListSearch","search"]];
   placeholders.forEach(([id,key])=>{if($(id))$(id).placeholder=t(key)});
-  [["formListNewBtn","new"],["editFormListPreviewBtn","edit"],["deleteFormListPreviewBtn","delete"],["exportFormListPreviewBtn","exportPdf"],["newEntryBtn","new"],["saveEntryBtn","save"],["deleteEntryBtn","delete"],["exportBtn","exportPdf"],["paperExitFullscreenBtn","exit"],["bottomSaveEntryBtn","save"],["toggleAreaSearchBtn","search"],["openNewAreaBtn","newArea"],["newAreaBtn","newArea"],["saveAreaBtn","save"],["deleteAreaBtn","delete"],["editMembersBtn","edit"],["saveMembersBtn","save"],["openNewChurchBtn","newChurch"],["newChurchBtn","newChurch"],["saveChurchBtn","save"],["deleteChurchBtn","delete"],["clearActivityBtn","clearActivity"],["accountLogoutBtn","signOut"]].forEach(([id,key])=>setControlLabel(id,key));
+  [["formListNewBtn","new"],["editFormListPreviewBtn","edit"],["deleteFormListPreviewBtn","delete"],["exportFormListPreviewBtn","exportPdf"],["newEntryBtn","new"],["saveEntryBtn","save"],["deleteEntryBtn","delete"],["exportBtn","exportPdf"],["paperExitFullscreenBtn","exit"],["bottomSaveEntryBtn","save"],["toggleAreaSearchBtn","search"],["openNewAreaBtn","newArea"],["newAreaBtn","newArea"],["saveAreaBtn","save"],["deleteAreaBtn","delete"],["editorNewMemberBtn","new"],["editMembersBtn","edit"],["saveMembersBtn","save"],["openNewChurchBtn","newChurch"],["newChurchBtn","newChurch"],["saveChurchBtn","save"],["deleteChurchBtn","delete"],["clearActivityBtn","clearActivity"],["accountLogoutBtn","signOut"]].forEach(([id,key])=>setControlLabel(id,key));
   setControlLabel("saveFormListPreviewBtn",formListPreviewDirty?"update":"save");
   const bottomSubmit=$("bottomSubmitEntryBtn");
   if(bottomSubmit)setControlLabel("bottomSubmitEntryBtn",bottomSubmit.classList.contains("submitted")?"submitted":"submit");
   const previewSubmit=$("editorFormSubmitBtn")?.querySelector("span");
   if(previewSubmit)previewSubmit.textContent=$("editorFormSubmitBtn")?.classList.contains("submitted")?t("submitted"):t("submit");
   const storageLabel=$("accountStorageLabel");
-  if(storageLabel)storageLabel.textContent=$("accountStorageRow")?.classList.contains("connected")?t("connected"):t("setupStorage");
+  if(storageLabel)storageLabel.textContent=storageCountLabel();
+  const addStorageLabel=$("addStorageBtn")?.querySelector("span");
+  if(addStorageLabel)addStorageLabel.textContent=appLanguage==="kh"?"កន្លែងផ្ទុកថ្មី":"New Storage";
   const bottomManageLabel=$("bottomManage")?.querySelector("span");
   if(bottomManageLabel)bottomManageLabel.textContent=isEditor()?t("formList"):t("manage");
   const switchLabel=$("homeSwitchChurchBtn")?.querySelector("span");
@@ -1308,6 +1458,7 @@ function applyLanguage(){
   [["psHomeBtn","home"],["psActivityBtn","activity"],["psFormsBtn","forms"]].forEach(([id,key])=>{if($(id)){$(id).title=t(key);$(id).setAttribute("aria-label",t(key))}});
   ["psLangEnBtn","loginLangEnBtn"].forEach(id=>{$(id)?.classList.toggle("active",appLanguage==="en");$(id)?.setAttribute("aria-pressed",String(appLanguage==="en"))});
   ["psLangKhBtn","loginLangKhBtn"].forEach(id=>{$(id)?.classList.toggle("active",appLanguage==="kh");$(id)?.setAttribute("aria-pressed",String(appLanguage==="kh"))});
+  renderAppearanceSettings();
   renderAppBrand();
 }
 function setAppLanguage(language){
@@ -1399,6 +1550,12 @@ function canEditArea(areaId=selectedAreaId){
   if(isGroupManager()) return area.ownerRole==="groupManager" && (area.ownerUid===user.uid || areaOwnedByCurrentEmail(area));
   return false;
 }
+function canEditMemberArea(areaId=currentMemberAreaId){
+  if(!areaId)return false;
+  if(isPastorAccount())return ownsArea(areaId);
+  return canEditArea(areaId);
+}
+function getViewableMemberAreaIds(){return Object.keys(fieldAreas).filter(id=>canViewArea(id))}
 function deletedEntryOwnedByCurrentUser(entry={}){
   return ownsArea(entry.fieldAreaId)||(entry.deletedAreaOwnerUid||"")===user?.uid||normalizeEmail(entry.deletedAreaOwnerEmail)===normalizeEmail(user?.email);
 }
@@ -1423,6 +1580,28 @@ window.prayInfoIsAdmin=isAdmin;
 function status(el,t,good=false){el.textContent=t||"";el.style.color=good?"var(--success)":"var(--muted)"}
 function clearNode(el){if(el)el.textContent=""}
 function appendTextNode(parent,tag,className,text){let el=document.createElement(tag);if(className)el.className=className;el.textContent=text||"";parent.appendChild(el);return el}
+function appendHighlightedTextNode(parent,tag,className,text,query=""){
+  const el=document.createElement(tag);
+  if(className)el.className=className;
+  const source=String(text||"");
+  const needle=String(query||"").trim();
+  if(!needle){el.textContent=source;parent.appendChild(el);return el}
+  const sourceLower=source.toLocaleLowerCase();
+  const needleLower=needle.toLocaleLowerCase();
+  let cursor=0,index=sourceLower.indexOf(needleLower);
+  while(index!==-1){
+    if(index>cursor)el.appendChild(document.createTextNode(source.slice(cursor,index)));
+    const mark=document.createElement("mark");
+    mark.className="form-search-match";
+    mark.textContent=source.slice(index,index+needle.length);
+    el.appendChild(mark);
+    cursor=index+needle.length;
+    index=sourceLower.indexOf(needleLower,cursor);
+  }
+  if(cursor<source.length)el.appendChild(document.createTextNode(source.slice(cursor)));
+  parent.appendChild(el);
+  return el;
+}
 function appendMetaEmpty(parent,text){clearNode(parent);appendTextNode(parent,"div","card-meta",text)}
 function renderSkeleton(el,count=2,type="card"){
   if(!el||dataHydrated)return;
@@ -1455,7 +1634,8 @@ function renderAppBrand(){
 }
 function setAppBrandEditor(open){
   appBrandEditorOpen=!!open&&isAdmin();
-  if(appBrandEditorOpen&&storageSetupOpen){storageSetupOpen=false;renderStorageSetup(false)}
+  if(appBrandEditorOpen&&appDetailsOpen)setAppDetailsOpen(false);
+  if(appBrandEditorOpen&&storageSetupOpen)setStorageSetupOpen(false);
   if(appBrandEditorOpen&&recoveryOpen)setRecoveryOpen(false);
   $("accountAppBrandEditor")?.classList.toggle("hidden",!appBrandEditorOpen);
   $("accountAppBrandRow")?.classList.toggle("active",appBrandEditorOpen);
@@ -1470,14 +1650,156 @@ function renderAppBrandSettings(){
 function normalizeCloudinarySettings(value={}){
   return{cloudName:String(value?.cloudName||"").trim(),uploadPreset:String(value?.uploadPreset||"").trim()};
 }
+function normalizeCloudinaryStorageState(value={}){
+  const items={};
+  const addItem=(id,item,index=0)=>{
+    const settings=normalizeCloudinarySettings(item);
+    if(!settings.cloudName||!settings.uploadPreset)return;
+    items[id]={
+      name:String(item?.name||`Storage ${index+1}`).trim()||`Storage ${index+1}`,
+      ...settings,
+      createdAt:Number(item?.createdAt)||0,
+      updatedAt:Number(item?.updatedAt)||0
+    };
+  };
+  if(value?.items&&typeof value.items==="object")Object.entries(value.items).forEach(([id,item],index)=>addItem(id,item,index));
+  else{
+    const legacy=normalizeCloudinarySettings(value);
+    if(legacy.cloudName&&legacy.uploadPreset)addItem("default",{name:"Default Storage",...legacy,updatedAt:value?.updatedAt},0);
+  }
+  const ids=Object.keys(items);
+  const activeId=items[value?.activeId]?value.activeId:(ids[0]||"");
+  return{activeId,items};
+}
+function defaultCloudinaryStorageState(){
+  if(!CLOUDINARY_CLOUD_NAME||!CLOUDINARY_UPLOAD_PRESET)return{activeId:"",items:{}};
+  return{activeId:"app_default",items:{app_default:{name:"Default Storage",cloudName:CLOUDINARY_CLOUD_NAME,uploadPreset:CLOUDINARY_UPLOAD_PRESET,createdAt:0,updatedAt:0}}};
+}
 function storageSettingsKey(){return`prayinfoCloudinarySettings:${user?.uid||"guest"}`}
 function loadLocalStorageSettings(){
-  try{return normalizeCloudinarySettings(JSON.parse(localStorage.getItem(storageSettingsKey())||"{}"))}catch(e){return{cloudName:"",uploadPreset:""}}
+  try{return normalizeCloudinaryStorageState(JSON.parse(localStorage.getItem(storageSettingsKey())||"{}"))}catch(e){return{activeId:"",items:{}}}
 }
 function saveLocalStorageSettings(value){
-  try{localStorage.setItem(storageSettingsKey(),JSON.stringify(normalizeCloudinarySettings(value)))}catch(e){console.warn("Local storage setup skipped",e)}
+  try{localStorage.setItem(storageSettingsKey(),JSON.stringify(normalizeCloudinaryStorageState(value)))}catch(e){console.warn("Local storage setup skipped",e)}
+}
+function syncActiveCloudinarySettings(){
+  cloudinarySettings=normalizeCloudinarySettings(cloudinaryStorageState.items?.[cloudinaryStorageState.activeId]||{});
 }
 function hasCloudinarySetup(){return !!cloudinarySettings.cloudName&&!!cloudinarySettings.uploadPreset}
+function storageCountLabel(){
+  const count=Object.keys(cloudinaryStorageState.items||{}).length;
+  if(!count)return t("setupStorage");
+  return appLanguage==="kh"?`${count} កន្លែងផ្ទុក`:`${count} ${count===1?"Storage":"Storages"}`;
+}
+function normalizeRippleSize(value){
+  const numeric=Number(value);
+  if(!Number.isFinite(numeric))return 100;
+  return Math.min(150,Math.max(50,Math.round(numeric/10)*10));
+}
+function renderRippleTouchSetting(){
+  const control=$("rippleSizeControl"),output=$("rippleSizeValue");
+  if(!control||!output)return;
+  control.value=String(rippleSize);
+  control.setAttribute("aria-label",t("rippleTouch"));
+  output.value=`${rippleSize}%`;
+  output.textContent=`${rippleSize}%`;
+}
+function setRippleSize(value){
+  rippleSize=normalizeRippleSize(value);
+  document.documentElement.dataset.rippleScale=String(rippleSize/100);
+  try{localStorage.setItem(RIPPLE_SIZE_STORAGE_KEY,String(rippleSize))}catch(e){}
+  renderRippleTouchSetting();
+}
+function getThemeDefinition(id=appTheme){return APP_THEMES.find(theme=>theme.id===id)||APP_THEMES[0]}
+function renderAppearanceSettings(){
+  const row=$("accountSettingsRow"),overlay=$("accountSettingsOverlay"),grid=$("appearanceThemeGrid"),label=$("accountThemeLabel");
+  if(!row||!overlay||!grid)return;
+  const activeTheme=getThemeDefinition();
+  row.classList.toggle("active",settingsOpen);
+  row.setAttribute("aria-expanded",String(settingsOpen));
+  overlay.classList.toggle("hidden",!settingsOpen);
+  if(label)label.textContent=t(activeTheme.labelKey);
+  clearNode(grid);
+  APP_THEMES.forEach(theme=>{
+    const option=document.createElement("button");
+    option.type="button";
+    option.className=`appearance-theme-option${theme.id===appTheme?" active":""}`;
+    option.setAttribute("aria-pressed",String(theme.id===appTheme));
+    option.setAttribute("aria-label",t(theme.labelKey));
+    const swatch=document.createElement("span");
+    swatch.className="appearance-theme-swatch";
+    theme.colors.forEach(color=>{const colorBlock=document.createElement("span");colorBlock.style.background=color;swatch.appendChild(colorBlock)});
+    const name=document.createElement("span");
+    name.className="appearance-theme-name";
+    const nameText=document.createElement("span");
+    nameText.textContent=t(theme.labelKey);
+    const check=document.createElement("i");
+    check.className="ri-check-line";
+    check.setAttribute("aria-hidden","true");
+    name.append(nameText,check);
+    option.append(swatch,name);
+    option.onclick=()=>setAppTheme(theme.id);
+    grid.appendChild(option);
+  });
+  renderRippleTouchSetting();
+}
+function setAppTheme(themeId){
+  const theme=getThemeDefinition(themeId);
+  appTheme=theme.id;
+  document.documentElement.dataset.theme=theme.id;
+  document.documentElement.dataset.themeMode=theme.dark?"dark":"light";
+  try{localStorage.setItem(THEME_STORAGE_KEY,theme.id)}catch(e){}
+  renderAppearanceSettings();
+}
+function setSettingsOpen(open){
+  settingsOpen=!!open;
+  if(settingsOpen&&appBrandEditorOpen)setAppBrandEditor(false);
+  if(settingsOpen&&storageSetupOpen)setStorageSetupOpen(false);
+  if(settingsOpen&&recoveryOpen)setRecoveryOpen(false);
+  if(settingsOpen&&appDetailsOpen)setAppDetailsOpen(false);
+  renderAppearanceSettings();
+  syncAccountModalLock();
+  if(settingsOpen)setTimeout(()=>$('closeAccountSettingsBtn')?.focus(),0);
+}
+function syncAccountModalLock(){document.body.classList.toggle("account-modal-open",storageSetupOpen||appDetailsOpen||settingsOpen)}
+function setAppDetailsOpen(open){
+  appDetailsOpen=!!open;
+  if(appDetailsOpen&&appBrandEditorOpen)setAppBrandEditor(false);
+  if(appDetailsOpen&&storageSetupOpen)setStorageSetupOpen(false);
+  if(appDetailsOpen&&settingsOpen)setSettingsOpen(false);
+  $("appDetailsOverlay")?.classList.toggle("hidden",!appDetailsOpen);
+  $("accountAppBrandRow")?.classList.toggle("active",appDetailsOpen||appBrandEditorOpen);
+  $("accountAppBrandRow")?.setAttribute("aria-expanded",String(appDetailsOpen));
+  syncAccountModalLock();
+  if(appDetailsOpen)setTimeout(()=>$('closeAppDetailsBtn')?.focus(),0);
+}
+function renderStorageList(){
+  const list=$("storageList");
+  if(!list)return;
+  clearNode(list);
+  const items=Object.entries(cloudinaryStorageState.items||{}).sort(([,a],[,b])=>(a.createdAt||0)-(b.createdAt||0)||String(a.name||"").localeCompare(String(b.name||"")));
+  if(!items.length){appendTextNode(list,"div","storage-list-empty",appLanguage==="kh"?"មិនទាន់មានកន្លែងផ្ទុក។":"No storage has been added yet.");return}
+  items.forEach(([id,item])=>{
+    const wrap=document.createElement("div");
+    wrap.className=`storage-list-item${id===cloudinaryStorageState.activeId?" active":""}`;
+    const select=document.createElement("button");
+    select.type="button";
+    select.className="storage-list-select";
+    select.setAttribute("aria-pressed",String(id===cloudinaryStorageState.activeId));
+    appendTextNode(select,"span","storage-list-name",`${item.name}${id===cloudinaryStorageState.activeId?(appLanguage==="kh"?" • កំពុងប្រើ":" • Active"):""}`);
+    appendTextNode(select,"span","storage-list-cloud",item.cloudName);
+    select.onclick=()=>activateStorage(id);
+    const edit=document.createElement("button");
+    edit.type="button";
+    edit.className="storage-list-edit";
+    edit.title=appLanguage==="kh"?"កែកន្លែងផ្ទុក":"Edit storage";
+    edit.setAttribute("aria-label",`${edit.title}: ${item.name}`);
+    edit.innerHTML='<i class="ri-pencil-line"></i>';
+    edit.onclick=()=>editStorage(id);
+    wrap.append(select,edit);
+    list.appendChild(wrap);
+  });
+}
 function renderStorageSetup(fillInputs=false){
   const row=$("accountStorageRow"),panel=$("accountStorageSetup"),label=$("accountStorageLabel");
   if(!row||!panel)return;
@@ -1486,18 +1808,58 @@ function renderStorageSetup(fillInputs=false){
   row.classList.toggle("active",storageSetupOpen);
   row.setAttribute("aria-expanded",String(storageSetupOpen));
   panel.classList.toggle("hidden",!storageSetupOpen);
-  if(label)label.textContent=connected?t("connected"):t("setupStorage");
+  if(label)label.textContent=storageCountLabel();
+  renderStorageList();
+  $("storageEditor")?.classList.toggle("hidden",!storageEditorOpen);
   if(fillInputs){
-    if($("storageCloudName"))$("storageCloudName").value=cloudinarySettings.cloudName||"";
-    if($("storageUploadPreset"))$("storageUploadPreset").value=cloudinarySettings.uploadPreset||"";
+    const item=storageEditorId?cloudinaryStorageState.items?.[storageEditorId]:null;
+    if($("storageName"))$("storageName").value=item?.name||"";
+    if($("storageCloudName"))$("storageCloudName").value=item?.cloudName||"";
+    if($("storageUploadPreset"))$("storageUploadPreset").value=item?.uploadPreset||"";
   }
+  syncAccountModalLock();
 }
 function setStorageSetupOpen(open){
   storageSetupOpen=!!open;
   if(storageSetupOpen&&appBrandEditorOpen)setAppBrandEditor(false);
   if(storageSetupOpen&&recoveryOpen)setRecoveryOpen(false);
+  if(storageSetupOpen&&appDetailsOpen)setAppDetailsOpen(false);
+  if(storageSetupOpen&&settingsOpen)setSettingsOpen(false);
+  if(!storageSetupOpen){storageEditorOpen=false;storageEditorId=""}
+  else if(!Object.keys(cloudinaryStorageState.items||{}).length){storageEditorOpen=true;storageEditorId=""}
   renderStorageSetup(storageSetupOpen);
-  if(storageSetupOpen)setTimeout(()=>$("storageCloudName")?.focus(),0);
+  if(storageSetupOpen&&storageEditorOpen)setTimeout(()=>$("storageName")?.focus(),0);
+}
+function startNewStorage(){
+  storageEditorOpen=true;
+  storageEditorId="";
+  renderStorageSetup(true);
+  setTimeout(()=>$("storageName")?.focus(),0);
+}
+function editStorage(id){
+  if(!cloudinaryStorageState.items?.[id])return;
+  storageEditorOpen=true;
+  storageEditorId=id;
+  renderStorageSetup(true);
+  setTimeout(()=>$("storageName")?.focus(),0);
+}
+function cancelStorageEditor(){
+  storageEditorOpen=false;
+  storageEditorId="";
+  renderStorageSetup(false);
+}
+async function persistStorageSettings(){
+  if(!user)return;
+  await set(ref(db,`userStorageSettings/${user.uid}/cloudinary`),{...cloudinaryStorageState,updatedAt:Date.now()});
+}
+async function activateStorage(id){
+  if(!cloudinaryStorageState.items?.[id]||cloudinaryStorageState.activeId===id)return;
+  cloudinaryStorageState={...cloudinaryStorageState,activeId:id};
+  syncActiveCloudinarySettings();
+  saveLocalStorageSettings(cloudinaryStorageState);
+  renderStorageSetup(false);
+  status($("storageSetupStatus"),appLanguage==="kh"?"បានប្ដូរកន្លែងផ្ទុក។":"Active storage changed.",true);
+  try{await persistStorageSettings()}catch(e){console.warn("Cloud storage selection unavailable; saved on this device",e)}
 }
 function recoveryEntriesForCurrentUser(){
   return Object.entries(deletedEntries||{}).map(([id,entry])=>({id,...entry})).filter(canRecoverDeletedEntry).sort((a,b)=>(b.deletedAt||0)-(a.deletedAt||0));
@@ -1535,7 +1897,8 @@ function renderRecoveryPanel(){
 function setRecoveryOpen(open){
   recoveryOpen=!!open;
   if(recoveryOpen&&appBrandEditorOpen)setAppBrandEditor(false);
-  if(recoveryOpen&&storageSetupOpen){storageSetupOpen=false;renderStorageSetup(false)}
+  if(recoveryOpen&&storageSetupOpen)setStorageSetupOpen(false);
+  if(recoveryOpen&&settingsOpen)setSettingsOpen(false);
   renderRecoveryPanel();
 }
 async function saveStorageSetup(){
@@ -1543,12 +1906,19 @@ async function saveStorageSetup(){
   const next=normalizeCloudinarySettings({cloudName:$("storageCloudName")?.value,uploadPreset:$("storageUploadPreset")?.value});
   if(!next.cloudName||!next.uploadPreset){status($("storageSetupStatus"),"Enter both Cloud Name and Unsigned Upload Preset.");return}
   if(!/^[a-zA-Z0-9_-]+$/.test(next.cloudName)){status($("storageSetupStatus"),"Cloud Name contains unsupported characters.");return}
-  cloudinarySettings=next;
-  saveLocalStorageSettings(next);
-  renderStorageSetup(true);
+  const now=Date.now();
+  const id=storageEditorId||`storage_${now.toString(36)}_${Math.random().toString(36).slice(2,7)}`;
+  const previous=cloudinaryStorageState.items?.[id]||{};
+  const name=String($("storageName")?.value||previous.name||`Storage ${Object.keys(cloudinaryStorageState.items||{}).length+1}`).trim();
+  cloudinaryStorageState={activeId:id,items:{...(cloudinaryStorageState.items||{}),[id]:{name:name||"Cloudinary Storage",...next,createdAt:previous.createdAt||now,updatedAt:now}}};
+  storageEditorOpen=false;
+  storageEditorId="";
+  syncActiveCloudinarySettings();
+  saveLocalStorageSettings(cloudinaryStorageState);
+  renderStorageSetup(false);
   status($("storageSetupStatus"),"Storage setup saved.",true);
   try{
-    await set(ref(db,`userStorageSettings/${user.uid}/cloudinary`),{...next,updatedAt:Date.now()});
+    await persistStorageSettings();
   }catch(e){
     console.warn("Cloud storage settings unavailable; saved on this device",e);
     status($("storageSetupStatus"),"Saved on this device. Firebase sync is unavailable.",true);
@@ -1557,14 +1927,16 @@ async function saveStorageSetup(){
 function subscribeStorageSettings(){
   if(storageSettingsUnsubscribe){try{storageSettingsUnsubscribe()}catch(e){}storageSettingsUnsubscribe=null}
   const local=loadLocalStorageSettings();
-  cloudinarySettings={cloudName:local.cloudName||CLOUDINARY_CLOUD_NAME,uploadPreset:local.uploadPreset||CLOUDINARY_UPLOAD_PRESET};
+  cloudinaryStorageState=Object.keys(local.items||{}).length?local:defaultCloudinaryStorageState();
+  syncActiveCloudinarySettings();
   renderStorageSetup(storageSetupOpen);
   if(!user)return;
   storageSettingsUnsubscribe=onValue(ref(db,`userStorageSettings/${user.uid}/cloudinary`),s=>{
-    const remote=normalizeCloudinarySettings(s.val()||{});
+    const remote=normalizeCloudinaryStorageState(s.val()||{});
     const fallback=loadLocalStorageSettings();
-    cloudinarySettings={cloudName:remote.cloudName||fallback.cloudName||CLOUDINARY_CLOUD_NAME,uploadPreset:remote.uploadPreset||fallback.uploadPreset||CLOUDINARY_UPLOAD_PRESET};
-    if(remote.cloudName&&remote.uploadPreset)saveLocalStorageSettings(remote);
+    cloudinaryStorageState=Object.keys(remote.items||{}).length?remote:(Object.keys(fallback.items||{}).length?fallback:defaultCloudinaryStorageState());
+    syncActiveCloudinarySettings();
+    if(Object.keys(remote.items||{}).length)saveLocalStorageSettings(remote);
     renderStorageSetup(storageSetupOpen);
   },e=>console.warn("Cloud storage settings unavailable; using this device",e));
 }
@@ -2051,14 +2423,32 @@ $("googleLoginBtn").onclick=async()=>{
 };
 $("logoutBtn").onclick=()=>{if(confirm("Sign out of Prayinfo Pro?"))signOut(auth)};
 $("accountLogoutBtn").onclick=()=>{if(confirm("Sign out of Prayinfo Pro?"))signOut(auth)};
-$("accountAppBrandRow")?.addEventListener("click",()=>setAppBrandEditor(!appBrandEditorOpen));
+$("accountAppBrandRow")?.addEventListener("click",event=>{
+  if(isAdmin()&&event.target.closest(".account-app-edit")){setAppBrandEditor(!appBrandEditorOpen);return}
+  setAppDetailsOpen(true);
+});
 $("closeAppBrandEditorBtn")?.addEventListener("click",()=>setAppBrandEditor(false));
 $("saveAppBrandBtn")?.addEventListener("click",saveAppBrandSettings);
-$("accountStorageRow")?.addEventListener("click",()=>setStorageSetupOpen(!storageSetupOpen));
+$("accountStorageRow")?.addEventListener("click",()=>setStorageSetupOpen(true));
 $("closeStorageSetupBtn")?.addEventListener("click",()=>setStorageSetupOpen(false));
+$("addStorageBtn")?.addEventListener("click",startNewStorage);
+$("cancelStorageEditorBtn")?.addEventListener("click",cancelStorageEditor);
 $("saveStorageSetupBtn")?.addEventListener("click",saveStorageSetup);
+$("closeAppDetailsBtn")?.addEventListener("click",()=>setAppDetailsOpen(false));
+$("accountStorageSetup")?.addEventListener("click",event=>{if(event.target===$("accountStorageSetup"))setStorageSetupOpen(false)});
+$("appDetailsOverlay")?.addEventListener("click",event=>{if(event.target===$("appDetailsOverlay"))setAppDetailsOpen(false)});
+$("accountSettingsOverlay")?.addEventListener("click",event=>{if(event.target===$("accountSettingsOverlay"))setSettingsOpen(false)});
+document.addEventListener("keydown",event=>{
+  if(event.key!=="Escape")return;
+  if(storageSetupOpen)setStorageSetupOpen(false);
+  else if(appDetailsOpen)setAppDetailsOpen(false);
+  else if(settingsOpen)setSettingsOpen(false);
+});
 $("accountRecoveryRow")?.addEventListener("click",()=>setRecoveryOpen(!recoveryOpen));
 $("closeRecoveryPanelBtn")?.addEventListener("click",()=>setRecoveryOpen(false));
+$("accountSettingsRow")?.addEventListener("click",()=>setSettingsOpen(true));
+$("closeAccountSettingsBtn")?.addEventListener("click",()=>setSettingsOpen(false));
+$("rippleSizeControl")?.addEventListener("input",event=>setRippleSize(event.currentTarget.value));
 $("proPrivacyBtn")?.addEventListener("click",()=>{
   const summary=document.querySelector(".pro-summary");
   const icon=$("proPrivacyBtn")?.querySelector("i");
@@ -2147,10 +2537,11 @@ function updateProUI(){
   $("homeMembers") && ($("homeMembers").textContent=memberCount);
   $("accountName") && ($("accountName").textContent=name);$("accountEmail") && ($("accountEmail").textContent=user.email||'');$("accountRole") && ($("accountRole").textContent=displayRoleName(role));$("accountChurch") && ($("accountChurch").textContent=displayChurch||'—');
   $("accountAppBrandRow")?.classList.toggle("editable",isAdmin());
-  $("accountAppBrandRow")?.setAttribute("aria-expanded",String(appBrandEditorOpen&&isAdmin()));
+  $("accountAppBrandRow")?.setAttribute("aria-expanded",String(appDetailsOpen));
   if(!isAdmin())setAppBrandEditor(false);
   renderStorageSetup(false);
   renderRecoveryPanel();
+  renderAppearanceSettings();
   document.querySelectorAll('.pro-pill[data-go="pastor"]').forEach(el=>el.classList.toggle("hidden",!(isAdmin()||isPastorWorkspace())));
   document.querySelectorAll('.pro-pill[data-go="dashboard"]').forEach(el=>el.classList.toggle("hidden",!(isAdmin()||isPastorWorkspace())));
   $("homeGroupManagersBtn")?.classList.toggle("hidden",!(isAdmin()||isPastorWorkspace()));
@@ -2201,7 +2592,7 @@ function syncProfileHeaderWithScroll(){
   profileHeaderScrollQueued=false;
   const header=document.querySelector(".ps-topbar");
   if(!header)return;
-  const transformPageActive=$("pageHome")?.classList.contains("active")||$("pageManager")?.classList.contains("active")||$("pageFormList")?.classList.contains("active")||$("pageMembers")?.classList.contains("active")||$("pageForm")?.classList.contains("active");
+  const transformPageActive=$("pageHome")?.classList.contains("active")||$("pageManager")?.classList.contains("active")||$("pageFormList")?.classList.contains("active")||$("pageMembers")?.classList.contains("active")||$("pageForm")?.classList.contains("active")||$("pageAccount")?.classList.contains("active");
   const appVisible=!$("app")?.classList.contains("hidden");
   const windowScrollTop=window.scrollY||document.documentElement.scrollTop||0;
   const memberScrollTop=$("pageMembers")?.classList.contains("active")
@@ -2229,12 +2620,24 @@ $("psFormsBtn")?.addEventListener("click",()=>showPage("formList"));
 $("profileImageInput")?.addEventListener("change",uploadProfileImage);
 applyLanguage();
 
+async function uploadCloudinaryImage(file,folder){
+  const {cloudName,uploadPreset}=cloudinarySettings;
+  if(!cloudName||!uploadPreset)throw new Error("Set up Cloudinary storage first.");
+  const form=new FormData();
+  form.append("file",file);
+  form.append("upload_preset",uploadPreset);
+  form.append("folder",folder);
+  const res=await fetch(`https://api.cloudinary.com/v1_1/${encodeURIComponent(cloudName)}/image/upload`,{method:"POST",body:form});
+  const data=await res.json();
+  if(!res.ok||!data.secure_url)throw new Error(data.error?.message||"Cloudinary upload failed");
+  return data.secure_url;
+}
+
 async function uploadProfileImage(event){
   const file=event.target.files?.[0];
   if(!file||!user)return;
   const statusEl=$("profileUploadStatus");
-  const {cloudName,uploadPreset}=cloudinarySettings;
-  if(!cloudName||!uploadPreset){
+  if(!hasCloudinarySetup()){
     status(statusEl,"Set up Cloudinary storage first.");
     setStorageSetupOpen(true);
     event.target.value="";
@@ -2242,22 +2645,16 @@ async function uploadProfileImage(event){
   }
   try{
     status(statusEl,"Uploading profile image...");
-    const form=new FormData();
-    form.append("file",file);
-    form.append("upload_preset",uploadPreset);
-    form.append("folder","prayinfo-pro/profiles");
-    const res=await fetch(`https://api.cloudinary.com/v1_1/${encodeURIComponent(cloudName)}/image/upload`,{method:"POST",body:form});
-    const data=await res.json();
-    if(!res.ok||!data.secure_url)throw new Error(data.error?.message||"Cloudinary upload failed");
-    await updateProfile(user,{photoURL:data.secure_url});
-    allowedUsers[user.uid]={...getCurrentAllowedUser(),email:user.email||"",name:user.displayName||"",role,photoURL:data.secure_url,updatedAt:Date.now()};
+    const photoURL=await uploadCloudinaryImage(file,"prayinfo-pro/profiles");
+    await updateProfile(user,{photoURL});
+    allowedUsers[user.uid]={...getCurrentAllowedUser(),email:user.email||"",name:user.displayName||"",role,photoURL,updatedAt:Date.now()};
     await set(ref(db,`allowedUsers/${user.uid}`),allowedUsers[user.uid]);
-    if(user.email)await set(ref(db,`allowedEmails/${emailKey(user.email)}/photoURL`),data.secure_url);
+    if(user.email)await set(ref(db,`allowedEmails/${emailKey(user.email)}/photoURL`),photoURL);
     const ownedAreaIds=Object.keys(fieldAreas||{}).filter(ownsArea);
-    await Promise.allSettled(ownedAreaIds.map(areaId=>set(ref(db,`fieldAreas/${areaId}/ownerPhotoURL`),data.secure_url)));
-    ownedAreaIds.forEach(areaId=>{if(fieldAreas[areaId])fieldAreas[areaId].ownerPhotoURL=data.secure_url});
-    renderAvatar($("accountAvatar"),user.displayName||user.email,user.email||"",data.secure_url);
-    renderAvatar($("psProfileAvatar"),user.displayName||user.email,user.email||"",data.secure_url);
+    await Promise.allSettled(ownedAreaIds.map(areaId=>set(ref(db,`fieldAreas/${areaId}/ownerPhotoURL`),photoURL)));
+    ownedAreaIds.forEach(areaId=>{if(fieldAreas[areaId])fieldAreas[areaId].ownerPhotoURL=photoURL});
+    renderAvatar($("accountAvatar"),user.displayName||user.email,user.email||"",photoURL);
+    renderAvatar($("psProfileAvatar"),user.displayName||user.email,user.email||"",photoURL);
     status(statusEl,"Profile image updated.",true);
   }catch(e){
     console.error("Profile image upload failed",e);
@@ -2273,7 +2670,8 @@ onAuthStateChanged(auth,async u=>{
   photoLookupKeys=new Set();
   updatePostSermonHeader();
   if(!u){
-    role="viewer";pastorActingAsEditor=false;registeredUser=false;allowedUsers={};allowedEmails={};pastorChurches={};fieldAreas={};entries={};deletedEntries={};auditLogs={};notificationClearedAt=0;notificationReadIds=new Map();photoLookupKeys=new Set();cloudinarySettings={cloudName:CLOUDINARY_CLOUD_NAME,uploadPreset:CLOUDINARY_UPLOAD_PRESET};storageSetupOpen=false;recoveryOpen=false;currentEntryId=null;currentAreaId=null;currentChurchId=null;currentMemberAreaId=null;selectedChurchId="";resolvedPastorChurchId="";formListAreaFilterId="";memberEditMode=false;memberWorkspaceOpen=false;appBrandEditorOpen=false;dataHydrated=false;
+    role="viewer";pastorActingAsEditor=false;registeredUser=false;allowedUsers={};allowedEmails={};pastorChurches={};fieldAreas={};entries={};deletedEntries={};auditLogs={};notificationClearedAt=0;notificationReadIds=new Map();photoLookupKeys=new Set();cloudinarySettings={cloudName:CLOUDINARY_CLOUD_NAME,uploadPreset:CLOUDINARY_UPLOAD_PRESET};cloudinaryStorageState={activeId:"",items:{}};storageSetupOpen=false;storageEditorOpen=false;storageEditorId="";appDetailsOpen=false;recoveryOpen=false;settingsOpen=false;currentEntryId=null;currentAreaId=null;currentChurchId=null;currentMemberAreaId=null;selectedChurchId="";resolvedPastorChurchId="";formListAreaFilterId="";memberEditMode=false;memberWorkspaceOpen=false;appBrandEditorOpen=false;dataHydrated=false;
+    $("accountStorageSetup")?.classList.add("hidden");$("appDetailsOverlay")?.classList.add("hidden");$("accountSettingsOverlay")?.classList.add("hidden");syncAccountModalLock();
     $("loginScreen").classList.remove("hidden");
     $("app").classList.add("hidden");
     subscribeAppBrand();
@@ -3056,8 +3454,8 @@ function renderFormList(){
           renderAvatar(avatar,area.ownerName||e.pastorName||area.pastorName,area.ownerEmail||"",getAreaOwnerPhotoURL(area));
           const main=document.createElement("div");
           main.className="form-list-row-main";
-          appendTextNode(main,"div","form-list-row-title",`${e.fieldArea||"No area"}  ID: ${formatFormId(e.id,e)}`);
-          appendTextNode(main,"div","form-list-row-meta",`${e.currentDate||""} • អ្នកគង្វាល៖ ${e.pastorName||""} • ${(e.participants||[]).length}នាក់`);
+          appendHighlightedTextNode(main,"div","form-list-row-title",`${e.fieldArea||"No area"}  ID: ${formatFormId(e.id,e)}`,query);
+          appendHighlightedTextNode(main,"div","form-list-row-meta",`${e.currentDate||""} • អ្នកគង្វាល៖ ${e.pastorName||""} • ${(e.participants||[]).length}នាក់`,query);
           const view=document.createElement("button");
           view.type="button";
           view.className="form-list-action";
@@ -3577,10 +3975,23 @@ $("deleteChurchBtn")?.addEventListener("click",async()=>{
   delete pastorChurches[currentChurchId];currentChurchId=null;selectedChurchId="";renderChurchList();renderChurchManager();renderSwitchChurchList();queueRefreshAfterDataChange();$("deleteChurchBtn")?.classList.add("hidden");closeChurchWorkspace(false);status($("churchStatus"),"Deleted.",true);
 });
 function closeMemberWorkspace(renderList=true){memberWorkspaceOpen=false;memberEditMode=false;$("memberWorkspacePanel")?.classList.add("hidden");status($("memberStatus"),"");if(renderList)renderMemberAreaList()}
-function openMemberWorkspace(areaId){if(!getEditableAreaIds().includes(areaId))return;currentMemberAreaId=areaId;memberWorkspaceOpen=true;memberEditMode=false;$("memberWorkspacePanel")?.classList.remove("hidden");renderMemberAreaList();renderMemberManager()}
+function openMemberWorkspace(areaId){if(!getViewableMemberAreaIds().includes(areaId))return;currentMemberAreaId=areaId;memberWorkspaceOpen=true;memberEditMode=false;$("memberWorkspacePanel")?.classList.remove("hidden");renderMemberAreaList();renderMemberManager()}
+function addNewEditorMember(){
+  if(!isEditor())return;
+  const editableIds=getEditableAreaIds().sort((a,b)=>(fieldAreas[a]?.name||"").localeCompare(fieldAreas[b]?.name||""));
+  const areaId=editableIds.includes(currentMemberAreaId)?currentMemberAreaId:editableIds[0];
+  if(!areaId)return;
+  openMemberWorkspace(areaId);
+  status($("memberStatus"),"");
+  addOwnMemberRow("",true);
+  requestAnimationFrame(()=>document.querySelector("#ownMembersBox .member-row.editing:last-child .own-mem")?.focus());
+}
+$("editorNewMemberBtn")?.addEventListener("click",addNewEditorMember);
 function openEditorMemberFromCarousel(areaId,memberIndex){if(!$("pageMembers")?.classList.contains("active"))showPage("members");openMemberWorkspace(areaId);requestAnimationFrame(()=>{const row=document.querySelectorAll("#ownMembersBox .member-row")[memberIndex];row?.scrollIntoView({behavior:"smooth",block:"center"})})}
 function renderEditorMemberCarousel(){
   const targets=[["editorMemberCarouselSection","editorMemberCarousel"],["homeEditorMemberCarouselSection","homeEditorMemberCarousel"]];
+  const newMemberBtn=$("editorNewMemberBtn");
+  if(newMemberBtn)newMemberBtn.disabled=!isEditor()||!getEditableAreaIds().length;
   targets.forEach(([sectionId,boxId])=>{
     const section=$(sectionId),box=$(boxId);
     if(!section||!box)return;
@@ -3592,11 +4003,15 @@ function renderEditorMemberCarousel(){
 function renderEditorMemberCarouselCards(box){
   const areas=getEditableAreaIds().map(id=>[id,fieldAreas[id]||{}]).sort((a,b)=>(a[1].name||"").localeCompare(b[1].name||""));
   clearNode(box);
-  let count=0;
-  areas.forEach(([areaId,area])=>Object.entries(area.members||{}).forEach(([memberId,member],memberIndex)=>{
+  const memberCards=[];
+  areas.forEach(([areaId,area],areaIndex)=>Object.entries(area.members||{}).forEach(([memberId,member],memberIndex)=>{
+    memberCards.push({areaId,area,areaIndex,memberId,member,memberIndex,birthdayThisMonth:isMemberBirthdayThisMonth(member)});
+  }));
+  memberCards.sort((a,b)=>Number(b.birthdayThisMonth)-Number(a.birthdayThisMonth)||a.areaIndex-b.areaIndex||a.memberIndex-b.memberIndex);
+  memberCards.forEach(({areaId,area,memberId,member,memberIndex,birthdayThisMonth})=>{
     const card=document.createElement("button");
     card.type="button";
-    card.className="home-area-card editor-member-card";
+    card.className=`home-area-card editor-member-card${birthdayThisMonth?" birthday-member-card":""}`;
     card.title=`${member.name||"Member"} • ${area.name||"Area"}`;
     const avatar=document.createElement("div");
     avatar.className="home-area-avatar";
@@ -3606,16 +4021,22 @@ function renderEditorMemberCarouselCards(box){
     appendTextNode(card,"span","home-area-name",member.name||"Member");
     appendTextNode(card,"span","editor-member-date",memberDateLabel(member));
     card.prepend(avatar);
+    if(birthdayThisMonth){
+      const cake=document.createElement("i");
+      cake.className="ri-cake-2-line birthday-cake-icon";
+      cake.setAttribute("aria-hidden","true");
+      card.appendChild(cake);
+      card.setAttribute("aria-label",`${member.name||"Member"}, birthday this month, ${memberDateLabel(member)}`);
+    }
     card.onclick=()=>openEditorMemberFromCarousel(areaId,memberIndex);
     box.appendChild(card);
-    count+=1;
-  }));
-  if(!count)appendTextNode(box,"div","form-list-empty","No members yet.");
+  });
+  if(!memberCards.length)appendTextNode(box,"div","form-list-empty","No members yet.");
 }
-function renderMemberAreaList(){let list=$("memberAreaList");if(!list)return;renderEditorMemberCarousel();if(!(isAdmin() || isPastor() || isEditor() || isGroupManager())){clearNode(list);closeMemberWorkspace(false);return}let q=($("memberAreaSearch")?.value||"").toLowerCase();let editableIds=getEditableAreaIds();let arr=editableIds.map(id=>({id,...fieldAreas[id]})).filter(a=>(`${a.name||""} ${a.pastorName||""}`).toLowerCase().includes(q));if(currentMemberAreaId&&!editableIds.includes(currentMemberAreaId)){currentMemberAreaId=null;closeMemberWorkspace(false)}if(!arr.length){appendMetaEmpty(list,"មិនមានវាលស្មៅដែលបានកំណត់។");return}clearNode(list);arr.forEach(a=>{let div=document.createElement("div");div.className="panel-body entry-sidebar member-area-card"+(memberWorkspaceOpen&&a.id===currentMemberAreaId?" active":"");const avatar=document.createElement("div");avatar.className="area-card-avatar";const owner=allowedUsers[a.ownerUid]||{};renderAvatar(avatar,a.ownerName||a.pastorName||owner.name,a.ownerEmail||owner.email,getAreaOwnerPhotoURL(a));div.appendChild(avatar);const copy=document.createElement("div");copy.className="area-card-copy";appendTextNode(copy,"div","card-title",`វាលស្មៅ៖ ${a.name||""}`);appendTextNode(copy,"div","card-meta",`អ្នកគង្វាល៖ ${a.pastorName||""} • ${Object.keys(a.members||{}).length} members`);div.appendChild(copy);div.onclick=()=>openMemberWorkspace(a.id);list.appendChild(div)})}
-function getOwnMemberData(row){return{name:row.querySelector(".own-mem")?.value.trim()||"",birthDay:row.querySelector(".own-birth-day")?.value||"",birthMonth:row.querySelector(".own-birth-month")?.value||""}}
-function updateMemberEditControls(){let hasEditing=!!document.querySelector("#ownMembersBox .member-row.editing");memberEditMode=hasEditing;$("editMembersBtn")?.classList.add("hidden");$("addNewMemberEditBtn")?.classList.toggle("hidden",hasEditing);$("saveMembersBtn")?.classList.toggle("hidden",!(hasEditing||memberDirty));setControlLabel("saveMembersBtn","update");["addOwnMember","pasteOwnMembers"].forEach(id=>{if($(id))$(id).classList.toggle("hidden",!hasEditing)})}
-function showRestoreMember(data,index){let el=$("memberStatus");if(!el)return;el.textContent="";let wrap=document.createElement("span");wrap.textContent="Member removed. ";let btn=appendTextNode(wrap,"button","btn small","Redo");btn.type="button";btn.onclick=()=>{let box=$("ownMembersBox");addOwnMemberRow(data);let row=box.lastElementChild;if(index<box.children.length-1)box.insertBefore(row,box.children[index]);el.textContent="";updateMemberEditControls()};el.appendChild(wrap)}
+function renderMemberAreaList(){let list=$("memberAreaList");if(!list)return;renderEditorMemberCarousel();if(!(isAdmin() || isPastor() || isEditor() || isGroupManager())){clearNode(list);closeMemberWorkspace(false);return}let q=($("memberAreaSearch")?.value||"").toLowerCase();let viewableIds=getViewableMemberAreaIds();let arr=viewableIds.map(id=>({id,...fieldAreas[id]})).filter(a=>(`${a.name||""} ${a.pastorName||""}`).toLowerCase().includes(q));if(currentMemberAreaId&&!viewableIds.includes(currentMemberAreaId)){currentMemberAreaId=null;closeMemberWorkspace(false)}if(!arr.length){appendMetaEmpty(list,"មិនមានវាលស្មៅដែលបានកំណត់។");return}clearNode(list);arr.forEach(a=>{let div=document.createElement("div");div.className="panel-body entry-sidebar member-area-card"+(memberWorkspaceOpen&&a.id===currentMemberAreaId?" active":"");const avatar=document.createElement("div");avatar.className="area-card-avatar";const owner=allowedUsers[a.ownerUid]||{};renderAvatar(avatar,a.ownerName||a.pastorName||owner.name,a.ownerEmail||owner.email,getAreaOwnerPhotoURL(a));div.appendChild(avatar);const copy=document.createElement("div");copy.className="area-card-copy";appendTextNode(copy,"div","card-title",`វាលស្មៅ៖ ${a.name||""}`);appendTextNode(copy,"div","card-meta",`អ្នកគង្វាល៖ ${a.pastorName||""} • ${Object.keys(a.members||{}).length} members`);div.appendChild(copy);div.onclick=()=>openMemberWorkspace(a.id);list.appendChild(div)})}
+function getOwnMemberData(row){return{name:row.querySelector(".own-mem")?.value.trim()||"",birthDay:row.querySelector(".own-birth-day")?.value||"",birthMonth:row.querySelector(".own-birth-month")?.value||"",photoURL:row.dataset.photoUrl||""}}
+function updateMemberEditControls(){let editable=canEditMemberArea();let hasEditing=editable&&!!document.querySelector("#ownMembersBox .member-row.editing");memberEditMode=hasEditing;$("editMembersBtn")?.classList.add("hidden");$("addNewMemberEditBtn")?.classList.toggle("hidden",!editable||hasEditing);$("saveMembersBtn")?.classList.toggle("hidden",!editable||!(hasEditing||memberDirty));setControlLabel("saveMembersBtn","update");["addOwnMember","pasteOwnMembers"].forEach(id=>{if($(id))$(id).classList.toggle("hidden",!editable||!hasEditing)})}
+function showRestoreMember(data,index){let el=$("memberStatus");if(!el)return;el.textContent="";let wrap=document.createElement("span");wrap.textContent="Member removed. ";let btn=appendTextNode(wrap,"button","btn small","Redo");btn.type="button";btn.onclick=()=>{if(!canEditMemberArea())return;let box=$("ownMembersBox");addOwnMemberRow(data);let row=box.lastElementChild;if(index<box.children.length-1)box.insertBefore(row,box.children[index]);el.textContent="";updateMemberEditControls()};el.appendChild(wrap)}
 function memberDateLabel(data){
   const day=String(data.birthDay||"").trim();
   const rawMonth=String(data.birthMonth||"").trim();
@@ -3623,12 +4044,137 @@ function memberDateLabel(data){
   const month=Number.isInteger(monthNumber)&&monthNumber>=1&&monthNumber<=12?KHMER_MONTHS[monthNumber-1]:rawMonth;
   return day&&month?`${day}/${month}`:(day||month||"No date");
 }
-function refreshOwnMemberCompact(row){const data=getOwnMemberData(row);row.querySelector(".member-compact-name").textContent=data.name||"New member";row.querySelector(".member-compact-date").textContent=memberDateLabel(data)}
-function setOwnMemberRowEditing(row,editing){row.classList.toggle("editing",editing);row.querySelectorAll("input,select").forEach(input=>input.disabled=!editing);refreshOwnMemberCompact(row);updateMemberEditControls()}
-function addOwnMemberRow(v,forceEdit=false){let box=$("ownMembersBox");if(!box)return;let data=typeof v==="string"?{name:v}:v||{};let row=document.createElement("div");row.className="member-row";let compact=document.createElement("div");compact.className="member-compact";compact.innerHTML=`<span class="member-compact-name"></span><span class="member-compact-date"></span>`;let edit=document.createElement("button");edit.type="button";edit.className="member-edit-one";edit.setAttribute("aria-label","Edit member");edit.innerHTML=`<i class="ri-pencil-line"></i>`;edit.onclick=()=>setOwnMemberRowEditing(row,true);let editor=document.createElement("div");editor.className="member-editor";let input=document.createElement("input");input.className="input-light member-name own-mem";input.value=data.name||"";let birth=document.createElement("div");birth.className="birth-wrap";birth.innerHTML=`<i class="ri-cake-line"></i><input class="input-light birth-input own-birth-day" type="number" min="1" max="31" placeholder="Day"><select class="input-light birth-input birth-month-select own-birth-month">${monthOptions(data.birthMonth)}</select>`;birth.querySelector(".own-birth-day").value=data.birthDay||"";let done=document.createElement("button");done.type="button";done.className="member-done-one";done.setAttribute("aria-label","Close member edit");done.innerHTML=`<i class="ri-check-line"></i>`;done.onclick=()=>setOwnMemberRowEditing(row,false);let button=document.createElement("button");button.type="button";button.className="member-remove";button.setAttribute("aria-label","Remove member");button.innerHTML=`<i class="ri-close-circle-line"></i>`;button.onclick=()=>{if(!confirm("Are you sure to delete?"))return;let index=[...box.children].indexOf(row);let data=getOwnMemberData(row);row.remove();memberDirty=true;showRestoreMember(data,index);updateMemberEditControls()};input.oninput=()=>{memberDirty=true;refreshOwnMemberCompact(row);updateMemberEditControls()};birth.querySelectorAll("input,select").forEach(i=>i.oninput=()=>{memberDirty=true;refreshOwnMemberCompact(row);updateMemberEditControls()});editor.append(input,birth,done,button);row.append(compact,edit,editor);box.appendChild(row);if(forceEdit||!data.name)memberDirty=true;setOwnMemberRowEditing(row,forceEdit||!data.name)}
-function collectOwnMembers(){let members={};[...document.querySelectorAll("#ownMembersBox .member-row")].forEach((row,i)=>{let name=row.querySelector(".own-mem")?.value.trim()||"";if(!name)return;members[`member_${String(Object.keys(members).length+1).padStart(3,"0")}`]={name,birthDay:row.querySelector(".own-birth-day")?.value||"",birthMonth:row.querySelector(".own-birth-month")?.value||""}});return members}
-function renderMemberManager(){let box=$("memberBox");if(!box)return;if(!memberWorkspaceOpen){box.textContent="";return}if(!(isAdmin() || isPastor() || isEditor() || isGroupManager())){box.textContent="";closeMemberWorkspace();return}let ids=getEditableAreaIds();if(!currentMemberAreaId||!ids.includes(currentMemberAreaId)){box.textContent="";closeMemberWorkspace();return}memberDirty=false;let a=fieldAreas[currentMemberAreaId]||{};const owner=allowedUsers[a.ownerUid]||{};renderAvatar($("memberWorkspaceAvatar"),a.ownerName||a.pastorName||owner.name,a.ownerEmail||owner.email,getAreaOwnerPhotoURL(a));box.innerHTML=`<div class="manager-card"><div class="grid2"><div><label class="light-label">វាលស្មៅ</label><input id="ownAreaName" class="input-light" disabled></div><div><label class="light-label">អ្នកគង្វាល</label><input id="ownPastorName" class="input-light" disabled></div></div><div class="section"><div class="member-section-head"><h3>Members</h3><button id="addNewMemberEditBtn" class="btn small primary" type="button"><i class="ri-user-add-line"></i> Add New Member</button></div><div class="btn-row"><button id="addOwnMember" class="btn small primary">Add</button><button id="pasteOwnMembers" class="btn small">Paste List</button></div><br><div id="ownMembersBox"></div></div></div>`;$("ownAreaName").value=a.name||"";$("ownPastorName").value=a.pastorName||"";$("addNewMemberEditBtn").onclick=()=>{status($("memberStatus"),"");addOwnMemberRow("",true)};$("addOwnMember").onclick=()=>addOwnMemberRow("",true);$("pasteOwnMembers").onclick=()=>{let raw=prompt("Paste names, one per line");if(!raw)return;$("ownMembersBox").innerHTML="";raw.split("\n").map(x=>x.trim()).filter(Boolean).forEach(name=>addOwnMemberRow(name,false));memberDirty=true;updateMemberEditControls()};Object.values(a.members||{}).forEach(m=>addOwnMemberRow(m,false));memberDirty=false;updateMemberEditControls()}
-$("memberAreaSearch").oninput=renderMemberAreaList;$("closeMemberWorkspaceBtn")?.addEventListener("click",closeMemberWorkspace);$("editMembersBtn").onclick=()=>{memberEditMode=true;status($("memberStatus"),"");updateMemberEditControls()};$("saveMembersBtn").onclick=async()=>{if(!canEditArea(currentMemberAreaId)){status($("memberStatus"),"អ្នកអាចកែបានតែវាលស្មៅដែលអ្នកមានសិទ្ធិកែ។");return}try{await set(ref(db,`fieldAreas/${currentMemberAreaId}/members`),collectOwnMembers());memberEditMode=false;memberDirty=false;status($("memberStatus"),"Updated.",true);renderMemberManager()}catch(e){status($("memberStatus"),`Update failed: ${e.message}`)}};
+function memberBirthMonthNumber(data={}){
+  const raw=String(data.birthMonth||"").trim();
+  const numeric=Number(raw);
+  if(Number.isInteger(numeric)&&numeric>=1&&numeric<=12)return numeric;
+  const khmerIndex=KHMER_MONTHS.findIndex(month=>month===raw);
+  if(khmerIndex>=0)return khmerIndex+1;
+  const englishMonths=["january","february","march","april","may","june","july","august","september","october","november","december"];
+  const normalized=raw.toLowerCase();
+  const englishIndex=englishMonths.findIndex(month=>month===normalized||month.slice(0,3)===normalized.slice(0,3));
+  return englishIndex>=0?englishIndex+1:0;
+}
+function isMemberBirthdayThisMonth(data={},now=new Date()){return !!String(data.birthDay||"").trim()&&memberBirthMonthNumber(data)===now.getMonth()+1}
+function refreshOwnMemberCompact(row){
+  const data=getOwnMemberData(row);
+  row.querySelector(".member-compact-name").textContent=data.name||"New member";
+  row.querySelector(".member-compact-date").textContent=memberDateLabel(data);
+  const avatar=row.querySelector(".member-photo-avatar");
+  renderAvatar(avatar,data.name||"New member","",data.photoURL);
+  if(avatar&&!data.photoURL)avatar.style.background=avatarColor(`${currentMemberAreaId||"area"}-${data.name||"member"}`);
+}
+function setOwnMemberRowEditing(row,editing){if(editing&&!canEditMemberArea())return;row.classList.toggle("editing",editing);row.querySelectorAll("input,select").forEach(input=>input.disabled=!editing);refreshOwnMemberCompact(row);updateMemberEditControls()}
+async function uploadOwnMemberPhoto(row,fileInput){
+  if(!canEditMemberArea()){fileInput.value="";return}
+  const file=fileInput.files?.[0];
+  if(!file)return;
+  if(!file.type.startsWith("image/")){status($("memberStatus"),"Choose an image file.");fileInput.value="";return}
+  if(!hasCloudinarySetup()){
+    status($("memberStatus"),"Set up Cloudinary storage first.");
+    setStorageSetupOpen(true);
+    fileInput.value="";
+    return;
+  }
+  const uploadButton=row.querySelector(".member-photo-upload");
+  try{
+    uploadButton.disabled=true;
+    uploadButton.classList.add("uploading");
+    status($("memberStatus"),"Uploading member image...");
+    const folderArea=String(currentMemberAreaId||"unassigned").replace(/[^a-zA-Z0-9_-]/g,"_");
+    row.dataset.photoUrl=await uploadCloudinaryImage(file,`prayinfo-pro/members/${folderArea}`);
+    memberDirty=true;
+    refreshOwnMemberCompact(row);
+    updateMemberEditControls();
+    status($("memberStatus"),"Member image uploaded. Save members to keep it.",true);
+  }catch(e){
+    console.error("Member image upload failed",e);
+    status($("memberStatus"),e.message||"Member image upload failed.");
+  }finally{
+    uploadButton.disabled=false;
+    uploadButton.classList.remove("uploading");
+    fileInput.value="";
+  }
+}
+function addOwnMemberRow(v,forceEdit=false){
+  const box=$("ownMembersBox");
+  if(!box)return;
+  const data=typeof v==="string"?{name:v}:v||{};
+  const row=document.createElement("div");
+  row.className="member-row";
+  row.dataset.photoUrl=data.photoURL||"";
+  const photoControl=document.createElement("div");
+  photoControl.className="member-photo-control";
+  const photoAvatar=document.createElement("div");
+  photoAvatar.className="member-photo-avatar";
+  const photoInput=document.createElement("input");
+  photoInput.className="hidden member-photo-input";
+  photoInput.type="file";
+  photoInput.accept="image/*";
+  const photoUpload=document.createElement("button");
+  photoUpload.type="button";
+  photoUpload.className="member-photo-upload";
+  photoUpload.title="Upload member profile image";
+  photoUpload.setAttribute("aria-label","Upload member profile image");
+  photoUpload.innerHTML='<i class="ri-camera-line"></i>';
+  photoUpload.onclick=()=>{if(canEditMemberArea())photoInput.click()};
+  photoInput.onchange=()=>uploadOwnMemberPhoto(row,photoInput);
+  photoControl.append(photoAvatar,photoUpload,photoInput);
+  const compact=document.createElement("div");
+  compact.className="member-compact";
+  compact.innerHTML=`<span class="member-compact-name"></span><span class="member-compact-date"></span>`;
+  const edit=document.createElement("button");
+  edit.type="button";
+  edit.className="member-edit-one";
+  edit.setAttribute("aria-label","Edit member");
+  edit.innerHTML=`<i class="ri-pencil-line"></i>`;
+  edit.classList.toggle("hidden",!canEditMemberArea());
+  edit.onclick=()=>setOwnMemberRowEditing(row,true);
+  const editor=document.createElement("div");
+  editor.className="member-editor";
+  const input=document.createElement("input");
+  input.className="input-light member-name own-mem";
+  input.value=data.name||"";
+  const birth=document.createElement("div");
+  birth.className="birth-wrap";
+  birth.innerHTML=`<i class="ri-cake-line"></i><input class="input-light birth-input own-birth-day" type="number" min="1" max="31" placeholder="Day"><select class="input-light birth-input birth-month-select own-birth-month">${monthOptions(data.birthMonth)}</select>`;
+  birth.querySelector(".own-birth-day").value=data.birthDay||"";
+  const done=document.createElement("button");
+  done.type="button";
+  done.className="member-done-one";
+  done.setAttribute("aria-label","Close member edit");
+  done.innerHTML=`<i class="ri-check-line"></i>`;
+  done.onclick=()=>setOwnMemberRowEditing(row,false);
+  const removeButton=document.createElement("button");
+  removeButton.type="button";
+  removeButton.className="member-remove";
+  removeButton.setAttribute("aria-label","Remove member");
+  removeButton.innerHTML=`<i class="ri-close-circle-line"></i>`;
+  removeButton.onclick=()=>{if(!canEditMemberArea()||!confirm("Are you sure to delete?"))return;const index=[...box.children].indexOf(row);const removedData=getOwnMemberData(row);row.remove();memberDirty=true;showRestoreMember(removedData,index);updateMemberEditControls()};
+  input.oninput=()=>{memberDirty=true;refreshOwnMemberCompact(row);updateMemberEditControls()};
+  birth.querySelectorAll("input,select").forEach(control=>control.oninput=()=>{memberDirty=true;refreshOwnMemberCompact(row);updateMemberEditControls()});
+  editor.append(input,birth,done,removeButton);
+  row.append(photoControl,compact);
+  if(canEditMemberArea())row.appendChild(edit);
+  row.appendChild(editor);
+  box.appendChild(row);
+  const shouldEdit=canEditMemberArea()&&(forceEdit||!data.name);
+  if(shouldEdit)memberDirty=true;
+  setOwnMemberRowEditing(row,shouldEdit);
+}
+function collectOwnMembers(){
+  const members={};
+  [...document.querySelectorAll("#ownMembersBox .member-row")].forEach(row=>{
+    const data=getOwnMemberData(row);
+    if(!data.name)return;
+    const member={name:data.name,birthDay:data.birthDay,birthMonth:data.birthMonth};
+    if(data.photoURL)member.photoURL=data.photoURL;
+    members[`member_${String(Object.keys(members).length+1).padStart(3,"0")}`]=member;
+  });
+  return members;
+}
+function renderMemberManager(){let box=$("memberBox");if(!box)return;if(!memberWorkspaceOpen){box.textContent="";return}if(!(isAdmin() || isPastor() || isEditor() || isGroupManager())){box.textContent="";closeMemberWorkspace();return}let ids=getViewableMemberAreaIds();if(!currentMemberAreaId||!ids.includes(currentMemberAreaId)){box.textContent="";closeMemberWorkspace();return}memberDirty=false;let a=fieldAreas[currentMemberAreaId]||{};let editable=canEditMemberArea(currentMemberAreaId);const owner=allowedUsers[a.ownerUid]||{};renderAvatar($("memberWorkspaceAvatar"),a.ownerName||a.pastorName||owner.name,a.ownerEmail||owner.email,getAreaOwnerPhotoURL(a));box.innerHTML=`<div class="manager-card"><div class="grid2"><div><label class="light-label">វាលស្មៅ</label><input id="ownAreaName" class="input-light" disabled></div><div><label class="light-label">អ្នកគង្វាល</label><input id="ownPastorName" class="input-light" disabled></div></div><div class="section"><div class="member-section-head"><h3>Members</h3>${editable?`<button id="addNewMemberEditBtn" class="btn small primary" type="button"><i class="ri-user-add-line"></i> Add New Member</button>`:""}</div>${editable?`<div class="btn-row"><button id="addOwnMember" class="btn small primary">Add</button><button id="pasteOwnMembers" class="btn small">Paste List</button></div><br>`:""}<div id="ownMembersBox"></div></div></div>`;$("ownAreaName").value=a.name||"";$("ownPastorName").value=a.pastorName||"";$("addNewMemberEditBtn")?.addEventListener("click",()=>{if(!canEditMemberArea())return;status($("memberStatus"),"");addOwnMemberRow("",true)});$("addOwnMember")?.addEventListener("click",()=>{if(canEditMemberArea())addOwnMemberRow("",true)});$("pasteOwnMembers")?.addEventListener("click",()=>{if(!canEditMemberArea())return;let raw=prompt("Paste names, one per line");if(!raw)return;$("ownMembersBox").innerHTML="";raw.split("\n").map(x=>x.trim()).filter(Boolean).forEach(name=>addOwnMemberRow(name,false));memberDirty=true;updateMemberEditControls()});Object.values(a.members||{}).forEach(m=>addOwnMemberRow(m,false));memberDirty=false;updateMemberEditControls()}
+$("memberAreaSearch").oninput=renderMemberAreaList;$("closeMemberWorkspaceBtn")?.addEventListener("click",closeMemberWorkspace);$("editMembersBtn").onclick=()=>{if(!canEditMemberArea())return;memberEditMode=true;status($("memberStatus"),"");updateMemberEditControls()};$("saveMembersBtn").onclick=async()=>{if(!canEditMemberArea(currentMemberAreaId)){status($("memberStatus"),"អ្នកអាចកែបានតែវាលស្មៅរបស់អ្នកប៉ុណ្ណោះ។");return}try{await set(ref(db,`fieldAreas/${currentMemberAreaId}/members`),collectOwnMembers());memberEditMode=false;memberDirty=false;status($("memberStatus"),"Updated.",true);renderMemberManager()}catch(e){status($("memberStatus"),`Update failed: ${e.message}`)}};
 function renderAreaManager(){
   if(!(isAdmin()||isPastor())){if($("managerBox"))$("managerBox").textContent="";return;}
   $("managerBox").innerHTML=`<div class="manager-card"><div class="grid2"><div><label class="light-label">វាលស្មៅ</label><input id="areaName" class="input-light"></div><div><label class="light-label">អ្នកគង្វាល</label><input id="areaPastor" class="input-light"></div><input id="areaOwnerUid" class="hidden" type="hidden"><input id="areaOwnerName" class="hidden" type="hidden"><div><label class="light-label">Owner Email</label><input id="areaOwnerEmail" class="input-light" placeholder="example@email.com"></div><div><label class="light-label">Owner Role</label><select id="areaOwnerRole" class="input-light"><option value="editor">Editor</option><option value="viewer">Viewer</option><option value="groupManager">Group Manager</option><option value="pastor">Pastor</option></select></div><div><label class="light-label">Church</label><input id="areaChurchDisplay" class="input-light" disabled></div><div><label class="light-label">Move Area To Church</label><div class="btn-row"><select id="areaMoveChurch" class="input-light"></select><button id="moveAreaChurchBtn" class="btn small primary" type="button">Move</button></div></div></div><div class="section area-members-section"><button id="toggleAreaMembersBtn" class="area-members-toggle" type="button"><span>Members</span><i class="ri-arrow-down-s-line"></i></button><div id="areaMembersPanel" class="area-members-panel hidden"><div class="btn-row area-members-tools"><button id="addMember" class="btn small primary" type="button">Add</button><button id="pasteMembers" class="btn small" type="button">Paste List</button></div><div id="membersBox"></div></div></div><pre id="preview" class="json-box">{}</pre></div>`;
@@ -3690,8 +4236,8 @@ async function moveCurrentAreaToChurch(){
     status($("managerStatus"),`${movedAreaName} moved to ${churchName(churchId)}.`,true);
   }catch(e){status($("managerStatus"),`Move failed: ${e.message||String(e)}`)}
 }
-function addMemberRow(v){let data=typeof v==="string"?{name:v}:v||{};let row=document.createElement("div");row.className="member-row editing";let input=document.createElement("input");input.className="input-light member-name mem";input.value=data.name||"";let birth=document.createElement("div");birth.className="birth-wrap";birth.innerHTML=`<i class="ri-cake-line"></i><input class="input-light birth-input birth-day" type="number" min="1" max="31" placeholder="Day"><select class="input-light birth-input birth-month-select birth-month">${monthOptions(data.birthMonth)}</select>`;birth.querySelector(".birth-day").value=data.birthDay||"";let button=document.createElement("button");button.type="button";button.className="member-remove editing";button.setAttribute("aria-label","Remove member");button.innerHTML=`<i class="ri-close-circle-line"></i>`;button.onclick=()=>{if(!confirm("Are you sure to delete?"))return;row.remove();preview()};input.oninput=preview;birth.querySelectorAll("input,select").forEach(i=>i.oninput=preview);row.append(input,birth,button);$("membersBox").appendChild(row)}
-function collectArea(){let members={};[...document.querySelectorAll("#membersBox .member-row")].forEach(row=>{let name=row.querySelector(".mem")?.value.trim()||"";if(!name)return;members[`member_${String(Object.keys(members).length+1).padStart(3,"0")}`]={name,birthDay:row.querySelector(".birth-day")?.value||"",birthMonth:row.querySelector(".birth-month")?.value||""}});let ownerEmail=$("areaOwnerEmail")?.value.trim()||"";let [matchedUid,matchedUser]=findAllowedUserEntryByEmail(ownerEmail);let ownerUid=$("areaOwnerUid")?.value.trim()||matchedUid||"";let churchId=isPastor()&&!isAdmin()?getCurrentUserChurchId():(selectedChurchId||"");let ownerPhotoURL=matchedUser.photoURL||getUserPhotoURL(ownerUid,ownerEmail)||fieldAreas[currentAreaId]?.ownerPhotoURL||"";return{name:$("areaName")?.value.trim()||"",churchId,churchName:churchName(churchId),pastorName:$("areaPastor")?.value.trim()||"",ownerUid,ownerName:$("areaPastor")?.value.trim()||matchedUser.name||"",ownerEmail,ownerRole:$("areaOwnerRole")?.value||"editor",ownerPhotoURL,members,updatedAt:Date.now()}}
+function addMemberRow(v){let data=typeof v==="string"?{name:v}:v||{};let row=document.createElement("div");row.className="member-row editing";row.dataset.photoUrl=data.photoURL||"";let input=document.createElement("input");input.className="input-light member-name mem";input.value=data.name||"";let birth=document.createElement("div");birth.className="birth-wrap";birth.innerHTML=`<i class="ri-cake-line"></i><input class="input-light birth-input birth-day" type="number" min="1" max="31" placeholder="Day"><select class="input-light birth-input birth-month-select birth-month">${monthOptions(data.birthMonth)}</select>`;birth.querySelector(".birth-day").value=data.birthDay||"";let button=document.createElement("button");button.type="button";button.className="member-remove editing";button.setAttribute("aria-label","Remove member");button.innerHTML=`<i class="ri-close-circle-line"></i>`;button.onclick=()=>{if(!confirm("Are you sure to delete?"))return;row.remove();preview()};input.oninput=preview;birth.querySelectorAll("input,select").forEach(i=>i.oninput=preview);row.append(input,birth,button);$("membersBox").appendChild(row)}
+function collectArea(){let members={};[...document.querySelectorAll("#membersBox .member-row")].forEach(row=>{let name=row.querySelector(".mem")?.value.trim()||"";if(!name)return;const member={name,birthDay:row.querySelector(".birth-day")?.value||"",birthMonth:row.querySelector(".birth-month")?.value||""};if(row.dataset.photoUrl)member.photoURL=row.dataset.photoUrl;members[`member_${String(Object.keys(members).length+1).padStart(3,"0")}`]=member});let ownerEmail=$("areaOwnerEmail")?.value.trim()||"";let [matchedUid,matchedUser]=findAllowedUserEntryByEmail(ownerEmail);let ownerUid=$("areaOwnerUid")?.value.trim()||matchedUid||"";let churchId=isPastor()&&!isAdmin()?getCurrentUserChurchId():(selectedChurchId||"");let ownerPhotoURL=matchedUser.photoURL||getUserPhotoURL(ownerUid,ownerEmail)||fieldAreas[currentAreaId]?.ownerPhotoURL||"";return{name:$("areaName")?.value.trim()||"",churchId,churchName:churchName(churchId),pastorName:$("areaPastor")?.value.trim()||"",ownerUid,ownerName:$("areaPastor")?.value.trim()||matchedUser.name||"",ownerEmail,ownerRole:$("areaOwnerRole")?.value||"editor",ownerPhotoURL,members,updatedAt:Date.now()}}
 function preview(){if($("preview"))$("preview").textContent=JSON.stringify(collectArea(),null,2)}
 function renderAreaList(){
   if(!(isAdmin()||isPastor())){let list=$("areaList");if(list)clearNode(list);return;}
@@ -4208,6 +4754,56 @@ renderAreaManager();
 
 <script>
 (function(){
+  const rippleSelector=[
+    "button:not(:disabled)",
+    "a[href]",
+    "[role='button']:not([aria-disabled='true'])",
+    "summary",
+    ".login-role-option",
+    ".gm-area-item:not(.disabled)",
+    ".member-area-card",
+    ".area-card",
+    ".church-nav-badge.clickable",
+    ".account-app-row.editable",
+    ".account-storage-row",
+    ".account-recovery-row"
+  ].join(",");
+
+  function createRipple(event){
+    if(event.pointerType==="mouse"&&event.button!==0)return;
+    const target=event.target instanceof Element?event.target:null;
+    const host=target?.closest(rippleSelector);
+    if(!host||host.matches(":disabled")||host.getAttribute("aria-disabled")==="true")return;
+    const rect=host.getBoundingClientRect();
+    if(!rect.width||!rect.height)return;
+    if(getComputedStyle(host).position==="static")host.classList.add("app-ripple-relative");
+    let surface=Array.from(host.children).find(child=>child.classList?.contains("app-ripple-surface"));
+    if(!surface){
+      surface=document.createElement("span");
+      surface.className="app-ripple-surface";
+      surface.setAttribute("aria-hidden","true");
+      host.appendChild(surface);
+    }
+    const x=event.clientX-rect.left;
+    const y=event.clientY-rect.top;
+    const scale=Math.min(1.5,Math.max(.5,Number(document.documentElement.dataset.rippleScale)||1));
+    const diameter=Math.min(64,Math.max(30,Math.min(rect.width,rect.height)*.72))*scale;
+    const radius=diameter/2;
+    const wave=document.createElement("span");
+    wave.className="app-ripple-wave";
+    wave.style.width=wave.style.height=`${radius*2}px`;
+    wave.style.left=`${x-radius}px`;
+    wave.style.top=`${y-radius}px`;
+    wave.addEventListener("animationend",()=>{wave.remove();if(!surface.childElementCount)surface.remove()},{once:true});
+    surface.appendChild(wave);
+  }
+
+  document.addEventListener("pointerdown",createRipple,{capture:true,passive:true});
+})();
+</script>
+
+<script>
+(function(){
   async function clearActivityLogs(){
     if(!(window.prayInfoIsAdmin && window.prayInfoIsAdmin())){
       alert("Admin only.");
@@ -4511,7 +5107,9 @@ renderAreaManager();
   placePrintNameWidthControl();
   updatePrintNameWidthControl();
   const appEl = document.getElementById("app");
-  if(appEl) new MutationObserver(updatePrintNameWidthControl).observe(appEl,{attributes:true,attributeFilter:["class"]});
+  if(appEl instanceof Node){
+    try{new MutationObserver(updatePrintNameWidthControl).observe(appEl,{attributes:true,attributeFilter:["class"]})}catch(e){}
+  }
   document.addEventListener("DOMContentLoaded",updatePrintNameWidthControl);
   document.addEventListener("click",()=>setTimeout(()=>{placePrintNameWidthControl();updatePrintNameWidthControl();},0),true);
 
