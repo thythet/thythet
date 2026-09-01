@@ -1,0 +1,3457 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+>
+
+<title>ពេលសៀមស្ងាត់</title>
+
+<style>
+
+/* =====================================================
+   KRASAR
+===================================================== */
+
+@font-face {
+    font-family: "Krasar";
+    src: url("https://thythet.com/prayinfo2/assets/fonts/Krasar.woff") format("woff");
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+
+/* =====================================================
+   RESET
+===================================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+
+    background: #d8d8d8;
+
+    font-family: "Krasar", sans-serif;
+}
+
+
+/* =====================================================
+   PDF
+===================================================== */
+
+#viewer {
+    position: fixed;
+    inset: 0;
+
+    overflow: auto;
+
+    -webkit-overflow-scrolling: touch;
+
+    background: #d8d8d8;
+
+    overscroll-behavior: contain;
+}
+
+#pageContainer {
+    min-width: 100%;
+    min-height: 100%;
+
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+#pdfCanvas {
+    display: block;
+
+    background: white;
+
+    transform-origin: top center;
+
+    box-shadow:
+        0 0 7px rgba(0,0,0,.18);
+}
+
+
+/* =====================================================
+   WRITE BUTTON
+===================================================== */
+
+#writeBtn {
+    position: fixed;
+
+    top: calc(8px + env(safe-area-inset-top));
+    right: 8px;
+
+    z-index: 100;
+
+    height: 38px;
+
+    padding: 0 14px;
+
+    border: 0;
+    border-radius: 20px;
+
+    background: rgba(0,0,0,.70);
+
+    color: white;
+
+    font-family: "Krasar", sans-serif;
+    font-size: 14px;
+
+    cursor: pointer;
+}
+
+#savedDot {
+    display: none;
+
+    position: absolute;
+
+    top: 4px;
+    right: 4px;
+
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: #35d66f;
+}
+
+#savedDot.show {
+    display: block;
+}
+
+
+/* =====================================================
+   FIT 100 BUTTON
+===================================================== */
+
+#fitZoomBtn {
+    position: fixed;
+
+    top: calc(8px + env(safe-area-inset-top));
+    left: 8px;
+
+    z-index: 100;
+
+    height: 38px;
+
+    padding: 0 12px;
+
+    border: 0;
+    border-radius: 20px;
+
+    background: rgba(0,0,0,.70);
+
+    color: white;
+
+    font-family: "Krasar", sans-serif;
+    font-size: 11px;
+
+    cursor: pointer;
+}
+
+#fitZoomBtn:active,
+#writeBtn:active {
+    transform: scale(.95);
+}
+
+
+/* =====================================================
+   NAV
+===================================================== */
+
+.navBtn {
+    position: fixed;
+
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    z-index: 80;
+
+    width: 38px;
+    height: 58px;
+
+    border: 0;
+
+    border-radius: 11px;
+
+    background: rgba(0,0,0,.25);
+
+    color: white;
+
+    font-size: 28px;
+}
+
+#prevBtn {
+    left: 5px;
+}
+
+#nextBtn {
+    right: 5px;
+}
+
+.navBtn.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+
+/* =====================================================
+   PAGE NUMBER
+===================================================== */
+
+#pageInfo {
+    position: fixed;
+
+    left: 50%;
+
+    bottom: calc(
+        7px + env(safe-area-inset-bottom)
+    );
+
+    transform: translateX(-50%);
+
+    z-index: 80;
+
+    padding: 4px 9px;
+
+    border-radius: 14px;
+
+    background: rgba(0,0,0,.5);
+
+    color: white;
+
+    font-size: 10px;
+
+    pointer-events: none;
+}
+
+
+/* =====================================================
+   ZOOM INFO
+===================================================== */
+
+#zoomInfo {
+    position: fixed;
+
+    top: calc(
+        52px + env(safe-area-inset-top)
+    );
+
+    left: 8px;
+
+    z-index: 80;
+
+    padding: 4px 8px;
+
+    border-radius: 12px;
+
+    background: rgba(0,0,0,.5);
+
+    color: white;
+
+    font-size: 10px;
+
+    opacity: 0;
+
+    pointer-events: none;
+
+    transition: opacity .15s;
+}
+
+#zoomInfo.show {
+    opacity: 1;
+}
+
+
+/* =====================================================
+   LOADING
+===================================================== */
+
+#loading {
+    position: fixed;
+    inset: 0;
+
+    z-index: 500;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #111;
+}
+
+.spinner {
+    width: 25px;
+    height: 25px;
+
+    border: 3px solid rgba(255,255,255,.2);
+    border-top-color: white;
+
+    border-radius: 50%;
+
+    animation: spin .7s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* =====================================================
+   ERROR
+===================================================== */
+
+#errorMessage {
+    display: none;
+
+    position: fixed;
+    inset: 0;
+
+    z-index: 600;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 25px;
+
+    background: #111;
+    color: white;
+
+    text-align: center;
+}
+
+
+/* =====================================================
+   FORM OVERLAY
+===================================================== */
+
+#noteOverlay {
+    position: fixed;
+    inset: 0;
+
+    z-index: 1000;
+
+    display: flex;
+
+    align-items: flex-end;
+    justify-content: center;
+
+    padding:
+        calc(6px + env(safe-area-inset-top))
+        7px
+        calc(48px + env(safe-area-inset-bottom));
+
+    background: rgba(0,0,0,.08);
+
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+
+    opacity: 0;
+    visibility: hidden;
+
+    transition: opacity .15s;
+}
+
+#noteOverlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+
+/* =====================================================
+   POPUP
+===================================================== */
+
+#notePopup {
+    width: 100%;
+    max-width: 520px;
+
+    max-height: 100%;
+
+    overflow-y: auto;
+
+    -webkit-overflow-scrolling: touch;
+
+    padding: 9px;
+
+    border-radius: 16px;
+
+    background: rgba(255,255,255,.97);
+
+    box-shadow:
+        0 5px 20px rgba(0,0,0,.22);
+
+    transform: translate3d(0,0,0);
+
+    will-change: transform;
+}
+
+
+/* =====================================================
+   DRAG HEADER
+===================================================== */
+
+.noteHeader {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 7px;
+
+    cursor: grab;
+
+    touch-action: none;
+
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.noteHeader.dragging {
+    cursor: grabbing;
+}
+
+.formTitle {
+    flex: 1;
+
+    font-size: 15px;
+    font-weight: bold;
+
+    color: #111;
+}
+
+#closeNote {
+    width: 31px;
+    height: 31px;
+
+    flex-shrink: 0;
+
+    border: 0;
+
+    border-radius: 50%;
+
+    background: #eee;
+
+    color: #333;
+
+    font-size: 19px;
+
+    cursor: pointer;
+}
+
+
+/* =====================================================
+   QUESTIONS
+===================================================== */
+
+.noteGroup {
+    margin-bottom: 6px;
+}
+
+.noteTitle {
+    display: block;
+
+    margin-bottom: 2px;
+
+    color: #079447;
+
+    font-family: "Krasar", sans-serif;
+
+    font-size: 13px;
+    font-weight: bold;
+
+    line-height: 1.35;
+}
+
+
+/* =====================================================
+   INPUT
+===================================================== */
+
+.noteInput {
+    display: block;
+
+    width: 100%;
+
+    height: 39px;
+    min-height: 39px;
+
+    overflow-y: hidden;
+
+    resize: none;
+
+    padding: 6px 8px;
+
+    border: 1px solid #d2d2d2;
+    border-radius: 8px;
+
+    outline: none;
+
+    background: rgba(255,255,255,.92);
+
+    color: #111;
+
+    font-family: "Krasar", sans-serif;
+
+    font-size: 13px;
+
+    line-height: 1.45;
+
+    user-select: text;
+    -webkit-user-select: text;
+}
+
+.noteInput:focus {
+    border-color: #079447;
+}
+
+
+/* =====================================================
+   STATUS
+===================================================== */
+
+#noteStatus {
+    min-height: 14px;
+
+    margin-top: 2px;
+    margin-bottom: 5px;
+
+    color: #777;
+
+    font-size: 9.5px;
+
+    line-height: 1.3;
+}
+
+
+/* =====================================================
+   BUTTONS
+===================================================== */
+
+.noteActions {
+    display: flex;
+
+    gap: 6px;
+
+    margin-top: 3px;
+}
+
+.noteActionBtn {
+    height: 39px;
+
+    border: 0;
+
+    border-radius: 9px;
+
+    font-family: "Krasar", sans-serif;
+
+    font-size: 12px;
+
+    cursor: pointer;
+}
+
+#deleteNote {
+    width: 65px;
+
+    background: #eee;
+
+    color: #555;
+}
+
+#captureNote {
+    width: 82px;
+
+    background: #eee;
+
+    color: #111;
+}
+
+#saveNote {
+    flex: 1;
+
+    min-width: 0;
+
+    background: #111;
+
+    color: white;
+}
+
+.noteActionBtn:disabled {
+    opacity: .55;
+}
+
+</style>
+</head>
+
+
+<body>
+
+
+<!-- PDF -->
+
+<div id="viewer">
+
+    <div id="pageContainer">
+
+        <canvas id="pdfCanvas"></canvas>
+
+    </div>
+
+</div>
+
+
+<!-- FIT -->
+
+<button
+    id="fitZoomBtn"
+    type="button"
+>
+    Fit 100%
+</button>
+
+
+<!-- WRITE -->
+
+<button
+    id="writeBtn"
+    type="button"
+>
+
+    សរសេរ
+
+    <span id="savedDot"></span>
+
+</button>
+
+
+<!-- NAV -->
+
+<button
+    id="prevBtn"
+    class="navBtn"
+    type="button"
+>
+    &#8249;
+</button>
+
+
+<button
+    id="nextBtn"
+    class="navBtn"
+    type="button"
+>
+    &#8250;
+</button>
+
+
+<div id="pageInfo">
+    1 / 1
+</div>
+
+
+<div id="zoomInfo">
+    100%
+</div>
+
+
+<div id="loading">
+
+    <div class="spinner"></div>
+
+</div>
+
+
+<div id="errorMessage">
+    Cannot load PDF
+</div>
+
+
+
+<!-- =====================================================
+     NOTE FORM
+===================================================== -->
+
+<div id="noteOverlay">
+
+
+<div id="notePopup">
+
+
+    <div
+        class="noteHeader"
+        id="noteHeader"
+    >
+
+        <div class="formTitle">
+            សរសេរ
+        </div>
+
+
+        <button
+            id="closeNote"
+            type="button"
+        >
+            ×
+        </button>
+
+    </div>
+
+
+
+    <!-- 1 -->
+
+    <div class="noteGroup">
+
+        <label
+            class="noteTitle"
+            for="note1"
+        >
+            តើអ្វីជាគំនិតសំខាន់របស់អត្តបទនេះ?
+        </label>
+
+        <textarea
+            id="note1"
+            class="noteInput"
+            rows="1"
+            spellcheck="false"
+        ></textarea>
+
+    </div>
+
+
+
+    <!-- 2 -->
+
+    <div class="noteGroup">
+
+        <label
+            class="noteTitle"
+            for="note2"
+        >
+            តើព្រះមានលក្ខណះដូចម្ដេច?
+        </label>
+
+        <textarea
+            id="note2"
+            class="noteInput"
+            rows="1"
+            spellcheck="false"
+        ></textarea>
+
+    </div>
+
+
+
+    <!-- 3 -->
+
+    <div class="noteGroup">
+
+        <label
+            class="noteTitle"
+            for="note3"
+        >
+            តើមេរៀនអ្វីដែលព្រះកំពុងបង្រៀនដល់ខ្ញុំ?
+        </label>
+
+        <textarea
+            id="note3"
+            class="noteInput"
+            rows="1"
+            spellcheck="false"
+        ></textarea>
+
+    </div>
+
+
+
+    <!-- 4 -->
+
+    <div class="noteGroup">
+
+        <label
+            class="noteTitle"
+            for="note4"
+        >
+            ការអនុវត្ត
+        </label>
+
+        <textarea
+            id="note4"
+            class="noteInput"
+            rows="1"
+            spellcheck="false"
+        ></textarea>
+
+    </div>
+
+
+
+    <!-- 5 -->
+
+    <div class="noteGroup">
+
+        <label
+            class="noteTitle"
+            for="note5"
+        >
+            ការអធិស្ឋាន
+        </label>
+
+        <textarea
+            id="note5"
+            class="noteInput"
+            rows="1"
+            spellcheck="false"
+        ></textarea>
+
+    </div>
+
+
+
+    <div id="noteStatus">
+        កំពុងភ្ជាប់...
+    </div>
+
+
+
+    <div class="noteActions">
+
+
+        <button
+            id="deleteNote"
+            class="noteActionBtn"
+            type="button"
+        >
+            លុប
+        </button>
+
+
+        <button
+            id="captureNote"
+            class="noteActionBtn"
+            type="button"
+        >
+            ថតរូប
+        </button>
+
+
+        <button
+            id="saveNote"
+            class="noteActionBtn"
+            type="button"
+        >
+            រក្សាទុក
+        </button>
+
+
+    </div>
+
+
+</div>
+</div>
+
+
+
+<!-- Screenshot -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"
+></script>
+
+
+
+<script type="module">
+
+
+/* =====================================================
+   FIREBASE
+===================================================== */
+
+import {
+    initializeApp
+}
+from
+"https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+
+
+import {
+    getAuth,
+    signInAnonymously,
+    onAuthStateChanged,
+    setPersistence,
+    browserLocalPersistence
+}
+from
+"https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+
+
+import {
+    getDatabase,
+    ref,
+    get,
+    set,
+    remove,
+    serverTimestamp
+}
+from
+"https://www.gstatic.com/firebasejs/12.18.0/firebase-database.js";
+
+
+/* =====================================================
+   FIREBASE CONFIG
+===================================================== */
+
+const firebaseConfig = {
+
+    apiKey:
+        "AIzaSyBA64C_cctFHJXUJjgAQ5PzbfmBVhdSjZ4",
+
+    authDomain:
+        "qt-app-ddabb.firebaseapp.com",
+
+    databaseURL:
+        "https://qt-app-ddabb-default-rtdb.asia-southeast1.firebasedatabase.app",
+
+    projectId:
+        "qt-app-ddabb",
+
+    storageBucket:
+        "qt-app-ddabb.firebasestorage.app",
+
+    messagingSenderId:
+        "198096024652",
+
+    appId:
+        "1:198096024652:web:43c9f097842f1bc3c830e9"
+
+};
+
+
+const firebaseApp =
+    initializeApp(
+        firebaseConfig
+    );
+
+
+const auth =
+    getAuth(
+        firebaseApp
+    );
+
+
+const database =
+    getDatabase(
+        firebaseApp
+    );
+
+
+/* =====================================================
+   DEVICE ID
+===================================================== */
+
+const DEVICE_ID_KEY =
+    "qt_device_id_v1";
+
+
+function createDeviceId() {
+
+    if (
+        crypto.randomUUID
+    ) {
+
+        return crypto.randomUUID();
+
+    }
+
+
+    return (
+        "device-" +
+        Date.now() +
+        "-" +
+        Math.random()
+            .toString(36)
+            .slice(2)
+    );
+
+}
+
+
+function getDeviceId() {
+
+    let id =
+        localStorage.getItem(
+            DEVICE_ID_KEY
+        );
+
+
+    if (!id) {
+
+        id =
+            createDeviceId();
+
+
+        localStorage.setItem(
+            DEVICE_ID_KEY,
+            id
+        );
+
+    }
+
+
+    return id;
+
+}
+
+
+const DEVICE_ID =
+    getDeviceId();
+
+
+let firebaseUser =
+    null;
+
+
+let firebaseReady =
+    false;
+
+
+/* =====================================================
+   FIREBASE ANONYMOUS LOGIN
+===================================================== */
+
+async function startFirebase() {
+
+    try {
+
+        await setPersistence(
+            auth,
+            browserLocalPersistence
+        );
+
+
+        onAuthStateChanged(
+            auth,
+            user => {
+
+                if (user) {
+
+                    firebaseUser =
+                        user;
+
+
+                    firebaseReady =
+                        true;
+
+                }
+
+            }
+        );
+
+
+        if (
+            !auth.currentUser
+        ) {
+
+            await signInAnonymously(
+                auth
+            );
+
+        }
+
+        else {
+
+            firebaseUser =
+                auth.currentUser;
+
+
+            firebaseReady =
+                true;
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Firebase auth:",
+            error
+        );
+
+
+        firebaseReady =
+            false;
+
+    }
+
+}
+
+
+/* =====================================================
+   PDF.JS
+===================================================== */
+
+import * as pdfjsLib from
+"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs";
+
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
+
+
+const PDF_URL =
+    "09-12-2026.pdf";
+
+
+/* =====================================================
+   PDF ELEMENTS
+===================================================== */
+
+const viewer =
+    document.getElementById(
+        "viewer"
+    );
+
+
+const pageContainer =
+    document.getElementById(
+        "pageContainer"
+    );
+
+
+const canvas =
+    document.getElementById(
+        "pdfCanvas"
+    );
+
+
+const ctx =
+    canvas.getContext(
+        "2d",
+        {
+            alpha: false
+        }
+    );
+
+
+const prevBtn =
+    document.getElementById(
+        "prevBtn"
+    );
+
+
+const nextBtn =
+    document.getElementById(
+        "nextBtn"
+    );
+
+
+const pageInfo =
+    document.getElementById(
+        "pageInfo"
+    );
+
+
+const zoomInfo =
+    document.getElementById(
+        "zoomInfo"
+    );
+
+
+const fitZoomBtn =
+    document.getElementById(
+        "fitZoomBtn"
+    );
+
+
+const loading =
+    document.getElementById(
+        "loading"
+    );
+
+
+const errorMessage =
+    document.getElementById(
+        "errorMessage"
+    );
+
+
+/* =====================================================
+   PDF STATE
+===================================================== */
+
+let pdfDocument =
+    null;
+
+
+let currentPage =
+    1;
+
+
+let rendering =
+    false;
+
+
+let pendingPage =
+    null;
+
+
+/*
+100% = fit width
+
+500% maximum
+*/
+
+let zoom =
+    1;
+
+
+const MIN_ZOOM =
+    1;
+
+
+const MAX_ZOOM =
+    5;
+
+
+/* =====================================================
+   LOAD PDF
+===================================================== */
+
+async function loadPDF() {
+
+    try {
+
+        const task =
+            pdfjsLib.getDocument({
+
+                url:
+                    PDF_URL,
+
+                disableAutoFetch:
+                    false,
+
+                disableStream:
+                    false,
+
+                disableRange:
+                    false
+
+            });
+
+
+        pdfDocument =
+            await task.promise;
+
+
+        loading.style.display =
+            "none";
+
+
+        renderPage(
+            1
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            error
+        );
+
+
+        loading.style.display =
+            "none";
+
+
+        errorMessage.style.display =
+            "flex";
+
+
+        errorMessage.innerHTML =
+            "Cannot load PDF.<br><br>" +
+            "Make sure 09-12-2026.pdf is in the same folder.";
+
+    }
+
+}
+
+
+/* =====================================================
+   RENDER
+===================================================== */
+
+async function renderPage(
+    pageNumber
+) {
+
+    if (!pdfDocument) {
+        return;
+    }
+
+
+    pageNumber =
+        Math.max(
+            1,
+            Math.min(
+                pageNumber,
+                pdfDocument.numPages
+            )
+        );
+
+
+    if (rendering) {
+
+        pendingPage =
+            pageNumber;
+
+
+        return;
+
+    }
+
+
+    rendering =
+        true;
+
+
+    try {
+
+        const page =
+            await pdfDocument.getPage(
+                pageNumber
+            );
+
+
+        const original =
+            page.getViewport({
+                scale: 1
+            });
+
+
+        const baseScale =
+            viewer.clientWidth /
+            original.width;
+
+
+        const cssScale =
+            baseScale *
+            zoom;
+
+
+        const dpr =
+            Math.min(
+                window.devicePixelRatio || 1,
+                2
+            );
+
+
+        const viewport =
+            page.getViewport({
+
+                scale:
+                    cssScale *
+                    dpr
+
+            });
+
+
+        canvas.width =
+            Math.floor(
+                viewport.width
+            );
+
+
+        canvas.height =
+            Math.floor(
+                viewport.height
+            );
+
+
+        canvas.style.width =
+            Math.floor(
+                viewport.width /
+                dpr
+            ) +
+            "px";
+
+
+        canvas.style.height =
+            Math.floor(
+                viewport.height /
+                dpr
+            ) +
+            "px";
+
+
+        pageContainer.style.width =
+            Math.max(
+                viewer.clientWidth,
+                viewport.width / dpr
+            ) +
+            "px";
+
+
+        ctx.fillStyle =
+            "#ffffff";
+
+
+        ctx.fillRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+
+        const task =
+            page.render({
+
+                canvasContext:
+                    ctx,
+
+                viewport:
+                    viewport
+
+            });
+
+
+        await task.promise;
+
+
+        currentPage =
+            pageNumber;
+
+
+        updateUI();
+
+
+        /*
+        If form is currently open,
+        load data for new PDF page.
+        */
+
+        if (
+            noteOverlay.classList.contains(
+                "show"
+            )
+        ) {
+
+            await loadNotesForPage(
+                currentPage
+            );
+
+        }
+
+    }
+
+    catch (error) {
+
+        if (
+            error?.name !==
+            "RenderingCancelledException"
+        ) {
+
+            console.error(
+                error
+            );
+
+        }
+
+    }
+
+    finally {
+
+        rendering =
+            false;
+
+
+        if (
+            pendingPage !== null &&
+            pendingPage !== currentPage
+        ) {
+
+            const page =
+                pendingPage;
+
+
+            pendingPage =
+                null;
+
+
+            renderPage(
+                page
+            );
+
+        }
+
+        else {
+
+            pendingPage =
+                null;
+
+        }
+
+    }
+
+}
+
+
+/* =====================================================
+   UPDATE PDF UI
+===================================================== */
+
+function updateUI() {
+
+    if (!pdfDocument) {
+        return;
+    }
+
+
+    pageInfo.textContent =
+        currentPage +
+        " / " +
+        pdfDocument.numPages;
+
+
+    prevBtn.classList.toggle(
+        "hidden",
+        currentPage <= 1
+    );
+
+
+    nextBtn.classList.toggle(
+        "hidden",
+        currentPage >=
+        pdfDocument.numPages
+    );
+
+}
+
+
+/* =====================================================
+   PAGE NAVIGATION
+   ZOOM DOES NOT RESET
+===================================================== */
+
+function nextPage() {
+
+    if (!pdfDocument) {
+        return;
+    }
+
+
+    if (
+        currentPage <
+        pdfDocument.numPages
+    ) {
+
+        viewer.scrollTop =
+            0;
+
+
+        viewer.scrollLeft =
+            0;
+
+
+        renderPage(
+            currentPage + 1
+        );
+
+    }
+
+}
+
+
+function previousPage() {
+
+    if (!pdfDocument) {
+        return;
+    }
+
+
+    if (
+        currentPage >
+        1
+    ) {
+
+        viewer.scrollTop =
+            0;
+
+
+        viewer.scrollLeft =
+            0;
+
+
+        renderPage(
+            currentPage - 1
+        );
+
+    }
+
+}
+
+
+nextBtn.addEventListener(
+    "click",
+    nextPage
+);
+
+
+prevBtn.addEventListener(
+    "click",
+    previousPage
+);
+
+
+/* =====================================================
+   FIT 100%
+===================================================== */
+
+fitZoomBtn.addEventListener(
+    "click",
+    () => {
+
+        zoom =
+            1;
+
+
+        canvas.style.transform =
+            "none";
+
+
+        viewer.scrollTop =
+            0;
+
+
+        viewer.scrollLeft =
+            0;
+
+
+        zoomInfo.textContent =
+            "100%";
+
+
+        zoomInfo.classList.add(
+            "show"
+        );
+
+
+        renderPage(
+            currentPage
+        );
+
+
+        setTimeout(
+            () => {
+
+                zoomInfo.classList.remove(
+                    "show"
+                );
+
+            },
+            600
+        );
+
+    }
+);
+
+
+/* =====================================================
+   PINCH + SWIPE
+===================================================== */
+
+let touchStartX =
+    0;
+
+
+let touchStartY =
+    0;
+
+
+let singleTouch =
+    false;
+
+
+let isPinching =
+    false;
+
+
+let pinchStartDistance =
+    0;
+
+
+let pinchStartZoom =
+    1;
+
+
+let pinchPreviewZoom =
+    1;
+
+
+function getDistance(
+    touches
+) {
+
+    const x =
+        touches[0].clientX -
+        touches[1].clientX;
+
+
+    const y =
+        touches[0].clientY -
+        touches[1].clientY;
+
+
+    return Math.sqrt(
+        x * x +
+        y * y
+    );
+
+}
+
+
+/* START */
+
+viewer.addEventListener(
+    "touchstart",
+    event => {
+
+        if (
+            event.touches.length ===
+            2
+        ) {
+
+            isPinching =
+                true;
+
+
+            singleTouch =
+                false;
+
+
+            pinchStartDistance =
+                getDistance(
+                    event.touches
+                );
+
+
+            pinchStartZoom =
+                zoom;
+
+
+            pinchPreviewZoom =
+                zoom;
+
+
+            return;
+
+        }
+
+
+        if (
+            event.touches.length ===
+            1
+        ) {
+
+            singleTouch =
+                true;
+
+
+            touchStartX =
+                event.touches[0]
+                    .clientX;
+
+
+            touchStartY =
+                event.touches[0]
+                    .clientY;
+
+        }
+
+    },
+    {
+        passive:
+            true
+    }
+);
+
+
+/* MOVE */
+
+viewer.addEventListener(
+    "touchmove",
+    event => {
+
+        if (
+            isPinching &&
+            event.touches.length === 2
+        ) {
+
+            event.preventDefault();
+
+
+            const distance =
+                getDistance(
+                    event.touches
+                );
+
+
+            let newZoom =
+                pinchStartZoom *
+                (
+                    distance /
+                    pinchStartDistance
+                );
+
+
+            newZoom =
+                Math.max(
+                    MIN_ZOOM,
+                    Math.min(
+                        MAX_ZOOM,
+                        newZoom
+                    )
+                );
+
+
+            pinchPreviewZoom =
+                newZoom;
+
+
+            const preview =
+                newZoom /
+                zoom;
+
+
+            canvas.style.transform =
+                `scale(${preview})`;
+
+
+            zoomInfo.textContent =
+                Math.round(
+                    newZoom *
+                    100
+                ) +
+                "%";
+
+
+            zoomInfo.classList.add(
+                "show"
+            );
+
+        }
+
+    },
+    {
+        passive:
+            false
+    }
+);
+
+
+/* END */
+
+viewer.addEventListener(
+    "touchend",
+    event => {
+
+        if (
+            isPinching
+        ) {
+
+            if (
+                event.touches.length <
+                2
+            ) {
+
+                zoom =
+                    pinchPreviewZoom;
+
+
+                canvas.style.transform =
+                    "none";
+
+
+                isPinching =
+                    false;
+
+
+                renderPage(
+                    currentPage
+                );
+
+
+                setTimeout(
+                    () => {
+
+                        zoomInfo.classList.remove(
+                            "show"
+                        );
+
+                    },
+                    700
+                );
+
+            }
+
+
+            return;
+
+        }
+
+
+        if (
+            !singleTouch ||
+            zoom >
+            1.05 ||
+            !event.changedTouches.length
+        ) {
+
+            singleTouch =
+                false;
+
+
+            return;
+
+        }
+
+
+        const endX =
+            event.changedTouches[0]
+                .clientX;
+
+
+        const endY =
+            event.changedTouches[0]
+                .clientY;
+
+
+        const dx =
+            endX -
+            touchStartX;
+
+
+        const dy =
+            endY -
+            touchStartY;
+
+
+        if (
+            Math.abs(dx) >
+            65
+            &&
+            Math.abs(dx) >
+            Math.abs(dy) *
+            1.4
+        ) {
+
+            if (
+                dx <
+                0
+            ) {
+
+                nextPage();
+
+            }
+
+            else {
+
+                previousPage();
+
+            }
+
+        }
+
+
+        singleTouch =
+            false;
+
+    },
+    {
+        passive:
+            true
+    }
+);
+
+
+/*
+NO DOUBLE TAP RESET.
+
+Zoom remains until user pinches
+again or presses Fit 100%.
+*/
+
+
+/* =====================================================
+   RESIZE
+===================================================== */
+
+let resizeTimer;
+
+
+window.addEventListener(
+    "resize",
+    () => {
+
+        clearTimeout(
+            resizeTimer
+        );
+
+
+        resizeTimer =
+            setTimeout(
+                () => {
+
+                    if (
+                        pdfDocument
+                    ) {
+
+                        renderPage(
+                            currentPage
+                        );
+
+                    }
+
+                },
+                200
+            );
+
+    }
+);
+
+
+/* =====================================================
+   NOTE ELEMENTS
+===================================================== */
+
+const writeBtn =
+    document.getElementById(
+        "writeBtn"
+    );
+
+
+const savedDot =
+    document.getElementById(
+        "savedDot"
+    );
+
+
+const noteOverlay =
+    document.getElementById(
+        "noteOverlay"
+    );
+
+
+const notePopup =
+    document.getElementById(
+        "notePopup"
+    );
+
+
+const noteHeader =
+    document.getElementById(
+        "noteHeader"
+    );
+
+
+const closeNote =
+    document.getElementById(
+        "closeNote"
+    );
+
+
+const note1 =
+    document.getElementById(
+        "note1"
+    );
+
+
+const note2 =
+    document.getElementById(
+        "note2"
+    );
+
+
+const note3 =
+    document.getElementById(
+        "note3"
+    );
+
+
+const note4 =
+    document.getElementById(
+        "note4"
+    );
+
+
+const note5 =
+    document.getElementById(
+        "note5"
+    );
+
+
+const noteStatus =
+    document.getElementById(
+        "noteStatus"
+    );
+
+
+const saveNote =
+    document.getElementById(
+        "saveNote"
+    );
+
+
+const deleteNote =
+    document.getElementById(
+        "deleteNote"
+    );
+
+
+const captureNote =
+    document.getElementById(
+        "captureNote"
+    );
+
+
+const noteInputs =
+    document.querySelectorAll(
+        ".noteInput"
+    );
+
+
+/* =====================================================
+   AUTO GROW
+===================================================== */
+
+function autoGrow(
+    textarea
+) {
+
+    textarea.style.height =
+        "39px";
+
+
+    textarea.style.height =
+        Math.max(
+            39,
+            textarea.scrollHeight
+        ) +
+        "px";
+
+}
+
+
+noteInputs.forEach(
+    textarea => {
+
+        textarea.addEventListener(
+            "input",
+            () => {
+
+                autoGrow(
+                    textarea
+                );
+
+            }
+        );
+
+    }
+);
+
+
+/* =====================================================
+   LOCAL CACHE
+   24 HOURS
+===================================================== */
+
+const LOCAL_CACHE_TIME =
+    24 *
+    60 *
+    60 *
+    1000;
+
+
+function getLocalPageKey(
+    pageNumber
+) {
+
+    return (
+        "qt_page_notes_" +
+        pageNumber
+    );
+
+}
+
+
+function saveLocalCache(
+    pageNumber,
+    notes
+) {
+
+    try {
+
+        localStorage.setItem(
+
+            getLocalPageKey(
+                pageNumber
+            ),
+
+            JSON.stringify({
+
+                ...notes,
+
+                expires:
+                    Date.now() +
+                    LOCAL_CACHE_TIME
+
+            })
+
+        );
+
+    }
+
+    catch {}
+
+}
+
+
+function getLocalCache(
+    pageNumber
+) {
+
+    try {
+
+        const raw =
+            localStorage.getItem(
+                getLocalPageKey(
+                    pageNumber
+                )
+            );
+
+
+        if (!raw) {
+            return null;
+        }
+
+
+        const data =
+            JSON.parse(
+                raw
+            );
+
+
+        if (
+            !data.expires ||
+            Date.now() >
+            data.expires
+        ) {
+
+            localStorage.removeItem(
+                getLocalPageKey(
+                    pageNumber
+                )
+            );
+
+
+            return null;
+
+        }
+
+
+        return data;
+
+    }
+
+    catch {
+
+        return null;
+
+    }
+
+}
+
+
+/* =====================================================
+   FORM VALUES
+===================================================== */
+
+function getFormValues() {
+
+    return {
+
+        note1:
+            note1.value,
+
+        note2:
+            note2.value,
+
+        note3:
+            note3.value,
+
+        note4:
+            note4.value,
+
+        note5:
+            note5.value
+
+    };
+
+}
+
+
+function setFormValues(
+    data = {}
+) {
+
+    note1.value =
+        data.note1 || "";
+
+
+    note2.value =
+        data.note2 || "";
+
+
+    note3.value =
+        data.note3 || "";
+
+
+    note4.value =
+        data.note4 || "";
+
+
+    note5.value =
+        data.note5 || "";
+
+
+    noteInputs.forEach(
+        autoGrow
+    );
+
+}
+
+
+function hasFormText() {
+
+    return !!(
+
+        note1.value.trim() ||
+        note2.value.trim() ||
+        note3.value.trim() ||
+        note4.value.trim() ||
+        note5.value.trim()
+
+    );
+
+}
+
+
+/* =====================================================
+   FIREBASE PAGE PATH
+
+   users/
+     UID/
+       devices/
+         DEVICE_ID/
+           pages/
+             1/
+             2/
+             3/
+===================================================== */
+
+function getFirebasePageRef(
+    pageNumber
+) {
+
+    if (
+        !firebaseUser
+    ) {
+
+        return null;
+
+    }
+
+
+    return ref(
+
+        database,
+
+        "users/" +
+        firebaseUser.uid +
+        "/devices/" +
+        DEVICE_ID +
+        "/pages/" +
+        pageNumber
+
+    );
+
+}
+
+
+/* =====================================================
+   LOAD PAGE NOTES
+===================================================== */
+
+async function loadNotesForPage(
+    pageNumber
+) {
+
+    noteStatus.textContent =
+        "ទំព័រ " +
+        pageNumber +
+        " • កំពុងផ្ទុក...";
+
+
+    /*
+    Local cache first = instant.
+    */
+
+    const local =
+        getLocalCache(
+            pageNumber
+        );
+
+
+    if (local) {
+
+        setFormValues(
+            local
+        );
+
+    }
+
+    else {
+
+        setFormValues({});
+
+    }
+
+
+    /*
+    Firebase version overrides
+    local cache when available.
+    */
+
+    if (
+        !firebaseReady ||
+        !firebaseUser
+    ) {
+
+        noteStatus.textContent =
+            "ទំព័រ " +
+            pageNumber +
+            " • រក្សាទុកក្នុងឧបករណ៍";
+
+
+        return;
+
+    }
+
+
+    try {
+
+        const pageRef =
+            getFirebasePageRef(
+                pageNumber
+            );
+
+
+        const snapshot =
+            await get(
+                pageRef
+            );
+
+
+        if (
+            snapshot.exists()
+        ) {
+
+            const data =
+                snapshot.val();
+
+
+            setFormValues(
+                data
+            );
+
+
+            saveLocalCache(
+                pageNumber,
+                data
+            );
+
+
+            savedDot.classList.add(
+                "show"
+            );
+
+
+            noteStatus.textContent =
+                "ទំព័រ " +
+                pageNumber +
+                " • បានផ្ទុកពី Firebase";
+
+        }
+
+        else {
+
+            if (!local) {
+
+                setFormValues({});
+
+            }
+
+
+            savedDot.classList.remove(
+                "show"
+            );
+
+
+            noteStatus.textContent =
+                "ទំព័រ " +
+                pageNumber +
+                " • មិនទាន់មានចម្លើយ";
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Firebase load:",
+            error
+        );
+
+
+        noteStatus.textContent =
+            "ទំព័រ " +
+            pageNumber +
+            " • ប្រើទិន្នន័យក្នុងឧបករណ៍";
+
+    }
+
+}
+
+
+/* =====================================================
+   SAVE CURRENT PAGE
+===================================================== */
+
+async function saveCurrentPageNotes() {
+
+    if (
+        !hasFormText()
+    ) {
+
+        noteStatus.textContent =
+            "សូមសរសេរចម្លើយយ៉ាងហោចណាស់មួយ";
+
+
+        return;
+
+    }
+
+
+    const pageNumber =
+        currentPage;
+
+
+    const notes =
+        getFormValues();
+
+
+    /*
+    Always keep local cache.
+    */
+
+    saveLocalCache(
+        pageNumber,
+        notes
+    );
+
+
+    saveNote.disabled =
+        true;
+
+
+    saveNote.textContent =
+        "កំពុងរក្សាទុក...";
+
+
+    try {
+
+        if (
+            firebaseReady &&
+            firebaseUser
+        ) {
+
+            const pageRef =
+                getFirebasePageRef(
+                    pageNumber
+                );
+
+
+            await set(
+                pageRef,
+                {
+
+                    ...notes,
+
+                    page:
+                        pageNumber,
+
+                    deviceId:
+                        DEVICE_ID,
+
+                    updatedAt:
+                        serverTimestamp()
+
+                }
+            );
+
+
+            savedDot.classList.add(
+                "show"
+            );
+
+
+            noteStatus.textContent =
+                "✓ ទំព័រ " +
+                pageNumber +
+                " បានរក្សាទុក Firebase";
+
+        }
+
+        else {
+
+            savedDot.classList.add(
+                "show"
+            );
+
+
+            noteStatus.textContent =
+                "✓ បានរក្សាទុកក្នុងឧបករណ៍";
+
+        }
+
+
+        saveNote.textContent =
+            "បានរក្សាទុក";
+
+
+        setTimeout(
+            () => {
+
+                saveNote.textContent =
+                    "រក្សាទុក";
+
+            },
+            900
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Firebase save:",
+            error
+        );
+
+
+        /*
+        Local copy is still safe.
+        */
+
+        noteStatus.textContent =
+            "✓ បានរក្សាទុកក្នុងឧបករណ៍ • Firebase មិនភ្ជាប់";
+
+
+        saveNote.textContent =
+            "រក្សាទុក";
+
+    }
+
+    finally {
+
+        saveNote.disabled =
+            false;
+
+    }
+
+}
+
+
+/* =====================================================
+   DELETE CURRENT PAGE DATA
+===================================================== */
+
+async function deleteCurrentPageNotes() {
+
+    const pageNumber =
+        currentPage;
+
+
+    setFormValues({});
+
+
+    localStorage.removeItem(
+        getLocalPageKey(
+            pageNumber
+        )
+    );
+
+
+    savedDot.classList.remove(
+        "show"
+    );
+
+
+    if (
+        firebaseReady &&
+        firebaseUser
+    ) {
+
+        try {
+
+            const pageRef =
+                getFirebasePageRef(
+                    pageNumber
+                );
+
+
+            await remove(
+                pageRef
+            );
+
+
+            noteStatus.textContent =
+                "✓ បានលុបទិន្នន័យទំព័រ " +
+                pageNumber;
+
+        }
+
+        catch (error) {
+
+            console.error(
+                error
+            );
+
+
+            noteStatus.textContent =
+                "បានលុបក្នុងឧបករណ៍";
+
+        }
+
+    }
+
+    else {
+
+        noteStatus.textContent =
+            "បានលុបទិន្នន័យ";
+
+    }
+
+}
+
+
+/* =====================================================
+   POPUP POSITION
+===================================================== */
+
+let popupX =
+    0;
+
+
+let popupY =
+    0;
+
+
+function updatePopupTransform() {
+
+    notePopup.style.transform =
+        `translate3d(${popupX}px, ${popupY}px, 0)`;
+
+}
+
+
+function resetPopupPosition() {
+
+    popupX =
+        0;
+
+
+    popupY =
+        0;
+
+
+    updatePopupTransform();
+
+}
+
+
+/* =====================================================
+   OPEN
+===================================================== */
+
+async function openNotePopup() {
+
+    resetPopupPosition();
+
+
+    notePopup.scrollTop =
+        0;
+
+
+    noteOverlay.classList.add(
+        "show"
+    );
+
+
+    await loadNotesForPage(
+        currentPage
+    );
+
+}
+
+
+/* =====================================================
+   CLOSE
+===================================================== */
+
+function closeNotePopup() {
+
+    noteOverlay.classList.remove(
+        "show"
+    );
+
+
+    document.activeElement?.blur();
+
+}
+
+
+/* =====================================================
+   DRAG FORM
+===================================================== */
+
+let draggingPopup =
+    false;
+
+
+let dragPointerId =
+    null;
+
+
+let dragStartX =
+    0;
+
+
+let dragStartY =
+    0;
+
+
+let popupStartX =
+    0;
+
+
+let popupStartY =
+    0;
+
+
+let startPopupRect =
+    null;
+
+
+noteHeader.addEventListener(
+    "pointerdown",
+    event => {
+
+        if (
+            event.target.closest(
+                "button"
+            )
+        ) {
+
+            return;
+
+        }
+
+
+        draggingPopup =
+            true;
+
+
+        dragPointerId =
+            event.pointerId;
+
+
+        dragStartX =
+            event.clientX;
+
+
+        dragStartY =
+            event.clientY;
+
+
+        popupStartX =
+            popupX;
+
+
+        popupStartY =
+            popupY;
+
+
+        startPopupRect =
+            notePopup
+                .getBoundingClientRect();
+
+
+        noteHeader.classList.add(
+            "dragging"
+        );
+
+
+        noteHeader.setPointerCapture(
+            event.pointerId
+        );
+
+
+        event.preventDefault();
+
+    }
+);
+
+
+noteHeader.addEventListener(
+    "pointermove",
+    event => {
+
+        if (
+            !draggingPopup ||
+            event.pointerId !==
+            dragPointerId
+        ) {
+
+            return;
+
+        }
+
+
+        const dx =
+            event.clientX -
+            dragStartX;
+
+
+        const dy =
+            event.clientY -
+            dragStartY;
+
+
+        const leftLimit =
+            4 -
+            startPopupRect.left;
+
+
+        const rightLimit =
+            window.innerWidth -
+            4 -
+            startPopupRect.right;
+
+
+        const topLimit =
+            4 -
+            startPopupRect.top;
+
+
+        const bottomLimit =
+            window.innerHeight -
+            44 -
+            startPopupRect.bottom;
+
+
+        const safeDX =
+            Math.max(
+                leftLimit,
+                Math.min(
+                    rightLimit,
+                    dx
+                )
+            );
+
+
+        const safeDY =
+            Math.max(
+                topLimit,
+                Math.min(
+                    bottomLimit,
+                    dy
+                )
+            );
+
+
+        popupX =
+            popupStartX +
+            safeDX;
+
+
+        popupY =
+            popupStartY +
+            safeDY;
+
+
+        updatePopupTransform();
+
+    }
+);
+
+
+function stopPopupDrag(
+    event
+) {
+
+    if (
+        !draggingPopup ||
+        event.pointerId !==
+        dragPointerId
+    ) {
+
+        return;
+
+    }
+
+
+    draggingPopup =
+        false;
+
+
+    dragPointerId =
+        null;
+
+
+    noteHeader.classList.remove(
+        "dragging"
+    );
+
+}
+
+
+noteHeader.addEventListener(
+    "pointerup",
+    stopPopupDrag
+);
+
+
+noteHeader.addEventListener(
+    "pointercancel",
+    stopPopupDrag
+);
+
+
+/* =====================================================
+   SCREENSHOT FILE NAME
+===================================================== */
+
+function getScreenshotFilename() {
+
+    const date =
+        new Date();
+
+
+    const pad =
+        value =>
+            String(value)
+                .padStart(
+                    2,
+                    "0"
+                );
+
+
+    return (
+        "ពេលសៀមស្ងាត់-" +
+
+        date.getFullYear() +
+        "-" +
+
+        pad(
+            date.getMonth() +
+            1
+        ) +
+        "-" +
+
+        pad(
+            date.getDate()
+        ) +
+        "-" +
+
+        pad(
+            date.getHours()
+        ) +
+        "-" +
+
+        pad(
+            date.getMinutes()
+        ) +
+
+        ".png"
+    );
+
+}
+
+
+/* =====================================================
+   DOWNLOAD
+===================================================== */
+
+function downloadBlob(
+    blob,
+    filename
+) {
+
+    const url =
+        URL.createObjectURL(
+            blob
+        );
+
+
+    const link =
+        document.createElement(
+            "a"
+        );
+
+
+    link.href =
+        url;
+
+
+    link.download =
+        filename;
+
+
+    document.body.appendChild(
+        link
+    );
+
+
+    link.click();
+
+
+    link.remove();
+
+
+    setTimeout(
+        () => {
+
+            URL.revokeObjectURL(
+                url
+            );
+
+        },
+        3000
+    );
+
+}
+
+
+/* =====================================================
+   SCREENSHOT WHOLE VISIBLE SCREEN
+===================================================== */
+
+async function captureWholeScreen() {
+
+    if (
+        typeof window.html2canvas !==
+        "function"
+    ) {
+
+        noteStatus.textContent =
+            "មិនអាចថតរូបបាន";
+
+
+        return;
+
+    }
+
+
+    captureNote.disabled =
+        true;
+
+
+    document.activeElement?.blur();
+
+
+    try {
+
+        if (
+            document.fonts &&
+            document.fonts.ready
+        ) {
+
+            await document.fonts.ready;
+
+        }
+
+
+        await new Promise(
+            resolve =>
+                setTimeout(
+                    resolve,
+                    300
+                )
+        );
+
+
+        const screenCanvas =
+            await window.html2canvas(
+                document.documentElement,
+                {
+
+                    backgroundColor:
+                        "#d8d8d8",
+
+                    scale:
+                        Math.min(
+                            window.devicePixelRatio || 1,
+                            2
+                        ),
+
+                    useCORS:
+                        true,
+
+                    allowTaint:
+                        true,
+
+                    logging:
+                        false,
+
+                    width:
+                        window.innerWidth,
+
+                    height:
+                        window.innerHeight,
+
+                    windowWidth:
+                        window.innerWidth,
+
+                    windowHeight:
+                        window.innerHeight,
+
+                    x:
+                        0,
+
+                    y:
+                        0,
+
+                    scrollX:
+                        0,
+
+                    scrollY:
+                        0
+
+                }
+            );
+
+
+        const blob =
+            await new Promise(
+                resolve => {
+
+                    screenCanvas.toBlob(
+                        resolve,
+                        "image/png",
+                        1
+                    );
+
+                }
+            );
+
+
+        if (!blob) {
+
+            throw new Error(
+                "PNG failed"
+            );
+
+        }
+
+
+        const filename =
+            getScreenshotFilename();
+
+
+        const isIOS =
+            /iPad|iPhone|iPod/i
+                .test(
+                    navigator.userAgent
+                );
+
+
+        if (
+            isIOS &&
+            navigator.share &&
+            navigator.canShare
+        ) {
+
+            const file =
+                new File(
+                    [blob],
+                    filename,
+                    {
+                        type:
+                            "image/png"
+                    }
+                );
+
+
+            if (
+                navigator.canShare({
+                    files:
+                        [file]
+                })
+            ) {
+
+                await navigator.share({
+
+                    files:
+                        [file],
+
+                    title:
+                        "ពេលសៀមស្ងាត់"
+
+                });
+
+            }
+
+            else {
+
+                downloadBlob(
+                    blob,
+                    filename
+                );
+
+            }
+
+        }
+
+        else {
+
+            downloadBlob(
+                blob,
+                filename
+            );
+
+        }
+
+
+        noteStatus.textContent =
+            "✓ បានថតរូប";
+
+    }
+
+    catch (error) {
+
+        console.error(
+            error
+        );
+
+
+        noteStatus.textContent =
+            "មិនអាចថតរូបបាន";
+
+    }
+
+    finally {
+
+        captureNote.disabled =
+            false;
+
+    }
+
+}
+
+
+/* =====================================================
+   EVENTS
+===================================================== */
+
+writeBtn.addEventListener(
+    "click",
+    openNotePopup
+);
+
+
+closeNote.addEventListener(
+    "click",
+    closeNotePopup
+);
+
+
+saveNote.addEventListener(
+    "click",
+    saveCurrentPageNotes
+);
+
+
+deleteNote.addEventListener(
+    "click",
+    deleteCurrentPageNotes
+);
+
+
+captureNote.addEventListener(
+    "click",
+    captureWholeScreen
+);
+
+
+noteOverlay.addEventListener(
+    "click",
+    event => {
+
+        if (
+            event.target ===
+            noteOverlay
+        ) {
+
+            closeNotePopup();
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   START
+===================================================== */
+
+await startFirebase();
+
+loadPDF();
+
+</script>
+
+</body>
+</html>
