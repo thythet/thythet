@@ -1,0 +1,4482 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+>
+
+<title>ពេលសៀមស្ងាត់</title>
+
+<style>
+
+@font-face {
+    font-family: "Krasar";
+    src: url("https://thythet.com/prayinfo2/assets/fonts/Krasar.woff") format("woff");
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #d8d8d8;
+    font-family: "Krasar", sans-serif;
+}
+
+
+/* =====================================================
+   PDF
+===================================================== */
+
+#viewer {
+    position: fixed;
+    inset: 0;
+    overflow: auto;
+    background: #d8d8d8;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+
+#pageContainer {
+    min-width: 100%;
+    min-height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+#pdfCanvas {
+    display: block;
+    background: white;
+    transform-origin: top center;
+    box-shadow: 0 0 7px rgba(0,0,0,.18);
+}
+
+
+/* =====================================================
+   TOP BUTTONS
+===================================================== */
+
+.topBtn {
+    position: fixed;
+    top: calc(8px + env(safe-area-inset-top));
+    z-index: 100;
+    height: 38px;
+    border: 0;
+    border-radius: 20px;
+    font-family: "Krasar", sans-serif;
+    cursor: pointer;
+}
+
+#writeBtn {
+    right: 8px;
+    padding: 0 14px;
+    background: rgba(0,0,0,.72);
+    color: white;
+    font-size: 14px;
+}
+
+#googleBtn {
+    right: 55px;
+    width: 38px;
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,.96);
+    box-shadow: 0 1px 5px rgba(0,0,0,.16);
+}
+
+#googleAvatar {
+    display: none;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+#googleFallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+#fitZoomBtn {
+    left: 8px;
+    padding: 0 12px;
+    background: rgba(0,0,0,.75);
+    color: white;
+    font-size: 11px;
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+
+    transform: translateY(-4px);
+
+    transition:
+        opacity .18s,
+        visibility .18s,
+        transform .18s;
+}
+
+#fitZoomBtn.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+#savedDot {
+    display: none;
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #35d66f;
+}
+
+#savedDot.show {
+    display: block;
+}
+
+
+/* =====================================================
+   PDF NAV
+===================================================== */
+
+.navBtn {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 80;
+
+    width: 38px;
+    height: 58px;
+
+    border: 0;
+    border-radius: 11px;
+
+    background: rgba(0,0,0,.25);
+    color: white;
+
+    font-size: 28px;
+}
+
+#prevBtn {
+    left: 5px;
+}
+
+#nextBtn {
+    right: 5px;
+}
+
+.navBtn.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+#pageInfo {
+    position: fixed;
+    left: 50%;
+    bottom: calc(7px + env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    z-index: 80;
+
+    padding: 4px 9px;
+    border-radius: 14px;
+
+    background: rgba(0,0,0,.52);
+    color: white;
+    font-size: 10px;
+
+    pointer-events: none;
+}
+
+#zoomInfo {
+    position: fixed;
+    left: 8px;
+    top: calc(52px + env(safe-area-inset-top));
+    z-index: 80;
+
+    padding: 4px 8px;
+    border-radius: 12px;
+
+    background: rgba(0,0,0,.55);
+    color: white;
+
+    font-size: 10px;
+
+    opacity: 0;
+    transition: opacity .15s;
+    pointer-events: none;
+}
+
+#zoomInfo.show {
+    opacity: 1;
+}
+
+
+/* =====================================================
+   LOADING
+===================================================== */
+
+#loading {
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #111;
+}
+
+.spinner {
+    width: 25px;
+    height: 25px;
+    border: 3px solid rgba(255,255,255,.2);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+#errorMessage {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 600;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 25px;
+
+    background: #111;
+    color: white;
+    text-align: center;
+}
+
+
+/* =====================================================
+   NOTE FORM
+===================================================== */
+
+#noteOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+
+    padding:
+        calc(6px + env(safe-area-inset-top))
+        7px
+        calc(48px + env(safe-area-inset-bottom));
+
+    background: rgba(0,0,0,.08);
+
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .15s;
+}
+
+#noteOverlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+#notePopup {
+    width: 100%;
+    max-width: 520px;
+    max-height: 100%;
+
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+
+    padding: 9px;
+
+    background: rgba(255,255,255,.97);
+    border-radius: 16px;
+
+    box-shadow: 0 5px 20px rgba(0,0,0,.22);
+
+    transform: translate3d(0,0,0);
+    will-change: transform;
+}
+
+.noteHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 7px;
+
+    cursor: grab;
+    touch-action: none;
+
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.noteHeader.dragging {
+    cursor: grabbing;
+}
+
+.formTitle {
+    flex: 1;
+    color: #111;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+#closeNote {
+    width: 31px;
+    height: 31px;
+
+    border: 0;
+    border-radius: 50%;
+
+    background: #eee;
+    color: #333;
+
+    font-size: 19px;
+}
+
+.noteGroup {
+    margin-bottom: 6px;
+}
+
+.noteTitle {
+    display: block;
+
+    margin-bottom: 2px;
+
+    color: #079447;
+
+    font-family: "Krasar", sans-serif;
+
+    font-size: 13px;
+    font-weight: bold;
+    line-height: 1.35;
+}
+
+.noteInput {
+    display: block;
+
+    width: 100%;
+
+    height: 39px;
+    min-height: 39px;
+
+    overflow-y: hidden;
+    resize: none;
+
+    padding: 6px 8px;
+
+    border: 1px solid #d2d2d2;
+    border-radius: 8px;
+
+    outline: none;
+
+    background: rgba(255,255,255,.94);
+    color: #111;
+
+    font-family: "Krasar", sans-serif;
+
+    font-size: 13px;
+    line-height: 1.45;
+
+    user-select: text;
+    -webkit-user-select: text;
+}
+
+.noteInput:focus {
+    border-color: #079447;
+}
+
+#noteStatus {
+    min-height: 14px;
+
+    margin-top: 2px;
+    margin-bottom: 5px;
+
+    color: #777;
+
+    font-size: 9.5px;
+    line-height: 1.3;
+}
+
+#noteStatus.good {
+    color: #079447;
+}
+
+#noteStatus.bad {
+    color: #b00020;
+}
+
+.noteActions {
+    display: flex;
+    gap: 6px;
+    margin-top: 3px;
+}
+
+.noteActionBtn {
+    height: 39px;
+
+    border: 0;
+    border-radius: 9px;
+
+    font-family: "Krasar", sans-serif;
+    font-size: 12px;
+}
+
+#deleteNote {
+    width: 65px;
+    background: #eee;
+    color: #555;
+}
+
+#captureNote {
+    width: 82px;
+    background: #eee;
+    color: #111;
+}
+
+#saveNote {
+    flex: 1;
+    background: #111;
+    color: white;
+}
+
+
+/* =====================================================
+   PROFILE POPUP
+===================================================== */
+
+#profileOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1500;
+
+    background: rgba(0,0,0,.22);
+
+    opacity: 0;
+    visibility: hidden;
+
+    transition: opacity .15s;
+}
+
+#profileOverlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+#profilePopup {
+    position: absolute;
+
+    top: calc(54px + env(safe-area-inset-top));
+    right: 8px;
+
+    width: min(320px, calc(100vw - 16px));
+    max-height: calc(100% - 75px);
+
+    overflow-y: auto;
+
+    background: white;
+
+    border-radius: 16px;
+
+    padding: 12px;
+
+    box-shadow: 0 8px 30px rgba(0,0,0,.25);
+}
+
+.profileTop {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    padding-bottom: 10px;
+    margin-bottom: 8px;
+
+    border-bottom: 1px solid #eee;
+}
+
+#profileAvatar {
+    width: 45px;
+    height: 45px;
+
+    border-radius: 50%;
+
+    object-fit: cover;
+
+    background: #eee;
+}
+
+.profileInfo {
+    min-width: 0;
+    flex: 1;
+}
+
+#profileName {
+    font-size: 14px;
+    font-weight: bold;
+    color: #111;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#profileEmail {
+    margin-top: 2px;
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    color: #777;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.toolTitle {
+    margin: 10px 0 5px;
+
+    color: #777;
+
+    font-size: 10px;
+}
+
+#savedPagesList {
+    display: grid;
+    gap: 5px;
+}
+
+.savedPageBtn {
+    width: 100%;
+
+    min-height: 37px;
+
+    border: 0;
+    border-radius: 9px;
+
+    padding: 5px 10px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    background: #f3f3f3;
+
+    color: #111;
+
+    font-family: "Krasar", sans-serif;
+    font-size: 12px;
+
+    text-align: left;
+}
+
+.emptyPages {
+    padding: 10px;
+    border-radius: 9px;
+    background: #f6f6f6;
+    color: #888;
+    font-size: 11px;
+    text-align: center;
+}
+
+
+/* =====================================================
+   ADMIN
+===================================================== */
+
+#adminPanel {
+    display: none;
+
+    margin-top: 10px;
+    padding-top: 10px;
+
+    border-top: 1px solid #eee;
+}
+
+#adminPanel.show {
+    display: block;
+}
+
+.adminTitle {
+    margin-bottom: 7px;
+
+    color: #b45b00;
+
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.adminRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 10px;
+
+    padding: 8px;
+
+    background: #f8f8f8;
+
+    border-radius: 10px;
+}
+
+.adminText {
+    min-width: 0;
+}
+
+.adminLabel {
+    color: #111;
+
+    font-size: 11px;
+}
+
+#anonymousStateText {
+    margin-top: 2px;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 9px;
+    color: #777;
+}
+
+
+/* SWITCH */
+
+.switch {
+    position: relative;
+
+    width: 42px;
+    height: 24px;
+
+    flex-shrink: 0;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    inset: 0;
+
+    border-radius: 24px;
+
+    background: #bbb;
+
+    transition: .18s;
+}
+
+.slider::before {
+    content: "";
+
+    position: absolute;
+
+    width: 18px;
+    height: 18px;
+
+    left: 3px;
+    top: 3px;
+
+    border-radius: 50%;
+
+    background: white;
+
+    transition: .18s;
+}
+
+.switch input:checked + .slider {
+    background: #079447;
+}
+
+.switch input:checked + .slider::before {
+    transform: translateX(18px);
+}
+
+
+/* LOGOUT */
+
+#logoutBtn {
+    width: 100%;
+
+    height: 40px;
+
+    margin-top: 10px;
+
+    border: 0;
+    border-radius: 10px;
+
+    background: #111;
+
+    color: white;
+
+    font-family: "Krasar", sans-serif;
+
+    font-size: 12px;
+}
+
+
+/* =====================================================
+   LOGIN REQUIRED
+===================================================== */
+
+#accessGate {
+    position: fixed;
+    inset: 0;
+
+    z-index: 2500;
+
+    display: none;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background: rgba(0,0,0,.7);
+}
+
+#accessGate.show {
+    display: flex;
+}
+
+.gateBox {
+    width: 100%;
+    max-width: 340px;
+
+    padding: 22px;
+
+    background: white;
+
+    border-radius: 18px;
+
+    text-align: center;
+}
+
+.gateTitle {
+    color: #111;
+
+    font-size: 17px;
+    font-weight: bold;
+}
+
+.gateText {
+    margin: 8px 0 15px;
+
+    color: #777;
+
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+#gateGoogleBtn {
+    width: 100%;
+    height: 44px;
+
+    border: 0;
+    border-radius: 11px;
+
+    background: #111;
+
+    color: white;
+
+    font-family: "Krasar", sans-serif;
+
+    font-size: 13px;
+}
+
+</style>
+</head>
+
+
+<body>
+
+
+<!-- PDF -->
+
+<div id="viewer">
+    <div id="pageContainer">
+        <canvas id="pdfCanvas"></canvas>
+    </div>
+</div>
+
+
+<button
+    id="fitZoomBtn"
+    class="topBtn"
+    type="button"
+>
+    Fit 100%
+</button>
+
+
+<button
+    id="googleBtn"
+    class="topBtn"
+    type="button"
+    aria-label="Google profile"
+>
+    <img
+        id="googleAvatar"
+        alt=""
+    >
+
+    <span id="googleFallback">
+        G
+    </span>
+</button>
+
+
+<button
+    id="writeBtn"
+    class="topBtn"
+    type="button"
+>
+    សរសេរ
+
+    <span id="savedDot"></span>
+</button>
+
+
+<button
+    id="prevBtn"
+    class="navBtn"
+    type="button"
+>
+    &#8249;
+</button>
+
+
+<button
+    id="nextBtn"
+    class="navBtn"
+    type="button"
+>
+    &#8250;
+</button>
+
+
+<div id="pageInfo">
+    1 / 1
+</div>
+
+
+<div id="zoomInfo">
+    100%
+</div>
+
+
+<div id="loading">
+    <div class="spinner"></div>
+</div>
+
+
+<div id="errorMessage">
+    Cannot load PDF
+</div>
+
+
+
+<!-- =====================================================
+     FORM
+===================================================== -->
+
+<div id="noteOverlay">
+
+<div id="notePopup">
+
+
+    <div
+        id="noteHeader"
+        class="noteHeader"
+    >
+
+        <div class="formTitle">
+            សរសេរ
+        </div>
+
+        <button
+            id="closeNote"
+            type="button"
+        >
+            ×
+        </button>
+
+    </div>
+
+
+    <div class="noteGroup">
+
+        <label
+            class="noteTitle"
+            for="note1"
+        >
+            តើអ្វីជាគំនិតសំខាន់របស់អត្តបទនេះ?
+        </label>
+
+        <textarea
+            id="note1"
+            class="noteInput"
+            rows="1"
+            spellcheck="false"
+        ></textarea>
+
+    </div>
+
+
+    <div class="noteGroup">
+
+        <label
+            class="noteTitle"
+            for="note2"
+        >
+            តើព្រះមានលក្ខណះដូចម្ដេច?
+        </label>
+
+        <textarea
+            id="note2"
+            class="noteInput"
+            rows="1"
+            spellcheck="false"
+        ></textarea>
+
+    </div>
+
+
+    <div class="noteGroup">
+
+        <label
+            class="noteTitle"
+            for="note3"
+        >
+            តើមេរៀនអ្វីដែលព្រះកំពុងបង្រៀនដល់ខ្ញុំ?
+        </label>
+
+        <textarea
+            id="note3"
+            class="noteInput"
+            rows="1"
+            spellcheck="false"
+        ></textarea>
+
+    </div>
+
+
+    <div class="noteGroup">
+
+        <label
+            class="noteTitle"
+            for="note4"
+        >
+            ការអនុវត្ត
+        </label>
+
+        <textarea
+            id="note4"
+            class="noteInput"
+            rows="1"
+            spellcheck="false"
+        ></textarea>
+
+    </div>
+
+
+    <div class="noteGroup">
+
+        <label
+            class="noteTitle"
+            for="note5"
+        >
+            ការអធិស្ឋាន
+        </label>
+
+        <textarea
+            id="note5"
+            class="noteInput"
+            rows="1"
+            spellcheck="false"
+        ></textarea>
+
+    </div>
+
+
+    <div id="noteStatus">
+        កំពុងភ្ជាប់ Firebase...
+    </div>
+
+
+    <div class="noteActions">
+
+        <button
+            id="deleteNote"
+            class="noteActionBtn"
+            type="button"
+        >
+            លុប
+        </button>
+
+        <button
+            id="captureNote"
+            class="noteActionBtn"
+            type="button"
+        >
+            ថតរូប
+        </button>
+
+        <button
+            id="saveNote"
+            class="noteActionBtn"
+            type="button"
+        >
+            រក្សាទុក
+        </button>
+
+    </div>
+
+
+</div>
+</div>
+
+
+
+<!-- =====================================================
+     PROFILE
+===================================================== -->
+
+<div id="profileOverlay">
+
+<div id="profilePopup">
+
+
+    <div class="profileTop">
+
+        <img
+            id="profileAvatar"
+            alt=""
+        >
+
+        <div class="profileInfo">
+
+            <div id="profileName">
+                Google
+            </div>
+
+            <div id="profileEmail"></div>
+
+        </div>
+
+    </div>
+
+
+    <div class="toolTitle">
+        កំណត់ត្រារបស់ខ្ញុំ
+    </div>
+
+
+    <div id="savedPagesList">
+
+        <div class="emptyPages">
+            កំពុងផ្ទុក...
+        </div>
+
+    </div>
+
+
+
+    <!-- ADMIN -->
+
+    <div id="adminPanel">
+
+        <div class="adminTitle">
+            Admin Tools
+        </div>
+
+
+        <div class="adminRow">
+
+            <div class="adminText">
+
+                <div class="adminLabel">
+                    Anonymous Free Access
+                </div>
+
+                <div id="anonymousStateText">
+                    Loading...
+                </div>
+
+            </div>
+
+
+            <label class="switch">
+
+                <input
+                    id="anonymousToggle"
+                    type="checkbox"
+                >
+
+                <span class="slider"></span>
+
+            </label>
+
+        </div>
+
+    </div>
+
+
+    <button
+        id="logoutBtn"
+        type="button"
+    >
+        ចាកចេញ
+    </button>
+
+
+</div>
+</div>
+
+
+
+<!-- =====================================================
+     LOGIN REQUIRED
+===================================================== -->
+
+<div id="accessGate">
+
+    <div class="gateBox">
+
+        <div class="gateTitle">
+            សូមចូលគណនី
+        </div>
+
+        <div class="gateText">
+            ការប្រើប្រាស់ដោយមិនចូលគណនីត្រូវបានបិទ។
+            សូមចូលដោយ Google ដើម្បីបន្ត។
+        </div>
+
+        <button
+            id="gateGoogleBtn"
+            type="button"
+        >
+            ចូលដោយ Google
+        </button>
+
+    </div>
+
+</div>
+
+
+
+<script
+src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js">
+</script>
+
+
+
+<script type="module">
+
+
+/* =====================================================
+   FIREBASE
+===================================================== */
+
+import {
+    initializeApp
+}
+from
+"https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+
+
+import {
+    getAuth,
+    browserLocalPersistence,
+    setPersistence,
+    onAuthStateChanged,
+    signInAnonymously,
+    GoogleAuthProvider,
+    signInWithPopup,
+    signOut
+}
+from
+"https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+
+
+import {
+    getDatabase,
+    ref,
+    get,
+    set,
+    update,
+    remove,
+    onValue,
+    serverTimestamp
+}
+from
+"https://www.gstatic.com/firebasejs/12.18.0/firebase-database.js";
+
+
+const firebaseConfig = {
+
+    apiKey:
+        "AIzaSyBA64C_cctFHJXUJjgAQ5PzbfmBVhdSjZ4",
+
+    authDomain:
+        "qt-app-ddabb.firebaseapp.com",
+
+    databaseURL:
+        "https://qt-app-ddabb-default-rtdb.asia-southeast1.firebasedatabase.app",
+
+    projectId:
+        "qt-app-ddabb",
+
+    storageBucket:
+        "qt-app-ddabb.firebasestorage.app",
+
+    messagingSenderId:
+        "198096024652",
+
+    appId:
+        "1:198096024652:web:43c9f097842f1bc3c830e9"
+
+};
+
+
+const app =
+    initializeApp(
+        firebaseConfig
+    );
+
+
+const auth =
+    getAuth(
+        app
+    );
+
+
+const database =
+    getDatabase(
+        app
+    );
+
+
+const googleProvider =
+    new GoogleAuthProvider();
+
+
+googleProvider.setCustomParameters({
+    prompt:
+        "select_account"
+});
+
+
+const ADMIN_EMAIL =
+    "thythetopen@gmail.com";
+
+
+let firebaseUser =
+    null;
+
+
+let firebaseReady =
+    false;
+
+
+let allowAnonymous =
+    true;
+
+
+/* =====================================================
+   DOM
+===================================================== */
+
+const viewer =
+    document.getElementById("viewer");
+
+const pageContainer =
+    document.getElementById("pageContainer");
+
+const canvas =
+    document.getElementById("pdfCanvas");
+
+const ctx =
+    canvas.getContext("2d", {
+        alpha: false
+    });
+
+const prevBtn =
+    document.getElementById("prevBtn");
+
+const nextBtn =
+    document.getElementById("nextBtn");
+
+const pageInfo =
+    document.getElementById("pageInfo");
+
+const zoomInfo =
+    document.getElementById("zoomInfo");
+
+const fitZoomBtn =
+    document.getElementById("fitZoomBtn");
+
+const writeBtn =
+    document.getElementById("writeBtn");
+
+const googleBtn =
+    document.getElementById("googleBtn");
+
+const googleAvatar =
+    document.getElementById("googleAvatar");
+
+const googleFallback =
+    document.getElementById("googleFallback");
+
+const savedDot =
+    document.getElementById("savedDot");
+
+const loading =
+    document.getElementById("loading");
+
+const errorMessage =
+    document.getElementById("errorMessage");
+
+
+const noteOverlay =
+    document.getElementById("noteOverlay");
+
+const notePopup =
+    document.getElementById("notePopup");
+
+const noteHeader =
+    document.getElementById("noteHeader");
+
+const closeNote =
+    document.getElementById("closeNote");
+
+const note1 =
+    document.getElementById("note1");
+
+const note2 =
+    document.getElementById("note2");
+
+const note3 =
+    document.getElementById("note3");
+
+const note4 =
+    document.getElementById("note4");
+
+const note5 =
+    document.getElementById("note5");
+
+const noteStatus =
+    document.getElementById("noteStatus");
+
+const saveNote =
+    document.getElementById("saveNote");
+
+const deleteNote =
+    document.getElementById("deleteNote");
+
+const captureNote =
+    document.getElementById("captureNote");
+
+const noteInputs =
+    document.querySelectorAll(".noteInput");
+
+
+const profileOverlay =
+    document.getElementById("profileOverlay");
+
+const profilePopup =
+    document.getElementById("profilePopup");
+
+const profileAvatar =
+    document.getElementById("profileAvatar");
+
+const profileName =
+    document.getElementById("profileName");
+
+const profileEmail =
+    document.getElementById("profileEmail");
+
+const savedPagesList =
+    document.getElementById("savedPagesList");
+
+const logoutBtn =
+    document.getElementById("logoutBtn");
+
+const adminPanel =
+    document.getElementById("adminPanel");
+
+const anonymousToggle =
+    document.getElementById("anonymousToggle");
+
+const anonymousStateText =
+    document.getElementById("anonymousStateText");
+
+
+const accessGate =
+    document.getElementById("accessGate");
+
+const gateGoogleBtn =
+    document.getElementById("gateGoogleBtn");
+
+
+/* =====================================================
+   DEVICE ID
+===================================================== */
+
+const DEVICE_KEY =
+    "qt_device_id_v4";
+
+
+function getDeviceId() {
+
+    let id =
+        localStorage.getItem(
+            DEVICE_KEY
+        );
+
+
+    if (!id) {
+
+        id =
+            crypto.randomUUID
+                ?
+                crypto.randomUUID()
+                :
+                (
+                    "device-" +
+                    Date.now() +
+                    "-" +
+                    Math.random()
+                        .toString(36)
+                        .slice(2)
+                );
+
+
+        localStorage.setItem(
+            DEVICE_KEY,
+            id
+        );
+
+    }
+
+
+    return id;
+
+}
+
+
+const DEVICE_ID =
+    getDeviceId();
+
+
+/* =====================================================
+   ACCOUNT HELPERS
+===================================================== */
+
+function isGoogleUser(
+    user = firebaseUser
+) {
+
+    if (!user) {
+        return false;
+    }
+
+
+    return user.providerData.some(
+        provider =>
+            provider.providerId ===
+            "google.com"
+    );
+
+}
+
+
+function isAdmin() {
+
+    return (
+        firebaseUser &&
+        isGoogleUser() &&
+        firebaseUser.email ===
+        ADMIN_EMAIL
+    );
+
+}
+
+
+function anonymousBlocked() {
+
+    return (
+        !allowAnonymous &&
+        !isGoogleUser()
+    );
+
+}
+
+
+/* =====================================================
+   APP CONFIG
+===================================================== */
+
+const configRef =
+    ref(
+        database,
+        "appConfig/allowAnonymous"
+    );
+
+
+onValue(
+    configRef,
+
+    snapshot => {
+
+        /*
+        Missing config = TRUE.
+        */
+
+        allowAnonymous =
+            snapshot.exists()
+                ?
+                snapshot.val() === true
+                :
+                true;
+
+
+        updateAccessState();
+
+
+        anonymousToggle.checked =
+            allowAnonymous;
+
+
+        anonymousStateText.textContent =
+            allowAnonymous
+                ?
+                "FREE: ON"
+                :
+                "FREE: OFF";
+
+    },
+
+    error => {
+
+        console.error(
+            "Config read:",
+            error
+        );
+
+    }
+);
+
+
+/* =====================================================
+   ACCESS STATE
+===================================================== */
+
+function updateAccessState() {
+
+    if (
+        anonymousBlocked()
+    ) {
+
+        accessGate.classList.add(
+            "show"
+        );
+
+
+        closeNoteForm();
+
+
+        writeBtn.disabled =
+            true;
+
+    }
+
+    else {
+
+        accessGate.classList.remove(
+            "show"
+        );
+
+
+        writeBtn.disabled =
+            false;
+
+    }
+
+}
+
+
+/* =====================================================
+   AUTH UI
+===================================================== */
+
+function updateAuthUI() {
+
+    if (
+        firebaseUser &&
+        isGoogleUser()
+    ) {
+
+        if (
+            firebaseUser.photoURL
+        ) {
+
+            googleAvatar.src =
+                firebaseUser.photoURL;
+
+
+            googleAvatar.style.display =
+                "block";
+
+
+            googleFallback.style.display =
+                "none";
+
+        }
+
+        else {
+
+            googleAvatar.style.display =
+                "none";
+
+
+            googleFallback.style.display =
+                "flex";
+
+
+            googleFallback.textContent =
+                firebaseUser.displayName?.charAt(0) ||
+                "G";
+
+        }
+
+    }
+
+    else {
+
+        googleAvatar.style.display =
+            "none";
+
+
+        googleFallback.style.display =
+            "flex";
+
+
+        googleFallback.textContent =
+            "G";
+
+    }
+
+
+    updateAccessState();
+
+}
+
+
+/* =====================================================
+   START AUTH
+===================================================== */
+
+async function startAuth() {
+
+    await setPersistence(
+        auth,
+        browserLocalPersistence
+    );
+
+
+    const user =
+        await new Promise(
+            resolve => {
+
+                const unsub =
+                    onAuthStateChanged(
+                        auth,
+                        user => {
+
+                            unsub();
+
+                            resolve(user);
+
+                        }
+                    );
+
+            }
+        );
+
+
+    if (user) {
+
+        firebaseUser =
+            user;
+
+
+        firebaseReady =
+            true;
+
+    }
+
+    else if (
+        allowAnonymous
+    ) {
+
+        const result =
+            await signInAnonymously(
+                auth
+            );
+
+
+        firebaseUser =
+            result.user;
+
+
+        firebaseReady =
+            true;
+
+    }
+
+
+    onAuthStateChanged(
+        auth,
+
+        async user => {
+
+            firebaseUser =
+                user;
+
+
+            firebaseReady =
+                !!user;
+
+
+            updateAuthUI();
+
+
+            if (user) {
+
+                await saveMeta();
+
+            }
+
+        }
+    );
+
+
+    updateAuthUI();
+
+
+    if (
+        firebaseUser
+    ) {
+
+        await saveMeta();
+
+    }
+
+}
+
+
+/* =====================================================
+   META
+===================================================== */
+
+async function saveMeta() {
+
+    if (!firebaseUser) {
+        return;
+    }
+
+
+    try {
+
+        if (
+            isGoogleUser()
+        ) {
+
+            await update(
+
+                ref(
+                    database,
+
+                    "users/" +
+                    firebaseUser.uid +
+                    "/profile"
+                ),
+
+                {
+
+                    email:
+                        firebaseUser.email ||
+                        null,
+
+                    displayName:
+                        firebaseUser.displayName ||
+                        null,
+
+                    photoURL:
+                        firebaseUser.photoURL ||
+                        null,
+
+                    deviceId:
+                        DEVICE_ID,
+
+                    lastSeen:
+                        serverTimestamp()
+
+                }
+
+            );
+
+        }
+
+        else {
+
+            await update(
+
+                ref(
+                    database,
+
+                    "anonymousUsers/" +
+                    firebaseUser.uid +
+                    "/meta"
+                ),
+
+                {
+
+                    deviceId:
+                        DEVICE_ID,
+
+                    accountType:
+                        "anonymous",
+
+                    lastSeen:
+                        serverTimestamp()
+
+                }
+
+            );
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Meta:",
+            error
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   PAGE FIREBASE PATH
+===================================================== */
+
+function firebasePageRef(
+    page
+) {
+
+    if (!firebaseUser) {
+        return null;
+    }
+
+
+    if (
+        isGoogleUser()
+    ) {
+
+        return ref(
+
+            database,
+
+            "users/" +
+            firebaseUser.uid +
+            "/pages/" +
+            page
+
+        );
+
+    }
+
+
+    return ref(
+
+        database,
+
+        "anonymousUsers/" +
+        firebaseUser.uid +
+        "/pages/" +
+        page
+
+    );
+
+}
+
+
+/* =====================================================
+   GOOGLE LOGIN
+===================================================== */
+
+async function loginGoogle() {
+
+    /*
+    Backup anonymous data before login.
+    */
+
+    let anonymousBackup =
+        {};
+
+
+    let oldAnonymousUid =
+        null;
+
+
+    if (
+        firebaseUser &&
+        firebaseUser.isAnonymous
+    ) {
+
+        oldAnonymousUid =
+            firebaseUser.uid;
+
+
+        try {
+
+            const snapshot =
+                await get(
+
+                    ref(
+
+                        database,
+
+                        "anonymousUsers/" +
+                        firebaseUser.uid +
+                        "/pages"
+
+                    )
+
+                );
+
+
+            if (
+                snapshot.exists()
+            ) {
+
+                anonymousBackup =
+                    snapshot.val();
+
+            }
+
+        }
+
+        catch {}
+
+    }
+
+
+    try {
+
+        const result =
+            await signInWithPopup(
+                auth,
+                googleProvider
+            );
+
+
+        firebaseUser =
+            result.user;
+
+
+        firebaseReady =
+            true;
+
+
+        /*
+        Migrate anonymous pages
+        into Google account.
+        */
+
+        if (
+            Object.keys(
+                anonymousBackup
+            ).length
+        ) {
+
+            const googlePagesRef =
+                ref(
+
+                    database,
+
+                    "users/" +
+                    firebaseUser.uid +
+                    "/pages"
+
+                );
+
+
+            const existingSnapshot =
+                await get(
+                    googlePagesRef
+                );
+
+
+            const existing =
+                existingSnapshot.exists()
+                    ?
+                    existingSnapshot.val()
+                    :
+                    {};
+
+
+            const patch =
+                {};
+
+
+            Object.entries(
+                anonymousBackup
+            ).forEach(
+                ([page, data]) => {
+
+                    if (
+                        !existing?.[page]
+                    ) {
+
+                        patch[page] =
+                            data;
+
+                    }
+
+                }
+            );
+
+
+            if (
+                Object.keys(
+                    patch
+                ).length
+            ) {
+
+                await update(
+                    googlePagesRef,
+                    patch
+                );
+
+            }
+
+        }
+
+
+        /*
+        Old anonymous data remains.
+        Admin can delete it later.
+        */
+
+
+        await saveMeta();
+
+
+        updateAuthUI();
+
+
+        accessGate.classList.remove(
+            "show"
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Google login:",
+            error
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   LOGOUT
+===================================================== */
+
+async function logoutGoogle() {
+
+    closeProfile();
+
+
+    await signOut(
+        auth
+    );
+
+
+    firebaseUser =
+        null;
+
+
+    firebaseReady =
+        false;
+
+
+    if (
+        allowAnonymous
+    ) {
+
+        try {
+
+            const result =
+                await signInAnonymously(
+                    auth
+                );
+
+
+            firebaseUser =
+                result.user;
+
+
+            firebaseReady =
+                true;
+
+
+            await saveMeta();
+
+        }
+
+        catch (error) {
+
+            console.error(
+                error
+            );
+
+        }
+
+    }
+
+
+    updateAuthUI();
+
+}
+
+
+/* =====================================================
+   PROFILE POPUP
+===================================================== */
+
+async function openProfile() {
+
+    if (
+        !isGoogleUser()
+    ) {
+
+        await loginGoogle();
+
+        return;
+
+    }
+
+
+    profileAvatar.src =
+        firebaseUser.photoURL ||
+        "";
+
+
+    profileName.textContent =
+        firebaseUser.displayName ||
+        "Google User";
+
+
+    profileEmail.textContent =
+        firebaseUser.email ||
+        "";
+
+
+    adminPanel.classList.toggle(
+        "show",
+        isAdmin()
+    );
+
+
+    anonymousToggle.checked =
+        allowAnonymous;
+
+
+    anonymousStateText.textContent =
+        allowAnonymous
+            ?
+            "FREE: ON"
+            :
+            "FREE: OFF";
+
+
+    profileOverlay.classList.add(
+        "show"
+    );
+
+
+    await loadSavedPages();
+
+}
+
+
+function closeProfile() {
+
+    profileOverlay.classList.remove(
+        "show"
+    );
+
+}
+
+
+/* =====================================================
+   SAVED PAGE LIST
+===================================================== */
+
+async function loadSavedPages() {
+
+    savedPagesList.innerHTML =
+        '<div class="emptyPages">កំពុងផ្ទុក...</div>';
+
+
+    if (
+        !firebaseUser ||
+        !isGoogleUser()
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        const snapshot =
+            await get(
+
+                ref(
+
+                    database,
+
+                    "users/" +
+                    firebaseUser.uid +
+                    "/pages"
+
+                )
+
+            );
+
+
+        if (
+            !snapshot.exists()
+        ) {
+
+            savedPagesList.innerHTML =
+                '<div class="emptyPages">មិនទាន់មានកំណត់ត្រា</div>';
+
+
+            return;
+
+        }
+
+
+        const pages =
+            snapshot.val();
+
+
+        const pageNumbers =
+            Object.keys(
+                pages
+            )
+            .map(Number)
+            .filter(Number.isFinite)
+            .sort(
+                (a,b) =>
+                    a - b
+            );
+
+
+        savedPagesList.innerHTML =
+            "";
+
+
+        pageNumbers.forEach(
+            page => {
+
+                const button =
+                    document.createElement(
+                        "button"
+                    );
+
+
+                button.type =
+                    "button";
+
+
+                button.className =
+                    "savedPageBtn";
+
+
+                button.innerHTML =
+
+                    "<span>ទំព័រ " +
+                    page +
+                    "</span>" +
+
+                    "<span>›</span>";
+
+
+                button.addEventListener(
+                    "click",
+
+                    async () => {
+
+                        closeProfile();
+
+
+                        viewer.scrollTop =
+                            0;
+
+
+                        viewer.scrollLeft =
+                            0;
+
+
+                        await renderPage(
+                            page
+                        );
+
+
+                        await openNoteForm();
+
+                    }
+
+                );
+
+
+                savedPagesList.appendChild(
+                    button
+                );
+
+            }
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            error
+        );
+
+
+        savedPagesList.innerHTML =
+            '<div class="emptyPages">មិនអាចផ្ទុកបាន</div>';
+
+    }
+
+}
+
+
+/* =====================================================
+   ADMIN TOGGLE
+===================================================== */
+
+anonymousToggle.addEventListener(
+    "change",
+
+    async () => {
+
+        if (
+            !isAdmin()
+        ) {
+
+            anonymousToggle.checked =
+                allowAnonymous;
+
+
+            return;
+
+        }
+
+
+        const wanted =
+            anonymousToggle.checked;
+
+
+        try {
+
+            await set(
+                configRef,
+                wanted
+            );
+
+
+            anonymousStateText.textContent =
+                wanted
+                    ?
+                    "FREE: ON"
+                    :
+                    "FREE: OFF";
+
+        }
+
+        catch (error) {
+
+            console.error(
+                error
+            );
+
+
+            anonymousToggle.checked =
+                allowAnonymous;
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   PDF.JS
+===================================================== */
+
+import * as pdfjsLib from
+"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs";
+
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
+
+
+const PDF_URL =
+    "09-12-2026.pdf";
+
+
+let pdfDocument =
+    null;
+
+
+let currentPage =
+    1;
+
+
+let rendering =
+    false;
+
+
+let pendingPage =
+    null;
+
+
+let zoom =
+    1;
+
+
+const MIN_ZOOM =
+    1;
+
+
+const MAX_ZOOM =
+    5;
+
+
+/* =====================================================
+   FIT TIMER
+===================================================== */
+
+let fitTimer =
+    null;
+
+
+function showFitButton(
+    currentZoom = zoom
+) {
+
+    clearTimeout(
+        fitTimer
+    );
+
+
+    if (
+        currentZoom <=
+        1.001
+    ) {
+
+        fitZoomBtn.classList.remove(
+            "show"
+        );
+
+
+        return;
+
+    }
+
+
+    fitZoomBtn.classList.add(
+        "show"
+    );
+
+
+    fitTimer =
+        setTimeout(
+            () => {
+
+                fitZoomBtn.classList.remove(
+                    "show"
+                );
+
+            },
+            3000
+        );
+
+}
+
+
+/* =====================================================
+   LOAD PDF
+===================================================== */
+
+async function loadPDF() {
+
+    try {
+
+        const task =
+            pdfjsLib.getDocument({
+                url:
+                    PDF_URL
+            });
+
+
+        pdfDocument =
+            await task.promise;
+
+
+        loading.style.display =
+            "none";
+
+
+        await renderPage(
+            1
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            error
+        );
+
+
+        loading.style.display =
+            "none";
+
+
+        errorMessage.style.display =
+            "flex";
+
+
+        errorMessage.innerHTML =
+            "Cannot load PDF.<br>Make sure 09-12-2026.pdf is in the same folder.";
+
+    }
+
+}
+
+
+/* =====================================================
+   RENDER
+===================================================== */
+
+async function renderPage(
+    pageNumber
+) {
+
+    if (!pdfDocument) {
+        return;
+    }
+
+
+    pageNumber =
+        Math.max(
+            1,
+            Math.min(
+                pageNumber,
+                pdfDocument.numPages
+            )
+        );
+
+
+    if (
+        rendering
+    ) {
+
+        pendingPage =
+            pageNumber;
+
+
+        return;
+
+    }
+
+
+    rendering =
+        true;
+
+
+    try {
+
+        const page =
+            await pdfDocument.getPage(
+                pageNumber
+            );
+
+
+        const original =
+            page.getViewport({
+                scale: 1
+            });
+
+
+        const baseScale =
+            viewer.clientWidth /
+            original.width;
+
+
+        const cssScale =
+            baseScale *
+            zoom;
+
+
+        let dpr =
+            Math.min(
+                window.devicePixelRatio || 1,
+                2
+            );
+
+
+        if (
+            zoom >
+            2.5
+        ) {
+
+            dpr =
+                Math.min(
+                    dpr,
+                    1
+                );
+
+        }
+
+
+        const viewport =
+            page.getViewport({
+
+                scale:
+                    cssScale *
+                    dpr
+
+            });
+
+
+        canvas.width =
+            Math.floor(
+                viewport.width
+            );
+
+
+        canvas.height =
+            Math.floor(
+                viewport.height
+            );
+
+
+        canvas.style.width =
+            Math.floor(
+                viewport.width /
+                dpr
+            ) +
+            "px";
+
+
+        canvas.style.height =
+            Math.floor(
+                viewport.height /
+                dpr
+            ) +
+            "px";
+
+
+        pageContainer.style.width =
+            Math.max(
+
+                viewer.clientWidth,
+
+                viewport.width /
+                dpr
+
+            ) +
+            "px";
+
+
+        ctx.fillStyle =
+            "#fff";
+
+
+        ctx.fillRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+
+        await page.render({
+
+            canvasContext:
+                ctx,
+
+            viewport:
+                viewport
+
+        }).promise;
+
+
+        currentPage =
+            pageNumber;
+
+
+        pageInfo.textContent =
+            currentPage +
+            " / " +
+            pdfDocument.numPages;
+
+
+        prevBtn.classList.toggle(
+            "hidden",
+            currentPage <= 1
+        );
+
+
+        nextBtn.classList.toggle(
+            "hidden",
+            currentPage >=
+            pdfDocument.numPages
+        );
+
+
+        if (
+            noteOverlay.classList.contains(
+                "show"
+            )
+        ) {
+
+            await loadNotes(
+                currentPage
+            );
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.error(
+            error
+        );
+
+    }
+
+    finally {
+
+        rendering =
+            false;
+
+
+        if (
+            pendingPage !==
+            null
+        ) {
+
+            const next =
+                pendingPage;
+
+
+            pendingPage =
+                null;
+
+
+            if (
+                next !==
+                currentPage
+            ) {
+
+                renderPage(
+                    next
+                );
+
+            }
+
+        }
+
+    }
+
+}
+
+
+/* =====================================================
+   PAGE NAVIGATION
+===================================================== */
+
+function nextPage() {
+
+    if (
+        !pdfDocument ||
+        currentPage >=
+        pdfDocument.numPages
+    ) {
+        return;
+    }
+
+
+    viewer.scrollTop =
+        0;
+
+
+    viewer.scrollLeft =
+        0;
+
+
+    renderPage(
+        currentPage + 1
+    );
+
+}
+
+
+function previousPage() {
+
+    if (
+        !pdfDocument ||
+        currentPage <= 1
+    ) {
+        return;
+    }
+
+
+    viewer.scrollTop =
+        0;
+
+
+    viewer.scrollLeft =
+        0;
+
+
+    renderPage(
+        currentPage - 1
+    );
+
+}
+
+
+/* =====================================================
+   FIT
+===================================================== */
+
+fitZoomBtn.addEventListener(
+    "click",
+
+    () => {
+
+        zoom =
+            1;
+
+
+        canvas.style.transform =
+            "none";
+
+
+        viewer.scrollTop =
+            0;
+
+
+        viewer.scrollLeft =
+            0;
+
+
+        zoomInfo.textContent =
+            "100%";
+
+
+        zoomInfo.classList.add(
+            "show"
+        );
+
+
+        fitZoomBtn.classList.remove(
+            "show"
+        );
+
+
+        renderPage(
+            currentPage
+        );
+
+
+        setTimeout(
+            () => {
+
+                zoomInfo.classList.remove(
+                    "show"
+                );
+
+            },
+            700
+        );
+
+    }
+);
+
+
+/* =====================================================
+   PINCH
+===================================================== */
+
+let touchStartX =
+    0;
+
+
+let touchStartY =
+    0;
+
+
+let singleTouch =
+    false;
+
+
+let isPinching =
+    false;
+
+
+let pinchStartDistance =
+    0;
+
+
+let pinchStartZoom =
+    1;
+
+
+let pinchPreviewZoom =
+    1;
+
+
+function touchDistance(
+    touches
+) {
+
+    const x =
+        touches[0].clientX -
+        touches[1].clientX;
+
+
+    const y =
+        touches[0].clientY -
+        touches[1].clientY;
+
+
+    return Math.sqrt(
+        x*x +
+        y*y
+    );
+
+}
+
+
+viewer.addEventListener(
+    "touchstart",
+
+    event => {
+
+        if (
+            event.touches.length ===
+            2
+        ) {
+
+            isPinching =
+                true;
+
+
+            singleTouch =
+                false;
+
+
+            pinchStartDistance =
+                touchDistance(
+                    event.touches
+                );
+
+
+            pinchStartZoom =
+                zoom;
+
+
+            pinchPreviewZoom =
+                zoom;
+
+
+            return;
+
+        }
+
+
+        if (
+            event.touches.length ===
+            1
+        ) {
+
+            singleTouch =
+                true;
+
+
+            touchStartX =
+                event.touches[0]
+                    .clientX;
+
+
+            touchStartY =
+                event.touches[0]
+                    .clientY;
+
+        }
+
+    },
+    {
+        passive: true
+    }
+);
+
+
+viewer.addEventListener(
+    "touchmove",
+
+    event => {
+
+        if (
+            !isPinching ||
+            event.touches.length !==
+            2
+        ) {
+
+            return;
+
+        }
+
+
+        event.preventDefault();
+
+
+        let newZoom =
+
+            pinchStartZoom *
+
+            (
+                touchDistance(
+                    event.touches
+                )
+                /
+                pinchStartDistance
+            );
+
+
+        newZoom =
+            Math.max(
+                MIN_ZOOM,
+                Math.min(
+                    MAX_ZOOM,
+                    newZoom
+                )
+            );
+
+
+        pinchPreviewZoom =
+            newZoom;
+
+
+        canvas.style.transform =
+            `scale(${newZoom / zoom})`;
+
+
+        zoomInfo.textContent =
+            Math.round(
+                newZoom *
+                100
+            ) +
+            "%";
+
+
+        zoomInfo.classList.add(
+            "show"
+        );
+
+
+        showFitButton(
+            newZoom
+        );
+
+    },
+    {
+        passive: false
+    }
+);
+
+
+viewer.addEventListener(
+    "touchend",
+
+    event => {
+
+        if (
+            isPinching
+        ) {
+
+            if (
+                event.touches.length <
+                2
+            ) {
+
+                zoom =
+                    pinchPreviewZoom;
+
+
+                canvas.style.transform =
+                    "none";
+
+
+                isPinching =
+                    false;
+
+
+                showFitButton(
+                    zoom
+                );
+
+
+                renderPage(
+                    currentPage
+                );
+
+
+                setTimeout(
+                    () => {
+
+                        zoomInfo.classList.remove(
+                            "show"
+                        );
+
+                    },
+                    800
+                );
+
+            }
+
+
+            return;
+
+        }
+
+
+        if (
+            !singleTouch ||
+            zoom >
+            1.05 ||
+            !event.changedTouches.length
+        ) {
+
+            singleTouch =
+                false;
+
+
+            return;
+
+        }
+
+
+        const dx =
+            event.changedTouches[0]
+                .clientX -
+            touchStartX;
+
+
+        const dy =
+            event.changedTouches[0]
+                .clientY -
+            touchStartY;
+
+
+        if (
+            Math.abs(dx) >
+            65
+            &&
+            Math.abs(dx) >
+            Math.abs(dy) *
+            1.4
+        ) {
+
+            if (
+                dx <
+                0
+            ) {
+
+                nextPage();
+
+            }
+
+            else {
+
+                previousPage();
+
+            }
+
+        }
+
+
+        singleTouch =
+            false;
+
+    },
+    {
+        passive: true
+    }
+);
+
+
+prevBtn.addEventListener(
+    "click",
+    previousPage
+);
+
+
+nextBtn.addEventListener(
+    "click",
+    nextPage
+);
+
+
+/* =====================================================
+   FORM AUTO GROW
+===================================================== */
+
+function autoGrow(
+    textarea
+) {
+
+    textarea.style.height =
+        "39px";
+
+
+    textarea.style.height =
+        Math.max(
+            39,
+            textarea.scrollHeight
+        ) +
+        "px";
+
+}
+
+
+noteInputs.forEach(
+    input => {
+
+        input.addEventListener(
+            "input",
+
+            () => {
+
+                autoGrow(
+                    input
+                );
+
+
+                queueAutoSave();
+
+            }
+
+        );
+
+    }
+);
+
+
+/* =====================================================
+   FORM VALUES
+===================================================== */
+
+function getFormValues() {
+
+    return {
+
+        note1:
+            note1.value,
+
+        note2:
+            note2.value,
+
+        note3:
+            note3.value,
+
+        note4:
+            note4.value,
+
+        note5:
+            note5.value
+
+    };
+
+}
+
+
+function setFormValues(
+    data = {}
+) {
+
+    note1.value =
+        data.note1 ||
+        "";
+
+
+    note2.value =
+        data.note2 ||
+        "";
+
+
+    note3.value =
+        data.note3 ||
+        "";
+
+
+    note4.value =
+        data.note4 ||
+        "";
+
+
+    note5.value =
+        data.note5 ||
+        "";
+
+
+    noteInputs.forEach(
+        autoGrow
+    );
+
+}
+
+
+/* =====================================================
+   LOCAL CACHE
+===================================================== */
+
+function localKey(
+    page
+) {
+
+    return (
+        "qt_note_" +
+        (
+            firebaseUser?.uid ||
+            DEVICE_ID
+        ) +
+        "_" +
+        page
+    );
+
+}
+
+
+function localSave(
+    page,
+    values
+) {
+
+    try {
+
+        localStorage.setItem(
+            localKey(page),
+            JSON.stringify(values)
+        );
+
+    }
+
+    catch {}
+
+}
+
+
+/* =====================================================
+   REALTIME NOTES
+===================================================== */
+
+let noteListener =
+    null;
+
+
+function stopNoteListener() {
+
+    if (
+        noteListener
+    ) {
+
+        noteListener();
+
+
+        noteListener =
+            null;
+
+    }
+
+}
+
+
+async function loadNotes(
+    page
+) {
+
+    stopNoteListener();
+
+
+    if (
+        anonymousBlocked()
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        !firebaseReady ||
+        !firebaseUser
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        const snapshot =
+            await get(
+                firebasePageRef(
+                    page
+                )
+            );
+
+
+        if (
+            snapshot.exists()
+        ) {
+
+            setFormValues(
+                snapshot.val()
+            );
+
+
+            savedDot.classList.add(
+                "show"
+            );
+
+        }
+
+        else {
+
+            setFormValues({});
+
+
+            savedDot.classList.remove(
+                "show"
+            );
+
+        }
+
+
+        noteListener =
+            onValue(
+
+                firebasePageRef(
+                    page
+                ),
+
+                remoteSnapshot => {
+
+                    if (
+                        currentPage !==
+                        page
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    if (
+                        remoteSnapshot.exists()
+                    ) {
+
+                        const data =
+                            remoteSnapshot.val();
+
+
+                        localSave(
+                            page,
+                            data
+                        );
+
+                    }
+
+                }
+
+            );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            error
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   SAVE
+===================================================== */
+
+let autoSaveTimer =
+    null;
+
+
+function setNoteStatus(
+    text,
+    type = ""
+) {
+
+    noteStatus.textContent =
+        text;
+
+
+    noteStatus.classList.remove(
+        "good",
+        "bad"
+    );
+
+
+    if (type) {
+
+        noteStatus.classList.add(
+            type
+        );
+
+    }
+
+}
+
+
+function queueAutoSave() {
+
+    const page =
+        currentPage;
+
+
+    const values =
+        getFormValues();
+
+
+    localSave(
+        page,
+        values
+    );
+
+
+    clearTimeout(
+        autoSaveTimer
+    );
+
+
+    setNoteStatus(
+        "កំពុងរក្សាទុក..."
+    );
+
+
+    autoSaveTimer =
+        setTimeout(
+            () => {
+
+                saveNotes(
+                    page,
+                    values,
+                    true
+                );
+
+            },
+            650
+        );
+
+}
+
+
+async function saveNotes(
+    page,
+    values = null,
+    automatic = false
+) {
+
+    if (
+        anonymousBlocked()
+    ) {
+
+        updateAccessState();
+
+        return false;
+
+    }
+
+
+    values =
+        values ||
+        getFormValues();
+
+
+    localSave(
+        page,
+        values
+    );
+
+
+    if (
+        !firebaseReady ||
+        !firebaseUser
+    ) {
+
+        setNoteStatus(
+            "Firebase មិនបានភ្ជាប់",
+            "bad"
+        );
+
+
+        return false;
+
+    }
+
+
+    try {
+
+        if (!automatic) {
+
+            saveNote.disabled =
+                true;
+
+
+            saveNote.textContent =
+                "កំពុងរក្សាទុក...";
+
+        }
+
+
+        await set(
+
+            firebasePageRef(
+                page
+            ),
+
+            {
+
+                ...values,
+
+                page:
+                    page,
+
+                deviceId:
+                    DEVICE_ID,
+
+                accountType:
+                    isGoogleUser()
+                        ?
+                        "google"
+                        :
+                        "anonymous",
+
+                updatedAt:
+                    serverTimestamp()
+
+            }
+
+        );
+
+
+        savedDot.classList.add(
+            "show"
+        );
+
+
+        setNoteStatus(
+            "✓ បានរក្សាទុកក្នុង Firebase",
+            "good"
+        );
+
+
+        if (!automatic) {
+
+            saveNote.textContent =
+                "បានរក្សាទុក";
+
+
+            setTimeout(
+                () => {
+
+                    saveNote.textContent =
+                        "រក្សាទុក";
+
+                },
+                800
+            );
+
+        }
+
+
+        await saveMeta();
+
+
+        return true;
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Firebase Save:",
+            error
+        );
+
+
+        savedDot.classList.remove(
+            "show"
+        );
+
+
+        setNoteStatus(
+
+            "Firebase Error: " +
+            (
+                error.code ||
+                error.message ||
+                "Save failed"
+            ),
+
+            "bad"
+
+        );
+
+
+        return false;
+
+    }
+
+    finally {
+
+        saveNote.disabled =
+            false;
+
+    }
+
+}
+
+
+/* =====================================================
+   DELETE
+===================================================== */
+
+async function deleteNotes() {
+
+    if (
+        anonymousBlocked()
+    ) {
+
+        return;
+
+    }
+
+
+    clearTimeout(
+        autoSaveTimer
+    );
+
+
+    setFormValues({});
+
+
+    localStorage.removeItem(
+        localKey(
+            currentPage
+        )
+    );
+
+
+    if (
+        firebaseReady &&
+        firebaseUser
+    ) {
+
+        try {
+
+            await remove(
+                firebasePageRef(
+                    currentPage
+                )
+            );
+
+
+            setNoteStatus(
+                "✓ បានលុបពី Firebase",
+                "good"
+            );
+
+        }
+
+        catch (error) {
+
+            console.error(
+                error
+            );
+
+        }
+
+    }
+
+
+    savedDot.classList.remove(
+        "show"
+    );
+
+}
+
+
+/* =====================================================
+   FORM OPEN/CLOSE
+===================================================== */
+
+async function openNoteForm() {
+
+    if (
+        anonymousBlocked()
+    ) {
+
+        updateAccessState();
+
+        return;
+
+    }
+
+
+    noteOverlay.classList.add(
+        "show"
+    );
+
+
+    notePopup.scrollTop =
+        0;
+
+
+    resetPopupPosition();
+
+
+    await loadNotes(
+        currentPage
+    );
+
+}
+
+
+function closeNoteForm() {
+
+    if (
+        !noteOverlay.classList.contains(
+            "show"
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    document.activeElement?.blur();
+
+
+    clearTimeout(
+        autoSaveTimer
+    );
+
+
+    saveNotes(
+        currentPage,
+        getFormValues(),
+        true
+    );
+
+
+    stopNoteListener();
+
+
+    noteOverlay.classList.remove(
+        "show"
+    );
+
+}
+
+
+/* =====================================================
+   DRAG FORM
+===================================================== */
+
+let popupX =
+    0;
+
+
+let popupY =
+    0;
+
+
+function updatePopupPosition() {
+
+    notePopup.style.transform =
+        `translate3d(${popupX}px,${popupY}px,0)`;
+
+}
+
+
+function resetPopupPosition() {
+
+    popupX =
+        0;
+
+
+    popupY =
+        0;
+
+
+    updatePopupPosition();
+
+}
+
+
+let dragging =
+    false;
+
+
+let pointerId =
+    null;
+
+
+let startX =
+    0;
+
+
+let startY =
+    0;
+
+
+let originalX =
+    0;
+
+
+let originalY =
+    0;
+
+
+noteHeader.addEventListener(
+    "pointerdown",
+
+    event => {
+
+        if (
+            event.target.closest(
+                "button"
+            )
+        ) {
+
+            return;
+
+        }
+
+
+        dragging =
+            true;
+
+
+        pointerId =
+            event.pointerId;
+
+
+        startX =
+            event.clientX;
+
+
+        startY =
+            event.clientY;
+
+
+        originalX =
+            popupX;
+
+
+        originalY =
+            popupY;
+
+
+        noteHeader.setPointerCapture(
+            event.pointerId
+        );
+
+
+        noteHeader.classList.add(
+            "dragging"
+        );
+
+    }
+);
+
+
+noteHeader.addEventListener(
+    "pointermove",
+
+    event => {
+
+        if (
+            !dragging ||
+            event.pointerId !==
+            pointerId
+        ) {
+
+            return;
+
+        }
+
+
+        popupX =
+            originalX +
+            (
+                event.clientX -
+                startX
+            );
+
+
+        popupY =
+            originalY +
+            (
+                event.clientY -
+                startY
+            );
+
+
+        updatePopupPosition();
+
+    }
+);
+
+
+function stopDragging(
+    event
+) {
+
+    if (
+        event.pointerId !==
+        pointerId
+    ) {
+
+        return;
+
+    }
+
+
+    dragging =
+        false;
+
+
+    pointerId =
+        null;
+
+
+    noteHeader.classList.remove(
+        "dragging"
+    );
+
+}
+
+
+noteHeader.addEventListener(
+    "pointerup",
+    stopDragging
+);
+
+
+noteHeader.addEventListener(
+    "pointercancel",
+    stopDragging
+);
+
+
+/* =====================================================
+   SCREENSHOT
+===================================================== */
+
+function downloadBlob(
+    blob
+) {
+
+    const date =
+        new Date();
+
+
+    const filename =
+        "ពេលសៀមស្ងាត់-" +
+        date.getFullYear() +
+        "-" +
+        String(
+            date.getMonth() +
+            1
+        ).padStart(2,"0") +
+        "-" +
+        String(
+            date.getDate()
+        ).padStart(2,"0") +
+        ".png";
+
+
+    const url =
+        URL.createObjectURL(
+            blob
+        );
+
+
+    const a =
+        document.createElement(
+            "a"
+        );
+
+
+    a.href =
+        url;
+
+
+    a.download =
+        filename;
+
+
+    a.click();
+
+
+    setTimeout(
+        () => {
+
+            URL.revokeObjectURL(
+                url
+            );
+
+        },
+        3000
+    );
+
+}
+
+
+async function captureScreen() {
+
+    document.activeElement?.blur();
+
+
+    await new Promise(
+        resolve =>
+            setTimeout(
+                resolve,
+                300
+            )
+    );
+
+
+    try {
+
+        const shot =
+            await html2canvas(
+
+                document.documentElement,
+
+                {
+
+                    backgroundColor:
+                        "#d8d8d8",
+
+                    width:
+                        window.innerWidth,
+
+                    height:
+                        window.innerHeight,
+
+                    windowWidth:
+                        window.innerWidth,
+
+                    windowHeight:
+                        window.innerHeight,
+
+                    scale:
+                        Math.min(
+                            devicePixelRatio ||
+                            1,
+                            2
+                        ),
+
+                    useCORS:
+                        true,
+
+                    logging:
+                        false
+
+                }
+
+            );
+
+
+        shot.toBlob(
+            blob => {
+
+                if (blob) {
+
+                    downloadBlob(
+                        blob
+                    );
+
+                }
+
+            },
+            "image/png",
+            1
+        );
+
+
+        setNoteStatus(
+            "✓ បានថតរូប",
+            "good"
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            error
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   EVENTS
+===================================================== */
+
+googleBtn.addEventListener(
+    "click",
+    openProfile
+);
+
+
+gateGoogleBtn.addEventListener(
+    "click",
+    loginGoogle
+);
+
+
+logoutBtn.addEventListener(
+    "click",
+    logoutGoogle
+);
+
+
+profileOverlay.addEventListener(
+    "click",
+
+    event => {
+
+        if (
+            event.target ===
+            profileOverlay
+        ) {
+
+            closeProfile();
+
+        }
+
+    }
+);
+
+
+writeBtn.addEventListener(
+    "click",
+    openNoteForm
+);
+
+
+closeNote.addEventListener(
+    "click",
+    closeNoteForm
+);
+
+
+saveNote.addEventListener(
+    "click",
+
+    () => {
+
+        clearTimeout(
+            autoSaveTimer
+        );
+
+
+        saveNotes(
+            currentPage,
+            getFormValues(),
+            false
+        );
+
+    }
+);
+
+
+deleteNote.addEventListener(
+    "click",
+    deleteNotes
+);
+
+
+captureNote.addEventListener(
+    "click",
+    captureScreen
+);
+
+
+noteOverlay.addEventListener(
+    "click",
+
+    event => {
+
+        if (
+            event.target ===
+            noteOverlay
+        ) {
+
+            closeNoteForm();
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   RESIZE
+===================================================== */
+
+let resizeTimer;
+
+
+window.addEventListener(
+    "resize",
+
+    () => {
+
+        clearTimeout(
+            resizeTimer
+        );
+
+
+        resizeTimer =
+            setTimeout(
+                () => {
+
+                    if (
+                        pdfDocument
+                    ) {
+
+                        renderPage(
+                            currentPage
+                        );
+
+                    }
+
+                },
+                200
+            );
+
+    }
+);
+
+
+/* =====================================================
+   START
+===================================================== */
+
+await startAuth();
+
+
+loadPDF();
+
+</script>
+
+</body>
+</html>
