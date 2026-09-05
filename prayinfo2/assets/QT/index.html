@@ -1,0 +1,10574 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+<meta charset="UTF-8">
+
+<!-- CLIENT SETUP: edit this block, then open index.html?setup=1. -->
+<script id="clientConfig">
+window.CLIENT_CONFIG = {
+    appName: "ពេលសៀមស្ងាត់",
+    siteIcon: "assets/site-icon.png",
+    fontUrl: "../fonts/Krasar.woff",
+    adminEmail: "thythetopen@gmail.com",
+
+    // Firebase Console > Project settings > Your apps > Web app config.
+    // Public web settings only. Never put API secrets or service accounts here.
+    firebase: {
+        apiKey: "AIzaSyBA64C_cctFHJXUJjgAQ5PzbfmBVhdSjZ4",
+        authDomain: "qt-app-ddabb.firebaseapp.com",
+        databaseURL: "https://qt-app-ddabb-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "qt-app-ddabb",
+        storageBucket: "qt-app-ddabb.firebasestorage.app",
+        messagingSenderId: "198096024652",
+        appId: "1:198096024652:web:43c9f097842f1bc3c830e9"
+    },
+
+    // Keep this ID for existing notes. Use the PDF Library for a new month's PDF.
+    localPdf: { id: "local-current", name: "09-12-2026.pdf", url: "09-12-2026.pdf" },
+    pdfFolder: "assets/pdf/",
+    // Filenames for hosts that cannot list folders, e.g. ["January.pdf"].
+    pdfFiles: [],
+
+    // Defaults apply only until an admin saves these settings in Firebase.
+    defaults: { allowAnonymous: true, profileRevealEnabled: false },
+    maxUploadMB: 20,
+    // Keep "qt" for existing browser notes; use another prefix for a new client.
+    storagePrefix: "qt"
+};
+</script>
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+>
+
+<title>ពេលសៀមស្ងាត់</title>
+
+<link
+    rel="icon"
+    type="image/png"
+    href="assets/site-icon.png"
+>
+
+<style>
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #d8d8d8;
+    font-family: "Krasar", sans-serif;
+}
+
+
+/* =====================================================
+   PDF
+===================================================== */
+
+#viewer {
+    position: fixed;
+    inset: 0;
+    overflow: auto;
+    background: #d8d8d8;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+
+#pageContainer {
+    min-width: 100%;
+    min-height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+#pdfCanvas {
+    display: block;
+    background: white;
+    transform-origin: top center;
+    box-shadow: 0 0 7px rgba(0,0,0,.18);
+}
+
+
+/* =====================================================
+   TOP BUTTONS
+===================================================== */
+
+.topBtn {
+    position: fixed;
+    top: calc(8px + env(safe-area-inset-top));
+    z-index: 100;
+    height: 38px;
+    border: 0;
+    border-radius: 20px;
+    font-family: "Krasar", sans-serif;
+    cursor: pointer;
+}
+
+#writeBtn {
+    right: 8px;
+    width: auto;
+    min-width: 0;
+    padding: 0 14px;
+    border: 1px solid rgba(255,255,255,.42);
+    background: rgb(0 148 57 / 70%);
+    color: white;
+    font-size: 14px;
+    box-shadow:
+        0 6px 18px rgba(0,70,38,.18),
+        inset 0 1px 0 rgba(255,255,255,.28);
+    -webkit-backdrop-filter: blur(1px) saturate(180%);
+    backdrop-filter: blur(14px) saturate(150%);
+}
+
+#googleBtn {
+    top: calc(54px + env(safe-area-inset-top));
+    right: 8px;
+    height: 40px;
+    width: 40px;
+    min-width: 40px;
+    max-width: min(210px, calc(100vw - 16px));
+    padding: 3px;
+    overflow: visible;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    border: 1px solid rgba(255,255,255,.72);
+    background: rgba(255,255,255,.78);
+    box-shadow: 0 4px 16px rgba(0,0,0,.16);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    backdrop-filter: blur(14px) saturate(140%);
+    transition:
+        width .47s ease,
+        padding-right .47s ease,
+        background-color .29s ease,
+        box-shadow .29s ease;
+}
+
+#googleBtn.revealEnabled:hover,
+#googleBtn.revealEnabled:focus-visible {
+    width: min(
+        var(--google-expanded-width, 130px),
+        calc(100vw - 16px)
+    );
+    padding-right: 10px;
+    background: rgba(255,255,255,.9);
+    box-shadow: 0 7px 22px rgba(0,0,0,.2);
+}
+
+#googleAvatarWrap {
+    position: relative;
+    z-index: 2;
+    flex: 0 0 32px;
+    width: 32px;
+    height: 32px;
+    overflow: visible;
+}
+
+#googleAvatar {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+#googleFallback {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 50%;
+    background: linear-gradient(135deg,#f0f2f1,#d7dcda);
+}
+
+#googleActiveDot {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    z-index: 2;
+    display: none;
+    width: 10px;
+    height: 10px;
+    border: 2px solid rgba(255,255,255,.96);
+    border-radius: 50%;
+    background: #20c96b;
+    box-shadow: 0 1px 4px rgba(0,110,56,.35);
+}
+
+#googleBtn.signedIn #googleActiveDot {
+    display: block;
+}
+
+#googleName {
+    position: relative;
+    z-index: 1;
+    display: block;
+    flex: 0 0 auto;
+    min-width: 0;
+    max-width: 150px;
+    overflow: hidden;
+    color: #173228;
+    font-size: 12px;
+    font-weight: bold;
+    line-height: 1;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateX(-32px);
+    transition:
+        opacity .26s ease .08s,
+        transform .39s ease;
+}
+
+#googleBtn.revealEnabled:hover #googleName,
+#googleBtn.revealEnabled:focus-visible #googleName {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+#fitZoomBtn {
+    left: 8px;
+    padding: 0 12px;
+    background: rgba(0,0,0,.75);
+    color: white;
+    font-size: 11px;
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+
+    transform: translateY(-4px);
+
+    transition:
+        opacity .18s,
+        visibility .18s,
+        transform .18s;
+}
+
+#fitZoomBtn.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+#savedDot {
+    display: none;
+    position: absolute;
+    top: 0.5px;
+    right: 0.5px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #35d66f;
+}
+
+#savedDot.show {
+    display: block;
+}
+
+
+/* =====================================================
+   PDF NAV
+===================================================== */
+
+.navBtn {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 80;
+
+    width: 26px;
+    height: 58px;
+
+    border: 0;
+    border-radius: 8px;
+
+    background: rgba(144, 188, 114, 0.25);
+    color: white;
+
+    font-size: 28px;
+}
+
+#prevBtn {
+    left: 5px;
+}
+
+#nextBtn {
+    right: 5px;
+}
+
+.navBtn.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+#pageInfo {
+    position: fixed;
+    left: 92%;
+    bottom: calc(7px + env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    z-index: 80;
+
+    padding: 4px 9px;
+    border-radius: 8px;
+
+    background: rgba(177, 107, 107, 0.547);
+    color: white;
+    font-size: 10px;
+
+    pointer-events: none;
+}
+
+#zoomInfo {
+    position: fixed;
+    left: 8px;
+    top: calc(52px + env(safe-area-inset-top));
+    z-index: 80;
+
+    padding: 4px 8px;
+    border-radius: 12px;
+
+    background: rgba(0,0,0,.55);
+    color: white;
+
+    font-size: 10px;
+
+    opacity: 0;
+    transition: opacity .15s;
+    pointer-events: none;
+}
+
+#zoomInfo.show {
+    opacity: 1;
+}
+
+
+/* =====================================================
+   LOADING
+===================================================== */
+
+#loading {
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #111;
+}
+
+.spinner {
+    width: 25px;
+    height: 25px;
+    border: 3px solid rgba(255,255,255,.2);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+#errorMessage {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 600;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 25px;
+
+    background: #111;
+    color: white;
+    text-align: center;
+}
+
+
+/* =====================================================
+   NOTE FORM
+===================================================== */
+
+#noteOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+
+    padding:
+        calc(6px + env(safe-area-inset-top))
+        7px
+        calc(48px + env(safe-area-inset-bottom));
+
+    background: transparent;
+
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .15s;
+}
+
+#noteOverlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+#notePopup {
+    width: 100%;
+    max-width: 520px;
+    max-height: 100%;
+
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+
+    padding: 9px;
+
+    background: rgba(255,255,255,.97);
+    border-radius: 16px;
+
+    box-shadow: 0 5px 20px rgba(0,0,0,.22);
+
+    transform: translate3d(0,0,0);
+    will-change: transform;
+}
+
+.noteHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 7px;
+
+    cursor: grab;
+    touch-action: none;
+
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.noteHeader.dragging {
+    cursor: grabbing;
+}
+
+.formTitle {
+    flex: 1;
+    color: #111;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+#closeNote {
+    width: 31px;
+    height: 31px;
+
+    border: 0;
+    border-radius: 50%;
+
+    background: #eee;
+    color: #333;
+
+    font-size: 19px;
+}
+
+.noteGroup {
+    margin-bottom: 6px;
+}
+
+.noteTitle {
+    display: block;
+
+    margin-bottom: 2px;
+
+    color: #079447;
+
+    font-family: "Krasar", sans-serif;
+
+    font-size: 13px;
+    font-weight: bold;
+    line-height: 1.35;
+}
+
+.noteInput {
+    display: block;
+
+    width: 100%;
+
+    height: 39px;
+    min-height: 39px;
+
+    overflow-y: hidden;
+    resize: none;
+
+    padding: 6px 8px;
+
+    border: 1px solid #d2d2d2;
+    border-radius: 8px;
+
+    outline: none;
+
+    background: rgba(255,255,255,.94);
+    color: #111;
+
+    font-family: "Krasar", sans-serif;
+
+    font-size: 13px;
+    line-height: 1.45;
+
+    user-select: text;
+    -webkit-user-select: text;
+}
+
+.noteInput:focus {
+    border-color: #079447;
+}
+
+#noteStatus {
+    min-height: 14px;
+
+    margin-top: 2px;
+    margin-bottom: 5px;
+
+    color: #777;
+
+    font-size: 9.5px;
+    line-height: 1.3;
+}
+
+#noteStatus.good {
+    color: #079447;
+}
+
+#noteStatus.bad {
+    color: #b00020;
+}
+
+.noteActions {
+    display: flex;
+    gap: 6px;
+    margin-top: 3px;
+}
+
+.noteActionBtn {
+    height: 39px;
+
+    border: 0;
+    border-radius: 9px;
+
+    font-family: "Krasar", sans-serif;
+    font-size: 12px;
+}
+
+#deleteNote {
+    width: 65px;
+    background: #eee;
+    color: #555;
+}
+
+#captureNote {
+    width: 82px;
+    background: #eee;
+    color: #111;
+}
+
+#saveNote {
+    flex: 1;
+    background: #111;
+    color: white;
+}
+
+
+/* =====================================================
+   PROFILE POPUP
+===================================================== */
+
+#profileOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1500;
+
+    background: rgba(0,0,0,.22);
+
+    opacity: 0;
+    visibility: hidden;
+
+    transition: opacity .15s;
+}
+
+#profileOverlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+#profilePopup {
+    position: absolute;
+
+    top: calc(54px + env(safe-area-inset-top));
+    right: 8px;
+
+    width: min(320px, calc(100vw - 16px));
+    max-height: calc(100% - 75px);
+
+    overflow-y: auto;
+
+    background: white;
+
+    border-radius: 16px;
+
+    padding: 12px;
+
+    box-shadow: 0 8px 30px rgba(0,0,0,.25);
+}
+
+.profileTop {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    padding-bottom: 10px;
+    margin-bottom: 8px;
+
+    border-bottom: 1px solid #eee;
+}
+
+#profileAvatar {
+    width: 45px;
+    height: 45px;
+
+    border-radius: 50%;
+
+    object-fit: cover;
+
+    background: #eee;
+    visibility: hidden;
+}
+
+.profileInfo {
+    min-width: 0;
+    flex: 1;
+}
+
+.profileRevealSwitch {
+    display: none;
+}
+
+.profileRevealSwitch.show {
+    display: block;
+}
+
+#profileName {
+    font-size: 14px;
+    font-weight: bold;
+    color: #111;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#profileEmail {
+    margin-top: 2px;
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    color: #777;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.toolTitle {
+    margin: 10px 0 5px;
+
+    color: #777;
+
+    font-size: 10px;
+}
+
+#savedPagesList {
+    display: grid;
+    gap: 5px;
+}
+
+.savedPageBtn {
+    width: 100%;
+
+    min-height: 37px;
+
+    border: 0;
+    border-radius: 9px;
+
+    padding: 5px 10px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    background: #f3f3f3;
+
+    color: #111;
+
+    font-family: "Krasar", sans-serif;
+    font-size: 12px;
+
+    text-align: left;
+}
+
+.emptyPages {
+    padding: 10px;
+    border-radius: 9px;
+    background: #f6f6f6;
+    color: #888;
+    font-size: 11px;
+    text-align: center;
+}
+
+
+/* =====================================================
+   ADMIN
+===================================================== */
+
+#adminPanel {
+    display: none;
+
+    margin-top: 10px;
+    padding-top: 10px;
+
+    border-top: 1px solid #eee;
+}
+
+#adminPanel.show {
+    display: block;
+}
+
+.adminTitle {
+    margin-bottom: 7px;
+
+    color: #b45b00;
+
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.adminRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 10px;
+
+    padding: 8px;
+
+    background: #f8f8f8;
+
+    border-radius: 10px;
+}
+
+.adminSection {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #e7e7e7;
+}
+
+.adminSectionHead,
+.pdfYearBar,
+.pdfAdminActions,
+.storageRow,
+.storageActions {
+    display: flex;
+    align-items: center;
+}
+
+.adminSectionHead {
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 7px;
+}
+
+.adminSectionTitle {
+    color: #111;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.adminIconBtn {
+    width: 29px;
+    height: 29px;
+    flex: 0 0 29px;
+    border: 0;
+    border-radius: 50%;
+    background: #eee;
+    color: #222;
+    font-family: Arial, sans-serif;
+    font-size: 18px;
+}
+
+.pdfYearBar {
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 7px;
+}
+
+#pdfLibraryYear {
+    min-width: 54px;
+    color: #333;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    text-align: center;
+}
+
+.monthCarousel {
+    display: flex;
+    gap: 5px;
+    width: 100%;
+    overflow-x: auto;
+    padding: 1px 0 5px;
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
+}
+
+.monthCarousel::-webkit-scrollbar {
+    display: none;
+}
+
+.monthBtn {
+    position: relative;
+    min-width: 45px;
+    height: 32px;
+    flex: 0 0 45px;
+    scroll-snap-align: center;
+    border: 1px solid #e4e4e4;
+    border-radius: 7px;
+    background: #f5f5f5;
+    color: #555;
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+}
+
+.monthBtn.selected {
+    border-color: #079447;
+    background: #079447;
+    color: white;
+}
+
+.monthBtn.hasPdf::after {
+    content: "";
+    position: absolute;
+    right: 4px;
+    bottom: 3px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #22c96b;
+}
+
+.monthBtn.selected.hasPdf::after {
+    background: white;
+}
+
+.pdfAdminPreview {
+    margin-top: 5px;
+}
+
+#pdfPreviewFrame {
+    position: relative;
+    width: 100%;
+    min-height: 112px;
+    max-height: 170px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e3e3e3;
+    border-radius: 8px;
+    background: #f4f4f4;
+}
+
+#pdfPreviewCanvas {
+    display: none;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: 168px;
+    background: white;
+}
+
+#pdfPreviewEmpty {
+    padding: 15px;
+    color: #888;
+    font-size: 10px;
+    text-align: center;
+}
+
+#pdfCurrentBadge {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    display: none;
+    padding: 3px 6px;
+    border-radius: 6px;
+    background: rgba(0,0,0,.72);
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 8px;
+}
+
+#pdfCurrentBadge.show {
+    display: block;
+}
+
+.pdfAdminMeta {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 7px 0;
+}
+
+#pdfSelectedMonthText {
+    color: #111;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+#pdfSelectedMeta {
+    max-width: 58%;
+    overflow: hidden;
+    color: #777;
+    font-family: Arial, sans-serif;
+    font-size: 9px;
+    text-align: right;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.adminSelect,
+.adminInput {
+    width: 100%;
+    height: 35px;
+    border: 1px solid #ddd;
+    border-radius: 7px;
+    outline: none;
+    background: white;
+    color: #222;
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+}
+
+.adminSelect {
+    padding: 0 8px;
+}
+
+.adminInput {
+    padding: 0 9px;
+}
+
+.pdfAdminActions {
+    gap: 6px;
+    margin-top: 7px;
+}
+
+.adminActionBtn {
+    min-width: 0;
+    height: 35px;
+    flex: 1;
+    border: 0;
+    border-radius: 7px;
+    background: #eee;
+    color: #222;
+    font-family: "Krasar", sans-serif;
+    font-size: 10px;
+}
+
+.adminActionBtn.primary {
+    background: #079447;
+    color: white;
+}
+
+.adminActionBtn:disabled {
+    opacity: .42;
+}
+
+#pdfUploadStatus,
+#storageStatus,
+#urlPdfStatus,
+#folderPdfStatus {
+    min-height: 13px;
+    margin-top: 5px;
+    color: #777;
+    font-family: Arial, sans-serif;
+    font-size: 9px;
+}
+
+#pdfUploadStatus.good,
+#storageStatus.good,
+#urlPdfStatus.good,
+#folderPdfStatus.good {
+    color: #079447;
+}
+
+#pdfUploadStatus.bad,
+#storageStatus.bad,
+#urlPdfStatus.bad,
+#folderPdfStatus.bad {
+    color: #b00020;
+}
+
+#storageList {
+    display: grid;
+    gap: 5px;
+}
+
+.storageRow {
+    justify-content: space-between;
+    gap: 7px;
+    min-height: 42px;
+    padding: 6px 7px;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    background: #f8f8f8;
+}
+
+.storageInfo {
+    min-width: 0;
+    flex: 1;
+}
+
+.storageName {
+    overflow: hidden;
+    color: #222;
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    font-weight: bold;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.storageMeta {
+    overflow: hidden;
+    margin-top: 2px;
+    color: #888;
+    font-family: Arial, sans-serif;
+    font-size: 8px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.storageActions {
+    gap: 3px;
+}
+
+.storageMiniBtn {
+    min-width: 28px;
+    height: 27px;
+    padding: 0 6px;
+    border: 0;
+    border-radius: 6px;
+    background: #e9e9e9;
+    color: #333;
+    font-family: Arial, sans-serif;
+    font-size: 9px;
+}
+
+.storageMiniBtn.default {
+    background: #dff5e7;
+    color: #067d3d;
+}
+
+#storageForm {
+    display: none;
+    gap: 6px;
+    margin-top: 7px;
+}
+
+#storageForm.show {
+    display: grid;
+}
+
+#urlPdfSource {
+    display: grid;
+    gap: 5px;
+}
+
+#folderPdfSource {
+    display: grid;
+    gap: 5px;
+}
+
+#folderPdfList {
+    display: none;
+    gap: 4px;
+}
+
+#folderPdfList.show {
+    display: grid;
+}
+
+.folderPdfItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 7px;
+    min-width: 0;
+    padding: 5px 7px;
+    border-left: 2px solid #079447;
+    background: #f5faf7;
+}
+
+.folderPdfName {
+    min-width: 0;
+    overflow: hidden;
+    color: #333;
+    font-family: Arial, sans-serif;
+    font-size: 9px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#folderPdfStatus {
+    font-family: Arial, sans-serif;
+    font-size: 8px;
+}
+
+#urlPdfForm {
+    display: none;
+    gap: 6px;
+    padding: 7px;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    background: #fbfbfb;
+}
+
+#urlPdfForm.show {
+    display: grid;
+}
+
+#urlPdfTarget {
+    color: #666;
+    font-family: Arial, sans-serif;
+    font-size: 9px;
+}
+
+.storageFormActions {
+    display: flex;
+    gap: 6px;
+}
+
+.adminText {
+    min-width: 0;
+}
+
+.adminLabel {
+    color: #111;
+
+    font-size: 11px;
+}
+
+#anonymousStateText {
+    margin-top: 2px;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 9px;
+    color: #777;
+}
+
+
+/* SWITCH */
+
+.switch {
+    position: relative;
+
+    width: 42px;
+    height: 24px;
+
+    flex-shrink: 0;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    inset: 0;
+
+    border-radius: 24px;
+
+    background: #bbb;
+
+    transition: .18s;
+}
+
+.slider::before {
+    content: "";
+
+    position: absolute;
+
+    width: 18px;
+    height: 18px;
+
+    left: 3px;
+    top: 3px;
+
+    border-radius: 50%;
+
+    background: white;
+
+    transition: .18s;
+}
+
+.switch input:checked + .slider {
+    background: #079447;
+}
+
+.switch input:checked + .slider::before {
+    transform: translateX(18px);
+}
+
+
+/* LOGOUT */
+
+#logoutBtn {
+    width: 100%;
+
+    height: 40px;
+
+    margin-top: 10px;
+
+    border: 0;
+    border-radius: 10px;
+
+    background: #111;
+
+    color: white;
+
+    font-family: "Krasar", sans-serif;
+
+    font-size: 12px;
+}
+
+
+/* =====================================================
+   LOGIN REQUIRED
+===================================================== */
+
+#accessGate {
+    position: fixed;
+    inset: 0;
+
+    z-index: 2500;
+
+    display: none;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background: rgba(0,0,0,.7);
+}
+
+#accessGate.show {
+    display: flex;
+}
+
+.gateBox {
+    width: 100%;
+    max-width: 340px;
+
+    padding: 22px;
+
+    background: white;
+
+    border-radius: 18px;
+
+    text-align: center;
+}
+
+.gateTitle {
+    color: #111;
+
+    font-size: 17px;
+    font-weight: bold;
+}
+
+.gateText {
+    margin: 8px 0 15px;
+
+    color: #777;
+
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+#gateGoogleBtn {
+    width: 100%;
+    height: 44px;
+
+    border: 0;
+    border-radius: 11px;
+
+    background: #111;
+
+    color: white;
+
+    font-family: "Krasar", sans-serif;
+
+    font-size: 13px;
+}
+
+#pagesBtn {
+    top: 820px; right: 8px;
+    display: none; width: 40px; min-width: 40px; padding: 3px;
+    overflow: hidden; align-items: center; gap: 8px;
+    border: 1px solid rgba(255,255,255,.72);
+    background: rgba(255,255,255,.78); color: #173228;
+    box-shadow: 0 4px 16px rgba(0,0,0,.16);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    backdrop-filter: blur(14px) saturate(140%);
+    transition: width .47s ease, background-color .29s ease, box-shadow .29s ease;
+}
+#pagesBtn.show { display: flex; }
+#pagesBtn:hover, #pagesBtn:focus-visible { width: 116px; background: rgba(255,255,255,.92); box-shadow: 0 7px 22px rgba(0,0,0,.2); }
+.pagesBtnIcon { flex: 0 0 32px; font: bold 17px Arial,sans-serif; text-align: center; }
+.pagesBtnLabel { flex: 0 0 auto; font: bold 11px Arial,sans-serif; white-space: nowrap; }
+
+#pagesOverlay, #pdfAssetsOverlay {
+    position: fixed; inset: 0; z-index: 1600; display: grid; place-items: center;
+    padding: 12px; background: rgba(0,0,0,.28); opacity: 0; visibility: hidden;
+    transition: opacity .18s ease;
+}
+#pagesOverlay.show, #pdfAssetsOverlay.show { opacity: 1; visibility: visible; }
+#pagesPopup, #pdfAssetsPopup {
+    display: grid; grid-template-rows: auto minmax(0,1fr); width: min(420px,100%);
+    max-height: min(76vh,620px); overflow: hidden; padding: 12px; border-radius: 12px;
+    background: rgba(255,255,255,.96); box-shadow: 0 12px 36px rgba(0,0,0,.28);
+    -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+}
+#pdfAssetsPopup { width: min(680px,100%); }
+.popupHead { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-bottom: 9px; border-bottom: 1px solid #e8e8e8; }
+.popupTitle { font-size: 14px; font-weight: bold; }
+.popupClose { width: 30px; height: 30px; border: 0; border-radius: 50%; background: #eee; color: #222; font-size: 18px; cursor: pointer; }
+#pagesPopup #savedPagesList, #pdfAssetsGrid { margin-top: 9px; overflow-y: auto; }
+#pagesPopup #savedPagesList { padding: 1px; }
+.savedPageBtn { display: grid; grid-template-columns: auto minmax(0,1fr) auto; gap: 9px; cursor: pointer; }
+.savedPageNumber, .savedPageArrow { white-space: nowrap; }
+.savedPagePreviewWindow { min-width: 0; overflow: hidden; color: #777; font-size: 10px; white-space: nowrap; }
+.savedPagePreviewText { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.savedPageBtn:hover .canMarquee .savedPagePreviewText,
+.savedPageBtn:focus-visible .canMarquee .savedPagePreviewText { overflow: visible; text-overflow: clip; animation: savedPageMarquee var(--marquee-duration,7s) ease-in-out infinite alternate; }
+@keyframes savedPageMarquee { from { transform: translateX(0); } to { transform: translateX(var(--marquee-shift,0)); } }
+
+#pdfAssetsGrid { display: grid; grid-template-columns: repeat(auto-fill,minmax(112px,1fr)); gap: 7px; }
+.pdfAssetTile { position: relative; min-width: 0; min-height: 106px; padding: 9px; border: 1px solid #dce7e1; border-radius: 7px; background: #edf8f1; color: #173228; text-align: left; cursor: pointer; }
+.pdfAssetTile.folder { background: #eef5fb; border-color: #d6e3ee; color: #18354b; }
+.pdfAssetTile.url { background: #fff7e7; border-color: #eadcbd; color: #49391a; }
+.pdfAssetTile.current { box-shadow: inset 0 0 0 2px #079447; }
+.pdfAssetSource { display: block; font: bold 8px Arial,sans-serif; text-transform: uppercase; opacity: .68; }
+.pdfAssetName { display: -webkit-box; margin-top: 9px; overflow: hidden; font: bold 10px Arial,sans-serif; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow-wrap: anywhere; }
+.pdfAssetMeta { position: absolute; right: 8px; bottom: 7px; left: 8px; overflow: hidden; font: 8px Arial,sans-serif; text-overflow: ellipsis; white-space: nowrap; opacity: .72; }
+#goToForm {
+    position: fixed;
+    left: 8px;
+    bottom: calc(8px + env(safe-area-inset-bottom));
+    z-index: 90;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(7px);
+    transition: opacity .28s ease, visibility .28s ease, transform .28s ease;
+}
+
+#goToForm.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+#goToInput {
+    width: 62px;
+    height: 32px;
+    padding: 0 7px;
+    border: 1px solid rgba(255,255,255,.72);
+    border-radius: 7px;
+    outline: 0;
+    background: rgba(255,255,255,.76);
+    color: #173228;
+    box-shadow: 0 4px 14px rgba(0,0,0,.14);
+    font: bold 10px Arial,sans-serif;
+    text-align: center;
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    backdrop-filter: blur(12px) saturate(140%);
+}
+
+#goToInput:focus {
+    border-color: #079447;
+    background: rgba(255,255,255,.94);
+}
+
+#goToInput::placeholder { color: #4d5a54; opacity: .85; }
+#goToInput::-webkit-inner-spin-button,
+#goToInput::-webkit-outer-spin-button { margin: 0; -webkit-appearance: none; }
+
+#pagesBtn {
+    position: static;
+    top: auto;
+    right: auto;
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    height: 40px;
+    margin: 3px 0 8px;
+    padding: 0 10px;
+    overflow: visible;
+    grid-template-columns: 28px minmax(0,1fr) auto;
+    align-items: center;
+    gap: 7px;
+    border: 0;
+    border-radius: 8px;
+    background: #f3f3f3;
+    color: #173228;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    transition: background-color .2s ease;
+}
+
+#pagesBtn.show { display: grid; }
+#pagesBtn:hover, #pagesBtn:focus-visible { width: 100%; background: #e9f5ed; box-shadow: none; }
+.pagesBtnIcon { flex: none; font-size: 15px; }
+.pagesBtnLabel { min-width: 0; text-align: left; }
+.pagesBtnArrow { font: bold 17px Arial,sans-serif; }
+#pageInfo {
+    display: grid;
+    place-items: center;
+    width: 62px;
+    height: 28px;
+    padding: 0;
+}
+
+#goToForm {
+    display: flex;
+    align-items: center;
+    width: 62px;
+    height: 28px;
+    padding: 0 7px;
+    border: 0;
+    border-radius: 8px;
+    background: rgba(177, 107, 107, 0.547);
+    box-shadow: 0 4px 14px rgba(0,0,0,.14);
+}
+
+.goToSearchIcon {
+    position: relative;
+    width: 10px;
+    height: 10px;
+    flex: 0 0 10px;
+    border: 1.5px solid white;
+    border-radius: 50%;
+    opacity: .9;
+}
+
+.goToSearchIcon::after {
+    content: "";
+    position: absolute;
+    right: -4px;
+    bottom: -2px;
+    width: 5px;
+    height: 1.5px;
+    border-radius: 1px;
+    background: white;
+    transform: rotate(45deg);
+    transform-origin: left center;
+}
+
+#goToInput {
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+    padding: 0 0 0 5px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: white;
+    box-shadow: none;
+    font-size: 9px;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+}
+
+#goToInput:focus { border: 0; background: transparent; }
+#goToInput::placeholder { color: white; opacity: .9; }
+
+#pageStripWrap {
+    position: fixed;
+    left: 50%;
+    bottom: calc(42px + env(safe-area-inset-bottom));
+    z-index: 90;
+    width: min(330px,calc(100vw - 24px));
+    height: 42px;
+    padding: 4px 10px;
+    border: 1px solid rgba(255, 255, 255, 0);
+    border-radius: 13px;
+    background: rgba(255, 255, 255, 0);
+    box-shadow: 0 6px 20px rgba(0,0,0,.01);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translate(-50%,7px);
+    transition: opacity .28s ease, visibility .28s ease, transform .28s ease;
+    -webkit-backdrop-filter: blur(15px) saturate(150%);
+    backdrop-filter: blur(15px) saturate(150%);
+}
+
+#pageStripWrap.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translate(-50%,0);
+}
+
+#pageStrip {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    width: 100%;
+    height: 100%;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
+    -webkit-mask-image: linear-gradient(to right,transparent,#000 13%,#000 87%,transparent);
+    mask-image: linear-gradient(to right,transparent,#000 13%,#000 87%,transparent);
+}
+
+#pageStrip::-webkit-scrollbar { display: none; }
+
+#pageStrip::before,
+#pageStrip::after {
+    content: "";
+    flex: 0 0 calc(50% - 17px);
+}
+
+.pageStripBtn {
+    width: 34px;
+    height: 32px;
+    flex: 0 0 34px;
+    border: 0;
+    border-radius: 6px;
+    background: rgba(20,35,28,.08);
+    color: oklab(100% 0 -0.00011);
+    font: bold 10px Arial,sans-serif;
+    scroll-snap-align: center;
+    cursor: pointer;
+    transition: background-color .2s ease, color .2s ease, transform .2s ease;
+}
+
+.pageStripBtn.current {
+    background: #079423bf;
+    color: white;
+    transform: scale(1.06);
+}
+#googleBtn {
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+#googleBtn.dragging,
+.profileTop.dragging { cursor: grabbing; }
+
+.profileTop {
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+#pageInfo {
+    left: auto;
+    right: 8px;
+    bottom: calc(8px + env(safe-area-inset-bottom));
+    transform: none;
+}
+
+#pageStripWrap {
+    bottom: calc(8px + env(safe-area-inset-bottom));
+    width: min(330px,calc(100vw - 156px));
+    height: 28px;
+    padding: 0 7px;
+    border-radius: 8px;
+}
+
+.pageStripBtn {
+    width: 30px;
+    height: 26px;
+    flex-basis: 30px;
+}
+
+#pageStrip::before,
+#pageStrip::after {
+    flex-basis: calc(50% - 15px);
+}
+
+@media (max-width: 360px) {
+    #pageStripWrap { width: calc(100vw - 144px); }
+}
+#clientSetup {
+    margin: auto;
+    width: min(720px,calc(100% - 24px));
+    max-height: calc(100dvh - 24px);
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow-y: auto;
+    background: #fff;
+    color: #222;
+    font: 14px/1.6 Arial,sans-serif;
+}
+#clientSetup::backdrop { background: rgba(0,0,0,.4); }
+#clientSetup h2 { font-size: 20px; }
+#clientSetup h3 { margin-top: 16px; font-size: 15px; }
+#clientSetup p { margin: 10px 0; }
+#clientSetup ol { padding-left: 22px; }
+#clientSetup li { margin: 7px 0; }
+#clientSetup a { color: #087443; }
+#clientSetup code { font-size: 12px; overflow-wrap: anywhere; }
+#clientSetup dl { display: grid; grid-template-columns: minmax(110px,1fr) minmax(0,2fr); gap: 7px 12px; margin: 16px 0; }
+#clientSetup dt { color: #666; }
+#clientSetup dd { overflow-wrap: anywhere; }
+#clientSetup details { padding: 12px 0; border-top: 1px solid #ddd; }
+#clientSetup summary { cursor: pointer; font-weight: bold; }
+.setupHead { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.setupCommand { padding: 8px 12px; border: 0; border-radius: 6px; background: #eee; color: #222; font: inherit; cursor: pointer; }
+#clientRules { width: 100%; height: 220px; margin-top: 10px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font: 12px/1.5 monospace; resize: vertical; }
+#setupIssues { padding: 8px 0; color: #aa3026; white-space: pre-line; }
+#setupIssues:empty { display: none; }
+#appNotice { position: fixed; left: 12px; bottom: 50px; z-index: 1900; width: min(410px,calc(100% - 24px)); padding: 12px; border: 1px solid #ddd; border-radius: 8px; background: #fff; box-shadow: 0 4px 20px #0002; font: 13px/1.5 Arial,sans-serif; }
+#appNotice[hidden] { display: none; }
+#appNotice p { margin-bottom: 8px; }
+#appNoticeClose { float: right; }
+#clientSetupBtn { width: 100%; margin: 10px 0 0; }
+</style>
+</head>
+
+
+<body>
+
+
+<!-- PDF -->
+
+<div id="viewer">
+    <div id="pageContainer">
+        <canvas id="pdfCanvas"></canvas>
+    </div>
+</div>
+
+
+<button
+    id="fitZoomBtn"
+    class="topBtn"
+    type="button"
+>
+    Fit 100%
+</button>
+
+
+<button
+    id="googleBtn"
+    class="topBtn"
+    type="button"
+    aria-label="Login with Google"
+>
+    <span id="googleAvatarWrap">
+        <img
+            id="googleAvatar"
+            alt=""
+            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath fill='%23FFC107' d='M43.6 20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.7-.4-4z'/%3E%3Cpath fill='%23FF3D00' d='m6.3 14.7 6.6 4.8C14.6 15.1 19 12 24 12c3.1 0 5.8 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4c-7.7 0-14.3 4.3-17.7 10.7z'/%3E%3Cpath fill='%234CAF50' d='M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.7-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z'/%3E%3Cpath fill='%231976D2' d='M43.6 20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.7-.4-4z'/%3E%3C/svg%3E"
+        >
+
+        <span id="googleFallback"></span>
+
+        <span
+            id="googleActiveDot"
+            aria-hidden="true"
+        ></span>
+    </span>
+
+    <span id="googleName">
+        Login
+    </span>
+</button>
+
+<button
+    id="writeBtn"
+    class="topBtn"
+    type="button"
+>
+    សរសេរ
+
+    <span id="savedDot"></span>
+</button>
+
+
+<button
+    id="prevBtn"
+    class="navBtn"
+    type="button"
+>
+    &#8249;
+</button>
+
+
+<button
+    id="nextBtn"
+    class="navBtn"
+    type="button"
+>
+    &#8250;
+</button>
+
+
+<div id="pageInfo">
+    1 / 1
+</div>
+
+<form id="goToForm" autocomplete="off">
+    <span class="goToSearchIcon" aria-hidden="true"></span>
+    <input
+        id="goToInput"
+        type="number"
+        min="1"
+        inputmode="numeric"
+        placeholder=""
+        aria-label="Go to page"
+    >
+</form>
+
+<div id="pageStripWrap" aria-label="Choose page">
+    <div id="pageStrip"></div>
+</div>
+
+
+<div id="zoomInfo">
+    100%
+</div>
+
+
+<div id="loading">
+    <div class="spinner"></div>
+</div>
+
+
+<div id="errorMessage">
+    Cannot load PDF
+</div>
+
+
+
+<!-- =====================================================
+     FORM
+===================================================== -->
+
+<div id="noteOverlay">
+
+<div id="notePopup">
+
+
+    <div
+        id="noteHeader"
+        class="noteHeader"
+    >
+
+        <div class="formTitle">
+            សរសេរ
+        </div>
+
+        <button
+            id="closeNote"
+            type="button"
+        >
+            ×
+        </button>
+
+    </div>
+
+
+    <div class="noteGroup">
+
+        <label
+            class="noteTitle"
+            for="note1"
+        >
+            តើអ្វីជាគំនិតសំខាន់របស់អត្តបទនេះ?
+        </label>
+
+        <textarea
+            id="note1"
+            class="noteInput"
+            rows="1"
+            spellcheck="false"
+        ></textarea>
+
+    </div>
+
+
+    <div class="noteGroup">
+
+        <label
+            class="noteTitle"
+            for="note2"
+        >
+            តើព្រះមានលក្ខណះដូចម្ដេច?
+        </label>
+
+        <textarea
+            id="note2"
+            class="noteInput"
+            rows="1"
+            spellcheck="false"
+        ></textarea>
+
+    </div>
+
+
+    <div class="noteGroup">
+
+        <label
+            class="noteTitle"
+            for="note3"
+        >
+            តើមេរៀនអ្វីដែលព្រះកំពុងបង្រៀនដល់ខ្ញុំ?
+        </label>
+
+        <textarea
+            id="note3"
+            class="noteInput"
+            rows="1"
+            spellcheck="false"
+        ></textarea>
+
+    </div>
+
+
+    <div class="noteGroup">
+
+        <label
+            class="noteTitle"
+            for="note4"
+        >
+            ការអនុវត្ត
+        </label>
+
+        <textarea
+            id="note4"
+            class="noteInput"
+            rows="1"
+            spellcheck="false"
+        ></textarea>
+
+    </div>
+
+
+    <div class="noteGroup">
+
+        <label
+            class="noteTitle"
+            for="note5"
+        >
+            ការអធិស្ឋាន
+        </label>
+
+        <textarea
+            id="note5"
+            class="noteInput"
+            rows="1"
+            spellcheck="false"
+        ></textarea>
+
+    </div>
+
+
+    <div id="noteStatus">
+        កំពុងភ្ជាប់ Firebase...
+    </div>
+
+
+    <div class="noteActions">
+
+        <button
+            id="deleteNote"
+            class="noteActionBtn"
+            type="button"
+        >
+            លុប
+        </button>
+
+        <button
+            id="captureNote"
+            class="noteActionBtn"
+            type="button"
+        >
+            ថតរូប
+        </button>
+
+        <button
+            id="saveNote"
+            class="noteActionBtn"
+            type="button"
+        >
+            រក្សាទុក
+        </button>
+
+    </div>
+
+
+</div>
+</div>
+
+
+
+<!-- =====================================================
+     PROFILE
+===================================================== -->
+
+<div id="profileOverlay">
+
+<div id="profilePopup">
+
+
+    <div class="profileTop">
+
+        <img
+            id="profileAvatar"
+            alt=""
+        >
+
+        <div class="profileInfo">
+
+            <div id="profileName">
+                Google
+            </div>
+
+            <div id="profileEmail"></div>
+
+        </div>
+
+        <label
+            class="switch profileRevealSwitch"
+            title="Username reveal"
+        >
+
+            <input
+                id="profileRevealToggle"
+                type="checkbox"
+                aria-label="Enable username reveal on hover"
+            >
+
+            <span class="slider"></span>
+
+        </label>
+
+    </div>
+
+    <button id="pagesBtn" type="button" aria-label="All Pages">
+        <span class="pagesBtnIcon">&#9776;</span>
+        <span class="pagesBtnLabel">បញ្ជីកំណត់ត្រារបស់ខ្ញុំ</span>
+        <span class="pagesBtnArrow">&#8250;</span>
+    </button>
+
+
+    <!-- ADMIN -->
+
+    <div id="adminPanel">
+
+        <div class="adminTitle">
+            Admin Tools
+        </div>
+
+        <button id="clientSetupBtn" class="storageMiniBtn" type="button">Client Setup</button>
+
+
+        <div class="adminRow">
+
+            <div class="adminText">
+
+                <div class="adminLabel">
+                    Anonymous Free Access
+                </div>
+
+                <div id="anonymousStateText">
+                    Loading...
+                </div>
+
+            </div>
+
+
+            <label class="switch">
+
+                <input
+                    id="anonymousToggle"
+                    type="checkbox"
+                >
+
+                <span class="slider"></span>
+
+            </label>
+
+        </div>
+
+
+        <div class="adminSection">
+
+            <div class="adminSectionHead">
+
+                <div class="adminSectionTitle">
+                    PDF Library
+                </div>
+
+                <button id="openPdfAssetsBtn" class="storageMiniBtn" type="button">
+                    Files
+                </button>
+
+                <button
+                    id="useLocalPdfBtn"
+                    class="storageMiniBtn"
+                    type="button"
+                >
+                    Local
+                </button>
+
+            </div>
+
+
+            <div class="pdfYearBar">
+
+                <button
+                    id="previousPdfYear"
+                    class="adminIconBtn"
+                    type="button"
+                    aria-label="Previous year"
+                    title="Previous year"
+                >
+                    &#8249;
+                </button>
+
+                <strong id="pdfLibraryYear"></strong>
+
+                <button
+                    id="nextPdfYear"
+                    class="adminIconBtn"
+                    type="button"
+                    aria-label="Next year"
+                    title="Next year"
+                >
+                    &#8250;
+                </button>
+
+            </div>
+
+
+            <div
+                id="monthCarousel"
+                class="monthCarousel"
+                role="tablist"
+                aria-label="PDF month"
+            ></div>
+
+
+            <div class="pdfAdminPreview">
+
+                <div id="pdfPreviewFrame">
+
+                    <canvas id="pdfPreviewCanvas"></canvas>
+
+                    <div id="pdfPreviewEmpty">
+                        No PDF uploaded
+                    </div>
+
+                    <span id="pdfCurrentBadge">
+                        CURRENT
+                    </span>
+
+                </div>
+
+
+                <div class="pdfAdminMeta">
+
+                    <span id="pdfSelectedMonthText"></span>
+
+                    <span id="pdfSelectedMeta"></span>
+
+                </div>
+
+
+                <select
+                    id="pdfStorageSelect"
+                    class="adminSelect"
+                    aria-label="Upload storage"
+                ></select>
+
+
+                <input
+                    id="pdfFileInput"
+                    type="file"
+                    accept="application/pdf,.pdf"
+                    hidden
+                >
+
+
+                <div class="pdfAdminActions">
+
+                    <button
+                        id="uploadPdfBtn"
+                        class="adminActionBtn primary"
+                        type="button"
+                    >
+                        Upload PDF
+                    </button>
+
+                    <button
+                        id="setCurrentPdfBtn"
+                        class="adminActionBtn"
+                        type="button"
+                    >
+                        Set Current
+                    </button>
+
+                </div>
+
+
+                <div id="pdfUploadStatus"></div>
+
+            </div>
+
+        </div>
+
+
+        <div class="adminSection">
+
+            <div class="adminSectionHead">
+
+                <div class="adminSectionTitle">
+                    Storage List
+                </div>
+
+                <button
+                    id="addStorageBtn"
+                    class="adminIconBtn"
+                    type="button"
+                    aria-label="Add storage"
+                    title="Add storage"
+                >
+                    +
+                </button>
+
+            </div>
+
+
+            <div id="storageList">
+
+                <div id="folderPdfSource">
+
+                    <div class="storageRow">
+
+                        <div class="storageInfo">
+
+                            <div class="storageName">
+                                PDF Folder
+                            </div>
+
+                            <div
+                                id="folderPdfMeta"
+                                class="storageMeta"
+                            >
+                                assets/pdf
+                            </div>
+
+                        </div>
+
+                        <button
+                            id="refreshPdfFolderBtn"
+                            class="storageMiniBtn"
+                            type="button"
+                        >
+                            Scan
+                        </button>
+
+                    </div>
+
+                    <div id="folderPdfList"></div>
+
+                    <div id="folderPdfStatus"></div>
+
+                </div>
+
+                <div id="urlPdfSource">
+
+                    <div class="storageRow">
+
+                        <div class="storageInfo">
+
+                            <div class="storageName">
+                                Add by URL
+                            </div>
+
+                            <div class="storageMeta">
+                                Public PDF link
+                            </div>
+
+                        </div>
+
+                        <button
+                            id="openUrlPdfBtn"
+                            class="storageMiniBtn"
+                            type="button"
+                        >
+                            Add URL
+                        </button>
+
+                    </div>
+
+                    <div id="urlPdfForm">
+
+                        <div id="urlPdfTarget"></div>
+
+                        <input
+                            id="pdfUrlInput"
+                            class="adminInput"
+                            type="url"
+                            inputmode="url"
+                            placeholder="https://example.com/file.pdf"
+                            autocomplete="off"
+                        >
+
+                        <input
+                            id="pdfUrlNameInput"
+                            class="adminInput"
+                            type="text"
+                            placeholder="PDF name (optional)"
+                            autocomplete="off"
+                        >
+
+                        <div class="storageFormActions">
+
+                            <button
+                                id="cancelUrlPdfBtn"
+                                class="adminActionBtn"
+                                type="button"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                id="saveUrlPdfBtn"
+                                class="adminActionBtn primary"
+                                type="button"
+                            >
+                                Save URL
+                            </button>
+
+                        </div>
+
+                        <div id="urlPdfStatus"></div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div id="storageForm">
+
+                <input
+                    id="storageNameInput"
+                    class="adminInput"
+                    type="text"
+                    placeholder="Storage name"
+                    autocomplete="off"
+                >
+
+                <input
+                    id="cloudNameInput"
+                    class="adminInput"
+                    type="text"
+                    placeholder="Cloudinary cloud name"
+                    autocomplete="off"
+                >
+
+                <input
+                    id="uploadPresetInput"
+                    class="adminInput"
+                    type="text"
+                    placeholder="Unsigned upload preset"
+                    autocomplete="off"
+                >
+
+                <input
+                    id="storageFolderInput"
+                    class="adminInput"
+                    type="text"
+                    placeholder="Folder (optional)"
+                    autocomplete="off"
+                >
+
+
+                <div class="storageFormActions">
+
+                    <button
+                        id="cancelStorageBtn"
+                        class="adminActionBtn"
+                        type="button"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        id="saveStorageBtn"
+                        class="adminActionBtn primary"
+                        type="button"
+                    >
+                        Save
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div id="storageStatus"></div>
+
+        </div>
+
+    </div>
+
+
+    <button
+        id="logoutBtn"
+        type="button"
+    >
+        ចាកចេញ
+    </button>
+
+
+</div>
+</div>
+
+<div id="pagesOverlay">
+    <section id="pagesPopup" role="dialog" aria-modal="true" aria-labelledby="pagesTitle">
+        <div class="popupHead">
+            <div id="pagesTitle" class="popupTitle">បញ្ជីកំណត់ត្រារបស់ខ្ញុំ</div>
+            <button id="closePages" class="popupClose" type="button" aria-label="Close">&times;</button>
+        </div>
+        <div id="savedPagesList"><div class="emptyPages">កំពុងផ្ទុក...</div></div>
+    </section>
+</div>
+
+<div id="pdfAssetsOverlay">
+    <section id="pdfAssetsPopup" role="dialog" aria-modal="true" aria-labelledby="pdfAssetsTitle">
+        <div class="popupHead">
+            <div id="pdfAssetsTitle" class="popupTitle">All PDF Files</div>
+            <button id="closePdfAssets" class="popupClose" type="button" aria-label="Close">&times;</button>
+        </div>
+        <div id="pdfAssetsGrid"></div>
+    </section>
+</div>
+
+
+
+<!-- =====================================================
+     LOGIN REQUIRED
+===================================================== -->
+
+<div id="accessGate">
+
+    <div class="gateBox">
+
+        <div class="gateTitle">
+            សូមចូលគណនី
+        </div>
+
+        <div class="gateText">
+            ការប្រើប្រាស់ដោយមិនចូលគណនីត្រូវបានបិទ។
+            សូមចូលដោយ Google ដើម្បីបន្ត។
+        </div>
+
+        <button
+            id="gateGoogleBtn"
+            type="button"
+        >
+            ចូលដោយ Google
+        </button>
+
+    </div>
+
+</div>
+
+
+
+<script
+src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js">
+</script>
+
+
+
+<dialog id="clientSetup" aria-labelledby="clientSetupTitle">
+    <div class="setupHead">
+        <h2 id="clientSetupTitle">Client Setup</h2>
+        <button id="clientSetupClose" class="popupClose" type="button" aria-label="Close setup">&times;</button>
+    </div>
+    <p>Edit <code>CLIENT_CONFIG</code> at the top of <code>index.html</code>, then reload. This guide is also available at <code>?setup=1</code>.</p>
+    <div id="setupIssues" role="status"></div>
+    <dl>
+        <dt>App</dt><dd id="setupApp"></dd>
+        <dt>Firebase project</dt><dd id="setupProject"></dd>
+        <dt>Admin email</dt><dd id="setupAdmin"></dd>
+        <dt>Default PDF</dt><dd id="setupPdf"></dd>
+        <dt>Sign-in</dt><dd id="setupAuthState">Not checked</dd>
+        <dt>Database settings</dt><dd id="setupDatabaseState">Not checked</dd>
+        <dt>PDF viewer</dt><dd id="setupPdfState">Not checked</dd>
+    </dl>
+    <details open>
+        <summary>1. Client settings</summary>
+        <p>Set the app name, site icon, admin's Google email, Firebase web config, and default PDF in <code>CLIENT_CONFIG</code>. The values currently shown above still belong to the configured project.</p>
+        <p>For a separate client, use their Firebase project and a new <code>storagePrefix</code>. Keep the existing prefix and PDF ID when retaining existing notes. Browser cache names are separate from cloud data, which stays in its Firebase project.</p>
+        <p>The font can use a local file through <code>fontUrl</code>. An empty value uses the device font.</p>
+    </details>
+    <details>
+        <summary>2. Firebase sign-in and permissions</summary>
+        <ol>
+            <li>Open <a id="setupFirebaseLink" target="_blank" rel="noopener noreferrer">Firebase Console</a>. Under Project settings, register a web app and put its configuration in <code>CLIENT_CONFIG.firebase</code>.</li>
+            <li>Under Authentication, enable Google and enable Anonymous if you use free access. Under Settings &gt; Authorized domains, add the final website domain and <code>localhost</code> for local tests.</li>
+            <li>Create a Realtime Database and set its exact <code>databaseURL</code>. Before launch, review and publish the rules below in Realtime Database &gt; Rules. They use the configured admin email and allow users to access only their own notes.</li>
+            <li>After changing the admin email, regenerate and publish the rules. Sign in using that Google account to open Admin Tools.</li>
+        </ol>
+        <p>These rules are generated for this app's database paths. Review them alongside any rules for other apps using the same database. This page does not publish rules or verify the live permissions.</p>
+        <button id="downloadClientRules" class="setupCommand" type="button">Download database rules</button>
+        <textarea id="clientRules" readonly aria-label="Generated Firebase Realtime Database rules" spellcheck="false"></textarea>
+        <p><a href="https://firebase.google.com/docs/database/security" target="_blank" rel="noopener noreferrer">Firebase database rules</a> &middot; <a href="https://firebase.google.com/docs/auth/web/google-signin" target="_blank" rel="noopener noreferrer">Google sign-in setup</a></p>
+    </details>
+    <details>
+        <summary>3. Cloudinary and monthly PDFs</summary>
+        <p>Sign in as admin, then open Storage List &gt; +. Enter the client's cloud name, unsigned upload preset, and optional folder. No Cloudinary API secret belongs in this HTML.</p>
+        <p>In the <a href="https://console.cloudinary.com/" target="_blank" rel="noopener noreferrer">Cloudinary Console</a>, create an unsigned upload preset, restrict allowed formats to PDF, set a file-size limit, and enable PDF delivery. The app's upload limit is <code>maxUploadMB</code>.</p>
+        <p>Unsigned presets can be used by anyone who obtains their name. Strictly authenticated uploads require a server to sign requests. PDFs served through public URLs remain public even when the app requires login.</p>
+        <p>Use PDF Library to select the month, upload or select a file, then choose Set Current. Reuse older files from Files.</p>
+        <p><a href="https://cloudinary.com/documentation/upload_presets" target="_blank" rel="noopener noreferrer">Cloudinary upload presets</a></p>
+    </details>
+    <details>
+        <summary>4. Files and launch check</summary>
+        <p>Deploy <code>index.html</code>, the configured default PDF, and <code>assets/</code> together on an HTTPS static host. The backup folder is not part of the deployment.</p>
+        <p>Add PDFs to <code>pdfFolder</code>. If the host cannot list a directory, add their filenames to <code>pdfFiles</code>. This keeps the app deployable without a build step.</p>
+        <p>Test the final domain: Google login, admin access, a note save and reload, PDF upload, switching current PDF, and reopening an old month. Check that a second account cannot access another user's notes using Firebase's rules simulator. A successful local test does not confirm production permissions.</p>
+    </details>
+</dialog>
+
+<aside id="appNotice" role="status" hidden>
+    <button id="appNoticeClose" class="popupClose" type="button" aria-label="Dismiss message">&times;</button>
+    <p id="appNoticeText"></p>
+    <button id="appNoticeSetup" class="setupCommand" type="button">Client Setup</button>
+    <button id="appNoticeRetry" class="setupCommand" type="button">Reload</button>
+</aside>
+
+<script id="clientSetupScript">
+(() => {
+    const config = window.CLIENT_CONFIG;
+    const setup = document.getElementById("clientSetup");
+    const statusIds = { auth: "setupAuthState", database: "setupDatabaseState", pdf: "setupPdfState" };
+    const issues = [];
+    const text = (id,value) => { document.getElementById(id).textContent = value || "Not configured"; };
+    const show = () => { if (!setup.open) setup.showModal(); };
+    const notice = message => {
+        text("appNoticeText",message);
+        document.getElementById("appNotice").hidden = false;
+    };
+
+    for (const key of ["apiKey","authDomain","databaseURL","projectId","appId"]) {
+        if (typeof config.firebase?.[key] !== "string" || !config.firebase[key].trim()) {
+            issues.push("Missing Firebase " + key + ".");
+        }
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(config.adminEmail || "")) issues.push("Enter the admin's Google email.");
+    if (!config.appName?.trim()) issues.push("Enter an app name.");
+    if (!config.localPdf?.url || !/^[\w-]+$/.test(config.localPdf?.id || "")) issues.push("Set a default PDF URL and an ID containing letters, numbers, hyphens or underscores.");
+    if (!Number.isFinite(config.maxUploadMB) || config.maxUploadMB <= 0) issues.push("Set maxUploadMB to a positive number.");
+    if (!Array.isArray(config.pdfFiles) || config.pdfFiles.some(name => typeof name !== "string" || !/^[^/\\]+\.pdf$/i.test(name))) issues.push("pdfFiles must contain PDF filenames, without folders.");
+    if (!/^[\w-]+$/.test(config.storagePrefix || "")) issues.push("Set a storagePrefix using letters, numbers, hyphens or underscores.");
+    if (!config.pdfFolder || !config.defaults || typeof config.defaults.allowAnonymous !== "boolean" || typeof config.defaults.profileRevealEnabled !== "boolean") issues.push("Check pdfFolder and the two boolean defaults.");
+    try {
+        if (!/^https?:$/.test(new URL(config.firebase.databaseURL).protocol)) throw new Error();
+    } catch { issues.push("databaseURL must be a complete HTTPS Firebase database URL."); }
+    if (location.protocol === "file:") issues.push("Open this app through localhost or an HTTPS website, not directly as a file.");
+
+    document.title = config.appName || document.title;
+    if (config.siteIcon) document.querySelector('link[rel="icon"]').href = config.siteIcon;
+    if (config.fontUrl && "FontFace" in window) {
+        const font = new FontFace("Krasar","url(" + JSON.stringify(config.fontUrl) + ")",{display:"swap"});
+        document.fonts.add(font);
+        font.load().catch(() => {});
+    }
+    text("setupApp",config.appName);
+    text("setupProject",config.firebase?.projectId);
+    text("setupAdmin",config.adminEmail);
+    text("setupPdf",config.localPdf?.url);
+    text("setupIssues",issues.join("\n"));
+    if (!issues.length) document.getElementById("setupIssues").textContent = "";
+    document.getElementById("setupFirebaseLink").href = "https://console.firebase.google.com/project/" + encodeURIComponent(config.firebase?.projectId || "_") + "/overview";
+
+    const admin = "auth != null && auth.token.email_verified == true && auth.token.firebase.sign_in_provider == 'google.com' && auth.token.email == " + JSON.stringify((config.adminEmail || "").trim().toLowerCase());
+    const owner = "auth != null && auth.uid == $uid";
+    const googleOwner = owner + " && auth.token.firebase.sign_in_provider == 'google.com'";
+    const anonymousEnabled = config.defaults?.allowAnonymous
+        ? "(!root.child('appConfig/allowAnonymous').exists() || root.child('appConfig/allowAnonymous').val() == true)"
+        : "root.child('appConfig/allowAnonymous').val() == true";
+    const rules = { rules: {
+        ".read": false,
+        ".write": false,
+        appConfig: {
+            ".write": admin,
+            allowAnonymous: { ".read": true, ".validate": "newData.isBoolean()" },
+            profileRevealEnabled: { ".read": true, ".validate": "newData.isBoolean()" },
+            activePdfId: { ".read": true, ".validate": "newData.isString()" },
+            pdfLibrary: { ".read": true },
+            pdfStorages: { ".read": admin },
+            pdfAssets: { ".read": admin }
+        },
+        users: { "$uid": { ".read": googleOwner, ".write": googleOwner } },
+        anonymousUsers: { "$uid": {
+            ".read": owner,
+            ".write": owner + " && auth.token.firebase.sign_in_provider == 'anonymous' && " + anonymousEnabled
+        } }
+    } };
+    const rulesText = JSON.stringify(rules,null,2);
+    document.getElementById("clientRules").value = rulesText;
+    document.getElementById("downloadClientRules").disabled = issues.length > 0;
+    document.getElementById("downloadClientRules").addEventListener("click",() => {
+        const url = URL.createObjectURL(new Blob([rulesText + "\n"],{type:"application/json"}));
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "firebase-database.rules.json";
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url),1000);
+    });
+    document.getElementById("clientSetupBtn").addEventListener("click",show);
+    document.getElementById("clientSetupClose").addEventListener("click",() => setup.close());
+    document.getElementById("appNoticeSetup").addEventListener("click",show);
+    document.getElementById("appNoticeClose").addEventListener("click",() => { document.getElementById("appNotice").hidden = true; });
+    document.getElementById("appNoticeRetry").addEventListener("click",() => location.reload());
+    window.QT_SETUP = {
+        valid: issues.length === 0,
+        notice,
+        status: (key,value) => text(statusIds[key],value),
+        moduleError: () => {
+            document.getElementById("loading").style.display = "none";
+            notice("The app could not start. Check your connection and Client Setup, then reload.");
+        }
+    };
+    if (issues.length || new URLSearchParams(location.search).get("setup") === "1") show();
+})();
+</script>
+
+<script type="module" id="appModule" onerror="window.QT_SETUP.moduleError()">
+
+
+/* =====================================================
+   FIREBASE
+===================================================== */
+
+import {
+    initializeApp
+}
+from
+"https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+
+
+import {
+    getAuth,
+    browserLocalPersistence,
+    setPersistence,
+    onAuthStateChanged,
+    signInAnonymously,
+    GoogleAuthProvider,
+    signInWithPopup,
+    signOut
+}
+from
+"https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+
+
+import {
+    getDatabase,
+    ref,
+    get,
+    set,
+    update,
+    remove,
+    onValue,
+    serverTimestamp
+}
+from
+"https://www.gstatic.com/firebasejs/12.18.0/firebase-database.js";
+
+
+const clientConfig = window.CLIENT_CONFIG;
+const firebaseConfig = clientConfig.firebase;
+
+
+const app =
+    initializeApp(
+        firebaseConfig
+    );
+
+
+const auth =
+    getAuth(
+        app
+    );
+
+
+const database =
+    getDatabase(
+        app
+    );
+
+
+const googleProvider =
+    new GoogleAuthProvider();
+
+
+googleProvider.setCustomParameters({
+    prompt:
+        "select_account"
+});
+
+
+const ADMIN_EMAIL =
+    clientConfig.adminEmail.trim().toLowerCase();
+
+
+let firebaseUser =
+    null;
+
+
+let firebaseReady =
+    false;
+
+
+let allowAnonymous =
+    clientConfig.defaults.allowAnonymous;
+
+
+let profileRevealEnabled =
+    clientConfig.defaults.profileRevealEnabled;
+
+
+let pdfStorages =
+    {};
+
+
+let pdfLibraryRecords =
+    {};
+
+
+let pdfAssets =
+    {};
+
+
+let pdfAssetMigrationRunning =
+    false;
+
+
+let activePdfId =
+    "local-current";
+
+
+let selectedPdfYear =
+    new Date().getFullYear();
+
+
+let selectedPdfMonth =
+    new Date().getMonth() + 1;
+
+
+let editingStorageId =
+    null;
+
+
+let pdfPreviewVersion =
+    0;
+
+
+let pdfFolderFiles =
+    [];
+
+
+let pdfFolderScanned =
+    false;
+
+
+let pdfFolderScanning =
+    false;
+
+
+/* =====================================================
+   DOM
+===================================================== */
+
+const viewer =
+    document.getElementById("viewer");
+
+const pageContainer =
+    document.getElementById("pageContainer");
+
+const canvas =
+    document.getElementById("pdfCanvas");
+
+const ctx =
+    canvas.getContext("2d", {
+        alpha: false
+    });
+
+const prevBtn =
+    document.getElementById("prevBtn");
+
+const nextBtn =
+    document.getElementById("nextBtn");
+
+const pageInfo =
+    document.getElementById("pageInfo");
+
+const goToForm =
+    document.getElementById("goToForm");
+
+const goToInput =
+    document.getElementById("goToInput");
+
+const pageStripWrap =
+    document.getElementById("pageStripWrap");
+
+const pageStrip =
+    document.getElementById("pageStrip");
+
+const zoomInfo =
+    document.getElementById("zoomInfo");
+
+const fitZoomBtn =
+    document.getElementById("fitZoomBtn");
+
+const writeBtn =
+    document.getElementById("writeBtn");
+
+const googleBtn =
+    document.getElementById("googleBtn");
+
+const pagesBtn =
+    document.getElementById("pagesBtn");
+
+const googleAvatar =
+    document.getElementById("googleAvatar");
+
+const googleFallback =
+    document.getElementById("googleFallback");
+
+const googleName =
+    document.getElementById("googleName");
+
+const savedDot =
+    document.getElementById("savedDot");
+
+const loading =
+    document.getElementById("loading");
+
+const errorMessage =
+    document.getElementById("errorMessage");
+
+
+googleAvatar.referrerPolicy =
+    "no-referrer";
+
+
+const noteOverlay =
+    document.getElementById("noteOverlay");
+
+const notePopup =
+    document.getElementById("notePopup");
+
+const noteHeader =
+    document.getElementById("noteHeader");
+
+const closeNote =
+    document.getElementById("closeNote");
+
+const note1 =
+    document.getElementById("note1");
+
+const note2 =
+    document.getElementById("note2");
+
+const note3 =
+    document.getElementById("note3");
+
+const note4 =
+    document.getElementById("note4");
+
+const note5 =
+    document.getElementById("note5");
+
+const noteStatus =
+    document.getElementById("noteStatus");
+
+const saveNote =
+    document.getElementById("saveNote");
+
+const deleteNote =
+    document.getElementById("deleteNote");
+
+const captureNote =
+    document.getElementById("captureNote");
+
+const noteInputs =
+    document.querySelectorAll(".noteInput");
+
+
+const profileOverlay =
+    document.getElementById("profileOverlay");
+
+const profilePopup =
+    document.getElementById("profilePopup");
+
+const profileTop =
+    document.querySelector(".profileTop");
+
+const profileAvatar =
+    document.getElementById("profileAvatar");
+
+const profileName =
+    document.getElementById("profileName");
+
+const profileEmail =
+    document.getElementById("profileEmail");
+
+
+profileAvatar.referrerPolicy =
+    "no-referrer";
+
+
+let avatarLoadVersion =
+    0;
+
+
+const GOOGLE_LOGO_URL =
+    "data:image/svg+xml;charset=UTF-8," +
+    encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">' +
+        '<path fill="#FFC107" d="M43.6 20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.7-.4-4z"/>' +
+        '<path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.6 15.1 19 12 24 12c3.1 0 5.8 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4c-7.7 0-14.3 4.3-17.7 10.7z"/>' +
+        '<path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.7-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/>' +
+        '<path fill="#1976D2" d="M43.6 20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.7-.4-4z"/>' +
+        '</svg>'
+    );
+
+
+function googleProfile(
+    user = firebaseUser
+) {
+
+    const provider =
+        user?.providerData?.find(
+            item =>
+                item.providerId ===
+                "google.com"
+        );
+
+
+    return {
+
+        name:
+            provider?.displayName ||
+            user?.displayName ||
+            user?.email?.split("@")[0] ||
+            "Google",
+
+        email:
+            provider?.email ||
+            user?.email ||
+            "",
+
+        photoURLs: [
+            provider?.photoURL,
+            user?.photoURL
+        ].filter(Boolean)
+
+    };
+
+}
+
+
+function googlePhotoVariants(url) {
+
+    const variants =
+        [url];
+
+
+    if (
+        url.includes(
+            "googleusercontent.com"
+        )
+    ) {
+
+        const sizedURL =
+            url
+                .replace(
+                    /[?&]sz=\d+/,
+                    ""
+                )
+                .replace(
+                    /=s\d+(?:-c)?$/,
+                    ""
+                ) +
+            "=s160-c";
+
+
+        variants.push(
+            sizedURL
+        );
+
+    }
+
+
+    return variants;
+
+}
+
+
+function preloadAvatar(url) {
+
+    return new Promise(
+        (resolve, reject) => {
+
+            const image =
+                new Image();
+
+
+            image.referrerPolicy =
+                "no-referrer";
+
+
+            image.onload =
+                () => resolve(url);
+
+
+            image.onerror =
+                reject;
+
+
+            image.src =
+                url;
+
+        }
+    );
+
+}
+
+
+function showAvatar(url) {
+
+    googleAvatar.src =
+        url;
+
+
+    profileAvatar.src =
+        url;
+
+
+    googleAvatar.style.display =
+        "block";
+
+
+    googleFallback.style.display =
+        "none";
+
+
+    profileAvatar.style.visibility =
+        "visible";
+
+}
+
+
+function hideAvatar() {
+
+    googleAvatar.src =
+        GOOGLE_LOGO_URL;
+
+
+    profileAvatar.removeAttribute(
+        "src"
+    );
+
+
+    googleAvatar.style.display =
+        "block";
+
+
+    googleFallback.style.display =
+        "none";
+
+
+    profileAvatar.style.visibility =
+        "hidden";
+
+}
+
+
+async function loadGoogleAvatar(user) {
+
+    const loadVersion =
+        ++avatarLoadVersion;
+
+
+    const profile =
+        googleProfile(user);
+
+
+    let tokenPhoto =
+        "";
+
+
+    try {
+
+        const token =
+            await user.getIdTokenResult();
+
+
+        tokenPhoto =
+            token.claims?.picture ||
+            "";
+
+    }
+
+    catch {}
+
+
+    const candidates =
+        [
+            tokenPhoto,
+            ...profile.photoURLs
+        ]
+            .filter(Boolean)
+            .flatMap(
+                googlePhotoVariants
+            )
+            .filter(
+                (url, index, list) =>
+                    list.indexOf(url) ===
+                    index
+            );
+
+
+    for (
+        const url of candidates
+    ) {
+
+        try {
+
+            await preloadAvatar(
+                url
+            );
+
+
+            if (
+                loadVersion ===
+                    avatarLoadVersion &&
+                firebaseUser?.uid ===
+                    user.uid
+            ) {
+
+                showAvatar(
+                    url
+                );
+
+            }
+
+
+            return;
+
+        }
+
+        catch {}
+
+    }
+
+
+    if (
+        loadVersion ===
+        avatarLoadVersion
+    ) {
+
+        hideAvatar();
+
+    }
+
+}
+
+
+googleAvatar.addEventListener(
+    "error",
+    hideAvatar
+);
+
+
+profileAvatar.addEventListener(
+    "error",
+    hideAvatar
+);
+
+const savedPagesList =
+    document.getElementById("savedPagesList");
+
+const pagesOverlay =
+    document.getElementById("pagesOverlay");
+
+const closePages =
+    document.getElementById("closePages");
+
+const logoutBtn =
+    document.getElementById("logoutBtn");
+
+const adminPanel =
+    document.getElementById("adminPanel");
+
+const anonymousToggle =
+    document.getElementById("anonymousToggle");
+
+const anonymousStateText =
+    document.getElementById("anonymousStateText");
+
+const profileRevealSwitch =
+    document.querySelector(".profileRevealSwitch");
+
+const profileRevealToggle =
+    document.getElementById("profileRevealToggle");
+
+const useLocalPdfBtn =
+    document.getElementById("useLocalPdfBtn");
+
+const openPdfAssetsBtn =
+    document.getElementById("openPdfAssetsBtn");
+
+const pdfAssetsOverlay =
+    document.getElementById("pdfAssetsOverlay");
+
+const closePdfAssets =
+    document.getElementById("closePdfAssets");
+
+const pdfAssetsGrid =
+    document.getElementById("pdfAssetsGrid");
+
+const previousPdfYear =
+    document.getElementById("previousPdfYear");
+
+const nextPdfYear =
+    document.getElementById("nextPdfYear");
+
+const pdfLibraryYear =
+    document.getElementById("pdfLibraryYear");
+
+const monthCarousel =
+    document.getElementById("monthCarousel");
+
+const pdfPreviewCanvas =
+    document.getElementById("pdfPreviewCanvas");
+
+const pdfPreviewEmpty =
+    document.getElementById("pdfPreviewEmpty");
+
+const pdfCurrentBadge =
+    document.getElementById("pdfCurrentBadge");
+
+const pdfSelectedMonthText =
+    document.getElementById("pdfSelectedMonthText");
+
+const pdfSelectedMeta =
+    document.getElementById("pdfSelectedMeta");
+
+const pdfStorageSelect =
+    document.getElementById("pdfStorageSelect");
+
+const pdfFileInput =
+    document.getElementById("pdfFileInput");
+
+const uploadPdfBtn =
+    document.getElementById("uploadPdfBtn");
+
+const setCurrentPdfBtn =
+    document.getElementById("setCurrentPdfBtn");
+
+const pdfUploadStatus =
+    document.getElementById("pdfUploadStatus");
+
+const addStorageBtn =
+    document.getElementById("addStorageBtn");
+
+const storageList =
+    document.getElementById("storageList");
+
+const folderPdfSource =
+    document.getElementById("folderPdfSource");
+
+const folderPdfMeta =
+    document.getElementById("folderPdfMeta");
+
+const refreshPdfFolderBtn =
+    document.getElementById("refreshPdfFolderBtn");
+
+const folderPdfList =
+    document.getElementById("folderPdfList");
+
+const folderPdfStatus =
+    document.getElementById("folderPdfStatus");
+
+const urlPdfSource =
+    document.getElementById("urlPdfSource");
+
+const openUrlPdfBtn =
+    document.getElementById("openUrlPdfBtn");
+
+const urlPdfForm =
+    document.getElementById("urlPdfForm");
+
+const urlPdfTarget =
+    document.getElementById("urlPdfTarget");
+
+const pdfUrlInput =
+    document.getElementById("pdfUrlInput");
+
+const pdfUrlNameInput =
+    document.getElementById("pdfUrlNameInput");
+
+const cancelUrlPdfBtn =
+    document.getElementById("cancelUrlPdfBtn");
+
+const saveUrlPdfBtn =
+    document.getElementById("saveUrlPdfBtn");
+
+const urlPdfStatus =
+    document.getElementById("urlPdfStatus");
+
+const storageForm =
+    document.getElementById("storageForm");
+
+const storageNameInput =
+    document.getElementById("storageNameInput");
+
+const cloudNameInput =
+    document.getElementById("cloudNameInput");
+
+const uploadPresetInput =
+    document.getElementById("uploadPresetInput");
+
+const storageFolderInput =
+    document.getElementById("storageFolderInput");
+
+const cancelStorageBtn =
+    document.getElementById("cancelStorageBtn");
+
+const saveStorageBtn =
+    document.getElementById("saveStorageBtn");
+
+const storageStatus =
+    document.getElementById("storageStatus");
+
+
+const accessGate =
+    document.getElementById("accessGate");
+
+const gateGoogleBtn =
+    document.getElementById("gateGoogleBtn");
+
+
+/* =====================================================
+   DEVICE ID
+===================================================== */
+
+const DEVICE_KEY =
+    clientConfig.storagePrefix + "_device_id_v4";
+
+
+function getDeviceId() {
+
+    let id =
+        localStorage.getItem(
+            DEVICE_KEY
+        );
+
+
+    if (!id) {
+
+        id =
+            crypto.randomUUID
+                ?
+                crypto.randomUUID()
+                :
+                (
+                    "device-" +
+                    Date.now() +
+                    "-" +
+                    Math.random()
+                        .toString(36)
+                        .slice(2)
+                );
+
+
+        localStorage.setItem(
+            DEVICE_KEY,
+            id
+        );
+
+    }
+
+
+    return id;
+
+}
+
+
+const DEVICE_ID =
+    getDeviceId();
+
+
+/* =====================================================
+   ACCOUNT HELPERS
+===================================================== */
+
+function isGoogleUser(
+    user = firebaseUser
+) {
+
+    if (!user) {
+        return false;
+    }
+
+
+    return user.providerData.some(
+        provider =>
+            provider.providerId ===
+            "google.com"
+    );
+
+}
+
+
+function isAdmin() {
+
+    return (
+        firebaseUser &&
+        isGoogleUser() &&
+        firebaseUser.emailVerified &&
+        firebaseUser.email?.toLowerCase() ===
+        ADMIN_EMAIL
+    );
+
+}
+
+
+function anonymousBlocked() {
+
+    return (
+        !allowAnonymous &&
+        !isGoogleUser()
+    );
+
+}
+
+
+/* =====================================================
+   APP CONFIG
+===================================================== */
+
+const configRef =
+    ref(
+        database,
+        "appConfig/allowAnonymous"
+    );
+
+
+const revealConfigRef =
+    ref(
+        database,
+        "appConfig/profileRevealEnabled"
+    );
+
+
+const pdfStoragesRef =
+    ref(
+        database,
+        "appConfig/pdfStorages"
+    );
+
+
+const pdfLibraryRef =
+    ref(
+        database,
+        "appConfig/pdfLibrary"
+    );
+
+
+const pdfAssetsRef =
+    ref(
+        database,
+        "appConfig/pdfAssets"
+    );
+
+
+const activePdfRef =
+    ref(
+        database,
+        "appConfig/activePdfId"
+    );
+
+
+onValue(
+    configRef,
+
+    snapshot => {
+
+        allowAnonymous =
+            snapshot.exists()
+                ?
+                snapshot.val() === true
+                :
+                clientConfig.defaults.allowAnonymous;
+
+
+        updateAccessState();
+
+
+        anonymousToggle.checked =
+            allowAnonymous;
+
+
+        anonymousStateText.textContent =
+            allowAnonymous
+                ?
+                "FREE: ON"
+                :
+                "FREE: OFF";
+
+    },
+
+    error => {
+
+        console.error(
+            "Config read:",
+            error
+        );
+
+    }
+);
+
+
+onValue(
+    revealConfigRef,
+
+    snapshot => {
+
+        profileRevealEnabled =
+            snapshot.exists()
+                ?
+                snapshot.val() === true
+                :
+                clientConfig.defaults.profileRevealEnabled;
+
+
+        updateProfileRevealState();
+
+    },
+
+    error => {
+
+        console.error(
+            "Reveal config read:",
+            error
+        );
+
+    }
+);
+
+
+/* =====================================================
+   ACCESS STATE
+===================================================== */
+
+function updateAccessState() {
+
+    if (
+        anonymousBlocked()
+    ) {
+
+        accessGate.classList.add(
+            "show"
+        );
+
+
+        closeNoteForm();
+
+
+        writeBtn.disabled =
+            true;
+
+    }
+
+    else {
+
+        accessGate.classList.remove(
+            "show"
+        );
+
+
+        writeBtn.disabled =
+            false;
+
+    }
+
+}
+
+
+/* =====================================================
+   AUTH UI
+===================================================== */
+
+function updateGoogleButtonSize() {
+
+    requestAnimationFrame(
+        () => {
+
+            const expandedWidth =
+                Math.min(
+                    210,
+                    Math.max(
+                        96,
+                        Math.ceil(
+                            55 +
+                            googleName.scrollWidth
+                        )
+                    )
+                );
+
+
+            googleBtn.style.setProperty(
+                "--google-expanded-width",
+                expandedWidth +
+                "px"
+            );
+
+        }
+    );
+
+}
+
+
+function updateProfileRevealState() {
+
+    googleBtn.classList.toggle(
+        "revealEnabled",
+        profileRevealEnabled
+    );
+
+
+    profileRevealToggle.checked =
+        profileRevealEnabled;
+
+}
+
+
+function updateAuthUI() {
+
+    if (
+        firebaseUser &&
+        isGoogleUser()
+    ) {
+
+        const profile =
+            googleProfile();
+
+
+        googleName.textContent =
+            profile.name;
+
+
+        googleBtn.classList.add(
+            "signedIn"
+        );
+
+
+        updateGoogleButtonSize();
+
+
+        googleBtn.title =
+            profile.email;
+
+
+        googleBtn.setAttribute(
+            "aria-label",
+            "Google profile: " +
+            profile.name
+        );
+
+
+        hideAvatar();
+
+
+        loadGoogleAvatar(
+            firebaseUser
+        );
+
+    }
+
+    else {
+
+        avatarLoadVersion++;
+
+
+        googleName.textContent =
+            "Login";
+
+
+        googleBtn.classList.remove(
+            "signedIn"
+        );
+
+
+        updateGoogleButtonSize();
+
+
+        googleBtn.removeAttribute(
+            "title"
+        );
+
+
+        googleBtn.setAttribute(
+            "aria-label",
+            "Login with Google"
+        );
+
+
+        hideAvatar();
+
+    }
+
+
+    pagesBtn.classList.toggle(
+        "show",
+        isGoogleUser()
+    );
+
+    if (!isGoogleUser()) {
+        closePagesPopup();
+    }
+
+    updateAccessState();
+
+}
+
+
+/* =====================================================
+   START AUTH
+===================================================== */
+
+async function startAuth() {
+
+    await setPersistence(
+        auth,
+        browserLocalPersistence
+    );
+
+
+    const user =
+        await new Promise(
+            resolve => {
+
+                const unsub =
+                    onAuthStateChanged(
+                        auth,
+                        user => {
+
+                            unsub();
+
+                            resolve(user);
+
+                        }
+                    );
+
+            }
+        );
+
+
+    if (user) {
+
+        firebaseUser =
+            user;
+
+
+        firebaseReady =
+            true;
+
+    }
+
+    else if (
+        allowAnonymous
+    ) {
+
+        const result =
+            await signInAnonymously(
+                auth
+            );
+
+
+        firebaseUser =
+            result.user;
+
+
+        firebaseReady =
+            true;
+
+    }
+
+
+    onAuthStateChanged(
+        auth,
+
+        async user => {
+
+            firebaseUser =
+                user;
+
+
+            firebaseReady =
+                !!user;
+
+
+            updateAuthUI();
+
+
+            if (user) {
+
+                await saveMeta();
+
+            }
+
+        }
+    );
+
+
+    updateAuthUI();
+
+
+    if (
+        firebaseUser
+    ) {
+
+        await saveMeta();
+
+    }
+
+}
+
+
+/* =====================================================
+   META
+===================================================== */
+
+async function saveMeta() {
+
+    if (!firebaseUser) {
+        return;
+    }
+
+
+    try {
+
+        if (
+            isGoogleUser()
+        ) {
+
+            await update(
+
+                ref(
+                    database,
+
+                    "users/" +
+                    firebaseUser.uid +
+                    "/profile"
+                ),
+
+                {
+
+                    email:
+                        firebaseUser.email ||
+                        null,
+
+                    displayName:
+                        firebaseUser.displayName ||
+                        null,
+
+                    photoURL:
+                        firebaseUser.photoURL ||
+                        null,
+
+                    deviceId:
+                        DEVICE_ID,
+
+                    lastSeen:
+                        serverTimestamp()
+
+                }
+
+            );
+
+        }
+
+        else {
+
+            await update(
+
+                ref(
+                    database,
+
+                    "anonymousUsers/" +
+                    firebaseUser.uid +
+                    "/meta"
+                ),
+
+                {
+
+                    deviceId:
+                        DEVICE_ID,
+
+                    accountType:
+                        "anonymous",
+
+                    lastSeen:
+                        serverTimestamp()
+
+                }
+
+            );
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Meta:",
+            error
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   PAGE FIREBASE PATH
+===================================================== */
+
+function firebasePageRef(
+    page
+) {
+
+    if (!firebaseUser) {
+        return null;
+    }
+
+
+    return ref(
+        database,
+        firebasePagesPath(
+            firebaseUser
+        ) +
+        "/" +
+        page
+    );
+
+}
+
+
+function firebasePagesPath(
+    user,
+    documentRecord = activeDocument
+) {
+
+    const userRoot =
+        isGoogleUser(user)
+            ?
+            "users/" +
+                user.uid
+            :
+            "anonymousUsers/" +
+                user.uid;
+
+
+    if (
+        !documentRecord ||
+        documentRecord.id ===
+            "local-current"
+    ) {
+
+        return (
+            userRoot +
+            "/pages"
+        );
+
+    }
+
+
+    return (
+        userRoot +
+        "/documents/" +
+        documentRecord.id +
+        "/pages"
+    );
+
+}
+
+
+function firebasePagesRef(
+    user = firebaseUser,
+    documentRecord = activeDocument
+) {
+
+    if (!user) {
+        return null;
+    }
+
+
+    return ref(
+        database,
+        firebasePagesPath(
+            user,
+            documentRecord
+        )
+    );
+
+}
+
+
+/* =====================================================
+   GOOGLE LOGIN
+===================================================== */
+
+async function loginGoogle() {
+
+    /*
+    Backup anonymous data before login.
+    */
+
+    let anonymousBackup =
+        {};
+
+
+    if (
+        firebaseUser &&
+        firebaseUser.isAnonymous
+    ) {
+        try {
+
+            const snapshot =
+                await get(
+                    ref(
+                        database,
+                        "anonymousUsers/" +
+                        firebaseUser.uid
+                    )
+                );
+
+
+            if (
+                snapshot.exists()
+            ) {
+
+                anonymousBackup =
+                    snapshot.val();
+
+            }
+
+        }
+
+        catch {}
+
+    }
+
+
+    try {
+
+        const result =
+            await signInWithPopup(
+                auth,
+                googleProvider
+            );
+
+
+        firebaseUser =
+            result.user;
+
+
+        firebaseReady =
+            true;
+
+
+        /*
+        Migrate anonymous pages
+        into Google account.
+        */
+
+        if (
+            Object.keys(
+                anonymousBackup
+            ).length
+        ) {
+
+            const googleUserRef =
+                ref(
+                    database,
+                    "users/" +
+                    firebaseUser.uid
+                );
+
+
+            const existingSnapshot =
+                await get(
+                    googleUserRef
+                );
+
+
+            const existing =
+                existingSnapshot.exists()
+                    ?
+                    existingSnapshot.val()
+                    :
+                    {};
+
+
+            const patch =
+                {};
+
+
+            Object.entries(
+                anonymousBackup.pages ||
+                {}
+            ).forEach(
+                ([page, data]) => {
+
+                    if (
+                        !existing
+                            ?.pages
+                            ?.[page]
+                    ) {
+
+                        patch[
+                            "pages/" +
+                            page
+                        ] =
+                            data;
+
+                    }
+
+                }
+            );
+
+
+            Object.entries(
+                anonymousBackup.documents ||
+                {}
+            ).forEach(
+                ([documentId, documentData]) => {
+
+                    Object.entries(
+                        documentData?.pages ||
+                        {}
+                    ).forEach(
+                        ([page, data]) => {
+
+                            if (
+                                !existing
+                                    ?.documents
+                                    ?.[documentId]
+                                    ?.pages
+                                    ?.[page]
+                            ) {
+
+                                patch[
+                                    "documents/" +
+                                    documentId +
+                                    "/pages/" +
+                                    page
+                                ] =
+                                    data;
+
+                            }
+
+                        }
+                    );
+
+                }
+            );
+
+
+            if (
+                Object.keys(
+                    patch
+                ).length
+            ) {
+
+                await update(
+                    googleUserRef,
+                    patch
+                );
+
+            }
+
+        }
+
+
+        /*
+        Old anonymous data remains.
+        Admin can delete it later.
+        */
+
+
+        await saveMeta();
+
+
+        updateAuthUI();
+
+
+        accessGate.classList.remove(
+            "show"
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Google login:",
+            error
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   LOGOUT
+===================================================== */
+
+async function logoutGoogle() {
+
+    closeProfile();
+    closePagesPopup();
+
+
+    await signOut(
+        auth
+    );
+
+
+    firebaseUser =
+        null;
+
+
+    firebaseReady =
+        false;
+
+
+    if (
+        allowAnonymous
+    ) {
+
+        try {
+
+            const result =
+                await signInAnonymously(
+                    auth
+                );
+
+
+            firebaseUser =
+                result.user;
+
+
+            firebaseReady =
+                true;
+
+
+            await saveMeta();
+
+        }
+
+        catch (error) {
+
+            console.error(
+                error
+            );
+
+        }
+
+    }
+
+
+    updateAuthUI();
+
+}
+
+
+/* =====================================================
+   PROFILE POPUP
+===================================================== */
+
+async function openProfile() {
+
+    if (
+        !isGoogleUser()
+    ) {
+
+        await loginGoogle();
+
+        return;
+
+    }
+
+
+    const profile =
+        googleProfile();
+
+
+    profileName.textContent =
+        profile.name;
+
+
+    profileEmail.textContent =
+        profile.email;
+
+
+    loadGoogleAvatar(
+        firebaseUser
+    );
+
+
+    adminPanel.classList.toggle(
+        "show",
+        isAdmin()
+    );
+
+
+    profileRevealSwitch.classList.toggle(
+        "show",
+        isAdmin()
+    );
+
+
+    profileRevealToggle.checked =
+        profileRevealEnabled;
+
+
+    anonymousToggle.checked =
+        allowAnonymous;
+
+
+    anonymousStateText.textContent =
+        allowAnonymous
+            ?
+            "FREE: ON"
+            :
+            "FREE: OFF";
+
+
+    profileOverlay.classList.add(
+        "show"
+    );
+
+
+    if (
+        isAdmin()
+    ) {
+
+        renderPdfAdmin();
+        await migratePdfLibraryAssets();
+
+    }
+
+
+}
+
+
+function closeProfile() {
+
+    profileOverlay.classList.remove(
+        "show"
+    );
+
+}
+
+
+/* =====================================================
+   SAVED PAGE LIST
+===================================================== */
+
+async function loadSavedPages() {
+
+    savedPagesList.innerHTML =
+        '<div class="emptyPages">កំពុងផ្ទុក...</div>';
+
+
+    if (
+        !firebaseUser ||
+        !isGoogleUser()
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        const snapshot =
+            await get(
+                firebasePagesRef(
+                    firebaseUser
+                )
+
+            );
+
+
+        if (
+            !snapshot.exists()
+        ) {
+
+            savedPagesList.innerHTML =
+                '<div class="emptyPages">មិនទាន់មានកំណត់ត្រា</div>';
+
+
+            return;
+
+        }
+
+
+        const pages =
+            snapshot.val();
+
+
+        const pageNumbers =
+            Object.keys(
+                pages
+            )
+            .map(Number)
+            .filter(Number.isFinite)
+            .sort(
+                (a,b) =>
+                    a - b
+            );
+
+
+        savedPagesList.innerHTML =
+            "";
+
+
+        pageNumbers.forEach(
+            page => {
+
+                const button =
+                    document.createElement(
+                        "button"
+                    );
+
+
+                button.type =
+                    "button";
+
+
+                button.className =
+                    "savedPageBtn";
+
+
+                const pageNumber =
+                    document.createElement("span");
+
+                pageNumber.className =
+                    "savedPageNumber";
+
+                pageNumber.textContent =
+                    "ទំព័រ " + page;
+
+                const previewWindow =
+                    document.createElement("span");
+
+                previewWindow.className =
+                    "savedPagePreviewWindow";
+
+                const previewText =
+                    document.createElement("span");
+
+                previewText.className =
+                    "savedPagePreviewText";
+
+                previewText.textContent =
+                    String(
+                        pages[page]?.note1 ||
+                        "No preview"
+                    )
+                        .trim()
+                        .replace(/\s+/g," ");
+
+                const arrow =
+                    document.createElement("span");
+
+                arrow.className =
+                    "savedPageArrow";
+
+                arrow.textContent = "›";
+
+                previewWindow.appendChild(previewText);
+                button.append(pageNumber,previewWindow,arrow);
+
+
+                button.addEventListener(
+                    "click",
+
+                    async () => {
+
+                        closePagesPopup();
+
+
+                        viewer.scrollTop =
+                            0;
+
+
+                        viewer.scrollLeft =
+                            0;
+
+
+                        await renderPage(
+                            page
+                        );
+
+
+                        await openNoteForm();
+
+                    }
+
+                );
+
+
+                savedPagesList.appendChild(
+                    button
+                );
+
+                requestAnimationFrame(() => {
+
+                    const overflow =
+                        previewText.scrollWidth -
+                        previewWindow.clientWidth;
+
+                    if (overflow > 4) {
+                        previewWindow.classList.add("canMarquee");
+                        previewText.style.setProperty("--marquee-shift",-overflow + "px");
+                        previewText.style.setProperty("--marquee-duration",Math.max(5,Math.min(14,3 + overflow / 24)) + "s");
+                    }
+
+                });
+
+            }
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            error
+        );
+
+
+        savedPagesList.innerHTML =
+            '<div class="emptyPages">មិនអាចផ្ទុកបាន</div>';
+
+    }
+
+}
+
+
+async function openPagesPopup() {
+
+    if (!isGoogleUser()) {
+        await loginGoogle();
+        return;
+    }
+
+    closeProfile();
+    pagesOverlay.classList.add("show");
+    await loadSavedPages();
+
+}
+
+
+function closePagesPopup() {
+
+    pagesOverlay.classList.remove("show");
+
+}
+
+
+/* =====================================================
+   PDF LIBRARY ADMIN
+===================================================== */
+
+const MONTH_NAMES =
+    [
+        "Jan", "Feb", "Mar", "Apr",
+        "May", "Jun", "Jul", "Aug",
+        "Sep", "Oct", "Nov", "Dec"
+    ];
+
+
+function selectedPdfId() {
+
+    return (
+        selectedPdfYear +
+        "-" +
+        String(
+            selectedPdfMonth
+        ).padStart(2, "0")
+    );
+
+}
+
+
+function pdfAssetCatalogId(record) {
+
+    const value = String(
+        record.assetId ||
+        record.url ||
+        record.fileName ||
+        "pdf"
+    );
+
+    let hash = 2166136261;
+
+    for (let index = 0; index < value.length; index++) {
+        hash ^= value.charCodeAt(index);
+        hash = Math.imul(hash,16777619);
+    }
+
+    return "asset-" + (hash >>> 0).toString(36);
+
+}
+
+
+function normalizedPdfAsset(record) {
+
+    const source =
+        record.source ||
+        (record.publicId ? "cloudinary" : "url");
+
+    return {
+        ...record,
+        source,
+        catalogId:
+            record.catalogId ||
+            pdfAssetCatalogId(record)
+    };
+
+}
+
+
+async function rememberPdfAsset(record) {
+
+    const asset =
+        normalizedPdfAsset(record);
+
+    const existing =
+        pdfAssets[asset.catalogId] ||
+        null;
+
+    const stored = {
+        ...asset,
+        id: null,
+        year: null,
+        month: null,
+        monthLabel: null,
+        createdAt:
+            existing?.createdAt ||
+            asset.createdAt ||
+            serverTimestamp(),
+        updatedAt:
+            serverTimestamp()
+    };
+
+    await set(
+        ref(database,"appConfig/pdfAssets/" + asset.catalogId),
+        stored
+    );
+
+    pdfAssets[asset.catalogId] = stored;
+
+    return stored;
+
+}
+
+
+async function migratePdfLibraryAssets() {
+
+    if (!isAdmin() || pdfAssetMigrationRunning) return;
+
+    const records = Object.values(pdfLibraryRecords)
+        .filter(record => record?.url)
+        .filter(record => !pdfAssets[pdfAssetCatalogId(record)]);
+
+    if (!records.length) return;
+
+    pdfAssetMigrationRunning = true;
+
+    try {
+        await Promise.all(records.map(rememberPdfAsset));
+    } catch (error) {
+        console.error("PDF catalog migration:",error);
+    } finally {
+        pdfAssetMigrationRunning = false;
+    }
+
+}
+
+
+async function assignPdfAsset(asset) {
+
+    if (!isAdmin() || !asset) return;
+
+    const id = selectedPdfId();
+    const existing = pdfLibraryRecords[id] || null;
+    const remembered = await rememberPdfAsset(asset);
+
+    const record = {
+        ...remembered,
+        catalogId: remembered.catalogId,
+        id,
+        year: selectedPdfYear,
+        month: selectedPdfMonth,
+        monthLabel: MONTH_NAMES[selectedPdfMonth - 1],
+        createdAt: existing?.createdAt || serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        uploadedBy: firebaseUser.uid
+    };
+
+    await set(ref(database,"appConfig/pdfLibrary/" + id),record);
+    pdfLibraryRecords[id] = record;
+    renderPdfLibrary();
+    renderPdfAssets();
+    closePdfAssetsPopup();
+    setAdminStatus(pdfUploadStatus,record.fileName + " selected for " + record.monthLabel + " " + record.year + ".","good");
+
+}
+
+
+function allPdfAssets() {
+
+    const catalog = Object.values(pdfAssets).map(normalizedPdfAsset);
+    const known = new Set(catalog.map(asset => asset.url));
+
+    Object.values(pdfLibraryRecords).forEach(record => {
+        if (record?.url && !known.has(record.url)) {
+            catalog.push(normalizedPdfAsset(record));
+            known.add(record.url);
+        }
+    });
+
+    pdfFolderFiles.forEach(file => {
+        if (!known.has(file.url)) {
+            catalog.push(normalizedPdfAsset({
+                fileName: file.name,
+                name: file.name,
+                url: file.url,
+                source: "folder",
+                storageId: "local-folder",
+                pageCount: null,
+                bytes: null
+            }));
+        }
+    });
+
+    return catalog.sort((a,b) => String(a.fileName || a.name).localeCompare(String(b.fileName || b.name)));
+
+}
+
+
+function renderPdfAssets() {
+
+    pdfAssetsGrid.replaceChildren();
+
+    const assets = allPdfAssets();
+
+    if (!assets.length) {
+        pdfAssetsGrid.innerHTML = '<div class="emptyPages">No PDF files found</div>';
+        return;
+    }
+
+    const selected = selectedPdfRecord();
+
+    assets.forEach(asset => {
+        const tile = document.createElement("button");
+        const source = asset.source || "cloudinary";
+        tile.type = "button";
+        tile.className = "pdfAssetTile " + source;
+        tile.classList.toggle("current",selected?.url === asset.url);
+        tile.title = "Use for " + MONTH_NAMES[selectedPdfMonth - 1] + " " + selectedPdfYear;
+
+        const sourceLabel = document.createElement("span");
+        sourceLabel.className = "pdfAssetSource";
+        sourceLabel.textContent = source === "folder" ? "PDF Folder" : source;
+
+        const name = document.createElement("span");
+        name.className = "pdfAssetName";
+        name.textContent = asset.fileName || asset.name || "PDF";
+
+        const meta = document.createElement("span");
+        meta.className = "pdfAssetMeta";
+        meta.textContent = asset.pageCount ? asset.pageCount + " pages" : "Select to inspect";
+
+        tile.append(sourceLabel,name,meta);
+        tile.addEventListener("click",async () => {
+            if (source === "folder" && !asset.pageCount) {
+                await saveFolderPdf({name: asset.fileName || asset.name,url: asset.url});
+                closePdfAssetsPopup();
+            } else {
+                await assignPdfAsset(asset);
+            }
+        });
+        pdfAssetsGrid.appendChild(tile);
+    });
+
+}
+
+
+function openPdfAssetsPopup() {
+    if (!isAdmin()) return;
+    closeProfile();
+    renderPdfAssets();
+    pdfAssetsOverlay.classList.add("show");
+}
+
+
+function closePdfAssetsPopup() {
+    pdfAssetsOverlay.classList.remove("show");
+}
+
+
+function selectedPdfRecord() {
+
+    return (
+        pdfLibraryRecords[
+            selectedPdfId()
+        ] ||
+        null
+    );
+
+}
+
+
+function setAdminStatus(
+    element,
+    text,
+    type = ""
+) {
+
+    element.textContent =
+        text;
+
+
+    element.classList.remove(
+        "good",
+        "bad"
+    );
+
+
+    if (type) {
+
+        element.classList.add(
+            type
+        );
+
+    }
+
+}
+
+
+const PDF_DELIVERY_BLOCKED_MESSAGE =
+    "Cloudinary is blocking PDF delivery. Enable PDF and ZIP files delivery in Cloudinary Security.";
+
+
+function isPdfDeliveryBlocked(
+    error
+) {
+
+    return (
+        error?.status === 401 ||
+        /401|deny|acl/i.test(
+            String(
+                error?.message ||
+                error ||
+                ""
+            )
+        )
+    );
+
+}
+
+
+async function verifyPdfDelivery(
+    url
+) {
+
+    const response =
+        await fetch(
+            url,
+            {
+                cache:
+                    "no-store",
+                headers: {
+                    Range:
+                        "bytes=0-0"
+                }
+            }
+        );
+
+
+    if (!response.ok) {
+
+        const detail =
+            response.headers.get(
+                "x-cld-error"
+            ) ||
+            "HTTP " +
+                response.status;
+
+
+        const error =
+            new Error(detail);
+
+
+        error.status =
+            response.status;
+
+
+        throw error;
+
+    }
+
+}
+
+
+function enabledStorages() {
+
+    return Object.values(
+        pdfStorages
+    )
+        .filter(
+            storage =>
+                storage &&
+                storage.enabled !== false &&
+                storage.type ===
+                    "cloudinary"
+        )
+        .sort(
+            (a, b) =>
+                Number(
+                    b.isDefault === true
+                ) -
+                Number(
+                    a.isDefault === true
+                ) ||
+                String(a.name)
+                    .localeCompare(
+                        String(b.name)
+                    )
+        );
+
+}
+
+
+function renderStorageSelect() {
+
+    const previousValue =
+        pdfStorageSelect.value;
+
+
+    const storages =
+        enabledStorages();
+
+
+    pdfStorageSelect.replaceChildren();
+
+
+    if (!storages.length) {
+
+        const option =
+            document.createElement(
+                "option"
+            );
+
+
+        option.textContent =
+            "Add Cloudinary storage";
+
+
+        option.value =
+            "";
+
+
+        pdfStorageSelect.appendChild(
+            option
+        );
+
+
+        pdfStorageSelect.disabled =
+            true;
+
+
+        uploadPdfBtn.disabled =
+            true;
+
+
+        return;
+
+    }
+
+
+    storages.forEach(
+        storage => {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+
+            option.value =
+                storage.id;
+
+
+            option.textContent =
+                storage.name +
+                (
+                    storage.isDefault
+                        ?
+                        " (Default)"
+                        :
+                        ""
+                );
+
+
+            pdfStorageSelect.appendChild(
+                option
+            );
+
+        }
+    );
+
+
+    const wantedStorage =
+        storages.find(
+            storage =>
+                storage.id ===
+                previousValue
+        ) ||
+        storages.find(
+            storage =>
+                storage.isDefault
+        ) ||
+        storages[0];
+
+
+    pdfStorageSelect.value =
+        wantedStorage.id;
+
+
+    pdfStorageSelect.disabled =
+        false;
+
+
+    uploadPdfBtn.disabled =
+        false;
+
+}
+
+
+function storageRow(
+    storage,
+    local = false
+) {
+
+    const row =
+        document.createElement(
+            "div"
+        );
+
+
+    row.className =
+        "storageRow";
+
+
+    const info =
+        document.createElement(
+            "div"
+        );
+
+
+    info.className =
+        "storageInfo";
+
+
+    const name =
+        document.createElement(
+            "div"
+        );
+
+
+    name.className =
+        "storageName";
+
+
+    name.textContent =
+        storage.name;
+
+
+    const meta =
+        document.createElement(
+            "div"
+        );
+
+
+    meta.className =
+        "storageMeta";
+
+
+    meta.textContent =
+        local
+            ?
+            "Built-in fallback"
+            :
+            storage.cloudName +
+                (
+                    storage.enabled === false
+                        ?
+                        " · Off"
+                        :
+                        " · On"
+                );
+
+
+    info.append(
+        name,
+        meta
+    );
+
+
+    row.appendChild(
+        info
+    );
+
+
+    if (local) {
+
+        const localButton =
+            document.createElement(
+                "button"
+            );
+
+
+        localButton.type =
+            "button";
+
+
+        localButton.className =
+            "storageMiniBtn default";
+
+
+        localButton.textContent =
+            activePdfId ===
+                LOCAL_PDF_RECORD.id
+                ?
+                "Current"
+                :
+                "Set Current";
+
+
+        localButton.disabled =
+            activePdfId ===
+            LOCAL_PDF_RECORD.id;
+
+
+        localButton.title =
+            activePdfId ===
+                LOCAL_PDF_RECORD.id
+                ?
+                "Local PDF is current"
+                :
+                "Use the built-in local PDF";
+
+
+        localButton.addEventListener(
+            "click",
+            () => selectCurrentPdf(
+                LOCAL_PDF_RECORD.id
+            )
+        );
+
+
+        row.appendChild(
+            localButton
+        );
+
+
+        return row;
+
+    }
+
+
+    const actions =
+        document.createElement(
+            "div"
+        );
+
+
+    actions.className =
+        "storageActions";
+
+
+    const enabledButton =
+        document.createElement(
+            "button"
+        );
+
+
+    enabledButton.type =
+        "button";
+
+
+    enabledButton.className =
+        "storageMiniBtn";
+
+
+    enabledButton.textContent =
+        storage.enabled === false
+            ?
+            "Off"
+            :
+            "On";
+
+
+    enabledButton.title =
+        "Enable or disable storage";
+
+
+    enabledButton.addEventListener(
+        "click",
+        () => toggleStorage(
+            storage
+        )
+    );
+
+
+    const defaultButton =
+        document.createElement(
+            "button"
+        );
+
+
+    defaultButton.type =
+        "button";
+
+
+    defaultButton.className =
+        "storageMiniBtn" +
+        (
+            storage.isDefault
+                ?
+                " default"
+                :
+                ""
+        );
+
+
+    defaultButton.textContent =
+        storage.isDefault
+            ?
+            "Default"
+            :
+            "Set";
+
+
+    defaultButton.title =
+        "Set default storage";
+
+
+    defaultButton.addEventListener(
+        "click",
+        () => setDefaultStorage(
+            storage.id
+        )
+    );
+
+
+    const editButton =
+        document.createElement(
+            "button"
+        );
+
+
+    editButton.type =
+        "button";
+
+
+    editButton.className =
+        "storageMiniBtn";
+
+
+    editButton.textContent =
+        "Edit";
+
+
+    editButton.addEventListener(
+        "click",
+        () => openStorageForm(
+            storage
+        )
+    );
+
+
+    const deleteButton =
+        document.createElement(
+            "button"
+        );
+
+
+    deleteButton.type =
+        "button";
+
+
+    deleteButton.className =
+        "storageMiniBtn";
+
+
+    deleteButton.textContent =
+        "×";
+
+
+    deleteButton.title =
+        "Delete storage";
+
+
+    deleteButton.addEventListener(
+        "click",
+        () => deleteStorage(
+            storage
+        )
+    );
+
+
+    actions.append(
+        enabledButton,
+        defaultButton,
+        editButton,
+        deleteButton
+    );
+
+
+    row.appendChild(
+        actions
+    );
+
+
+    return row;
+
+}
+
+
+function renderStorageList() {
+
+    storageList.replaceChildren(
+        storageRow(
+            {
+                name:
+                    "Local PDF"
+            },
+            true
+        ),
+        folderPdfSource,
+        urlPdfSource
+    );
+
+
+    Object.values(
+        pdfStorages
+    )
+        .filter(Boolean)
+        .sort(
+            (a, b) =>
+                String(a.name)
+                    .localeCompare(
+                        String(b.name)
+                    )
+        )
+        .forEach(
+            storage => {
+
+                storageList.appendChild(
+                    storageRow(
+                        storage
+                    )
+                );
+
+            }
+        );
+
+
+    renderStorageSelect();
+
+}
+
+
+function updateUrlPdfTarget() {
+
+    urlPdfTarget.textContent =
+        "Save to " +
+        MONTH_NAMES[
+            selectedPdfMonth - 1
+        ] +
+        " " +
+        selectedPdfYear;
+
+}
+
+
+function openUrlPdfForm() {
+
+    if (!isAdmin()) {
+        return;
+    }
+
+
+    updateUrlPdfTarget();
+
+
+    setAdminStatus(
+        urlPdfStatus,
+        ""
+    );
+
+
+    urlPdfForm.classList.add(
+        "show"
+    );
+
+
+    pdfUrlInput.focus();
+
+}
+
+
+function closeUrlPdfForm() {
+
+    urlPdfForm.classList.remove(
+        "show"
+    );
+
+
+    pdfUrlInput.value =
+        "";
+
+
+    pdfUrlNameInput.value =
+        "";
+
+
+    setAdminStatus(
+        urlPdfStatus,
+        ""
+    );
+
+}
+
+
+function folderPdfUrl(
+    name
+) {
+
+    return (
+        "assets/pdf/" +
+        encodeURIComponent(name)
+    );
+
+}
+
+
+function pdfFilesFromDirectory(
+    html,
+    directoryUrl
+) {
+
+    const documentResult =
+        new DOMParser()
+            .parseFromString(
+                html,
+                "text/html"
+            );
+
+
+    const directoryPath =
+        new URL(directoryUrl)
+            .pathname
+            .replace(
+                /\/?$/,
+                "/"
+            );
+
+
+    return Array.from(
+        documentResult.querySelectorAll(
+            "a[href]"
+        )
+    )
+        .map(link => {
+
+            const resolved =
+                new URL(
+                    link.getAttribute("href"),
+                    directoryUrl
+                );
+
+
+            const relativePath =
+                resolved.pathname
+                    .slice(
+                        directoryPath.length
+                    );
+
+
+            if (
+                !resolved.pathname.startsWith(
+                    directoryPath
+                ) ||
+                relativePath.includes("/") ||
+                !relativePath
+                    .toLowerCase()
+                    .endsWith(".pdf")
+            ) {
+
+                return null;
+
+            }
+
+
+            const name =
+                decodeURIComponent(
+                    relativePath
+                );
+
+
+            return {
+                name,
+                url:
+                    folderPdfUrl(name)
+            };
+
+        })
+        .filter(Boolean);
+
+}
+
+
+async function pdfFilesFromGithub() {
+
+    const match =
+        /^([^.]+)\.github\.io$/i
+            .exec(
+                location.hostname
+            );
+
+
+    if (!match) {
+        return [];
+    }
+
+
+    const owner =
+        match[1];
+
+
+    const pathParts =
+        location.pathname
+            .split("/")
+            .filter(Boolean);
+
+
+    const repository =
+        pathParts[0] ||
+        owner +
+            ".github.io";
+
+
+    const response =
+        await fetch(
+            "https://api.github.com/repos/" +
+            encodeURIComponent(owner) +
+            "/" +
+            encodeURIComponent(repository) +
+            "/contents/assets/pdf",
+            {
+                cache:
+                    "no-store",
+                headers: {
+                    Accept:
+                        "application/vnd.github+json"
+                }
+            }
+        );
+
+
+    if (!response.ok) {
+        return [];
+    }
+
+
+    const items =
+        await response.json();
+
+
+    if (!Array.isArray(items)) {
+        return [];
+    }
+
+
+    return items
+        .filter(
+            item =>
+                item?.type ===
+                    "file" &&
+                item.name
+                    .toLowerCase()
+                    .endsWith(".pdf")
+        )
+        .map(
+            item => ({
+                name:
+                    item.name,
+                url:
+                    folderPdfUrl(
+                        item.name
+                    )
+            })
+        );
+
+}
+
+
+function renderPdfFolderList() {
+
+    folderPdfList.replaceChildren();
+
+
+    folderPdfMeta.textContent =
+        pdfFolderFiles.length
+            ?
+            pdfFolderFiles.length +
+                " PDF" +
+                (
+                    pdfFolderFiles.length === 1
+                        ?
+                        ""
+                        :
+                        "s"
+                ) +
+                " · assets/pdf"
+            :
+            "assets/pdf";
+
+
+    folderPdfList.classList.remove("show");
+
+
+    folderPdfStatus.textContent =
+        pdfFolderScanned &&
+        !pdfFolderFiles.length
+            ?
+            "No PDFs detected. Add files to assets/pdf, then Scan."
+            :
+            pdfFolderFiles.length
+                ?
+                "Found files are available in Files."
+                :
+                "";
+
+    if (pdfAssetsOverlay.classList.contains("show")) {
+        renderPdfAssets();
+    }
+
+}
+
+
+async function scanPdfFolder() {
+
+    if (
+        !isAdmin() ||
+        pdfFolderScanning
+    ) {
+
+        return;
+
+    }
+
+
+    pdfFolderScanning =
+        true;
+
+
+    refreshPdfFolderBtn.disabled =
+        true;
+
+
+    refreshPdfFolderBtn.textContent =
+        "Scanning";
+
+
+    folderPdfStatus.textContent =
+        "Checking assets/pdf...";
+
+
+    let files =
+        [];
+
+
+    try {
+
+        const response =
+            await fetch(
+                "assets/pdf/",
+                {
+                    cache:
+                        "no-store"
+                }
+            );
+
+
+        if (response.ok) {
+
+            files =
+                pdfFilesFromDirectory(
+                    await response.text(),
+                    response.url
+                );
+
+        }
+
+    }
+
+    catch {}
+
+
+    if (!files.length) {
+
+        try {
+
+            files =
+                await pdfFilesFromGithub();
+
+        }
+
+        catch {}
+
+    }
+
+
+    pdfFolderFiles =
+        Array.from(
+            new Map(
+                files.map(
+                    file => [
+                        file.name,
+                        file
+                    ]
+                )
+            ).values()
+        ).sort(
+            (a, b) =>
+                a.name.localeCompare(
+                    b.name
+                )
+        );
+
+
+    pdfFolderScanned =
+        true;
+
+
+    pdfFolderScanning =
+        false;
+
+
+    refreshPdfFolderBtn.disabled =
+        false;
+
+
+    refreshPdfFolderBtn.textContent =
+        "Scan";
+
+
+    renderPdfFolderList();
+
+}
+
+
+function closeStorageForm() {
+
+    editingStorageId =
+        null;
+
+
+    storageForm.classList.remove(
+        "show"
+    );
+
+
+    storageNameInput.value =
+        "";
+
+
+    cloudNameInput.value =
+        "";
+
+
+    uploadPresetInput.value =
+        "";
+
+
+    storageFolderInput.value =
+        "";
+
+}
+
+
+function openStorageForm(
+    storage = null
+) {
+
+    if (!isAdmin()) {
+        return;
+    }
+
+
+    editingStorageId =
+        storage?.id ||
+        null;
+
+
+    storageNameInput.value =
+        storage?.name ||
+        "";
+
+
+    cloudNameInput.value =
+        storage?.cloudName ||
+        "";
+
+
+    uploadPresetInput.value =
+        storage?.uploadPreset ||
+        "";
+
+
+    storageFolderInput.value =
+        storage?.folder ||
+        "";
+
+
+    storageForm.classList.add(
+        "show"
+    );
+
+
+    storageNameInput.focus();
+
+}
+
+
+async function saveStorageConfig() {
+
+    if (!isAdmin()) {
+        return;
+    }
+
+
+    const name =
+        storageNameInput.value.trim();
+
+
+    const cloudName =
+        cloudNameInput.value.trim();
+
+
+    const uploadPreset =
+        uploadPresetInput.value.trim();
+
+
+    const folder =
+        storageFolderInput.value.trim();
+
+
+    if (
+        !name ||
+        !cloudName ||
+        !uploadPreset
+    ) {
+
+        setAdminStatus(
+            storageStatus,
+            "Name, cloud name and preset are required.",
+            "bad"
+        );
+
+
+        return;
+
+    }
+
+
+    const id =
+        editingStorageId ||
+        (
+            "storage-" +
+            Date.now().toString(36) +
+            "-" +
+            Math.random()
+                .toString(36)
+                .slice(2, 7)
+        );
+
+
+    const existing =
+        pdfStorages[id] ||
+        null;
+
+
+    const noDefault =
+        !Object.values(
+            pdfStorages
+        ).some(
+            storage =>
+                storage?.isDefault
+        );
+
+
+    try {
+
+        await set(
+            ref(
+                database,
+                "appConfig/pdfStorages/" +
+                id
+            ),
+            {
+                id,
+                type:
+                    "cloudinary",
+                name,
+                cloudName,
+                uploadPreset,
+                folder:
+                    folder ||
+                    null,
+                enabled:
+                    existing?.enabled !==
+                    false,
+                isDefault:
+                    existing?.isDefault ===
+                        true ||
+                    noDefault,
+                createdAt:
+                    existing?.createdAt ||
+                    serverTimestamp(),
+                updatedAt:
+                    serverTimestamp(),
+                updatedBy:
+                    firebaseUser.uid
+            }
+        );
+
+
+        setAdminStatus(
+            storageStatus,
+            "Storage saved.",
+            "good"
+        );
+
+
+        closeStorageForm();
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Storage save:",
+            error
+        );
+
+
+        setAdminStatus(
+            storageStatus,
+            "Cannot save storage.",
+            "bad"
+        );
+
+    }
+
+}
+
+
+async function toggleStorage(
+    storage
+) {
+
+    if (!isAdmin()) {
+        return;
+    }
+
+
+    try {
+
+        await set(
+            ref(
+                database,
+                "appConfig/pdfStorages/" +
+                storage.id +
+                "/enabled"
+            ),
+            storage.enabled ===
+                false
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Storage toggle:",
+            error
+        );
+
+    }
+
+}
+
+
+async function setDefaultStorage(
+    storageId
+) {
+
+    if (!isAdmin()) {
+        return;
+    }
+
+
+    const patch =
+        {};
+
+
+    Object.keys(
+        pdfStorages
+    ).forEach(
+        id => {
+
+            patch[
+                id +
+                "/isDefault"
+            ] =
+                id ===
+                storageId;
+
+        }
+    );
+
+
+    try {
+
+        await update(
+            pdfStoragesRef,
+            patch
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Default storage:",
+            error
+        );
+
+    }
+
+}
+
+
+async function deleteStorage(
+    storage
+) {
+
+    if (!isAdmin()) {
+        return;
+    }
+
+
+    const inUse =
+        Object.values(
+            pdfLibraryRecords
+        ).some(
+            record =>
+                record?.storageId ===
+                storage.id
+        );
+
+
+    if (inUse) {
+
+        setAdminStatus(
+            storageStatus,
+            "Storage is used by a PDF.",
+            "bad"
+        );
+
+
+        return;
+
+    }
+
+
+    if (
+        !window.confirm(
+            "Delete " +
+            storage.name +
+            "?"
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        await remove(
+            ref(
+                database,
+                "appConfig/pdfStorages/" +
+                storage.id
+            )
+        );
+
+
+        setAdminStatus(
+            storageStatus,
+            "Storage deleted.",
+            "good"
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Storage delete:",
+            error
+        );
+
+    }
+
+}
+
+
+async function renderPdfPreview(
+    url
+) {
+
+    const previewVersion =
+        ++pdfPreviewVersion;
+
+
+    pdfPreviewCanvas.style.display =
+        "none";
+
+
+    pdfPreviewEmpty.style.display =
+        "block";
+
+
+    pdfPreviewEmpty.textContent =
+        url
+            ?
+            "Loading preview..."
+            :
+            "No PDF uploaded";
+
+
+    if (!url) {
+        return;
+    }
+
+
+    let previewDocument =
+        null;
+
+
+    try {
+
+        await verifyPdfDelivery(
+            url
+        );
+
+        previewDocument =
+            await pdfjsLib.getDocument({
+                url
+            }).promise;
+
+
+        const page =
+            await previewDocument.getPage(1);
+
+
+        const original =
+            page.getViewport({
+                scale:
+                    1
+            });
+
+
+        const scale =
+            Math.min(
+                1.4,
+                286 /
+                original.width
+            );
+
+
+        const viewport =
+            page.getViewport({
+                scale
+            });
+
+
+        const previewCanvas =
+            document.createElement(
+                "canvas"
+            );
+
+
+        previewCanvas.width =
+            Math.floor(
+                viewport.width
+            );
+
+
+        previewCanvas.height =
+            Math.floor(
+                viewport.height
+            );
+
+
+        await page.render({
+            canvasContext:
+                previewCanvas.getContext(
+                    "2d",
+                    {
+                        alpha:
+                            false
+                    }
+                ),
+            viewport
+        }).promise;
+
+
+        if (
+            previewVersion !==
+            pdfPreviewVersion
+        ) {
+
+            return;
+
+        }
+
+
+        pdfPreviewCanvas.width =
+            previewCanvas.width;
+
+
+        pdfPreviewCanvas.height =
+            previewCanvas.height;
+
+
+        pdfPreviewCanvas
+            .getContext(
+                "2d",
+                {
+                    alpha:
+                        false
+                }
+            )
+            .drawImage(
+                previewCanvas,
+                0,
+                0
+            );
+
+
+        pdfPreviewCanvas.style.display =
+            "block";
+
+
+        pdfPreviewEmpty.style.display =
+            "none";
+
+    }
+
+    catch (error) {
+
+        console[
+            isPdfDeliveryBlocked(
+                error
+            )
+                ?
+                "warn"
+                :
+                "error"
+        ](
+            "PDF preview:",
+            error
+        );
+
+
+        if (
+            previewVersion ===
+            pdfPreviewVersion
+        ) {
+
+            pdfPreviewEmpty.textContent =
+                isPdfDeliveryBlocked(
+                    error
+                )
+                    ?
+                    "Cloudinary delivery blocked"
+                    :
+                    "Preview unavailable";
+
+
+            if (
+                isPdfDeliveryBlocked(
+                    error
+                ) &&
+                isAdmin()
+            ) {
+
+                setAdminStatus(
+                    pdfUploadStatus,
+                    PDF_DELIVERY_BLOCKED_MESSAGE,
+                    "bad"
+                );
+
+            }
+
+        }
+
+    }
+
+    finally {
+
+        if (previewDocument) {
+
+            previewDocument.destroy()
+                .catch(() => {});
+
+        }
+
+    }
+
+}
+
+
+function renderPdfLibrary() {
+
+    pdfLibraryYear.textContent =
+        selectedPdfYear;
+
+
+    updateUrlPdfTarget();
+
+
+    monthCarousel.replaceChildren();
+
+
+    MONTH_NAMES.forEach(
+        (monthName, index) => {
+
+            const month =
+                index + 1;
+
+
+            const id =
+                selectedPdfYear +
+                "-" +
+                String(month)
+                    .padStart(2, "0");
+
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+
+            button.type =
+                "button";
+
+
+            button.role =
+                "tab";
+
+
+            button.className =
+                "monthBtn";
+
+
+            button.textContent =
+                monthName;
+
+
+            button.classList.toggle(
+                "selected",
+                month ===
+                    selectedPdfMonth
+            );
+
+
+            button.classList.toggle(
+                "hasPdf",
+                !!pdfLibraryRecords[id]
+            );
+
+
+            button.setAttribute(
+                "aria-selected",
+                String(
+                    month ===
+                    selectedPdfMonth
+                )
+            );
+
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    selectedPdfMonth =
+                        month;
+
+
+                    renderPdfLibrary();
+
+                }
+            );
+
+
+            monthCarousel.appendChild(
+                button
+            );
+
+        }
+    );
+
+
+    requestAnimationFrame(
+        () => {
+
+            monthCarousel
+                .querySelector(
+                    ".monthBtn.selected"
+                )
+                ?.scrollIntoView({
+                    behavior:
+                        "smooth",
+                    block:
+                        "nearest",
+                    inline:
+                        "center"
+                });
+
+        }
+    );
+
+
+    const id =
+        selectedPdfId();
+
+
+    const record =
+        selectedPdfRecord();
+
+
+    const isCurrent =
+        activePdfId ===
+        id;
+
+
+    const isCurrentLoaded =
+        isCurrent &&
+        loadedPdfId ===
+            id &&
+        loadedPdfUrl ===
+            record?.url;
+
+
+    pdfSelectedMonthText.textContent =
+        MONTH_NAMES[
+            selectedPdfMonth - 1
+        ] +
+        " " +
+        selectedPdfYear;
+
+
+    pdfSelectedMeta.textContent =
+        record
+            ?
+            record.fileName +
+                (
+                    record.pageCount
+                        ?
+                        " · " +
+                        record.pageCount +
+                        " pages"
+                        :
+                        ""
+                )
+            :
+            "Empty";
+
+
+    pdfCurrentBadge.classList.toggle(
+        "show",
+        isCurrent
+    );
+
+
+    setCurrentPdfBtn.disabled =
+        !record ||
+        isCurrentLoaded;
+
+
+    setCurrentPdfBtn.textContent =
+        isCurrentLoaded
+            ?
+            "Current"
+            :
+            isCurrent
+                ?
+                "Retry Current"
+                :
+                "Set Current";
+
+
+    useLocalPdfBtn.classList.toggle(
+        "default",
+        activePdfId ===
+            LOCAL_PDF_RECORD.id
+    );
+
+
+    useLocalPdfBtn.textContent =
+        activePdfId ===
+            LOCAL_PDF_RECORD.id
+            ?
+            "Local · Current"
+            :
+            "Use Local";
+
+
+    renderStorageSelect();
+
+
+    renderPdfPreview(
+        record?.url ||
+        ""
+    );
+
+}
+
+
+function pdfNameFromUrl(
+    url
+) {
+
+    try {
+
+        const part =
+            new URL(url)
+                .pathname
+                .split("/")
+                .filter(Boolean)
+                .pop() ||
+            "";
+
+
+        return decodeURIComponent(
+            part
+        );
+
+    }
+
+    catch {
+
+        return "";
+
+    }
+
+}
+
+
+async function saveFolderPdf(
+    file
+) {
+
+    if (
+        !isAdmin() ||
+        !file
+    ) {
+
+        return;
+
+    }
+
+
+    setAdminStatus(
+        folderPdfStatus,
+        "Checking " +
+            file.name +
+            "..."
+    );
+
+
+    let linkedDocument =
+        null;
+
+
+    try {
+
+        await verifyPdfDelivery(
+            file.url
+        );
+
+
+        linkedDocument =
+            await pdfjsLib.getDocument({
+                url:
+                    file.url
+            }).promise;
+
+
+        const id =
+            selectedPdfId();
+
+
+        const existing =
+            pdfLibraryRecords[id] ||
+            null;
+
+
+        const record =
+            {
+                id,
+                year:
+                    selectedPdfYear,
+                month:
+                    selectedPdfMonth,
+                monthLabel:
+                    MONTH_NAMES[
+                        selectedPdfMonth - 1
+                    ],
+                fileName:
+                    file.name,
+                url:
+                    file.url,
+                source:
+                    "folder",
+                storageId:
+                    "local-folder",
+                pageCount:
+                    linkedDocument.numPages,
+                bytes:
+                    null,
+                createdAt:
+                    existing?.createdAt ||
+                    serverTimestamp(),
+                updatedAt:
+                    serverTimestamp(),
+                uploadedBy:
+                    firebaseUser.uid
+            };
+
+        const asset =
+            await rememberPdfAsset(record);
+
+        record.catalogId =
+            asset.catalogId;
+
+
+        await set(
+            ref(
+                database,
+                "appConfig/pdfLibrary/" +
+                id
+            ),
+            record
+        );
+
+
+        pdfLibraryRecords[id] =
+            record;
+
+
+        renderPdfLibrary();
+
+
+        setAdminStatus(
+            folderPdfStatus,
+            file.name +
+                " saved to " +
+                record.monthLabel +
+                " " +
+                record.year +
+                ".",
+            "good"
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "PDF folder:",
+            error
+        );
+
+
+        setAdminStatus(
+            folderPdfStatus,
+            "Cannot open " +
+                file.name +
+                ".",
+            "bad"
+        );
+
+    }
+
+    finally {
+
+        if (linkedDocument) {
+
+            linkedDocument.destroy()
+                .catch(() => {});
+
+        }
+
+    }
+
+}
+
+
+async function savePdfByUrl() {
+
+    if (!isAdmin()) {
+        return;
+    }
+
+
+    const value =
+        pdfUrlInput.value.trim();
+
+
+    let parsedUrl;
+
+
+    try {
+
+        parsedUrl =
+            new URL(value);
+
+
+        if (
+            parsedUrl.protocol !==
+                "https:" &&
+            parsedUrl.protocol !==
+                "http:"
+        ) {
+
+            throw new Error();
+
+        }
+
+    }
+
+    catch {
+
+        setAdminStatus(
+            urlPdfStatus,
+            "Enter a valid public PDF URL.",
+            "bad"
+        );
+
+
+        return;
+
+    }
+
+
+    saveUrlPdfBtn.disabled =
+        true;
+
+
+    setAdminStatus(
+        urlPdfStatus,
+        "Checking PDF URL..."
+    );
+
+
+    let linkedDocument =
+        null;
+
+
+    try {
+
+        await verifyPdfDelivery(
+            parsedUrl.href
+        );
+
+
+        linkedDocument =
+            await pdfjsLib.getDocument({
+                url:
+                    parsedUrl.href
+            }).promise;
+
+
+        const id =
+            selectedPdfId();
+
+
+        const existing =
+            pdfLibraryRecords[id] ||
+            null;
+
+
+        const record =
+            {
+                id,
+                year:
+                    selectedPdfYear,
+                month:
+                    selectedPdfMonth,
+                monthLabel:
+                    MONTH_NAMES[
+                        selectedPdfMonth - 1
+                    ],
+                fileName:
+                    pdfUrlNameInput.value.trim() ||
+                    pdfNameFromUrl(
+                        parsedUrl.href
+                    ) ||
+                    "Linked PDF",
+                url:
+                    parsedUrl.href,
+                source:
+                    "url",
+                storageId:
+                    "external-url",
+                pageCount:
+                    linkedDocument.numPages,
+                bytes:
+                    null,
+                createdAt:
+                    existing?.createdAt ||
+                    serverTimestamp(),
+                updatedAt:
+                    serverTimestamp(),
+                uploadedBy:
+                    firebaseUser.uid
+            };
+
+        const asset =
+            await rememberPdfAsset(record);
+
+        record.catalogId =
+            asset.catalogId;
+
+
+        await set(
+            ref(
+                database,
+                "appConfig/pdfLibrary/" +
+                id
+            ),
+            record
+        );
+
+
+        pdfLibraryRecords[id] =
+            record;
+
+
+        renderPdfLibrary();
+
+
+        setAdminStatus(
+            pdfUploadStatus,
+            "PDF URL saved to " +
+                record.monthLabel +
+                " " +
+                record.year +
+                ".",
+            "good"
+        );
+
+
+        closeUrlPdfForm();
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "PDF URL:",
+            error
+        );
+
+
+        setAdminStatus(
+            urlPdfStatus,
+            isPdfDeliveryBlocked(
+                error
+            )
+                ?
+                PDF_DELIVERY_BLOCKED_MESSAGE
+                :
+                "Cannot open this URL. It must be a public PDF and allow CORS.",
+            "bad"
+        );
+
+    }
+
+    finally {
+
+        saveUrlPdfBtn.disabled =
+            false;
+
+
+        if (linkedDocument) {
+
+            linkedDocument.destroy()
+                .catch(() => {});
+
+        }
+
+    }
+
+}
+
+
+async function uploadSelectedPdf(
+    file
+) {
+
+    if (
+        !isAdmin() ||
+        !file
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        file.type !==
+            "application/pdf" &&
+        !file.name
+            .toLowerCase()
+            .endsWith(".pdf")
+    ) {
+
+        setAdminStatus(
+            pdfUploadStatus,
+            "Choose a PDF file.",
+            "bad"
+        );
+
+
+        return;
+
+    }
+
+
+    const storage =
+        pdfStorages[
+            pdfStorageSelect.value
+        ];
+
+
+    if (
+        !storage ||
+        storage.enabled ===
+            false
+    ) {
+
+        setAdminStatus(
+            pdfUploadStatus,
+            "Choose an enabled storage.",
+            "bad"
+        );
+
+
+        return;
+
+    }
+
+
+    uploadPdfBtn.disabled =
+        true;
+
+
+    setAdminStatus(
+        pdfUploadStatus,
+        "Uploading..."
+    );
+
+
+    const formData =
+        new FormData();
+
+
+    formData.append(
+        "file",
+        file
+    );
+
+
+    formData.append(
+        "upload_preset",
+        storage.uploadPreset
+    );
+
+
+    if (storage.folder) {
+
+        formData.append(
+            "folder",
+            storage.folder
+        );
+
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                "https://api.cloudinary.com/v1_1/" +
+                encodeURIComponent(
+                    storage.cloudName
+                ) +
+                "/image/upload",
+                {
+                    method:
+                        "POST",
+                    body:
+                        formData
+                }
+            );
+
+
+        const result =
+            await response.json();
+
+
+        if (
+            !response.ok ||
+            !result.secure_url
+        ) {
+
+            throw new Error(
+                result.error?.message ||
+                "Upload failed"
+            );
+
+        }
+
+
+        let deliveryWarning =
+            "";
+
+
+        try {
+
+            setAdminStatus(
+                pdfUploadStatus,
+                "Checking PDF delivery..."
+            );
+
+
+            await verifyPdfDelivery(
+                result.secure_url
+            );
+
+        }
+
+        catch (deliveryError) {
+
+            deliveryWarning =
+                isPdfDeliveryBlocked(
+                    deliveryError
+                )
+                    ?
+                    PDF_DELIVERY_BLOCKED_MESSAGE
+                    :
+                    "PDF uploaded, but its public URL could not be verified.";
+
+        }
+
+
+        const id =
+            selectedPdfId();
+
+
+        const existing =
+            pdfLibraryRecords[id] ||
+            null;
+
+
+        const record =
+            {
+                id,
+                year:
+                    selectedPdfYear,
+                month:
+                    selectedPdfMonth,
+                monthLabel:
+                    MONTH_NAMES[
+                        selectedPdfMonth - 1
+                    ],
+                fileName:
+                    file.name,
+                url:
+                    result.secure_url,
+                source:
+                    "cloudinary",
+                storageId:
+                    storage.id,
+                publicId:
+                    result.public_id ||
+                    null,
+                assetId:
+                    result.asset_id ||
+                    null,
+                pageCount:
+                    result.pages ||
+                    null,
+                bytes:
+                    result.bytes ||
+                    file.size,
+                createdAt:
+                    existing?.createdAt ||
+                    serverTimestamp(),
+                updatedAt:
+                    serverTimestamp(),
+                uploadedBy:
+                    firebaseUser.uid
+            };
+
+        const asset =
+            await rememberPdfAsset(record);
+
+        record.catalogId =
+            asset.catalogId;
+
+
+        await set(
+            ref(
+                database,
+                "appConfig/pdfLibrary/" +
+                id
+            ),
+            record
+        );
+
+
+        pdfLibraryRecords[id] =
+            record;
+
+
+        renderPdfLibrary();
+
+
+        setAdminStatus(
+            pdfUploadStatus,
+            deliveryWarning ||
+                "PDF uploaded.",
+            deliveryWarning
+                ?
+                "bad"
+                :
+                "good"
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Cloudinary upload:",
+            error
+        );
+
+
+        setAdminStatus(
+            pdfUploadStatus,
+            error.message ||
+                "Upload failed.",
+            "bad"
+        );
+
+    }
+
+    finally {
+
+        uploadPdfBtn.disabled =
+            !enabledStorages().length;
+
+
+        pdfFileInput.value =
+            "";
+
+    }
+
+}
+
+
+async function selectCurrentPdf(
+    id
+) {
+
+    if (!isAdmin()) {
+        return;
+    }
+
+
+    if (
+        id ===
+        activePdfId
+    ) {
+
+        setAdminStatus(
+            pdfUploadStatus,
+            "Retrying current PDF..."
+        );
+
+
+        await syncActivePdf();
+
+
+        if (
+            loadedPdfId ===
+            id
+        ) {
+
+            setAdminStatus(
+                pdfUploadStatus,
+                "Current PDF loaded.",
+                "good"
+            );
+
+        }
+
+
+        return;
+
+    }
+
+
+    if (
+        id !==
+            LOCAL_PDF_RECORD.id &&
+        !pdfLibraryRecords[id]
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        await set(
+            activePdfRef,
+            id
+        );
+
+
+        setAdminStatus(
+            pdfUploadStatus,
+            id ===
+                LOCAL_PDF_RECORD.id
+                ?
+                "Local PDF selected."
+                :
+                "Current PDF updated.",
+            "good"
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Current PDF:",
+            error
+        );
+
+
+        setAdminStatus(
+            pdfUploadStatus,
+            "Cannot update current PDF.",
+            "bad"
+        );
+
+    }
+
+}
+
+
+function renderPdfAdmin() {
+
+    if (!isAdmin()) {
+        return;
+    }
+
+
+    renderStorageList();
+    renderPdfFolderList();
+    renderPdfLibrary();
+
+    if (pdfAssetsOverlay.classList.contains("show")) {
+        renderPdfAssets();
+    }
+
+
+    if (
+        !pdfFolderScanned &&
+        !pdfFolderScanning
+    ) {
+
+        scanPdfFolder();
+
+    }
+
+}
+
+
+/* =====================================================
+   ADMIN TOGGLE
+===================================================== */
+
+anonymousToggle.addEventListener(
+    "change",
+
+    async () => {
+
+        if (
+            !isAdmin()
+        ) {
+
+            anonymousToggle.checked =
+                allowAnonymous;
+
+
+            return;
+
+        }
+
+
+        const wanted =
+            anonymousToggle.checked;
+
+
+        try {
+
+            await set(
+                configRef,
+                wanted
+            );
+
+
+            anonymousStateText.textContent =
+                wanted
+                    ?
+                    "FREE: ON"
+                    :
+                    "FREE: OFF";
+
+        }
+
+        catch (error) {
+
+            console.error(
+                error
+            );
+
+
+            anonymousToggle.checked =
+                allowAnonymous;
+
+        }
+
+    }
+);
+
+
+profileRevealToggle.addEventListener(
+    "change",
+
+    async () => {
+
+        if (
+            !isAdmin()
+        ) {
+
+            profileRevealToggle.checked =
+                profileRevealEnabled;
+
+
+            return;
+
+        }
+
+
+        const wanted =
+            profileRevealToggle.checked;
+
+
+        try {
+
+            await set(
+                revealConfigRef,
+                wanted
+            );
+
+        }
+
+        catch (error) {
+
+            console.error(
+                error
+            );
+
+
+            profileRevealToggle.checked =
+                profileRevealEnabled;
+
+        }
+
+    }
+);
+
+
+addStorageBtn.addEventListener(
+    "click",
+    () => openStorageForm()
+);
+
+
+cancelStorageBtn.addEventListener(
+    "click",
+    closeStorageForm
+);
+
+
+saveStorageBtn.addEventListener(
+    "click",
+    saveStorageConfig
+);
+
+
+refreshPdfFolderBtn.addEventListener(
+    "click",
+    async () => {
+        await scanPdfFolder();
+        openPdfAssetsPopup();
+    }
+);
+
+
+openPdfAssetsBtn.addEventListener(
+    "click",
+    async () => {
+        if (!pdfFolderScanned) {
+            await scanPdfFolder();
+        }
+        openPdfAssetsPopup();
+    }
+);
+
+
+closePdfAssets.addEventListener(
+    "click",
+    closePdfAssetsPopup
+);
+
+
+pdfAssetsOverlay.addEventListener(
+    "click",
+    event => {
+        if (event.target === pdfAssetsOverlay) closePdfAssetsPopup();
+    }
+);
+
+
+openUrlPdfBtn.addEventListener(
+    "click",
+    openUrlPdfForm
+);
+
+
+cancelUrlPdfBtn.addEventListener(
+    "click",
+    closeUrlPdfForm
+);
+
+
+saveUrlPdfBtn.addEventListener(
+    "click",
+    savePdfByUrl
+);
+
+
+pdfUrlInput.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key ===
+            "Enter"
+        ) {
+
+            event.preventDefault();
+            savePdfByUrl();
+
+        }
+
+    }
+);
+
+
+previousPdfYear.addEventListener(
+    "click",
+    () => {
+
+        selectedPdfYear--;
+        renderPdfLibrary();
+
+    }
+);
+
+
+nextPdfYear.addEventListener(
+    "click",
+    () => {
+
+        selectedPdfYear++;
+        renderPdfLibrary();
+
+    }
+);
+
+
+uploadPdfBtn.addEventListener(
+    "click",
+    () => {
+
+        if (
+            isAdmin() &&
+            enabledStorages().length
+        ) {
+
+            pdfFileInput.click();
+
+        }
+
+    }
+);
+
+
+pdfFileInput.addEventListener(
+    "change",
+    () => uploadSelectedPdf(
+        pdfFileInput.files?.[0]
+    )
+);
+
+
+setCurrentPdfBtn.addEventListener(
+    "click",
+    () => selectCurrentPdf(
+        selectedPdfId()
+    )
+);
+
+
+useLocalPdfBtn.addEventListener(
+    "click",
+    () => selectCurrentPdf(
+        LOCAL_PDF_RECORD.id
+    )
+);
+
+
+/* =====================================================
+   PDF.JS
+===================================================== */
+
+import * as pdfjsLib from
+"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs";
+
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
+
+
+const LOCAL_PDF_RECORD =
+    Object.freeze({
+        ...clientConfig.localPdf,
+        source:
+            "local"
+
+    });
+
+
+let activeDocument =
+    LOCAL_PDF_RECORD;
+
+
+let loadedPdfId =
+    null;
+
+
+let loadedPdfUrl =
+    null;
+
+
+let pdfLoadVersion =
+    0;
+
+
+let pdfDocument =
+    null;
+
+
+let currentPage =
+    1;
+
+
+let rendering =
+    false;
+
+
+let pendingPage =
+    null;
+
+
+let pendingRenderOptions =
+    {};
+
+
+let zoom =
+    1;
+
+
+const MIN_ZOOM =
+    1;
+
+
+const MAX_ZOOM =
+    5;
+
+
+function clamp(
+    value,
+    min,
+    max
+) {
+
+    return Math.max(
+        min,
+        Math.min(
+            max,
+            value
+        )
+    );
+
+}
+
+
+/* =====================================================
+   FIT TIMER
+===================================================== */
+
+let fitTimer =
+    null;
+
+
+function showFitButton(
+    currentZoom = zoom
+) {
+
+    clearTimeout(
+        fitTimer
+    );
+
+
+    if (
+        currentZoom <=
+        1.001
+    ) {
+
+        fitZoomBtn.classList.remove(
+            "show"
+        );
+
+
+        return;
+
+    }
+
+
+    fitZoomBtn.classList.add(
+        "show"
+    );
+
+
+    fitTimer =
+        setTimeout(
+            () => {
+
+                fitZoomBtn.classList.remove(
+                    "show"
+                );
+
+            },
+            3000
+        );
+
+}
+
+
+/* =====================================================
+   LOAD PDF
+===================================================== */
+
+async function loadPDF(
+    documentRecord = LOCAL_PDF_RECORD
+) {
+
+    if (
+        pdfDocument &&
+        loadedPdfId ===
+            documentRecord.id &&
+        loadedPdfUrl ===
+            documentRecord.url
+    ) {
+
+        activeDocument =
+            documentRecord;
+
+
+        return true;
+
+    }
+
+
+    const loadVersion =
+        ++pdfLoadVersion;
+
+
+    loading.style.display =
+        "flex";
+
+
+    errorMessage.style.display =
+        "none";
+
+    try {
+
+        const task =
+            pdfjsLib.getDocument({
+                url:
+                    documentRecord.url
+            });
+
+
+        const nextDocument =
+            await task.promise;
+
+
+        if (
+            loadVersion !==
+            pdfLoadVersion
+        ) {
+
+            await nextDocument.destroy();
+
+            return false;
+
+        }
+
+
+        if (
+            noteOverlay.classList.contains(
+                "show"
+            )
+        ) {
+
+            clearTimeout(
+                autoSaveTimer
+            );
+
+
+            await saveNotes(
+                currentPage,
+                getFormValues(),
+                true
+            );
+
+
+            noteOverlay.classList.remove(
+                "show"
+            );
+
+        }
+
+
+        stopNoteListener();
+
+
+        const previousDocument =
+            pdfDocument;
+
+
+        pdfDocument =
+            nextDocument;
+
+
+        activeDocument =
+            documentRecord;
+
+
+        loadedPdfId =
+            documentRecord.id;
+
+
+        loadedPdfUrl =
+            documentRecord.url;
+
+
+        currentPage =
+            1;
+
+
+        zoom =
+            1;
+
+
+        canvas.style.transform =
+            "none";
+
+
+        viewer.scrollTop =
+            0;
+
+
+        viewer.scrollLeft =
+            0;
+
+
+        rendering =
+            false;
+
+
+        pendingPage =
+            null;
+
+
+        if (
+            previousDocument
+        ) {
+
+            previousDocument.destroy()
+                .catch(() => {});
+
+        }
+
+
+        loading.style.display =
+            "none";
+
+
+        await renderPage(
+            1
+        );
+
+
+        if (
+            pagesOverlay.classList.contains(
+                "show"
+            )
+        ) {
+
+            await loadSavedPages();
+
+        }
+
+
+        renderPdfAdmin();
+
+
+        return true;
+
+    }
+
+    catch (error) {
+
+        console[
+            isPdfDeliveryBlocked(
+                error
+            )
+                ?
+                "warn"
+                :
+                "error"
+        ](error);
+
+
+        loading.style.display =
+            "none";
+
+
+        if (
+            !pdfDocument
+        ) {
+
+            errorMessage.style.display =
+                "flex";
+
+
+            errorMessage.innerHTML =
+                "Cannot load PDF.<br>Make sure 09-12-2026.pdf is available.";
+
+        }
+
+
+        if (
+            documentRecord.id !==
+                LOCAL_PDF_RECORD.id &&
+            isAdmin()
+        ) {
+
+            setAdminStatus(
+                pdfUploadStatus,
+                isPdfDeliveryBlocked(
+                    error
+                )
+                    ?
+                    PDF_DELIVERY_BLOCKED_MESSAGE
+                    :
+                    "Cannot load this PDF. The local PDF is being used.",
+                "bad"
+            );
+
+        }
+
+
+        return false;
+
+    }
+
+}
+
+
+function configuredPdfRecord() {
+
+    if (
+        activePdfId ===
+        LOCAL_PDF_RECORD.id
+    ) {
+
+        return LOCAL_PDF_RECORD;
+
+    }
+
+
+    return (
+        pdfLibraryRecords[
+            activePdfId
+        ] ||
+        null
+    );
+
+}
+
+
+async function syncActivePdf() {
+
+    const documentRecord =
+        configuredPdfRecord();
+
+
+    renderPdfAdmin();
+
+
+    if (!documentRecord) {
+
+        await loadPDF(
+            LOCAL_PDF_RECORD
+        );
+
+
+        return;
+
+    }
+
+
+    const loaded =
+        await loadPDF(
+            documentRecord
+        );
+
+
+    if (
+        !loaded &&
+        documentRecord.id !==
+            LOCAL_PDF_RECORD.id
+    ) {
+
+        await loadPDF(
+            LOCAL_PDF_RECORD
+        );
+
+    }
+
+}
+
+
+function startPdfLibraryListeners() {
+
+    onValue(
+        pdfStoragesRef,
+
+        snapshot => {
+
+            const value =
+                snapshot.exists()
+                    ?
+                    snapshot.val()
+                    :
+                    {};
+
+
+            pdfStorages =
+                Object.fromEntries(
+                    Object.entries(
+                        value
+                    ).map(
+                        ([id, storage]) =>
+                            [
+                                id,
+                                {
+                                    ...storage,
+                                    id:
+                                        storage.id ||
+                                        id
+                                }
+                            ]
+                    )
+                );
+
+
+            renderPdfAdmin();
+
+        },
+
+        error => {
+
+            console.error(
+                "Storage list read:",
+                error
+            );
+
+        }
+    );
+
+
+    onValue(
+        pdfLibraryRef,
+
+        snapshot => {
+
+            const value =
+                snapshot.exists()
+                    ?
+                    snapshot.val()
+                    :
+                    {};
+
+
+            pdfLibraryRecords =
+                Object.fromEntries(
+                    Object.entries(
+                        value
+                    ).map(
+                        ([id, record]) =>
+                            [
+                                id,
+                                {
+                                    ...record,
+                                    id:
+                                        record.id ||
+                                        id
+                                }
+                            ]
+                    )
+                );
+
+
+            syncActivePdf();
+
+        },
+
+        error => {
+
+            console.error(
+                "PDF library read:",
+                error
+            );
+
+        }
+    );
+
+
+    onValue(
+        pdfAssetsRef,
+
+        snapshot => {
+
+            const value = snapshot.exists() ? snapshot.val() : {};
+
+            pdfAssets = Object.fromEntries(
+                Object.entries(value).map(([id,record]) => [
+                    id,
+                    normalizedPdfAsset({...record,catalogId: record.catalogId || id})
+                ])
+            );
+
+            renderPdfAdmin();
+
+        },
+
+        error => {
+            console.error("PDF assets read:",error);
+        }
+    );
+
+
+    onValue(
+        activePdfRef,
+
+        snapshot => {
+
+            activePdfId =
+                snapshot.exists()
+                    ?
+                    snapshot.val()
+                    :
+                    LOCAL_PDF_RECORD.id;
+
+
+            const match =
+                /^(\d{4})-(\d{2})$/
+                    .exec(
+                        activePdfId
+                    );
+
+
+            if (match) {
+
+                selectedPdfYear =
+                    Number(match[1]);
+
+
+                selectedPdfMonth =
+                    Number(match[2]);
+
+            }
+
+
+            syncActivePdf();
+
+        },
+
+        error => {
+
+            console.error(
+                "Active PDF read:",
+                error
+            );
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   RENDER
+===================================================== */
+
+function setPageToolsVisible(visible) {
+
+    goToForm.classList.toggle("show",visible);
+    pageStripWrap.classList.toggle("show",visible);
+
+    if (!visible && document.activeElement === goToInput) {
+        goToInput.blur();
+    }
+
+}
+
+
+function showPageTools() {
+    setPageToolsVisible(true);
+}
+
+
+function togglePageTools(event) {
+
+    if (event.target.closest("#goToForm,#pageStripWrap")) {
+        showPageTools();
+        return;
+    }
+
+    setPageToolsVisible(!goToForm.classList.contains("show"));
+
+}
+
+
+async function goToEnteredPage(event) {
+
+    event.preventDefault();
+
+    if (!pdfDocument) return;
+
+    const requested = Number.parseInt(goToInput.value,10);
+
+    if (!Number.isFinite(requested)) {
+        goToInput.value = "";
+        return;
+    }
+
+    const page = Math.max(1,Math.min(requested,pdfDocument.numPages));
+
+    goToInput.value = "";
+    viewer.scrollTop = 0;
+    viewer.scrollLeft = 0;
+    await renderPage(page);
+    showPageTools();
+
+}
+
+
+function renderPageStrip() {
+
+    if (!pdfDocument) return;
+
+    pageStrip.replaceChildren();
+
+    let currentButton = null;
+
+    for (let page = 1; page <= pdfDocument.numPages; page++) {
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "pageStripBtn";
+        button.textContent = page;
+        button.classList.toggle("current",page === currentPage);
+        button.setAttribute("aria-label","Go to page " + page);
+
+        if (page === currentPage) currentButton = button;
+
+        button.addEventListener("click",async () => {
+            viewer.scrollTop = 0;
+            viewer.scrollLeft = 0;
+            await renderPage(page);
+        });
+
+        pageStrip.appendChild(button);
+
+    }
+
+    if (currentButton) {
+        requestAnimationFrame(() => {
+            pageStrip.scrollTo({
+                left: currentButton.offsetLeft - pageStrip.clientWidth / 2 + currentButton.offsetWidth / 2,
+                behavior: "smooth"
+            });
+        });
+    }
+
+}
+
+async function renderPage(
+    pageNumber,
+    options = {}
+) {
+
+    if (!pdfDocument) {
+        return;
+    }
+
+
+    pageNumber =
+        Math.max(
+            1,
+            Math.min(
+                pageNumber,
+                pdfDocument.numPages
+            )
+        );
+
+
+    if (
+        rendering
+    ) {
+
+        pendingPage =
+            pageNumber;
+
+
+        pendingRenderOptions =
+            options;
+
+
+        return;
+
+    }
+
+
+    rendering =
+        true;
+
+
+    try {
+
+        const page =
+            await pdfDocument.getPage(
+                pageNumber
+            );
+
+
+        const original =
+            page.getViewport({
+                scale: 1
+            });
+
+
+        const baseScale =
+            viewer.clientWidth /
+            original.width;
+
+
+        const cssScale =
+            baseScale *
+            zoom;
+
+
+        let dpr =
+            Math.min(
+                window.devicePixelRatio || 1,
+                2
+            );
+
+
+        if (
+            zoom >
+            2.5
+        ) {
+
+            dpr =
+                Math.min(
+                    dpr,
+                    1
+                );
+
+        }
+
+
+        const viewport =
+            page.getViewport({
+
+                scale:
+                    cssScale *
+                    dpr
+
+            });
+
+
+        canvas.width =
+            Math.floor(
+                viewport.width
+            );
+
+
+        canvas.height =
+            Math.floor(
+                viewport.height
+            );
+
+
+        canvas.style.width =
+            Math.floor(
+                viewport.width /
+                dpr
+            ) +
+            "px";
+
+
+        canvas.style.height =
+            Math.floor(
+                viewport.height /
+                dpr
+            ) +
+            "px";
+
+
+        pageContainer.style.minHeight =
+            Math.max(
+                viewer.clientHeight,
+                viewport.height /
+                dpr
+            ) +
+            "px";
+
+
+        pageContainer.style.width =
+            Math.max(
+
+                viewer.clientWidth,
+
+                viewport.width /
+                dpr
+
+            ) +
+            "px";
+
+
+        ctx.fillStyle =
+            "#fff";
+
+
+        ctx.fillRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+
+        await page.render({
+
+            canvasContext:
+                ctx,
+
+            viewport:
+                viewport
+
+        }).promise;
+
+
+        currentPage =
+            pageNumber;
+
+
+        pageInfo.textContent =
+            currentPage +
+            " / " +
+            pdfDocument.numPages;
+
+        goToInput.max =
+            pdfDocument.numPages;
+
+        renderPageStrip();
+
+
+        prevBtn.classList.toggle(
+            "hidden",
+            currentPage <= 1
+        );
+
+
+        nextBtn.classList.toggle(
+            "hidden",
+            currentPage >=
+            pdfDocument.numPages
+        );
+
+
+        if (
+            options.anchor
+        ) {
+
+            viewer.scrollLeft =
+                clamp(
+                    (
+                        options.anchor.x *
+                        canvas.clientWidth
+                    ) -
+                    options.anchor.clientX,
+                    0,
+                    viewer.scrollWidth -
+                    viewer.clientWidth
+                );
+
+
+            viewer.scrollTop =
+                clamp(
+                    (
+                        options.anchor.y *
+                        canvas.clientHeight
+                    ) -
+                    options.anchor.clientY,
+                    0,
+                    viewer.scrollHeight -
+                    viewer.clientHeight
+                );
+
+        }
+
+
+        if (
+            noteOverlay.classList.contains(
+                "show"
+            )
+        ) {
+
+            await loadNotes(
+                currentPage
+            );
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.error(
+            error
+        );
+
+    }
+
+    finally {
+
+        rendering =
+            false;
+
+
+        if (
+            pendingPage !==
+            null
+        ) {
+
+            const next =
+                pendingPage;
+
+
+            const nextOptions =
+                pendingRenderOptions;
+
+
+            pendingPage =
+                null;
+
+
+            pendingRenderOptions =
+                {};
+
+
+            renderPage(
+                next,
+                nextOptions
+            );
+
+        }
+
+    }
+
+}
+
+
+/* =====================================================
+   PAGE NAVIGATION
+===================================================== */
+
+function nextPage() {
+
+    if (
+        !pdfDocument ||
+        currentPage >=
+        pdfDocument.numPages
+    ) {
+        return;
+    }
+
+
+    viewer.scrollTop =
+        0;
+
+
+    viewer.scrollLeft =
+        0;
+
+
+    renderPage(
+        currentPage + 1
+    );
+
+}
+
+
+function previousPage() {
+
+    if (
+        !pdfDocument ||
+        currentPage <= 1
+    ) {
+        return;
+    }
+
+
+    viewer.scrollTop =
+        0;
+
+
+    viewer.scrollLeft =
+        0;
+
+
+    renderPage(
+        currentPage - 1
+    );
+
+}
+
+
+/* =====================================================
+   FIT
+===================================================== */
+
+fitZoomBtn.addEventListener(
+    "click",
+
+    () => {
+
+        zoom =
+            1;
+
+
+        canvas.style.transform =
+            "none";
+
+
+        viewer.scrollTop =
+            0;
+
+
+        viewer.scrollLeft =
+            0;
+
+
+        zoomInfo.textContent =
+            "100%";
+
+
+        zoomInfo.classList.add(
+            "show"
+        );
+
+
+        fitZoomBtn.classList.remove(
+            "show"
+        );
+
+
+        renderPage(
+            currentPage
+        );
+
+
+        setTimeout(
+            () => {
+
+                zoomInfo.classList.remove(
+                    "show"
+                );
+
+            },
+            700
+        );
+
+    }
+);
+
+
+/* =====================================================
+   PINCH
+===================================================== */
+
+let touchStartX =
+    0;
+
+
+let touchStartY =
+    0;
+
+
+let singleTouch =
+    false;
+
+
+let isPinching =
+    false;
+
+
+let pinchStartDistance =
+    0;
+
+
+let pinchStartZoom =
+    1;
+
+
+let pinchPreviewZoom =
+    1;
+
+
+let pinchAnchor =
+    null;
+
+
+function touchDistance(
+    touches
+) {
+
+    const x =
+        touches[0].clientX -
+        touches[1].clientX;
+
+
+    const y =
+        touches[0].clientY -
+        touches[1].clientY;
+
+
+    return Math.sqrt(
+        x*x +
+        y*y
+    );
+
+}
+
+
+function touchMidpoint(
+    touches
+) {
+
+    return {
+
+        x:
+            (
+                touches[0].clientX +
+                touches[1].clientX
+            ) /
+            2,
+
+        y:
+            (
+                touches[0].clientY +
+                touches[1].clientY
+            ) /
+            2
+
+    };
+
+}
+
+
+viewer.addEventListener(
+    "touchstart",
+
+    event => {
+
+        if (
+            event.touches.length ===
+            2
+        ) {
+
+            isPinching =
+                true;
+
+
+            singleTouch =
+                false;
+
+
+            pinchStartDistance =
+                touchDistance(
+                    event.touches
+                );
+
+
+            pinchStartZoom =
+                zoom;
+
+
+            pinchPreviewZoom =
+                zoom;
+
+
+            const midpoint =
+                touchMidpoint(
+                    event.touches
+                );
+
+
+            const viewerRect =
+                viewer.getBoundingClientRect();
+
+
+            pinchAnchor =
+                {
+
+                    x:
+                        (
+                            viewer.scrollLeft +
+                            midpoint.x -
+                            viewerRect.left
+                        ) /
+                        canvas.clientWidth,
+
+                    y:
+                        (
+                            viewer.scrollTop +
+                            midpoint.y -
+                            viewerRect.top
+                        ) /
+                        canvas.clientHeight,
+
+                    clientX:
+                        midpoint.x -
+                        viewerRect.left,
+
+                    clientY:
+                        midpoint.y -
+                        viewerRect.top
+
+                };
+
+
+            return;
+
+        }
+
+
+        if (
+            event.touches.length ===
+            1
+        ) {
+
+            singleTouch =
+                true;
+
+
+            touchStartX =
+                event.touches[0]
+                    .clientX;
+
+
+            touchStartY =
+                event.touches[0]
+                    .clientY;
+
+        }
+
+    },
+    {
+        passive: true
+    }
+);
+
+
+viewer.addEventListener(
+    "touchmove",
+
+    event => {
+
+        if (
+            !isPinching ||
+            event.touches.length !==
+            2
+        ) {
+
+            return;
+
+        }
+
+
+        event.preventDefault();
+
+
+        let newZoom =
+
+            pinchStartZoom *
+
+            (
+                touchDistance(
+                    event.touches
+                )
+                /
+                pinchStartDistance
+            );
+
+
+        newZoom =
+            Math.max(
+                MIN_ZOOM,
+                Math.min(
+                    MAX_ZOOM,
+                    newZoom
+                )
+            );
+
+
+        pinchPreviewZoom =
+            newZoom;
+
+
+        canvas.style.transform =
+            `scale(${newZoom / zoom})`;
+
+
+        zoomInfo.textContent =
+            Math.round(
+                newZoom *
+                100
+            ) +
+            "%";
+
+
+        zoomInfo.classList.add(
+            "show"
+        );
+
+
+        showFitButton(
+            newZoom
+        );
+
+    },
+    {
+        passive: false
+    }
+);
+
+
+viewer.addEventListener(
+    "touchend",
+
+    event => {
+
+        if (
+            isPinching
+        ) {
+
+            if (
+                event.touches.length <
+                2
+            ) {
+
+                zoom =
+                    pinchPreviewZoom;
+
+
+                canvas.style.transform =
+                    "none";
+
+
+                isPinching =
+                    false;
+
+
+                showFitButton(
+                    zoom
+                );
+
+
+                renderPage(
+                    currentPage,
+                    {
+                        anchor:
+                            pinchAnchor
+                    }
+                );
+
+
+                pinchAnchor =
+                    null;
+
+
+                setTimeout(
+                    () => {
+
+                        zoomInfo.classList.remove(
+                            "show"
+                        );
+
+                    },
+                    800
+                );
+
+            }
+
+
+            return;
+
+        }
+
+
+        if (
+            !singleTouch ||
+            zoom >
+            1.05 ||
+            !event.changedTouches.length
+        ) {
+
+            singleTouch =
+                false;
+
+
+            return;
+
+        }
+
+
+        const dx =
+            event.changedTouches[0]
+                .clientX -
+            touchStartX;
+
+
+        const dy =
+            event.changedTouches[0]
+                .clientY -
+            touchStartY;
+
+
+        if (
+            Math.abs(dx) >
+            65
+            &&
+            Math.abs(dx) >
+            Math.abs(dy) *
+            1.4
+        ) {
+
+            if (
+                dx <
+                0
+            ) {
+
+                nextPage();
+
+            }
+
+            else {
+
+                previousPage();
+
+            }
+
+        }
+
+
+        singleTouch =
+            false;
+
+    },
+    {
+        passive: true
+    }
+);
+
+
+prevBtn.addEventListener(
+    "click",
+    previousPage
+);
+
+
+nextBtn.addEventListener(
+    "click",
+    nextPage
+);
+
+
+/* =====================================================
+   FORM AUTO GROW
+===================================================== */
+
+function autoGrow(
+    textarea
+) {
+
+    textarea.style.height =
+        "39px";
+
+
+    textarea.style.height =
+        Math.max(
+            39,
+            textarea.scrollHeight
+        ) +
+        "px";
+
+}
+
+
+noteInputs.forEach(
+    input => {
+
+        input.addEventListener(
+            "input",
+
+            () => {
+
+                autoGrow(
+                    input
+                );
+
+
+                queueAutoSave();
+
+            }
+
+        );
+
+    }
+);
+
+
+/* =====================================================
+   FORM VALUES
+===================================================== */
+
+function getFormValues() {
+
+    return {
+
+        note1:
+            note1.value,
+
+        note2:
+            note2.value,
+
+        note3:
+            note3.value,
+
+        note4:
+            note4.value,
+
+        note5:
+            note5.value
+
+    };
+
+}
+
+
+function setFormValues(
+    data = {}
+) {
+
+    note1.value =
+        data.note1 ||
+        "";
+
+
+    note2.value =
+        data.note2 ||
+        "";
+
+
+    note3.value =
+        data.note3 ||
+        "";
+
+
+    note4.value =
+        data.note4 ||
+        "";
+
+
+    note5.value =
+        data.note5 ||
+        "";
+
+
+    noteInputs.forEach(
+        autoGrow
+    );
+
+}
+
+
+/* =====================================================
+   LOCAL CACHE
+===================================================== */
+
+function localKey(
+    page
+) {
+
+    const documentPart =
+        activeDocument?.id ===
+            "local-current"
+            ?
+            ""
+            :
+            "_" +
+            activeDocument.id;
+
+
+    return (
+        clientConfig.storagePrefix + "_note_" +
+        (
+            firebaseUser?.uid ||
+            DEVICE_ID
+        ) +
+        documentPart +
+        "_" +
+        page
+    );
+
+}
+
+
+function localSave(
+    page,
+    values
+) {
+
+    try {
+
+        localStorage.setItem(
+            localKey(page),
+            JSON.stringify(values)
+        );
+
+    }
+
+    catch {}
+
+}
+
+
+function localLoad(
+    page
+) {
+
+    try {
+
+        const raw =
+            localStorage.getItem(
+                localKey(page)
+            );
+
+
+        return raw
+            ?
+            JSON.parse(raw)
+            :
+            null;
+
+    }
+
+    catch {
+
+        return null;
+
+    }
+
+}
+
+
+/* =====================================================
+   REALTIME NOTES
+===================================================== */
+
+let noteListener =
+    null;
+
+
+function stopNoteListener() {
+
+    if (
+        noteListener
+    ) {
+
+        noteListener();
+
+
+        noteListener =
+            null;
+
+    }
+
+}
+
+
+async function loadNotes(
+    page
+) {
+
+    stopNoteListener();
+
+
+    const cached =
+        localLoad(
+            page
+        );
+
+
+    if (
+        cached
+    ) {
+
+        setFormValues(
+            cached
+        );
+
+
+        savedDot.classList.add(
+            "show"
+        );
+
+    }
+
+    else {
+
+        setFormValues({});
+
+
+        savedDot.classList.remove(
+            "show"
+        );
+
+    }
+
+
+    if (
+        anonymousBlocked()
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        !firebaseReady ||
+        !firebaseUser
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        const snapshot =
+            await get(
+                firebasePageRef(
+                    page
+                )
+            );
+
+
+        if (
+            snapshot.exists()
+        ) {
+
+            setFormValues(
+                snapshot.val()
+            );
+
+
+            savedDot.classList.add(
+                "show"
+            );
+
+        }
+
+        else {
+
+            setFormValues({});
+
+
+            savedDot.classList.remove(
+                "show"
+            );
+
+        }
+
+
+        noteListener =
+            onValue(
+
+                firebasePageRef(
+                    page
+                ),
+
+                remoteSnapshot => {
+
+                    if (
+                        currentPage !==
+                        page
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    if (
+                        remoteSnapshot.exists()
+                    ) {
+
+                        const data =
+                            remoteSnapshot.val();
+
+
+                        localSave(
+                            page,
+                            data
+                        );
+
+                    }
+
+                }
+
+            );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            error
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   SAVE
+===================================================== */
+
+let autoSaveTimer =
+    null;
+
+
+function setNoteStatus(
+    text,
+    type = ""
+) {
+
+    noteStatus.textContent =
+        text;
+
+
+    noteStatus.classList.remove(
+        "good",
+        "bad"
+    );
+
+
+    if (type) {
+
+        noteStatus.classList.add(
+            type
+        );
+
+    }
+
+}
+
+
+function queueAutoSave() {
+
+    const page =
+        currentPage;
+
+
+    const values =
+        getFormValues();
+
+
+    localSave(
+        page,
+        values
+    );
+
+
+    clearTimeout(
+        autoSaveTimer
+    );
+
+
+    setNoteStatus(
+        "កំពុងរក្សាទុក..."
+    );
+
+
+    autoSaveTimer =
+        setTimeout(
+            () => {
+
+                saveNotes(
+                    page,
+                    values,
+                    true
+                );
+
+            },
+            650
+        );
+
+}
+
+
+async function saveNotes(
+    page,
+    values = null,
+    automatic = false
+) {
+
+    if (
+        anonymousBlocked()
+    ) {
+
+        updateAccessState();
+
+        return false;
+
+    }
+
+
+    values =
+        values ||
+        getFormValues();
+
+
+    localSave(
+        page,
+        values
+    );
+
+
+    if (
+        !firebaseReady ||
+        !firebaseUser
+    ) {
+
+        setNoteStatus(
+            "Firebase មិនបានភ្ជាប់",
+            "bad"
+        );
+
+
+        return false;
+
+    }
+
+
+    try {
+
+        if (!automatic) {
+
+            saveNote.disabled =
+                true;
+
+
+            saveNote.textContent =
+                "កំពុងរក្សាទុក...";
+
+        }
+
+
+        await set(
+
+            firebasePageRef(
+                page
+            ),
+
+            {
+
+                ...values,
+
+                page:
+                    page,
+
+                documentId:
+                    activeDocument.id,
+
+                deviceId:
+                    DEVICE_ID,
+
+                accountType:
+                    isGoogleUser()
+                        ?
+                        "google"
+                        :
+                        "anonymous",
+
+                updatedAt:
+                    serverTimestamp()
+
+            }
+
+        );
+
+
+        savedDot.classList.add(
+            "show"
+        );
+
+
+        setNoteStatus(
+            "✓ បានរក្សាទុកក្នុង Firebase",
+            "good"
+        );
+
+
+        if (!automatic) {
+
+            saveNote.textContent =
+                "បានរក្សាទុក";
+
+
+            setTimeout(
+                () => {
+
+                    saveNote.textContent =
+                        "រក្សាទុក";
+
+                },
+                800
+            );
+
+        }
+
+
+        await saveMeta();
+
+
+        return true;
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Firebase Save:",
+            error
+        );
+
+
+        savedDot.classList.remove(
+            "show"
+        );
+
+
+        setNoteStatus(
+
+            "Firebase Error: " +
+            (
+                error.code ||
+                error.message ||
+                "Save failed"
+            ),
+
+            "bad"
+
+        );
+
+
+        return false;
+
+    }
+
+    finally {
+
+        saveNote.disabled =
+            false;
+
+    }
+
+}
+
+
+/* =====================================================
+   DELETE
+===================================================== */
+
+async function deleteNotes() {
+
+    if (
+        anonymousBlocked()
+    ) {
+
+        return;
+
+    }
+
+
+    clearTimeout(
+        autoSaveTimer
+    );
+
+
+    setFormValues({});
+
+
+    localStorage.removeItem(
+        localKey(
+            currentPage
+        )
+    );
+
+
+    if (
+        firebaseReady &&
+        firebaseUser
+    ) {
+
+        try {
+
+            await remove(
+                firebasePageRef(
+                    currentPage
+                )
+            );
+
+
+            setNoteStatus(
+                "✓ បានលុបពី Firebase",
+                "good"
+            );
+
+        }
+
+        catch (error) {
+
+            console.error(
+                error
+            );
+
+        }
+
+    }
+
+
+    savedDot.classList.remove(
+        "show"
+    );
+
+}
+
+
+/* =====================================================
+   FORM OPEN/CLOSE
+===================================================== */
+
+async function openNoteForm() {
+
+    if (
+        anonymousBlocked()
+    ) {
+
+        updateAccessState();
+
+        return;
+
+    }
+
+
+    noteOverlay.classList.add(
+        "show"
+    );
+
+
+    notePopup.scrollTop =
+        0;
+
+
+    resetPopupPosition();
+
+
+    await loadNotes(
+        currentPage
+    );
+
+}
+
+
+function closeNoteForm() {
+
+    if (
+        !noteOverlay.classList.contains(
+            "show"
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    document.activeElement?.blur();
+
+
+    clearTimeout(
+        autoSaveTimer
+    );
+
+
+    saveNotes(
+        currentPage,
+        getFormValues(),
+        true
+    );
+
+
+    stopNoteListener();
+
+
+    noteOverlay.classList.remove(
+        "show"
+    );
+
+}
+
+
+/* =====================================================
+   DRAG FORM
+===================================================== */
+
+let popupX =
+    0;
+
+
+let popupY =
+    0;
+
+
+function updatePopupPosition() {
+
+    notePopup.style.transform =
+        `translate3d(${popupX}px,${popupY}px,0)`;
+
+}
+
+
+function resetPopupPosition() {
+
+    popupX =
+        0;
+
+
+    popupY =
+        0;
+
+
+    updatePopupPosition();
+
+}
+
+
+let dragging =
+    false;
+
+
+let pointerId =
+    null;
+
+
+let startX =
+    0;
+
+
+let startY =
+    0;
+
+
+let originalX =
+    0;
+
+
+let originalY =
+    0;
+
+
+noteHeader.addEventListener(
+    "pointerdown",
+
+    event => {
+
+        if (
+            event.target.closest(
+                "button"
+            )
+        ) {
+
+            return;
+
+        }
+
+
+        dragging =
+            true;
+
+
+        pointerId =
+            event.pointerId;
+
+
+        startX =
+            event.clientX;
+
+
+        startY =
+            event.clientY;
+
+
+        originalX =
+            popupX;
+
+
+        originalY =
+            popupY;
+
+
+        noteHeader.setPointerCapture(
+            event.pointerId
+        );
+
+
+        noteHeader.classList.add(
+            "dragging"
+        );
+
+    }
+);
+
+
+noteHeader.addEventListener(
+    "pointermove",
+
+    event => {
+
+        if (
+            !dragging ||
+            event.pointerId !==
+            pointerId
+        ) {
+
+            return;
+
+        }
+
+
+        popupX =
+            originalX +
+            (
+                event.clientX -
+                startX
+            );
+
+
+        popupY =
+            originalY +
+            (
+                event.clientY -
+                startY
+            );
+
+
+        updatePopupPosition();
+
+    }
+);
+
+
+function stopDragging(
+    event
+) {
+
+    if (
+        event.pointerId !==
+        pointerId
+    ) {
+
+        return;
+
+    }
+
+
+    dragging =
+        false;
+
+
+    pointerId =
+        null;
+
+
+    noteHeader.classList.remove(
+        "dragging"
+    );
+
+}
+
+
+noteHeader.addEventListener(
+    "pointerup",
+    stopDragging
+);
+
+
+noteHeader.addEventListener(
+    "pointercancel",
+    stopDragging
+);
+
+
+/* =====================================================
+   SCREENSHOT
+===================================================== */
+
+function downloadBlob(
+    blob,
+    filename
+) {
+
+    const url =
+        URL.createObjectURL(
+            blob
+        );
+
+
+    const a =
+        document.createElement(
+            "a"
+        );
+
+
+    a.href =
+        url;
+
+
+    a.download =
+        filename;
+
+
+    a.click();
+
+
+    setTimeout(
+        () => {
+
+            URL.revokeObjectURL(
+                url
+            );
+
+        },
+        3000
+    );
+
+}
+
+
+function screenshotFilename() {
+
+    const date =
+        new Date();
+
+
+    return (
+        "ពេលសៀមស្ងាត់-" +
+        date.getFullYear() +
+        "-" +
+        String(
+            date.getMonth() +
+            1
+        ).padStart(2,"0") +
+        "-" +
+        String(
+            date.getDate()
+        ).padStart(2,"0") +
+        ".png"
+    );
+
+}
+
+
+async function shareOrDownloadBlob(
+    blob
+) {
+
+    const filename =
+        screenshotFilename();
+
+
+    const file =
+        new File(
+            [blob],
+            filename,
+            {
+                type:
+                    "image/png"
+            }
+        );
+
+
+    if (
+        navigator.share &&
+        navigator.canShare &&
+        navigator.canShare({
+            files:
+                [file]
+        })
+    ) {
+
+        try {
+
+            await navigator.share({
+                files:
+                    [file],
+
+                title:
+                    "ពេលសៀមស្ងាត់"
+            });
+
+
+            return;
+
+        }
+
+        catch (error) {
+
+            if (
+                error.name ===
+                "AbortError"
+            ) {
+
+                return;
+
+            }
+
+        }
+
+    }
+
+
+    downloadBlob(
+        blob,
+        filename
+    );
+
+}
+
+
+async function captureScreen() {
+
+    document.activeElement?.blur();
+
+
+    await new Promise(
+        resolve =>
+            setTimeout(
+                resolve,
+                300
+            )
+    );
+
+
+    try {
+
+        const shot =
+            await html2canvas(
+
+                document.documentElement,
+
+                {
+
+                    backgroundColor:
+                        "#d8d8d8",
+
+                    width:
+                        window.innerWidth,
+
+                    height:
+                        window.innerHeight,
+
+                    windowWidth:
+                        window.innerWidth,
+
+                    windowHeight:
+                        window.innerHeight,
+
+                    scale:
+                        Math.min(
+                            devicePixelRatio ||
+                            1,
+                            2
+                        ),
+
+                    useCORS:
+                        true,
+
+                    logging:
+                        false
+
+                }
+
+            );
+
+
+        shot.toBlob(
+            async blob => {
+
+                if (blob) {
+
+                    await shareOrDownloadBlob(
+                        blob
+                    );
+
+                }
+
+            },
+            "image/png",
+            1
+        );
+
+
+        setNoteStatus(
+            "✓ បានថតរូប",
+            "good"
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            error
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   EVENTS
+===================================================== */
+
+let googleDrag = null;
+let suppressGoogleClick = false;
+
+
+googleBtn.addEventListener("pointerdown",event => {
+
+    if (event.button !== undefined && event.button !== 0) return;
+
+    const rect = googleBtn.getBoundingClientRect();
+
+    googleDrag = {
+        id: event.pointerId,
+        x: event.clientX,
+        y: event.clientY,
+        right: window.innerWidth - rect.right,
+        top: rect.top,
+        width: rect.width,
+        height: rect.height,
+        moved: false
+    };
+
+    googleBtn.setPointerCapture(event.pointerId);
+
+});
+
+
+googleBtn.addEventListener("pointermove",event => {
+
+    if (!googleDrag || event.pointerId !== googleDrag.id) return;
+
+    const dx = event.clientX - googleDrag.x;
+    const dy = event.clientY - googleDrag.y;
+
+    if (!googleDrag.moved && Math.hypot(dx,dy) < 4) return;
+
+    googleDrag.moved = true;
+    event.preventDefault();
+
+    googleBtn.style.right = Math.max(8,Math.min(googleDrag.right - dx,window.innerWidth - googleDrag.width - 8)) + "px";
+    googleBtn.style.top = Math.max(8,Math.min(googleDrag.top + dy,window.innerHeight - googleDrag.height - 8)) + "px";
+    googleBtn.classList.add("dragging");
+
+});
+
+
+function stopGoogleDrag(event) {
+
+    if (!googleDrag || event.pointerId !== googleDrag.id) return;
+
+    if (googleDrag.moved) {
+        suppressGoogleClick = true;
+        setTimeout(() => { suppressGoogleClick = false; },0);
+    }
+
+    googleDrag = null;
+    googleBtn.classList.remove("dragging");
+
+}
+
+
+googleBtn.addEventListener("pointerup",stopGoogleDrag);
+googleBtn.addEventListener("pointercancel",stopGoogleDrag);
+
+
+let profileDrag = null;
+
+
+profileTop.addEventListener("pointerdown",event => {
+
+    if (event.target.closest("button,input,label")) return;
+
+    const rect = profilePopup.getBoundingClientRect();
+
+    profileDrag = {
+        id: event.pointerId,
+        x: event.clientX,
+        y: event.clientY,
+        left: rect.left,
+        top: rect.top,
+        width: rect.width,
+        height: rect.height
+    };
+
+    profilePopup.style.left = rect.left + "px";
+    profilePopup.style.top = rect.top + "px";
+    profilePopup.style.right = "auto";
+    profileTop.setPointerCapture(event.pointerId);
+    profileTop.classList.add("dragging");
+
+});
+
+
+profileTop.addEventListener("pointermove",event => {
+
+    if (!profileDrag || event.pointerId !== profileDrag.id) return;
+
+    event.preventDefault();
+
+    const maxLeft = Math.max(8,window.innerWidth - profileDrag.width - 8);
+    const maxTop = Math.max(8,window.innerHeight - profileDrag.height - 8);
+
+    profilePopup.style.left = Math.max(8,Math.min(profileDrag.left + event.clientX - profileDrag.x,maxLeft)) + "px";
+    profilePopup.style.top = Math.max(8,Math.min(profileDrag.top + event.clientY - profileDrag.y,maxTop)) + "px";
+
+});
+
+
+function stopProfileDrag(event) {
+
+    if (!profileDrag || event.pointerId !== profileDrag.id) return;
+
+    profileDrag = null;
+    profileTop.classList.remove("dragging");
+
+}
+
+
+profileTop.addEventListener("pointerup",stopProfileDrag);
+profileTop.addEventListener("pointercancel",stopProfileDrag);
+
+viewer.addEventListener(
+    "pointerdown",
+    togglePageTools,
+    {passive:true}
+);
+
+
+goToInput.addEventListener(
+    "input",
+    showPageTools
+);
+
+
+goToForm.addEventListener(
+    "submit",
+    goToEnteredPage
+);
+
+
+googleBtn.addEventListener("click",event => {
+    if (suppressGoogleClick) {
+        event.preventDefault();
+        return;
+    }
+    openProfile();
+});
+
+
+pagesBtn.addEventListener(
+    "click",
+    openPagesPopup
+);
+
+
+closePages.addEventListener(
+    "click",
+    closePagesPopup
+);
+
+
+pagesOverlay.addEventListener(
+    "click",
+    event => {
+        if (event.target === pagesOverlay) closePagesPopup();
+    }
+);
+
+
+gateGoogleBtn.addEventListener(
+    "click",
+    loginGoogle
+);
+
+
+logoutBtn.addEventListener(
+    "click",
+    logoutGoogle
+);
+
+
+profileOverlay.addEventListener(
+    "click",
+
+    event => {
+
+        if (
+            event.target ===
+            profileOverlay
+        ) {
+
+            closeProfile();
+
+        }
+
+    }
+);
+
+
+writeBtn.addEventListener(
+    "click",
+    openNoteForm
+);
+
+
+closeNote.addEventListener(
+    "click",
+    closeNoteForm
+);
+
+
+saveNote.addEventListener(
+    "click",
+
+    () => {
+
+        clearTimeout(
+            autoSaveTimer
+        );
+
+
+        saveNotes(
+            currentPage,
+            getFormValues(),
+            false
+        );
+
+    }
+);
+
+
+deleteNote.addEventListener(
+    "click",
+    deleteNotes
+);
+
+
+captureNote.addEventListener(
+    "click",
+    captureScreen
+);
+
+
+noteOverlay.addEventListener(
+    "click",
+
+    event => {
+
+        if (
+            event.target ===
+            noteOverlay
+        ) {
+
+            closeNoteForm();
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   RESIZE
+===================================================== */
+
+let resizeTimer;
+
+
+window.addEventListener(
+    "resize",
+
+    () => {
+
+        clearTimeout(
+            resizeTimer
+        );
+
+
+        resizeTimer =
+            setTimeout(
+                () => {
+
+                    if (
+                        pdfDocument
+                    ) {
+
+                        renderPage(
+                            currentPage
+                        );
+
+                    }
+
+                },
+                200
+            );
+
+    }
+);
+
+
+/* =====================================================
+   START
+===================================================== */
+
+await startAuth();
+
+
+await loadPDF(
+    LOCAL_PDF_RECORD
+);
+
+
+startPdfLibraryListeners();
+
+</script>
+
+</body>
+</html>
