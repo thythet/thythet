@@ -3153,10 +3153,83 @@ img.image-fallback{
 /* Existing logo/avatar surfaces already provide their own background. */
 .brand-mark img.image-loaded,.avatar img.image-loaded{background-color:transparent}
 
+
+
+/* =========================================================
+   WEBSITE PRELOADER
+   Admin controlled. Default: logo only for 3 seconds.
+   ========================================================= */
+.site-preloader{
+  position:fixed;inset:0;z-index:2147483000;
+  display:grid;place-items:center;
+  background:var(--bg);
+  opacity:1;visibility:visible;
+  transition:opacity .32s var(--ease),visibility .32s var(--ease);
+  isolation:isolate;overflow:hidden
+}
+.site-preloader::before{
+  content:"";position:absolute;left:50%;top:50%;
+  width:clamp(190px,28vw,280px);aspect-ratio:1;
+  transform:translate(-50%,-50%);border-radius:50%;
+  background:radial-gradient(circle,rgba(213,45,39,.20) 0%,rgba(213,45,39,.08) 38%,transparent 72%);
+  filter:blur(10px);pointer-events:none
+}
+.site-preloader.is-hidden{opacity:0;visibility:hidden;pointer-events:none}
+.site-preloader-logo{
+  position:relative;z-index:1;
+  width:clamp(82px,11vw,108px);height:clamp(82px,11vw,108px);
+  display:block;object-fit:cover;
+  border-radius:24px;
+  background:#d52d27!important;background-image:none!important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.12),
+    0 14px 38px rgba(213,45,39,.28),
+    0 0 28px rgba(213,45,39,.22);
+  animation:
+    campPreloaderIn .55s var(--spring) both,
+    campPreloaderGlow 1.8s ease-in-out .55s infinite alternate;
+  will-change:filter,box-shadow
+}
+@keyframes campPreloaderIn{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:none}}
+@keyframes campPreloaderGlow{
+  from{filter:brightness(1);box-shadow:0 0 0 1px rgba(255,255,255,.12),0 14px 38px rgba(213,45,39,.28),0 0 28px rgba(213,45,39,.22)}
+  to{filter:brightness(1.04);box-shadow:0 0 0 1px rgba(255,255,255,.18),0 18px 48px rgba(213,45,39,.36),0 0 46px rgba(213,45,39,.32)}
+}
+@media(prefers-reduced-motion:reduce){.site-preloader-logo{animation:none}.site-preloader{transition:none}}
+
 </style>
 </head>
 
 <body>
+
+<div class="site-preloader" id="sitePreloader" aria-hidden="true">
+  <img class="site-preloader-logo" id="sitePreloaderLogo" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZlcnNpb249IjEuMSIgdmlld0JveD0iMCAwIDUwMCA1MDAiPgogIDxkZWZzPgogICAgPHN0eWxlPgogICAgICAuY2xzLTEgewogICAgICAgIGZpbGw6ICNmZmY7CiAgICAgIH0KICAgICAgLmNscy0yIHsKICAgICAgICBmaWxsOiAjZDUyZDI3OwogICAgICB9CiAgICA8L3N0eWxlPgogIDwvZGVmcz4KICA8IS0tIEdlbmVyYXRvcjogQWRvYmUgSWxsdXN0cmF0b3IgMjguNi4wLCBTVkcgRXhwb3J0IFBsdWctSW4gLiBTVkcgVmVyc2lvbjogMS4yLjAgQnVpbGQgNzA5KSAgLS0+CiAgPGc+CiAgICA8ZyBpZD0iTGF5ZXJfMSI+CiAgICAgIDxyZWN0IGNsYXNzPSJjbHMtMiIgd2lkdGg9IjUwMCIgaGVpZ2h0PSI1MDAiLz4KICAgICAgPGc+CiAgICAgICAgPHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMzcyLjgsMzg2LjdjMCw4LDAsMTUuOSwwLDIzLjksMCwyLTEuNCwyLjctMy4yLDMuMi0yLjguOC01LjYsMS4zLTguNCwyLjItLjkuMy0yLDEuNC0yLjEsMi4yLS4yLDYtLjIsMTEuOSwwLDE3LjksMCwxLC40LDIuMiwxLjEsMi44LDIsMS45LDIuNCw0LjEsMi4zLDYuNSwwLDMuMiwwLDYuNCwwLDkuNiwwLDIuOC0xLDMuNi00LDMuNi0xMC40LDAtMjAuOCwwLTMxLjIsMC0xLjUsMC0zLjktLjktNC4yLTEuOC0uNi0xLjUtLjMtMy42LjYtNS4xLDIuMi0zLjYsNi4zLTQuOCwxMC41LTUuNCwyLjUtLjMsMy41LTEuMyw0LTMuNC4zLTEuMy45LTIuNywyLTMuNiwxLjctMS40LDIuMi0yLjksMi4xLTQuOC0uMS00LjEtLjItOC4zLS4yLTEyLjQsMC0xLjktLjktMy4xLTMuNC0yLjktMi42LjMtNS4yLjQtNy44LjctMi43LjMtNC4zLTEtNC4yLTMuNC41LTE0LjcsMS4xLTI5LjQsMS43LTQ0LC4yLTQuNi43LTkuMSwxLjEtMTMuNy4xLTEuNi0uMy0yLjctMi40LTMuMi0zLjMtLjctMy0zLjctMi41LTUuNCwxLjQtNC44LS4xLTkuNS0uNi0xNC4xLTEtOS40LTIuNS0xOC43LTQtMjgtLjItMS0uOS0yLjEtMS44LTIuNy01LjEtMy44LTYuNi03LjQtNC4xLTEyLjksMi40LTUuMiw1LjYtMTAsOC41LTE1LC40LS43LDEuMi0xLjIsMS40LTEuOS4yLS42LDAtMS40LDAtMi4xLS44LjItMS42LjMtMi4yLjctMy4xLDIuMS02LjEsNC41LTkuNCw2LjMtLjkuNS0zLjUtLjItNC4xLTEuMS0xLjMtMS43LS4zLTMuNSwxLjUtNC44LDIuMi0xLjYsNC41LTMsNi44LTQuNSwyLTEuNCwyLTIuNCwwLTMuOS0uMi0uMi0uNS0uMy0uNy0uNS02LjQtNC4zLTcuMS03LjUtMy4xLTEzLjcuOS0xLjMsMS4yLTMuMywyLjQtNCwzLjEtMS44LDUuMi00LjUsNy44LTYuNSw3LjMtNS42LDE4LjMtMy4yLDI0LjMsMy4zLDguMyw5LjEsMi40LDIxLjMtNSwyNi41LTEuOSwxLjQtMi4zLDIuNi0uOCw0LjQsNC40LDUuMiw3LjcsMTEsOS45LDE3LjIuMy43LjcsMS41LjYsMi4zLS41LDUuNSwyLDEwLjMsNC4xLDE1LjIsNC40LDEwLjIsNy45LDIwLjcsMTMuMywzMC40LDMuNSw2LjMsMywxMi40LDIuOSwxOC44LS4yLDkuMSwwLDE4LjIsMCwyNy4yLjIsMCwuNCwwLC42LDBaIi8+CiAgICAgICAgPGc+CiAgICAgICAgICA8cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik0zMDQsMTc1LjRjLTMuMy00LjQtNi42LTguNy0xMC0xMy02LjktOC44LTE0LjItMTcuMy0yMC44LTI2LjItMi41LTMuNC02LjEtNi4yLTctMTAuNi0uMi0uOC0xLjQtMS43LTIuNC0yLjEtNS0yLjYtMTAuMi01LjEtMTUuMi03LjYtMi41LTEuMy01LTIuNS03LjUtMy44djYuNmwtMTEuMy0zLjQtMTIuNCwzLjd2LTcuOGMtNywxLjktMTMuOSw0LTIwLjgsNS43LTIuNy43LTMuOSwyLTQuMyw0LjMtLjYsNC0uOSw4LjEtMS45LDEyLTIuNiwxMC44LTUuMSwyMS42LTguNSwzMi4yLTMuOCwxMi05LjgsMjMuMi0xNi43LDM0LjEtNS43LDktMTIuNCwxNy4zLTIwLjEsMjUtMiwyLTQuNCwzLjYtNi45LDUuMi0yLjgsMS44LTYsMy4yLTguOCw1LS45LjUtMS44LDEuNi0xLjksMi41LS4zLDMuMy0uNCw2LjctLjMsMTAuMSwwLDMuMi44LDYuMy44LDkuNSwwLDY0LjksMCwxMjkuOCwwLDE5NC43LDAsMS4xLDAsMi4zLjQsMy4zLDEuMSwzLjEsNC45LDMuOSw2LjksMS4zLDEtMS4yLDEuNC0zLjIsMS40LTQuOCwwLTY2LjEsMC0xMzIuMiwwLTE5OC4zLDAtMS40LS40LTMsLjItNC4xLjctMS40LDIuMS0zLDMuNi0zLjYsMS0uNCwzLjEuNSw0LjIsMS40LjkuNywxLjEsMi4xLDEuNCwzLjIuNiwyLDIuMywzLjEsNC41LDIuNywyLjMtLjQsMi4yLTEuOCwyLjEtMy42LS4xLTMuMS0xLjgtNS40LTMuOC03LjctLjgtMS0xLjItMi40LTEuOC0zLjYuNC0uMi44LS41LDEuMi0uNywxLjMsMSwyLjYsMi4xLDMuOSwzLjEsMi4zLDEuOSw0LDIsNS42LDAsNC45LTUuOSwxMC0xMS43LDE0LjYtMTcuOCw4LjgtMTEuNywxNi4xLTI0LjIsMjEuOC0zNy40LjYtMS4zLDEuMi0yLjUsMS45LTMuOC42LDEuMS42LDIsLjYsMy0uMSwxMC4zLS41LDIwLjYtLjQsMzAuOC4yLDIwLjYtLjEsNDEuMS0zLjEsNjEuNS0uMywyLS40LDQtLjYsNS45LS45LDcuOS0xLjksMTUuOC0yLjgsMjMuNy0uOSw3LjYtMS40LDE1LjMtMi43LDIyLjktMS42LDkuNC0xLjEsMTguOC0uMywyOC4yLjUsNi41LDEuNCwxMy4xLDIsMTkuNi43LDcuNywxLjQsMTUuMywyLjEsMjMsLjcsNy4xLDEuMywxNC4zLDIsMjEuNC41LDQuNywxLjEsOS40LDEuNSwxNC4xLjIsMi44LjIsNS41LDAsOC4zLDAsLjctLjksMS42LTEuNiwxLjktMy4xLDEuNS02LjQsMi45LTkuNiw0LjItMy4yLDEuMy02LjUsMi4zLTkuNiwzLjctMSwuNC0xLjUsMS44LTIuMiwyLjcsMS4xLjUsMi4zLDEuNCwzLjQsMS40LDcuOS4xLDE1LjcuMiwyMy42LDAsMi4zLDAsNC41LS42LDYuNy0xLjMsMi4zLS43LDQuNC0xLjcsNi4zLjUuMy4zLDEsLjUsMS42LjUsMi45LjEsNS44LjEsOC43LjMsMi42LjEsMy45LTEsNC0zLjEsMC0yLS4yLTQtLjItNS45LS4xLTMuNi4xLTcuMy0uNC0xMC45LTEuMy05LTMtMTcuOS00LjMtMjYuOS0uOS02LTEuNC0xMi0yLjMtMTgtLjgtNS41LTIuMS0xMC45LTIuOS0xNi4zLTEuNC05LjQtMi43LTE4LjgtNC0yOC4zLS41LTMuMy0xLjYtNi44LS45LTEwLDEuNi03LjksNC4yLTE1LjYsNi4zLTIzLjQsMi03LjQsMy44LTE0LjgsNS44LTIyLjIsMi4yLTguNCw0LjUtMTYuOCw2LjgtMjUuMiwxLTMuNiwxLjktNy4yLDIuOS0xMC43LjQsMCwuOCwwLDEuMywwLC4xLDEuMi40LDIuNC40LDMuNi4yLDE4LjUuNCwzNywuNiw1NS41LDAsMy40LDAsNi45LDAsMTAuMywwLDIuOC41LDUuNy41LDguNS0uMywxNC0uNywyOC0xLDQyLS4yLDcuOC0uNCwxNS41LS43LDIzLjMtLjIsNS41LS43LDExLTEsMTYuNi0uNCw2LjktLjcsMTMuOC0xLjEsMjAuNy0uMyw1LjYtLjUsMTEuMi0uNiwxNi44LDAsMy4yLDEuMSw0LjIsNC43LDQuMiwyLjksMCw1LjguMSw4LjcsMCwxLjEsMCwyLjItLjgsMy4zLTEuMiwxLjEtLjQsMi41LTEuMiwzLjQtLjksMy42LjksNy4xLDIsMTEuMSwxLjcsMy44LS4zLDcuNiwwLDExLjQsMCwxLjUsMCwyLjkuMSw0LjQtLjEuOC0uMSwxLjctLjgsMi4xLTEuNS4yLS4zLS42LTEuNC0xLjMtMS43LTIuMi0xLjItNC42LTIuMi02LjktMy40LTQuMi0yLjItOC4zLTQuNC0xMi4zLTYuNy0uOS0uNS0xLjYtMS44LTEuNy0yLjgtLjMtOS45LS41LTE5LjctLjYtMjkuNiwwLTQuNC40LTguOC40LTEzLjIsMC04LjYtLjYtMTcuMS0uMy0yNS43LjQtMTEuNCwxLjQtMjIuOCwyLjItMzQuMS40LTYuNy43LTEzLjUsMS4yLTIwLjIuOS0xMS40LDEuOC0yMi43LDIuOS0zNC4xLjMtMy4zLDEtNi41LDEuNS05LjgsMS40LDIuNywyLjUsNS40LDMsOC4zLDIuMywxMi40LDIuNywyNC45LjgsMzcuNC0uMiwxLjUsMCwyLjksMS44LDIuOCwxLDAsMi40LS45LDIuOC0xLjcsMS4xLTIuMiwxLjYtNC42LDIuNS02LjgsNC4yLTEwLjksNS44LTIyLjIsNi0zMy42LjEtOS41LS42LTE5LTMuMS0yOC4zLTIuMS04LTQuMi0xNi02LjgtMjMuOC0xLjctNS4yLTQuMi0xMC4yLTYuNy0xNS4yLTEuMi0yLjYtMS4zLTQuNiwxLjQtNi4zLDIuMS0xLjQsNC4yLTIuOCw2LjItNC4zLDEwLjEtNy42LDIwLjItMTUuMSwzMC4yLTIyLjcsMS45LTEuNCwyLjMtMy4yLjktNS4xWk0yMzAsMTQyLjJjLS40LjYtMS4zLDEtMi4xLjktMS4xLS4yLTEuOS0xLjEtMS43LTIuMS4yLTEsMS4zLTEuNywyLjQtMS41LDEuMS4yLDEuOSwxLjEsMS43LDIuMSwwLC4xLDAsLjItLjEuMywwLDAsLjEuMi4yLjIsMCwwLS4yLDAtLjMsMFpNMjI2LjQsMTMxLjZjLjYtLjksMS44LTEuMiwyLjgtLjcsMSwuNSwxLjMsMS42LjgsMi41cy0xLjgsMS4yLTIuOC43Yy0xLS41LTEuMy0xLjYtLjgtMi41Wk0yMjkuNywxMjUuN2MtLjguNy0yLjEuNy0yLjksMC0uOC0uNy0uOC0xLjksMC0yLjYuOC0uNywyLjEtLjcsMi45LDAsLjguNy44LDEuOSwwLDIuNlpNMjc3LjYsMTc5LjljLTYsNC0xMS45LDguMi0xOC41LDEyLjctNi4yLTE0LjMtNy44LTI3LjkuMS00Mi4zLDIuMSwyLjQsNCw0LjQsNS43LDYuNSw0LjYsNS41LDkuMSwxMS4yLDEzLjgsMTYuNywyLjQsMi44LDIuMiw0LjMtMSw2LjRaIi8+CiAgICAgICAgICA8cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik0yMzguMSwxMDZjMS41LTEuNSwyLjktMy4xLDMuNy00LjksMS4xLTIuNCwxLjgtNC44LDQuNC02LjUuNy0uNSwxLjMtMS42LDEuMy0yLjUuMS0xLjksMS4zLTIuMywzLjEtMi4zLjcsMCwxLjQsMCwyLS4xLDItLjMsMy43LS45LDMuNy0zLDAtMi4xLTEuNi0zLTMuOS0zLjEtMS44LDAtMy43LDAtNS41LDAtMy44LDAtNC0uMS00LTMuNCwwLTExLjEsMC0yMi4xLDAtMzMuMiwwLTQuMi0xLjUtNS40LTYuMS01LjUtNS42LDAtMTEuMy0uMS0xNi45LS4yLTMuNSwwLTQuOSwxLTUsNCwwLDExLjUtLjEsMjMtLjEsMzQuNSwwLDIuMy0uOCwzLjctMy42LDMuNi0yLjMsMC00LjctLjEtNywuNC0xLjQuMy0yLjksMS40LTMuNCwyLjUtLjMuNSwxLjIsMi40LDIuMywyLjgsMS42LjYsMy42LjMsNS40LjYsMSwuMiwyLjcuOCwyLjcsMS4yLDAsMi43LDEuMiw0LjYsMy44LDYsLjUuMy42LDEuMi43LDEuOS45LDQuOSw1LjIsOC4xLDgsMTIsMS45LDIuNyw1LjcsMi40LDksMS42bDUuMy0yLjJjLTItMS4zLTEuNy0yLjQuMS00LjJaIi8+CiAgICAgICAgPC9nPgogICAgICA8L2c+CiAgICA8L2c+CiAgPC9nPgo8L3N2Zz4=" alt="">
+</div>
+<script>
+(()=>{
+  const el=document.getElementById("sitePreloader");
+  const img=document.getElementById("sitePreloaderLogo");
+  let enabled=true;
+  try{
+    const saved=JSON.parse(localStorage.getItem("camp-preloader-v1")||"null");
+    if(saved&&saved.enabled===false)enabled=false;
+  }catch(_){ }
+  let timer=null;
+  const hide=()=>{
+    if(!el)return;
+    el.classList.add("is-hidden");
+    clearTimeout(timer);
+    setTimeout(()=>el.remove(),420);
+  };
+  window.CampPreloaderBoot={
+    hide,
+    setEnabled(value){if(value===false)hide();},
+    updateLogo(){ /* dedicated preload artwork */ }
+  };
+  if(!enabled){hide();return;}
+  timer=setTimeout(hide,3000);
+})();
+</script>
 
 <!-- ======================================================
      HEROICON-STYLE SVG SPRITE
@@ -3772,6 +3845,7 @@ CFG.database=merge({
   posts:"posts",
   postLikes:"postLikes",
   postViews:"postViews",
+  postShares:"postShares",
   postSaves:"postSaves",
   comments:"comments",
   albums:"albums",
@@ -4637,6 +4711,29 @@ const Appearance={
     );
   }
 };
+
+/* =========================================================
+   WEBSITE PRELOADER SETTINGS
+   ========================================================= */
+const PreloaderState={enabled:true,duration:3000};
+const Preloader={
+  cacheKey:"camp-preloader-v1",
+  normalize(value={}){return {enabled:value?.enabled!==false,duration:3000};},
+  load(){
+    try{
+      const saved=JSON.parse(localStorage.getItem(this.cacheKey)||"null");
+      if(saved)Object.assign(PreloaderState,this.normalize(saved));
+    }catch(_){ }
+    return {...PreloaderState};
+  },
+  apply(value={}){
+    Object.assign(PreloaderState,this.normalize(value));
+    try{localStorage.setItem(this.cacheKey,JSON.stringify(PreloaderState));}catch(_){ }
+    window.CampPreloaderBoot?.setEnabled?.(PreloaderState.enabled);
+    return {...PreloaderState};
+  }
+};
+Preloader.load();
 
 /* =========================================================
    BRANDING
@@ -5746,7 +5843,7 @@ const Posts={
                     <span>
                       Share
                     </span>
-
+                    <span data-share-count="${esc(id)}">${Number(post.shares||0)}</span>
 
                   </button>
 
@@ -8845,6 +8942,20 @@ const Admin={
           <div class="branding-help" id="adminLogoHelp">Uploaded logos are optimized before saving. No API secret is required.</div>
         </div>
 
+        <div class="sheet-block">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+            <div>
+              <h3 style="margin:0 0 5px">Website preload</h3>
+              <p class="branding-help" style="margin:0">Show the dedicated CampCree preload mark for 3 seconds while the website starts.</p>
+            </div>
+            <label class="branding-toggle" style="margin:0">
+              <input type="checkbox" id="adminPreloaderEnabled" ${PreloaderState.enabled!==false?"checked":""}>
+              <span>Preload ${PreloaderState.enabled!==false?"ON":"OFF"}</span>
+            </label>
+          </div>
+          <small class="soft" style="display:block;margin-top:10px">Default is ON · fixed duration 3 seconds · dedicated rounded logo only, no text.</small>
+        </div>
+
         <div class="sheet-block hero-slider-admin">
           <div>
             <h3 style="margin:0 0 5px">Hero slider</h3>
@@ -9071,6 +9182,12 @@ const Admin={
     const readBranding=()=>({
       logoUrl:pendingLogoData||$("#adminLogoUrl")?.value.trim()||Branding.defaultLogo,
       showName:!!$("#adminLogoShowName")?.checked
+    });
+
+    const readPreloader=()=>({enabled:!!$("#adminPreloaderEnabled")?.checked,duration:3000});
+    $("#adminPreloaderEnabled")?.addEventListener("change",event=>{
+      const label=event.target.closest("label")?.querySelector("span");
+      if(label)label.textContent=`Preload ${event.target.checked?"ON":"OFF"}`;
     });
 
     const previewBranding=()=>{
@@ -9314,9 +9431,11 @@ const Admin={
           try{
             await FirebaseService
               .saveAppearance(defaults);
+            if($("#adminPreloaderEnabled"))$("#adminPreloaderEnabled").checked=true;
+            await FirebaseService.savePreloader({enabled:true,duration:3000});
 
             Toast.show(
-              "Default appearance set for everyone"
+              "Default appearance and preload set for everyone"
             );
 
           }catch(error){
@@ -9364,8 +9483,10 @@ const Admin={
                 readHeroSlider()
               );
 
+            await FirebaseService.savePreloader(readPreloader());
+
             Toast.show(
-              "Appearance, logo and hero slider saved for everyone"
+              "Appearance, logo, preload and hero slider saved for everyone"
             );
 
           }catch(error){
@@ -9561,6 +9682,7 @@ const FirebaseService={
       this.watchAppearance();
       this.watchBranding();
       this.watchHeroSlider();
+      this.watchPreloader?.();
       this.watchSiteContent();
       this.watchAuth();
       this.watchPosts();
@@ -13936,6 +14058,167 @@ document.addEventListener("click",async event=>{
     }catch(error){console.error(error);Toast.show(error.message||"Could not update post");}
   }
 });
+
+/* =========================================================
+   REAL UNIQUE POST METRICS
+   A real count is one authenticated Firebase UID per post.
+   Likes toggle; views and shares are unique one-time markers.
+   ========================================================= */
+FirebaseService.togglePostLike=async function(postId,forcedState=null){
+  if(!this.ready||!State.user)throw new Error("Sign in required.");
+  if(Access.isBlocked?.())throw new Error("Account blocked.");
+  const D=this.dbModule;
+  const marker=D.ref(this.db,`${CFG.database.postLikes}/${postId}/users/${State.user.uid}`);
+  const current=(await D.get(marker)).val()===true;
+  const next=forcedState===true?true:forcedState===false?false:!current;
+  if(next!==current){
+    if(next)await D.set(marker,true);else await D.remove(marker);
+  }
+  const users=(await D.get(D.ref(this.db,`${CFG.database.postLikes}/${postId}/users`))).val()||{};
+  return {liked:next,total:Object.keys(users).length};
+};
+
+FirebaseService.ensurePostView=async function(postId){
+  if(!this.ready||!State.user)throw new Error("Sign in required.");
+  if(Access.isBlocked?.())throw new Error("Account blocked.");
+  const D=this.dbModule;
+  const marker=D.ref(this.db,`${CFG.database.postViews}/${postId}/users/${State.user.uid}`);
+  await D.set(marker,true); // idempotent: same UID still counts once
+  const users=(await D.get(D.ref(this.db,`${CFG.database.postViews}/${postId}/users`))).val()||{};
+  return Object.keys(users).length;
+};
+
+FirebaseService.ensurePostShare=async function(postId){
+  if(!this.ready||!State.user)throw new Error("Sign in required.");
+  if(Access.isBlocked?.())throw new Error("Account blocked.");
+  const D=this.dbModule;
+  const marker=D.ref(this.db,`${CFG.database.postShares}/${postId}/users/${State.user.uid}`);
+  await D.set(marker,true); // repeat shares by one account do not add another count
+  const users=(await D.get(D.ref(this.db,`${CFG.database.postShares}/${postId}/users`))).val()||{};
+  return Object.keys(users).length;
+};
+
+const PostMetrics={
+  stops:[],
+  clear(){this.stops.splice(0).forEach(stop=>{try{stop?.();}catch(_){}});},
+  setCount(selector,id,total,field){
+    const el=document.querySelector(`[${selector}="${CSS.escape(String(id))}"]`);
+    if(el)el.textContent=String(total);
+    const post=State.posts.find(x=>String(x.id)===String(id));
+    if(post)post[field]=total;
+  },
+  bind(){
+    this.clear();
+    if(!FirebaseService.ready||!FirebaseService.dbModule||!FirebaseService.db)return;
+    const D=FirebaseService.dbModule;
+    State.posts.forEach(post=>{
+      const id=String(post.id||"");
+      if(!id||id.startsWith("local-"))return;
+      const watchUsers=(path,selector,field,onSnapshot)=>{
+        const ref=D.ref(FirebaseService.db,`${path}/${id}/users`);
+        const stop=D.onValue(ref,snap=>{
+          const users=snap.val()||{};
+          const total=Object.keys(users).length;
+          this.setCount(selector,id,total,field);
+          onSnapshot?.(users);
+        },error=>console.warn(`Metric listener unavailable (${field})`,error));
+        this.stops.push(stop);
+      };
+      watchUsers(CFG.database.postLikes,"data-like-count","likes",users=>{
+        const liked=!!(State.user&&users[State.user.uid]===true);
+        const button=document.querySelector(`[data-like="${CSS.escape(id)}"]`);
+        button?.classList.toggle("liked",liked);
+        button?.classList.toggle("on",liked);
+        if(button){
+          const label=button.querySelector(".post-like-label");
+          if(label)label.textContent=liked?"Liked":"Like";
+        }
+      });
+      watchUsers(CFG.database.postViews,"data-view-count","views");
+      watchUsers(CFG.database.postShares,"data-share-count","shares");
+    });
+  }
+};
+
+const CampRealMetricsRender=Posts.render.bind(Posts);
+Posts.render=function(){
+  CampRealMetricsRender();
+  queueMicrotask(()=>PostMetrics.bind());
+};
+
+const CampLegacyAddView=Posts.addView.bind(Posts);
+Posts.addView=async function(id){
+  const key=String(id);
+  if(key.startsWith("local-"))return CampLegacyAddView(id);
+  if(!FirebaseService.ready||!State.user||Access.isBlocked?.())return;
+  try{
+    const total=await FirebaseService.ensurePostView(key);
+    PostMetrics.setCount("data-view-count",key,total,"views");
+  }catch(error){console.warn("Unique view unavailable",error);}
+};
+
+const CampLegacyToggleLike=Posts.toggleLike.bind(Posts);
+Posts.toggleLike=async function(id,forceLike=false){
+  const key=String(id);
+  if(key.startsWith("local-"))return CampLegacyToggleLike(id,forceLike);
+  if(!State.user){Toast.show("Sign in to like posts");return;}
+  if(!FirebaseService.ready){Toast.show("Like sync is unavailable");return;}
+  try{
+    const result=await FirebaseService.togglePostLike(key,forceLike?true:null);
+    PostMetrics.setCount("data-like-count",key,result.total,"likes");
+    const button=document.querySelector(`[data-like="${CSS.escape(key)}"]`);
+    button?.classList.toggle("liked",result.liked);
+    button?.classList.toggle("on",result.liked);
+    const label=button?.querySelector(".post-like-label");
+    if(label)label.textContent=result.liked?"Liked":"Like";
+  }catch(error){console.error(error);Toast.show(error.message||"Could not update like");}
+};
+
+const CampLegacyShare=Posts.share.bind(Posts);
+Posts.share=async function(id){
+  const key=String(id);
+  const url=`${location.origin}${location.pathname}#posts`;
+  let completed=false;
+  try{
+    if(navigator.share){
+      await navigator.share({title:"CampCree",url});
+      completed=true;
+    }else{
+      await navigator.clipboard.writeText(url);
+      Toast.show("Link copied");
+      completed=true;
+    }
+  }catch(error){
+    if(error?.name!=="AbortError")console.warn("Share unavailable",error);
+    return;
+  }
+  if(completed&&FirebaseService.ready&&State.user&&!key.startsWith("local-")&&!Access.isBlocked?.()){
+    try{
+      const total=await FirebaseService.ensurePostShare(key);
+      PostMetrics.setCount("data-share-count",key,total,"shares");
+    }catch(error){console.warn("Unique share count unavailable",error);}
+  }
+};
+
+/* Website preload is a public site setting. */
+FirebaseService.watchPreloader=function(){
+  if(!this.ready)return;
+  this.dbModule.onValue(
+    this.dbModule.ref(this.db,`${CFG.database.site}/preloader`),
+    snap=>Preloader.apply(snap.val()||{enabled:true,duration:3000}),
+    error=>console.warn("Preloader listener unavailable",error)
+  );
+};
+FirebaseService.savePreloader=async function(value){
+  if(!this.ready||State.role!=="admin")throw new Error("Admin Firebase access required.");
+  const safe=Preloader.normalize(value);
+  await this.dbModule.set(
+    this.dbModule.ref(this.db,`${CFG.database.site}/preloader`),
+    {...safe,updatedBy:State.user.uid,updatedAt:Date.now()}
+  );
+  Preloader.apply(safe);
+  return safe;
+};
 
 /* Contact links are public site settings and update live for everyone. */
 FirebaseService.watchContactLinks=function(){
