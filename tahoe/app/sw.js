@@ -1,8 +1,0 @@
-const SHELL='tahoe-shell-v53',RUNTIME='tahoe-runtime-v53';
-const CORE=['./','index.html','manifest.webmanifest','data/manifest.json','assets/icon-192.png','assets/icon-512.png','assets/powerslide-icon.svg','apps/bible/index.html','apps/powerslide/index.html'];
-self.addEventListener('install',e=>e.waitUntil(caches.open(SHELL).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
-self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>(k.startsWith('tahoe-shell-')||k.startsWith('tahoe-runtime-'))&&!([SHELL,RUNTIME].includes(k))).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
-async function stale(req){const c=await caches.open(RUNTIME),hit=await c.match(req);const net=fetch(req).then(r=>{if(r.ok)c.put(req,r.clone());return r}).catch(()=>null);return hit||await net||Response.error()}
-async function cacheFirst(req){const c=await caches.open(RUNTIME),hit=await c.match(req);if(hit)return hit;const r=await fetch(req);if(r.ok)c.put(req,r.clone());return r}
-async function networkFirst(req){const c=await caches.open(RUNTIME);try{const r=await fetch(req,{cache:'no-cache'});if(r.ok)c.put(req,r.clone());return r}catch{const hit=await c.match(req);return hit||Response.error()}}
-self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;const u=new URL(e.request.url);if(u.origin!==location.origin)return;if(e.request.mode==='navigate')return e.respondWith(networkFirst(e.request));if(u.pathname.includes('/data/books/'))return e.respondWith(cacheFirst(e.request));if(/\.(?:js|css|json|png|jpg|jpeg|webp|svg|woff2?|ttf)$/i.test(u.pathname)||u.pathname.endsWith('/')||u.pathname.endsWith('.html'))e.respondWith(stale(e.request))});
