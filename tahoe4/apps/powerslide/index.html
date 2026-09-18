@@ -1,0 +1,2076 @@
+<!doctype html>
+<html lang="km">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d1210">
+<title>Powerslide · Bible1954</title>
+<link rel="icon" href="../../assets/powerslide-icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Bayon&family=Content:wght@400;700&family=Dangrek&family=Freehand&family=Hanuman:wght@400;700&family=Kantumruy+Pro:wght@400;600;700&family=Khmer&family=Koulen&family=Metal&family=Moul&family=Moulpali&family=Noto+Sans+Khmer:wght@400;600;700&family=Noto+Serif+Khmer:wght@400;600;700&family=Odor+Mean+Chey&family=Preahvihear&family=Siemreap&family=Taprom&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css">
+<link rel="stylesheet" href="powerslide.css?v=64">
+</head>
+<body>
+<div id="app">
+  <header class="topbar"><div class="tahoeTraffic"><button data-tahoe-cmd="close"></button><button data-tahoe-cmd="minimize"></button><button data-tahoe-cmd="zoom"></button></div>
+    <button id="backBible" class="iconBtn" title="Bible"><svg class="hi" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/></svg></button>
+    <div class="brand"><div class="brandMark brandMarkSvg"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25" /></svg></div><div class="brandText"><strong>Powerslide</strong><small>Sunday Presentation Studio</small></div></div>
+    <div class="projectTitleWrap"><input id="projectTitle" class="projectTitle" value="Powerslide" aria-label="Project title"><span id="saveState" class="saveState">Local</span></div>
+    <div class="topActions">
+      <button id="openLibrary" class="btn desktopOnly"><svg class="hi" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-19.5 0v4.5A2.25 2.25 0 0 0 4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25v-4.5m-19.5 0h19.5M6.75 6.75h3.75l1.5 1.5h5.25"/></svg><span>Projects</span></button><button id="projectInfoBtn" class="btn desktopOnly"><svg class="hi" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25 12 10.5m0 0 .75.75M12 10.5v6.75m9-5.25a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg><span>Info</span></button>
+      <button id="undoBtn" class="iconBtn" title="Undo"><i class="ri-arrow-go-back-line ri-lg"></i></button><button id="redoBtn" class="iconBtn" title="Redo"><i class="ri-arrow-go-back-line ri-lg redoFlip"></i></button>
+      <div class="topDivider"></div>
+      <button id="presentBtn" class="btn primary"><svg class="hi" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z"/></svg><span>Present</span></button>
+      <button id="exportBtn" class="btn"><svg class="hi" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-4.5-4.5L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg><span>PPTX</span></button>
+    </div>
+  </header>
+
+  <main id="editorView" class="editor hidden tahoeAppWindow pro-readonly">
+    <aside id="rail" class="rail sidebar tahoeAppSidebar">
+      <div class="paneHead sidebar-top tahoeAppSidebarTop"><span>SLIDES</span><button id="closeRail" class="iconBtn" title="Hide sidebar">×</button></div>
+      <div id="slideList" class="slideList"></div>
+      <button id="addSlideBtn" class="btn thumbAdd">+ New Slide</button>
+      <div id="railResizer" class="railResizer" title="Drag to resize slide thumbnails" aria-label="Resize slide thumbnails"></div>
+    </aside>
+
+    <div class="mobilePowerActions" id="mobilePowerActions">
+      <button id="mobileUndoBtn" class="inspectorAction iconOnly" title="Undo"><i class="ri-arrow-go-back-line"></i></button>
+      <button id="mobileRedoBtn" class="inspectorAction iconOnly" title="Redo"><i class="ri-arrow-go-back-line redoFlip"></i></button>
+      <button id="mobilePresentBtn" class="inspectorAction primary" title="Present"><i class="ri-play-fill"></i><span>Present</span></button>
+      <button id="mobileExportBtn" class="inspectorAction" title="Export PPTX"><i class="ri-download-2-line"></i><span>PPTX</span></button>
+      <button id="mobileFullscreenBtn" class="inspectorAction iconOnly" title="Fullscreen"><i class="ri-fullscreen-line"></i></button>
+      <button id="mobileExitBtn" class="inspectorAction iconOnly exitAction" title="Exit PowerSlide"><i class="ri-close-line"></i></button>
+    </div>
+    <section class="workspace content tahoeAppPage">
+      <div class="toolrow toolbar tahoeAppToolbar"><button id="psEditorSidebarToggle" class="toolBtn psEditorSidebarToggle" title="Show or hide slide sidebar" aria-label="Show or hide slide sidebar"><i class="ri-layout-left-line"></i><span>Sidebar</span></button>
+        <div class="toolGroup"><button id="mobileSlides" class="toolBtn" title="Slides" aria-label="Slides"><svg class="hi" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5"/></svg><span>Slides</span></button><button id="smartBtn" class="toolBtn accent" title="Smart Generate" aria-label="Smart Generate"><svg class="hi" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9.813 15.904-3.157 2.136.878-3.706-2.925-2.445 3.806-.307L9.813 0l1.398 3.582 3.806.307-2.925 2.445.878 3.706-3.157-2.136Zm7.81 3.235-1.915 1.295.533-2.246-1.774-1.483 2.31-.186.846-2.173.846 2.173 2.31.186-1.774 1.483.533 2.246-1.915-1.295Z"/></svg><span>Smart Generate</span></button></div>
+        <div class="toolGroup"><button id="addTextBtn" class="toolBtn" title="Text" aria-label="Text"><svg class="hi" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg><span>Text</span></button><button id="addBibleBtn" class="toolBtn" title="Bible" aria-label="Bible"><svg class="hi" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5A2.25 2.25 0 0 1 6.75 17.25H9A2.25 2.25 0 0 1 11.25 19.5V4.5A2.25 2.25 0 0 0 9 2.25H6.75A2.25 2.25 0 0 0 4.5 4.5v15Zm15 0a2.25 2.25 0 0 0-2.25-2.25H15A2.25 2.25 0 0 0 12.75 19.5V4.5A2.25 2.25 0 0 1 15 2.25h2.25a2.25 2.25 0 0 1 2.25 2.25v15Z"/></svg><span>Bible</span></button><button id="addImageBtn" class="toolBtn" title="Image" aria-label="Image"><svg class="hi" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5A2.25 2.25 0 0 0 22.5 17.25V6.75A2.25 2.25 0 0 0 20.25 4.5H3.75A2.25 2.25 0 0 0 1.5 6.75v10.5A2.25 2.25 0 0 0 3.75 19.5Zm10.5-11.25h.008v.008h-.008V8.25Z"/></svg><span>Image</span></button><button id="addShapeBtn" class="toolBtn" title="Shape" aria-label="Shape"><svg class="hi" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg><span>Shape</span></button></div>
+        <div class="toolGroup"><button id="designBtn" class="toolBtn" title="Design" aria-label="Design"><i class="ri-palette-line"></i><span>Design</span></button><button id="verseStyleBtn" class="toolBtn" title="Verse number style" aria-label="Verse number style"><i class="ri-number-1"></i><span>Verse Style</span></button><button id="gridBtn" class="toolBtn" title="Grid" aria-label="Grid"><svg class="hi" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75h6v6h-6v-6Zm10.5 0h6v6h-6v-6Zm-10.5 10.5h6v6h-6v-6Zm10.5 0h6v6h-6v-6Z"/></svg><span>Grid</span></button><button id="duplicateSlideBtn" class="toolBtn" title="Duplicate Slide" aria-label="Duplicate Slide"><svg class="hi" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75A1.125 1.125 0 0 1 3.75 20.625V10.875c0-.621.504-1.125 1.125-1.125H8.25m7.5 7.5h3.375c.621 0 1.125-.504 1.125-1.125V6.375c0-.621-.504-1.125-1.125-1.125H9.375c-.621 0-1.125.504-1.125 1.125V9.75m7.5 7.5H9.375A1.125 1.125 0 0 1 8.25 16.125V9.75"/></svg><span>Duplicate</span></button><button id="deleteSlideBtn" class="toolBtn" title="Delete Slide" aria-label="Delete Slide"><svg class="hi" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673A2.25 2.25 0 0 1 15.916 21.75H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916"/></svg><span>Delete</span></button></div>
+        <div class="toolGroup"><button id="mobileProps" class="toolBtn" title="Properties" aria-label="Properties"><i class="ri-equalizer-2-line"></i><span>Properties</span></button></div>
+      </div>
+      <div class="stageScroll"><div class="stageShell"><div id="slideCanvas" class="slideCanvas"><div class="safeArea"></div></div></div></div>
+      <div class="stageZoomBar" aria-label="Canvas zoom controls" title="Ctrl/Cmd + wheel to zoom · Hold Space and drag to pan">
+        <button id="stageZoomOut" type="button" title="Zoom out">−</button>
+        <button id="stageZoomValue" class="zoomValue" type="button" title="Fit slide">100%</button>
+        <button id="stageZoomIn" type="button" title="Zoom in">+</button>
+        <button id="stageZoomFit" class="zoomFit" type="button" title="Fit slide to window">Fit</button>
+      </div>
+    </section>
+
+    <aside id="inspector" class="inspector tahoeAppPanel">
+      <div class="inspectorTopActions">
+        <button id="rightUndoBtn" class="inspectorAction iconOnly" title="Undo"><i class="ri-arrow-go-back-line"></i></button>
+        <button id="rightRedoBtn" class="inspectorAction iconOnly" title="Redo"><i class="ri-arrow-go-back-line redoFlip"></i></button>
+        <button id="rightPresentBtn" class="inspectorAction primary"><span>▶ Present</span></button>
+        <button id="rightExportBtn" class="inspectorAction"><span>⇩ PPTX</span></button>
+        <button id="rightFullscreenBtn" class="inspectorAction iconOnly" title="Fullscreen">⛶</button>
+      </div>
+      <div class="paneHead"><span>PROPERTIES</span><button id="closeInspector" class="iconBtn">×</button></div>
+      <div id="inspectorBody" class="inspectorBody"><div class="emptyInspector">ជ្រើសរើសធាតុនៅលើ slide ដើម្បីកែសម្រួល។</div></div>
+    </aside>
+  </main>
+</div>
+
+<section id="libraryView" class="library">
+  <div class="libTop"><div class="libBrand"><h1>📁 Powerslide Projects</h1><p>Documents › Powerslide Projects · Tahoe File Finder</p></div><div class="libTopActions"><button id="openFinderProjectsBtn" class="btn">Open Finder</button><button id="libBackBible" class="btn">Bible</button></div></div>
+  <div class="libBody">
+    <div class="libTools toolbar tahoeAppToolbar">
+      <button id="psSidebarToggleTop" class="psSidebarToggle iconBtn" type="button" title="Show or hide sidebar" aria-label="Show or hide sidebar" aria-expanded="true"><i class="ri-layout-left-line"></i></button>
+      <input id="projectSearch" class="libSearch" placeholder="Search Powerslide Projects...">
+      <button id="importProjectBtn" class="btn">Import</button>
+      <button id="newProjectBtn" class="btn primary">+ New Project</button>
+    </div>
+    <div id="projectGroups"></div>
+  </div>
+</section>
+
+<dialog id="newProjectDlg">
+  <div class="dlgHead"><strong>New Sunday Presentation</strong><button class="iconBtn" data-close="newProjectDlg">×</button></div>
+  <div class="dlgBody"><div class="newGrid">
+    <label class="field span2"><span>Project name</span><input id="newTitle" value="ព្រះបន្ទូលថ្ងៃអាទិត្យ"></label>
+    <label class="field"><span>Date</span><input id="newDate" type="date"></label>
+    <label class="field"><span>Service</span><input id="newService" placeholder="09:30"></label>
+    <label class="field"><span>Slide ratio</span><select id="newRatio"><option value="16:9">16:9 Widescreen</option><option value="4:3">4:3 Standard</option></select></label>
+    <label class="field"><span>Theme</span><select id="newTheme"><option value="sunday-dark">Sunday Dark</option><option value="church-green">Church Green</option><option value="clean-light">Clean Light</option><option value="minimal-black">Minimal Black</option></select></label>
+  </div></div>
+  <div class="dlgFoot"><button class="btn" data-close="newProjectDlg">Cancel</button><button id="createProjectBtn" class="btn primary">Create</button></div>
+</dialog>
+
+<dialog id="smartDlg">
+  <div class="dlgHead"><strong>✦ Smart Generate</strong><button class="iconBtn" data-close="smartDlg">×</button></div>
+  <div class="dlgBody"><textarea id="smartInput" class="smartInput" placeholder="ព្រះបន្ទូលម៉ោង9:30&#10;ចំណងជើង: ...&#10;2កូរិនថូស4:16-18&#10;អេភេសូរ3:16&#10;..."></textarea><div class="hint">Powerslide ស្គាល់លេខយោង Khmer/Arabic digits, ចំណងជើង, ព្រះបន្ទូលម៉ោង និងអត្ថបទធម្មតា។ វាទាញអត្ថបទដោយផ្ទាល់ពី Bible1954 static files។</div><div id="smartStatus" class="hint"></div></div>
+  <div class="dlgFoot"><button id="smartSample" class="btn">Sample</button><button id="smartRepair" class="btn">Repair Old Refs</button><button id="smartAppend" class="btn">Append</button><button id="smartReplace" class="btn primary">Generate & Replace</button></div>
+</dialog>
+
+<dialog id="bibleDlg">
+  <div class="dlgHead"><strong>Insert Bible Passage</strong><button class="iconBtn" data-close="bibleDlg">×</button></div>
+  <div class="dlgBody"><label class="field"><span>Reference</span><input id="bibleRefInput" placeholder="រ៉ូម 8:18 / ២ កូរិនថូស 4:16-18"></label><div id="biblePreview" class="hint">អត្ថបទនឹងមកពី Bible1954 ដែល bundled ក្នុង app។</div></div>
+  <div class="dlgFoot"><button class="btn" data-close="bibleDlg">Cancel</button><button id="insertBibleBtn" class="btn primary">Insert</button></div>
+</dialog>
+
+<dialog id="designDlg">
+  <div class="dlgHead"><strong>Presentation Design</strong><button class="iconBtn" data-close="designDlg">×</button></div>
+  <div class="dlgBody">
+    <div class="row2"><label class="field"><span>Theme</span><select id="designTheme"><option value="sunday-dark">Sunday Dark</option><option value="church-green">Church Green</option><option value="clean-light">Clean Light</option><option value="minimal-black">Minimal Black</option></select></label><label class="field"><span>Ratio</span><select id="designRatio"><option value="16:9">16:9</option><option value="4:3">4:3</option></select></label></div>
+    <div class="row2"><label class="field"><span>Title font</span><select id="designTitleFont"></select></label><label class="field"><span>Body/Bible font</span><select id="designBodyFont"></select></label></div>
+    <div class="designQuickActions"><button id="applyFontAllBtn" class="btn" type="button">Apply Body Font to ALL Slides</button><button id="designVerseStyleBtn" class="btn" type="button">Verse No: Normal</button></div>
+    <div class="row2"><label class="field"><span>Background</span><div class="colorField"><input id="designBg" type="color"><input id="designBgText"></div></label><label class="field"><span>Accent</span><div class="colorField"><input id="designAccent" type="color"><input id="designAccentText"></div></label></div>
+    <div class="propSection"><div class="propTitle">Khmer font preview</div><div id="designFontPreview" class="fontList"></div></div>
+    <div class="hint">Shared fonts are loaded from <b>/assets/fonts/fonts.json</b>. Drop a new .ttf/.otf/.woff/.woff2 into <b>/assets/fonts/</b>, run <b>UpdateFonts.command</b>, then reload. SONY HEAD5 is supported; add your local font file and run UpdateFonts.command.</div>
+  </div>
+  <div class="dlgFoot"><button id="applyDesignBtn" class="btn primary">Apply to Project</button></div>
+</dialog>
+
+<dialog id="projectInfoDlg">
+  <div class="dlgHead"><strong>Project Settings</strong><button class="iconBtn" data-close="projectInfoDlg">×</button></div>
+  <div class="dlgBody"><div class="newGrid"><label class="field span2"><span>Title</span><input id="infoTitle"></label><label class="field"><span>Date</span><input id="infoDate" type="date"></label><label class="field"><span>Service</span><input id="infoService"></label></div></div>
+  <div class="dlgFoot"><button id="saveProjectInfo" class="btn primary">Save</button></div>
+</dialog>
+
+<input id="imageFile" type="file" accept="image/*" hidden>
+<input id="importProjectFile" type="file" accept="application/json,.json" hidden>
+
+
+<div id="accessGate" class="accessGate hidden"><div class="gateCard"><h2>សូមចូលគណនី</h2><p>Admin បានបិទ Anonymous Free Access។ សូមចូលដោយ Google ដើម្បីបន្តប្រើ Powerslide។</p><button id="gateLogin" class="btn primary">ចូលដោយ Google</button></div></div>
+<div id="presenter" class="presenter hidden"><div id="presentCanvas" class="presentCanvas"></div><div id="presentControls" class="presentControls" aria-label="Presentation text size"><button id="presentSmaller" type="button" title="Temporary smaller (-)">A−</button><span id="presentScaleLabel" class="presentScaleLabel">100%</span><button id="presentBigger" type="button" title="Temporary bigger (+)">A+</button><button id="presentReset" class="fitBtn" type="button" title="Back to exact editor size (0)">100%</button></div><div id="presentCounter" class="presentCounter"></div><div class="presentHint">← → / Space · −/+ temporary text · 0 exact editor size · B black · Esc</div><div id="presentBlack" class="presentBlack hidden"></div></div>
+<div id="toast" class="toast"></div>
+
+<script src="powerslide.js?v=64" defer></script>
+
+<style id="tahoePowerSkin">
+:root{--tahoe-accent:#0b6fe8;--tahoe-accent-rgb:11,111,232;--tahoe-radius:26px;--tahoe-font:-apple-system,BlinkMacSystemFont,"SF Pro Display","Noto Sans Khmer",sans-serif;--tahoe-khmer:"Noto Sans Khmer","Kantumruy Pro",sans-serif}
+html,body{background:transparent!important;font-family:var(--tahoe-font)!important}body{--bg:transparent;--panel:rgba(247,249,251,.78);--panel2:rgba(230,236,241,.70);--panel3:rgba(214,224,231,.72);--line:rgba(20,30,38,.09);--text:#17191d;--muted:#7b838a;--accent:var(--tahoe-accent);--accent2:var(--tahoe-accent);--danger:#ff453a;--khmer:var(--tahoe-khmer);color-scheme:light}
+.topbar{height:64px!important;background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(255,255,255,.68))!important;border-bottom:1px solid rgba(0,0,0,.07)!important;backdrop-filter:blur(20px) saturate(150%);padding:8px 12px!important}.tahoeTraffic{display:flex;align-items:center;gap:9px}.tahoeTraffic button{width:14px;height:14px;border-radius:50%;padding:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.11)}.tahoeTraffic button:nth-child(1){background:#ff5f57}.tahoeTraffic button:nth-child(2){background:#febc2e}.tahoeTraffic button:nth-child(3){background:#28c840}
+.brandMark{background:linear-gradient(145deg,#52a9ff,#0676dd)!important}.btn.primary{background:var(--tahoe-accent)!important;border-color:var(--tahoe-accent)!important}
+.editor{height:calc(100dvh - 64px)!important;grid-template-columns:var(--rail-w,230px) minmax(0,1fr) 292px!important;gap:10px;padding:0 10px 10px;background:transparent!important}.rail,.inspector{border:1px solid rgba(255,255,255,.65)!important;border-radius:calc(var(--tahoe-radius) - 9px);overflow:hidden;background:rgba(232,247,253,.66)!important}.workspace{border:1px solid rgba(255,255,255,.70);border-radius:calc(var(--tahoe-radius) - 9px);overflow:hidden;background:rgba(255,255,255,.74)!important;grid-template-rows:48px minmax(0,1fr) 72px!important}
+.toolrow{background:rgba(255,255,255,.78)!important;border-bottom:1px solid rgba(0,0,0,.07)!important}.toolBtn{color:#394048!important}.toolBtn:hover{background:rgba(0,0,0,.055)!important}.toolBtn.accent{color:var(--tahoe-accent)!important}.stageScroll{background:radial-gradient(circle at 50% 28%,rgba(165,195,214,.34),rgba(204,215,222,.28) 46%,rgba(183,194,202,.30))!important}.slideCanvas{box-shadow:0 24px 64px rgba(0,0,0,.26)!important}.notesBar{background:rgba(255,255,255,.72)!important;border-top:1px solid rgba(0,0,0,.07)!important}
+.field input,.field select,.field textarea,.notesBar textarea,.projectTitle,.smartInput,.libSearch{background:rgba(255,255,255,.72)!important;border-color:rgba(0,0,0,.08)!important;color:var(--text)!important}.library{background:rgba(241,244,246,.97)!important}.libTop{background:rgba(249,250,252,.86)!important}.projectCard{background:rgba(255,255,255,.76)!important;border-color:rgba(0,0,0,.07)!important}dialog{border-radius:22px!important;background:rgba(249,250,252,.97)!important;border-color:rgba(255,255,255,.76)!important}.slideContextMenu{background:rgba(249,250,252,.97)!important;color:#17191d!important}
+html[data-tahoe-mode="dark"] body{--panel:rgba(44,44,46,.82);--panel2:rgba(58,58,60,.78);--panel3:rgba(72,72,74,.72);--line:rgba(255,255,255,.10);--text:#f5f5f7;--muted:#a1a1a6;color-scheme:dark}html[data-tahoe-mode="dark"] .topbar{background:linear-gradient(180deg,rgba(44,44,46,.96),rgba(34,34,37,.78))!important}html[data-tahoe-mode="dark"] .rail,html[data-tahoe-mode="dark"] .inspector{background:rgba(38,39,43,.90)!important}html[data-tahoe-mode="dark"] .workspace{background:rgba(28,28,30,.92)!important}html[data-tahoe-mode="dark"] .toolrow,html[data-tahoe-mode="dark"] .notesBar{background:rgba(44,44,46,.80)!important}html[data-tahoe-mode="dark"] .toolBtn{color:#e3e3e7!important}html[data-tahoe-mode="dark"] .stageScroll{background:radial-gradient(circle at 50% 28%,#2c2c2e,#1c1c1e 60%)!important}html[data-tahoe-mode="dark"] .library,html[data-tahoe-mode="dark"] .libTop,html[data-tahoe-mode="dark"] dialog{background:rgba(28,28,30,.98)!important;color:#f5f5f7!important}
+html[data-tahoe-mode="navy"] body{--panel:rgba(10,34,82,.84);--panel2:rgba(24,51,104,.76);--panel3:rgba(43,71,125,.72);--line:rgba(208,216,233,.12);--text:#f7f9ff;--muted:#A5B5D3;color-scheme:dark}html[data-tahoe-mode="navy"] .topbar{background:linear-gradient(180deg,rgba(24,51,104,.96),rgba(10,34,82,.84))!important}html[data-tahoe-mode="navy"] .rail,html[data-tahoe-mode="navy"] .inspector{background:rgba(10,34,82,.91)!important}html[data-tahoe-mode="navy"] .workspace{background:rgba(1,21,61,.94)!important}html[data-tahoe-mode="navy"] .toolrow,html[data-tahoe-mode="navy"] .notesBar{background:rgba(10,34,82,.84)!important}html[data-tahoe-mode="navy"] .toolBtn{color:#eef3ff!important}html[data-tahoe-mode="navy"] .stageScroll{background:radial-gradient(circle at 50% 28%,#183368,#01153D 62%)!important}html[data-tahoe-mode="navy"] .library,html[data-tahoe-mode="navy"] .libTop,html[data-tahoe-mode="navy"] dialog{background:rgba(1,21,61,.98)!important;color:#f7f9ff!important}
+html[data-tahoe-mode="gray"] .rail,html[data-tahoe-mode="gray"] .inspector{background:rgba(226,229,232,.90)!important}html[data-tahoe-mode="gray"] .workspace{background:rgba(242,243,245,.93)!important}
+@media(max-width:900px){.tahoeTraffic{display:none}.editor{padding:0;gap:0}.workspace{border-radius:0;border:0}.rail,.inspector{border-radius:0}}
+</style>
+<script>
+(()=>{const send=(command,target)=>parent!==window&&parent.postMessage({type:"tahoe-app-command",app:"powerslide",command,target},"*");document.addEventListener("click",e=>{const b=e.target.closest("[data-tahoe-cmd]");if(b){e.preventDefault();send(b.dataset.tahoeCmd)}},true);if(parent!==window)document.documentElement.dataset.tahoeEmbedded="1";window.addEventListener("message",e=>{const d=e.data;if(!d)return;const r=document.documentElement;if(d.type==="tahoe-powerslide-finder-result"){window.TahoePowerSlideBridge?.resolveFinderResult?.(d);return}if(d.type==="tahoe-powerslide-cloud-update"){window.TahoePowerSlideBridge?.cloudUpdate?.();return}if(d.type==="tahoe-theme"){r.dataset.tahoeMode=d.mode||"light";r.dataset.fastMode=d.fastMode?"1":"0";r.style.setProperty("--tahoe-accent",d.accent||"#0b6fe8");r.style.setProperty("--tahoe-accent-rgb",d.accentRgb||"11,111,232");r.style.setProperty("--tahoe-radius",(d.radius||26)+"px");if(d.appFont)r.style.setProperty("--tahoe-font",d.appFont);if(d.khmerFont)r.style.setProperty("--tahoe-khmer",d.khmerFont);if(d.typography){r.style.setProperty("--tahoe-body-weight",d.typography.bodyWeight||400);r.style.setProperty("--tahoe-title-weight",d.typography.titleWeight||700);r.style.setProperty("--tahoe-title-case",d.typography.titleCase||"none");r.style.setProperty("--tahoe-section-weight",d.typography.sectionWeight||700);r.style.setProperty("--tahoe-section-case",d.typography.sectionCase||"uppercase");r.style.setProperty("--tahoe-sidebar-weight",d.typography.sidebarWeight||500);r.style.setProperty("--tahoe-sidebar-case",d.typography.sidebarCase||"none")}return}if(d.type==="tahoe-powerslide-action"){if(d.action==="library")document.getElementById("openLibrary")?.click();else if(d.action==="present")document.getElementById("presentBtn")?.click();else if(d.action==="export")document.getElementById("exportBtn")?.click();else if(d.action==="fullscreen-workspace")r.classList.toggle("tahoe-power-focus",!!d.value)}});if(parent!==window)parent.postMessage({type:"tahoe-app-command",app:"powerslide",command:"focus"},"*")})();
+</script>
+
+<style id="tahoePowerV35">html[data-tahoe-embedded="1"] .topbar{display:none!important}html[data-tahoe-embedded="1"] .editor{height:100dvh!important;padding:10px!important;gap:10px!important;grid-template-columns:var(--rail-w,230px) minmax(0,1fr) 292px!important}html[data-tahoe-embedded="1"] .rail,html[data-tahoe-embedded="1"] .workspace,html[data-tahoe-embedded="1"] .inspector{height:calc(100dvh - 20px)!important;min-height:0!important}html[data-tahoe-embedded="1"] .rail{margin:0!important;border-radius:max(18px,calc(var(--tahoe-radius) - 9px))!important;background:linear-gradient(180deg,rgba(222,247,255,.70),rgba(236,249,253,.60))!important;border:1px solid rgba(255,255,255,.48)!important;overflow:hidden!important}html[data-tahoe-embedded="1"] .inspector{margin:0!important;border-radius:max(18px,calc(var(--tahoe-radius) - 9px))!important;background:rgba(247,249,251,.67)!important;border:1px solid rgba(255,255,255,.48)!important;overflow:hidden!important}html[data-tahoe-embedded="1"] .workspace{margin:0!important;border-radius:max(18px,calc(var(--tahoe-radius) - 9px))!important;background:rgba(255,255,255,.74)!important;border:1px solid rgba(255,255,255,.58)!important;overflow:hidden!important}html[data-tahoe-embedded="1"] .paneHead{position:sticky;top:0;z-index:8;min-height:44px;padding:0 12px!important;background:linear-gradient(to bottom,rgba(255,255,255,.90),rgba(255,255,255,.56),rgba(255,255,255,.14))!important;backdrop-filter:blur(12px) saturate(150%);-webkit-backdrop-filter:blur(12px) saturate(150%);border-bottom:1px solid rgba(0,0,0,.06)!important}html[data-tahoe-embedded="1"] .slideList,html[data-tahoe-embedded="1"] .inspectorBody{scrollbar-width:none}html[data-tahoe-embedded="1"] .slideList::-webkit-scrollbar,html[data-tahoe-embedded="1"] .inspectorBody::-webkit-scrollbar{display:none}html[data-tahoe-embedded="1"] .thumbRow{border-radius:11px!important;margin:2px 6px!important}html[data-tahoe-embedded="1"] .thumbRow.active,html[data-tahoe-embedded="1"] .thumbRow.multiSelected{background:linear-gradient(#0f75ed,#0864da)!important;color:#fff!important;box-shadow:0 6px 14px rgba(0,92,211,.15)!important}html[data-tahoe-embedded="1"] .toolrow{min-height:47px!important;background:rgba(255,255,255,.70)!important;backdrop-filter:blur(13px) saturate(150%);-webkit-backdrop-filter:blur(13px) saturate(150%)}html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .rail{background:linear-gradient(180deg,rgba(42,43,47,.88),rgba(29,30,34,.84))!important;border-color:rgba(255,255,255,.10)!important}html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .workspace{background:rgba(28,28,30,.92)!important;border-color:rgba(255,255,255,.09)!important}html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .inspector{background:rgba(38,38,41,.89)!important;border-color:rgba(255,255,255,.10)!important}html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .paneHead{background:linear-gradient(to bottom,rgba(47,48,52,.92),rgba(35,36,40,.65),rgba(21,22,26,.12))!important;border-color:rgba(255,255,255,.08)!important}html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .rail{background:linear-gradient(180deg,rgba(10,34,82,.92),rgba(3,21,57,.88))!important;border-color:rgba(208,216,233,.11)!important}html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .workspace{background:rgba(1,21,61,.94)!important;border-color:rgba(208,216,233,.10)!important}html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .inspector{background:rgba(10,34,82,.88)!important;border-color:rgba(208,216,233,.11)!important}html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .paneHead{background:linear-gradient(to bottom,rgba(24,51,104,.92),rgba(10,34,82,.68),rgba(1,21,61,.10))!important;border-color:rgba(208,216,233,.09)!important}html[data-tahoe-mode="gray"][data-tahoe-embedded="1"] .rail{background:linear-gradient(180deg,rgba(226,229,232,.88),rgba(211,215,219,.80))!important}html[data-tahoe-mode="gray"][data-tahoe-embedded="1"] .workspace{background:rgba(242,243,245,.93)!important}html[data-tahoe-mode="gray"][data-tahoe-embedded="1"] .inspector{background:rgba(230,232,235,.90)!important}html.tahoe-power-focus[data-tahoe-embedded="1"] .rail,html.tahoe-power-focus[data-tahoe-embedded="1"] .inspector{display:none!important}html.tahoe-power-focus[data-tahoe-embedded="1"] .editor{grid-template-columns:minmax(0,1fr)!important;padding:10px!important}html.tahoe-power-focus[data-tahoe-embedded="1"] .workspace{height:calc(100dvh - 20px)!important}html[data-tahoe-embedded="1"] .library{top:0!important;height:100dvh!important;background:transparent!important;padding:10px!important}html[data-tahoe-embedded="1"] .libTop{border-radius:max(18px,calc(var(--tahoe-radius) - 9px)) max(18px,calc(var(--tahoe-radius) - 9px)) 0 0!important;background:rgba(249,250,252,.82)!important;backdrop-filter:blur(16px) saturate(150%)}html[data-tahoe-embedded="1"] .libBody{background:rgba(247,249,251,.72)!important;border-radius:0 0 max(18px,calc(var(--tahoe-radius) - 9px)) max(18px,calc(var(--tahoe-radius) - 9px))!important;min-height:calc(100dvh - 90px)}@media(max-width:900px){html[data-tahoe-embedded="1"] .editor{padding:0!important;gap:0!important}html[data-tahoe-embedded="1"] .workspace{height:100dvh!important;border:0!important;border-radius:0!important}}</style>
+
+<style id="tahoePowerV36">
+html[data-tahoe-embedded="1"] .inspectorTopActions{position:sticky;top:0;z-index:18;display:grid;grid-template-columns:36px 36px minmax(76px,1fr) minmax(66px,.85fr) 36px;gap:5px;padding:8px;background:linear-gradient(to bottom,rgba(255,255,255,.92),rgba(255,255,255,.67),rgba(255,255,255,.18));border-bottom:1px solid rgba(0,0,0,.06);backdrop-filter:blur(14px) saturate(155%);-webkit-backdrop-filter:blur(14px) saturate(155%)}
+.inspectorAction{height:34px;min-width:0;padding:0 7px;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:4px;background:rgba(255,255,255,.62);color:var(--text);border:1px solid rgba(0,0,0,.065);font-size:10px;font-weight:680}.inspectorAction:hover{background:rgba(255,255,255,.84)}.inspectorAction.primary{background:var(--tahoe-accent,#0b6fe8);color:#fff;border-color:transparent}.inspectorAction.iconOnly{font-size:18px;padding:0}.inspectorAction:disabled{opacity:.35;cursor:default}
+html[data-tahoe-mode="dark"] .inspectorAction{background:rgba(72,72,74,.70);border-color:rgba(255,255,255,.09)}html[data-tahoe-mode="navy"] .inspectorAction{background:rgba(43,71,125,.70);border-color:rgba(208,216,233,.10)}html[data-tahoe-embedded="1"] .inspector .paneHead{top:51px}
+html[data-tahoe-embedded="1"] .libTop{border-radius:max(18px,calc(var(--tahoe-radius) - 9px))!important;margin-bottom:10px!important;border:1px solid rgba(255,255,255,.62)!important}html[data-tahoe-embedded="1"] .libBody{border-radius:max(18px,calc(var(--tahoe-radius) - 9px))!important;min-height:calc(100dvh - 112px)!important;padding:14px!important;border:1px solid rgba(255,255,255,.56)}html[data-tahoe-embedded="1"] .finderBrowser{height:calc(100dvh - 220px)!important;border-radius:14px!important;overflow:hidden!important;border:1px solid rgba(0,0,0,.07)!important;background:rgba(255,255,255,.34)!important}html[data-tahoe-embedded="1"] .finderColumn:first-child{background:rgba(224,241,249,.46)!important}html[data-tahoe-embedded="1"] .finderMonthRow.selected,html[data-tahoe-embedded="1"] .finderFileRow.selected{background:linear-gradient(#0f75ed,#0864da)!important;color:#fff!important}html[data-tahoe-embedded="1"] .finderPreviewIcon{background:linear-gradient(145deg,#d9f3ff,#62b7f2)!important;color:#0877c4!important}
+@media(max-width:900px){html[data-tahoe-embedded="1"] .editor{display:grid!important;grid-template-columns:minmax(0,1fr)!important;grid-template-rows:minmax(0,1fr) 126px!important;height:100dvh!important;padding:0!important;gap:0!important}html[data-tahoe-embedded="1"] .workspace{grid-column:1!important;grid-row:1!important;height:auto!important;min-height:0!important;border:0!important;border-radius:0!important;grid-template-rows:44px minmax(0,1fr) 58px!important}html[data-tahoe-embedded="1"] .rail{position:relative!important;z-index:20!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;transform:none!important;grid-column:1!important;grid-row:2!important;width:100%!important;height:126px!important;min-height:126px!important;display:flex!important;flex-direction:row!important;align-items:stretch!important;border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;box-shadow:none!important;background:rgba(247,249,251,.88)!important;backdrop-filter:blur(16px) saturate(150%);-webkit-backdrop-filter:blur(16px) saturate(150%)}html[data-tahoe-embedded="1"] .rail .paneHead,html[data-tahoe-embedded="1"] .railResizer{display:none!important}html[data-tahoe-embedded="1"] .slideList{flex:1!important;display:flex!important;align-items:center!important;gap:6px!important;overflow-x:auto!important;overflow-y:hidden!important;padding:7px 8px!important;scroll-snap-type:x proximity!important;min-width:0!important}html[data-tahoe-embedded="1"] .thumbRow{flex:0 0 148px!important;width:148px!important;height:104px!important;display:grid!important;grid-template-columns:18px minmax(0,1fr)!important;gap:4px!important;margin:0!important;padding:5px!important;scroll-snap-align:center!important}html[data-tahoe-embedded="1"] .thumbNo{padding-top:4px!important}html[data-tahoe-embedded="1"] .thumb{width:120px!important;align-self:center}html[data-tahoe-embedded="1"] .thumbAdd{flex:0 0 76px!important;width:76px!important;height:100px!important;margin:12px 8px 12px 0!important;padding:0 6px!important;border-radius:12px!important;white-space:normal!important}html[data-tahoe-embedded="1"] #mobileSlides{display:none!important}html[data-tahoe-embedded="1"] .inspector{top:0!important;bottom:0!important;height:100dvh!important;width:min(92vw,350px)!important}html[data-tahoe-embedded="1"] .inspectorTopActions{grid-template-columns:34px 34px 1fr 1fr 34px;padding:7px 6px}html[data-tahoe-embedded="1"] .inspectorAction span{font-size:0}html[data-tahoe-embedded="1"] .finderBrowser{height:calc(100dvh - 230px)!important}}
+@media(max-width:520px){html[data-tahoe-embedded="1"] .editor{grid-template-rows:minmax(0,1fr) 112px!important}html[data-tahoe-embedded="1"] .rail{height:112px!important;min-height:112px!important}html[data-tahoe-embedded="1"] .thumbRow{flex-basis:132px!important;width:132px!important;height:92px!important}html[data-tahoe-embedded="1"] .thumb{width:106px!important}html[data-tahoe-embedded="1"] .thumbAdd{height:88px!important}}
+</style>
+
+<style id="tahoePowerV37">
+/* Mobile PowerSlide editor:
+   1) Properties
+   2) Full 3-row tool deck
+   3) Slide canvas
+   4) Horizontal thumbnails
+*/
+@media(max-width:900px){
+ html[data-tahoe-embedded="1"] .editor{
+   display:grid!important;
+   grid-template-columns:minmax(0,1fr)!important;
+   grid-template-rows:auto minmax(0,1fr) 126px!important;
+   height:100dvh!important;
+   overflow:hidden!important;
+   background:transparent!important
+ }
+
+ /* PROPERTIES becomes a compact top editor deck, not a right drawer. */
+ html[data-tahoe-embedded="1"] .inspector{
+   position:relative!important;
+   z-index:35!important;
+   grid-column:1!important;
+   grid-row:1!important;
+   left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
+   transform:none!important;
+   width:100%!important;
+   height:auto!important;
+   min-height:0!important;
+   max-height:190px!important;
+   display:grid!important;
+   grid-template-rows:auto auto minmax(0,1fr)!important;
+   border:0!important;
+   border-bottom:1px solid var(--line)!important;
+   border-radius:0!important;
+   box-shadow:0 8px 24px rgba(0,0,0,.08)!important;
+   overflow:hidden!important;
+   background:rgba(247,249,251,.93)!important;
+   backdrop-filter:blur(18px) saturate(155%)!important;
+   -webkit-backdrop-filter:blur(18px) saturate(155%)!important
+ }
+ html[data-tahoe-embedded="1"] .inspectorTopActions{
+   position:relative!important;top:auto!important;
+   grid-template-columns:34px 34px 1fr 1fr 34px!important;
+   gap:4px!important;padding:5px 6px!important;
+   min-height:43px!important;
+   flex:0 0 auto!important
+ }
+ html[data-tahoe-embedded="1"] .inspectorTopActions .inspectorAction{
+   height:32px!important;border-radius:9px!important
+ }
+ html[data-tahoe-embedded="1"] .inspectorTopActions .inspectorAction span{
+   display:inline!important;font-size:9px!important
+ }
+ html[data-tahoe-embedded="1"] .inspector>.paneHead{
+   position:relative!important;top:auto!important;
+   min-height:29px!important;height:29px!important;padding:0 8px!important;
+   background:rgba(255,255,255,.38)!important;
+   border-bottom:1px solid var(--line)!important
+ }
+ html[data-tahoe-embedded="1"] .inspector>.paneHead span{
+   font-size:9px!important;letter-spacing:.045em
+ }
+ html[data-tahoe-embedded="1"] #closeInspector{
+   width:25px!important;height:25px!important
+ }
+ html[data-tahoe-embedded="1"] .inspectorBody{
+   min-height:0!important;
+   max-height:112px!important;
+   overflow:auto!important;
+   padding:6px 8px 8px!important;
+   display:flex!important;
+   align-items:flex-start!important;
+   gap:8px!important;
+   scroll-snap-type:x proximity!important;
+   overscroll-behavior:contain!important;
+   scrollbar-width:none!important
+ }
+ html[data-tahoe-embedded="1"] .inspectorBody::-webkit-scrollbar{display:none!important}
+ html[data-tahoe-embedded="1"] .inspectorBody>.propSection{
+   flex:0 0 min(86vw,330px)!important;
+   min-width:min(86vw,330px)!important;
+   margin:0!important;padding:7px!important;
+   border-radius:11px!important;
+   background:rgba(255,255,255,.42)!important;
+   border:1px solid rgba(0,0,0,.055)!important;
+   scroll-snap-align:start!important
+ }
+ html[data-tahoe-embedded="1"] .inspectorBody>.emptyInspector{
+   flex:1 0 100%!important;
+   min-height:70px!important;
+   padding:13px 10px!important;
+   display:grid!important;place-items:center!important
+ }
+ html[data-tahoe-embedded="1"] .inspectorBody .propSection .propSection{
+   margin-top:7px!important;padding:6px!important;
+   background:rgba(255,255,255,.30)!important;border-radius:9px!important
+ }
+ html[data-tahoe-embedded="1"] .inspectorBody .field{
+   margin-bottom:5px!important;gap:2px!important
+ }
+ html[data-tahoe-embedded="1"] .inspectorBody .field>span{font-size:8px!important}
+ html[data-tahoe-embedded="1"] .inspectorBody .field input,
+ html[data-tahoe-embedded="1"] .inspectorBody .field select,
+ html[data-tahoe-embedded="1"] .inspectorBody .field textarea{
+   min-height:30px!important;height:30px!important;padding:4px 6px!important;font-size:10px!important
+ }
+ html[data-tahoe-embedded="1"] .inspectorBody .field textarea{
+   height:54px!important;min-height:54px!important
+ }
+ html[data-tahoe-embedded="1"] .inspectorBody .richEditBar,
+ html[data-tahoe-embedded="1"] .inspectorBody .alignToolbar,
+ html[data-tahoe-embedded="1"] .inspectorBody .layerActions,
+ html[data-tahoe-embedded="1"] .inspectorBody .batchActions{
+   gap:4px!important;margin-bottom:5px!important
+ }
+ html[data-tahoe-embedded="1"] .inspectorBody .richBtn,
+ html[data-tahoe-embedded="1"] .inspectorBody .alignToolbar button,
+ html[data-tahoe-embedded="1"] .inspectorBody .layerActions button,
+ html[data-tahoe-embedded="1"] .inspectorBody .btn{
+   min-height:29px!important;height:29px!important;font-size:8px!important;padding:0 6px!important
+ }
+
+ /* Workspace is below the property deck. */
+ html[data-tahoe-embedded="1"] .workspace{
+   grid-column:1!important;
+   grid-row:2!important;
+   min-height:0!important;
+   height:auto!important;
+   display:grid!important;
+   grid-template-rows:auto minmax(0,1fr) 58px!important;
+   overflow:hidden!important
+ }
+
+ /* ALL tools are visible. 12 tool buttons => 4 columns x 3 rows. */
+ html[data-tahoe-embedded="1"] .toolrow{
+   display:grid!important;
+   grid-template-columns:repeat(4,minmax(0,1fr))!important;
+   grid-auto-rows:37px!important;
+   gap:4px!important;
+   min-height:0!important;
+   height:auto!important;
+   max-height:none!important;
+   overflow:visible!important;
+   padding:5px 6px 6px!important;
+   background:rgba(249,251,252,.94)!important;
+   border-bottom:1px solid var(--line)!important;
+   backdrop-filter:blur(16px) saturate(155%)!important;
+   -webkit-backdrop-filter:blur(16px) saturate(155%)!important
+ }
+ html[data-tahoe-embedded="1"] .toolrow .toolGroup{
+   display:contents!important;
+   padding:0!important;margin:0!important;border:0!important
+ }
+ html[data-tahoe-embedded="1"] .toolrow .toolBtn{
+   width:100%!important;
+   min-width:0!important;
+   height:37px!important;
+   padding:0 4px!important;
+   display:flex!important;
+   align-items:center!important;
+   justify-content:center!important;
+   gap:4px!important;
+   overflow:hidden!important;
+   border-radius:9px!important;
+   background:rgba(255,255,255,.48)!important;
+   border:1px solid rgba(0,0,0,.05)!important;
+   font-size:9px!important;
+   line-height:1.05!important
+ }
+ html[data-tahoe-embedded="1"] .toolrow .toolBtn:hover,
+ html[data-tahoe-embedded="1"] .toolrow .toolBtn:active{
+   background:rgba(var(--tahoe-accent-rgb,11,111,232),.10)!important
+ }
+ html[data-tahoe-embedded="1"] .toolrow .toolBtn.accent{
+   color:var(--tahoe-accent,#0b6fe8)!important;
+   background:rgba(var(--tahoe-accent-rgb,11,111,232),.08)!important
+ }
+ html[data-tahoe-embedded="1"] .toolrow .toolBtn span{
+   display:inline!important;
+   min-width:0!important;
+   max-width:100%!important;
+   overflow:hidden!important;
+   text-overflow:ellipsis!important;
+   white-space:nowrap!important;
+   font-size:9px!important
+ }
+ html[data-tahoe-embedded="1"] .toolrow .toolBtn .hi{
+   flex:0 0 15px!important;width:15px!important;height:15px!important
+ }
+ html[data-tahoe-embedded="1"] #verseStyleBtn{
+   font-size:8px!important;white-space:normal!important;line-height:1.05!important
+ }
+ html[data-tahoe-embedded="1"] #mobileProps{
+   color:var(--tahoe-accent,#0b6fe8)!important
+ }
+
+ /* Canvas is always below both editing decks. */
+ html[data-tahoe-embedded="1"] .stageScroll{
+   min-height:0!important;
+   overflow:auto!important;
+   padding:10px 6px!important
+ }
+
+ /* Existing bottom horizontal thumbnails remain. */
+ html[data-tahoe-embedded="1"] .rail{
+   grid-column:1!important;
+   grid-row:3!important;
+   height:126px!important;
+   min-height:126px!important
+ }
+
+ /* "Properties" button toggles the top property deck, without moving it offscreen. */
+ html[data-tahoe-embedded="1"] .editor.mobilePropsCollapsed{
+   grid-template-rows:0 minmax(0,1fr) 126px!important
+ }
+ html[data-tahoe-embedded="1"] .editor.mobilePropsCollapsed .inspector{
+   max-height:0!important;height:0!important;opacity:0!important;pointer-events:none!important;border:0!important
+ }
+
+ /* Tahoe themes */
+ html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .inspector{
+   background:rgba(28,28,30,.94)!important;border-color:rgba(255,255,255,.08)!important
+ }
+ html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .inspectorBody>.propSection{
+   background:rgba(58,58,60,.58)!important;border-color:rgba(255,255,255,.08)!important
+ }
+ html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .toolrow{
+   background:rgba(36,36,39,.95)!important;border-color:rgba(255,255,255,.08)!important
+ }
+ html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .toolrow .toolBtn{
+   background:rgba(72,72,74,.58)!important;border-color:rgba(255,255,255,.07)!important;color:#f1f1f4!important
+ }
+ html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .inspector{
+   background:rgba(1,21,61,.95)!important;border-color:rgba(208,216,233,.10)!important
+ }
+ html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .inspectorBody>.propSection{
+   background:rgba(24,51,104,.62)!important;border-color:rgba(208,216,233,.09)!important
+ }
+ html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .toolrow{
+   background:rgba(3,21,57,.96)!important;border-color:rgba(208,216,233,.09)!important
+ }
+ html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .toolrow .toolBtn{
+   background:rgba(43,71,125,.62)!important;border-color:rgba(208,216,233,.08)!important;color:#f7f9ff!important
+ }
+ html[data-tahoe-mode="gray"][data-tahoe-embedded="1"] .inspector{
+   background:rgba(234,236,239,.96)!important
+ }
+ html[data-tahoe-mode="gray"][data-tahoe-embedded="1"] .toolrow{
+   background:rgba(239,241,243,.96)!important
+ }
+}
+@media(max-width:520px){
+ html[data-tahoe-embedded="1"] .editor{
+   grid-template-rows:auto minmax(0,1fr) 112px!important
+ }
+ html[data-tahoe-embedded="1"] .inspector{max-height:174px!important}
+ html[data-tahoe-embedded="1"] .inspectorBody{max-height:96px!important}
+ html[data-tahoe-embedded="1"] .toolrow{
+   grid-auto-rows:35px!important;
+   padding:4px!important;gap:3px!important
+ }
+ html[data-tahoe-embedded="1"] .toolrow .toolBtn{
+   height:35px!important;font-size:8px!important;padding:0 2px!important
+ }
+ html[data-tahoe-embedded="1"] .toolrow .toolBtn span{font-size:8px!important}
+ html[data-tahoe-embedded="1"] .editor.mobilePropsCollapsed{
+   grid-template-rows:0 minmax(0,1fr) 112px!important
+ }
+}
+</style>
+
+
+<style id="tahoeProjectDashboardV42">
+/* =========================================================
+   v42: PowerSlide Projects rebuilt to match Tahoe dashboard
+   This final style is intentionally last so older cached/legacy
+   library rules cannot override it.
+   ========================================================= */
+:root{--ps-sidebar-w:228px}
+
+html[data-tahoe-embedded="1"] .library{
+  inset:0!important;
+  top:0!important;
+  height:100dvh!important;
+  padding:10px!important;
+  background:
+    linear-gradient(180deg,rgba(234,244,251,.62),rgba(220,235,249,.54))!important;
+  overflow:hidden!important
+}
+html[data-tahoe-embedded="1"] .libTop{
+  display:none!important;
+}
+html[data-tahoe-embedded="1"] .libBody{
+  height:calc(100dvh - 20px)!important;
+  min-height:0!important;
+  display:grid!important;
+  grid-template-rows:auto minmax(0,1fr)!important;
+  gap:10px!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  overflow:hidden!important
+}
+
+/* Search / action glass bar = Users & Groups-style toolbar */
+html[data-tahoe-embedded="1"] .libTools{
+  position:relative!important;
+  z-index:15!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto auto!important;
+  gap:8px!important;
+  margin:0!important;
+  padding:9px 10px!important;
+  min-height:58px!important;
+  border:1px solid rgba(255,255,255,.68)!important;
+  border-radius:22px!important;
+  background:rgba(247,249,251,.72)!important;
+  box-shadow:0 12px 36px rgba(31,61,106,.08)!important;
+  backdrop-filter:blur(18px) saturate(160%)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(160%)!important;
+  overflow:visible!important;
+}
+html[data-tahoe-embedded="1"] .libTools::after{
+  content:"";
+  pointer-events:none;
+  position:absolute;
+  left:-8px;right:-8px;top:-10px;
+  height:96px;
+  z-index:-1;
+  background:linear-gradient(to bottom,
+    rgba(255,255,255,.90) 0%,
+    rgba(245,250,253,.58) 54%,
+    rgba(245,250,253,0) 100%);
+  backdrop-filter:blur(12px) saturate(145%);
+  -webkit-backdrop-filter:blur(12px) saturate(145%);
+  -webkit-mask-image:linear-gradient(to bottom,#000 0%,rgba(0,0,0,.72) 58%,transparent 100%);
+  mask-image:linear-gradient(to bottom,#000 0%,rgba(0,0,0,.72) 58%,transparent 100%);
+}
+html[data-tahoe-embedded="1"] .libSearch{
+  width:100%!important;
+  min-width:0!important;
+  height:40px!important;
+  padding:0 15px!important;
+  border-radius:20px!important;
+  border:1px solid rgba(255,255,255,.74)!important;
+  background:rgba(233,242,247,.58)!important;
+  color:#1d222a!important;
+  font-family:var(--tahoe-font)!important;
+  font-size:13px!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.54)!important;
+  backdrop-filter:blur(18px) saturate(155%)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(155%)!important;
+}
+html[data-tahoe-embedded="1"] .libTools>.btn{
+  height:40px!important;
+  min-width:88px!important;
+  padding:0 13px!important;
+  border-radius:12px!important;
+  font-size:12px!important;
+}
+
+/* Main shell = Tahoe sidebar + content panel */
+html[data-tahoe-embedded="1"] #projectGroups{
+  min-height:0!important;
+  overflow:hidden!important;
+}
+html[data-tahoe-embedded="1"] .psProjectShell{
+  height:100%!important;
+  min-height:0!important;
+  display:grid!important;
+  grid-template-columns:var(--ps-sidebar-w) 10px minmax(0,1fr)!important;
+  gap:0!important;
+}
+html[data-tahoe-embedded="1"] .psProjectSidebar,
+html[data-tahoe-embedded="1"] .psProjectMain{
+  min-width:0!important;
+  min-height:0!important;
+  border:1px solid rgba(255,255,255,.62)!important;
+  border-radius:22px!important;
+  overflow:hidden!important;
+  box-shadow:0 14px 38px rgba(31,61,106,.07)!important;
+}
+html[data-tahoe-embedded="1"] .psProjectSidebar{
+  display:grid!important;
+  grid-template-rows:auto minmax(0,1fr)!important;
+  background:linear-gradient(180deg,
+    rgba(220,242,251,.72),
+    rgba(232,246,252,.54))!important;
+  backdrop-filter:blur(18px) saturate(150%)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(150%)!important;
+}
+html[data-tahoe-embedded="1"] .psSidebarTop{
+  position:sticky!important;
+  top:0!important;
+  z-index:6!important;
+  padding:14px 12px 10px!important;
+  background:linear-gradient(to bottom,
+    rgba(249,253,255,.94),
+    rgba(238,248,252,.72),
+    rgba(238,248,252,.18))!important;
+  backdrop-filter:blur(15px) saturate(155%)!important;
+  -webkit-backdrop-filter:blur(15px) saturate(155%)!important;
+  border-bottom:1px solid rgba(0,0,0,.045)!important;
+}
+html[data-tahoe-embedded="1"] .psSidebarTop strong{
+  display:block!important;
+  font:750 11px/1.2 var(--tahoe-font)!important;
+  color:#737b85!important;
+  text-transform:uppercase!important;
+  letter-spacing:.025em!important;
+}
+html[data-tahoe-embedded="1"] .psSidebarList{
+  overflow:auto!important;
+  padding:9px!important;
+  scrollbar-width:none!important;
+}
+html[data-tahoe-embedded="1"] .psSidebarList::-webkit-scrollbar{display:none!important}
+html[data-tahoe-embedded="1"] .psFolderRow{
+  width:100%!important;
+  min-height:42px!important;
+  display:grid!important;
+  grid-template-columns:24px minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:8px!important;
+  padding:0 10px!important;
+  border:0!important;
+  border-radius:11px!important;
+  background:transparent!important;
+  color:#242a32!important;
+  text-align:left!important;
+  font:650 12px/1 var(--tahoe-font)!important;
+}
+html[data-tahoe-embedded="1"] .psFolderRow.active{
+  color:#fff!important;
+  background:linear-gradient(#0f75ed,#0864da)!important;
+  box-shadow:0 7px 16px rgba(0,94,220,.17)!important;
+}
+html[data-tahoe-embedded="1"] .psFolderIcon{
+  width:25px;height:25px;border-radius:8px;
+  display:grid;place-items:center;
+  background:linear-gradient(145deg,#54b8f2,#0876d8);
+  color:#fff;font-size:14px
+}
+html[data-tahoe-embedded="1"] .psFolderCount{
+  font:750 9px/1 var(--tahoe-font)!important;
+  color:#8b95a2!important;
+}
+html[data-tahoe-embedded="1"] .psFolderRow.active .psFolderCount{color:#dcecff!important}
+
+/* Resizer */
+html[data-tahoe-embedded="1"] .psProjectSplit{
+  position:relative!important;
+  cursor:col-resize!important;
+  touch-action:none!important;
+}
+html[data-tahoe-embedded="1"] .psProjectSplit::before{
+  content:"";
+  position:absolute;
+  top:14px;bottom:14px;left:4px;
+  width:2px;border-radius:999px;
+  background:rgba(73,93,116,.10)
+}
+html[data-tahoe-embedded="1"] .psProjectSplit:hover::before{
+  background:rgba(var(--tahoe-accent-rgb,11,111,232),.40)
+}
+
+/* Content panel */
+html[data-tahoe-embedded="1"] .psProjectMain{
+  position:relative!important;
+  display:grid!important;
+  grid-template-rows:auto minmax(0,1fr)!important;
+  background:rgba(250,251,252,.78)!important;
+  backdrop-filter:blur(16px) saturate(145%)!important;
+  -webkit-backdrop-filter:blur(16px) saturate(145%)!important;
+}
+html[data-tahoe-embedded="1"] .psProjectSummary{
+  position:sticky!important;
+  top:0!important;
+  z-index:7!important;
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:8px!important;
+  padding:12px!important;
+  border-bottom:1px solid rgba(0,0,0,.05)!important;
+  background:linear-gradient(to bottom,
+    rgba(255,255,255,.93),
+    rgba(255,255,255,.66),
+    rgba(255,255,255,.18))!important;
+  backdrop-filter:blur(15px) saturate(150%)!important;
+  -webkit-backdrop-filter:blur(15px) saturate(150%)!important;
+}
+html[data-tahoe-embedded="1"] .psSummaryCard{
+  min-width:0!important;
+  padding:10px 12px!important;
+  border-radius:14px!important;
+  background:rgba(247,247,248,.82)!important;
+  border:1px solid rgba(255,255,255,.75)!important;
+}
+html[data-tahoe-embedded="1"] .psSummaryCard b{
+  display:block!important;
+  font:760 18px/1 var(--tahoe-font)!important;
+  color:#22262d!important;
+}
+html[data-tahoe-embedded="1"] .psSummaryCard span{
+  display:block!important;
+  margin-top:4px!important;
+  font:550 9px/1.2 var(--tahoe-font)!important;
+  color:#848b94!important;
+}
+
+/* Project rows = Users & Groups style */
+html[data-tahoe-embedded="1"] .psProjectList{
+  min-height:0!important;
+  overflow:auto!important;
+  margin:0!important;
+  padding:10px 12px 22px!important;
+  scrollbar-width:none!important;
+}
+html[data-tahoe-embedded="1"] .psProjectList::-webkit-scrollbar{display:none!important}
+html[data-tahoe-embedded="1"] .psProjectRows{
+  overflow:hidden!important;
+  border-radius:17px!important;
+  border:1px solid rgba(255,255,255,.80)!important;
+  background:rgba(247,247,248,.78)!important;
+}
+html[data-tahoe-embedded="1"] .psProjectRow{
+  padding:8px 10px!important;
+  background:transparent!important;
+  transition:background .15s ease!important;
+}
+html[data-tahoe-embedded="1"] .psProjectRow+.psProjectRow{
+  border-top:1px solid rgba(0,0,0,.065)!important
+}
+html[data-tahoe-embedded="1"] .psProjectRow:hover{
+  background:rgba(var(--tahoe-accent-rgb,11,111,232),.04)!important
+}
+html[data-tahoe-embedded="1"] .psProjectRow.selected{
+  background:rgba(var(--tahoe-accent-rgb,11,111,232),.065)!important
+}
+html[data-tahoe-embedded="1"] .psProjectFirst,
+html[data-tahoe-embedded="1"] .psProjectSecond{
+  display:flex!important;
+  align-items:center!important;
+  min-width:0!important
+}
+html[data-tahoe-embedded="1"] .psProjectFirst{gap:9px!important}
+html[data-tahoe-embedded="1"] .psProjectIdentity{
+  min-width:0!important;
+  flex:1!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:9px!important;
+  border:0!important;
+  background:transparent!important;
+  color:inherit!important;
+  text-align:left!important;
+  padding:0!important
+}
+html[data-tahoe-embedded="1"] .psProjectIcon{
+  flex:0 0 36px!important;
+  width:36px!important;height:36px!important;
+  display:grid!important;place-items:center!important;
+  border-radius:11px!important;
+  background:linear-gradient(145deg,#c8edff,#62b7f2)!important;
+  color:#0977c6!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.50)!important;
+}
+html[data-tahoe-embedded="1"] .psProjectIcon svg{width:20px!important;height:20px!important}
+html[data-tahoe-embedded="1"] .psProjectText{
+  min-width:0!important;flex:1!important
+}
+html[data-tahoe-embedded="1"] .psProjectText strong{
+  display:block!important;
+  overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;
+  font:750 13px/1.15 var(--khmer)!important;
+  color:#1d2229!important;
+}
+html[data-tahoe-embedded="1"] .psProjectText small{
+  display:block!important;
+  margin-top:3px!important;
+  overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;
+  font:500 9px/1.15 var(--tahoe-font)!important;
+  color:#7e8791!important;
+}
+html[data-tahoe-embedded="1"] .psProjectOpen{
+  flex:0 0 auto!important;
+  height:31px!important;
+  padding:0 11px!important;
+  border-radius:10px!important;
+  border:0!important;
+  background:var(--tahoe-accent,#0b6fe8)!important;
+  color:#fff!important;
+  font:700 10px/1 var(--tahoe-font)!important;
+}
+html[data-tahoe-embedded="1"] .psProjectSecond{
+  margin-top:5px!important;
+  padding-top:5px!important;
+  padding-left:45px!important;
+  gap:6px!important;
+  border-top:1px solid rgba(0,0,0,.04)!important;
+}
+html[data-tahoe-embedded="1"] .psProjectMeta{
+  flex:1!important;
+  min-width:0!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:6px!important;
+  overflow:hidden!important;
+}
+html[data-tahoe-embedded="1"] .psMetaChip{
+  flex:0 0 auto!important;
+  padding:4px 7px!important;
+  border-radius:999px!important;
+  background:rgba(0,0,0,.045)!important;
+  color:#747d88!important;
+  font:600 8px/1 var(--tahoe-font)!important;
+  white-space:nowrap!important;
+}
+html[data-tahoe-embedded="1"] .psProjectActions{
+  display:flex!important;
+  align-items:center!important;
+  gap:4px!important;
+  flex:0 0 auto!important;
+}
+html[data-tahoe-embedded="1"] .psProjectActions button{
+  height:28px!important;
+  padding:0 8px!important;
+  border-radius:9px!important;
+  border:1px solid rgba(0,0,0,.055)!important;
+  background:rgba(255,255,255,.62)!important;
+  color:#49515c!important;
+  font:650 8px/1 var(--tahoe-font)!important;
+}
+html[data-tahoe-embedded="1"] .psProjectActions button:hover{
+  background:rgba(255,255,255,.90)!important
+}
+html[data-tahoe-embedded="1"] .psProjectActions button.danger{color:#ff453a!important}
+html[data-tahoe-embedded="1"] .psEmpty{
+  min-height:220px!important;
+  display:grid!important;
+  place-items:center!important;
+  text-align:center!important;
+  color:#7c858f!important;
+  padding:28px!important
+}
+html[data-tahoe-embedded="1"] .psEmpty i{
+  display:block!important;font-size:30px!important;color:#78a7d1!important;margin-bottom:8px!important
+}
+html[data-tahoe-embedded="1"] .psEmpty b{
+  display:block!important;color:#27313d!important;font-size:13px!important
+}
+
+/* Dark / Navy / Gray follow Tahoe */
+html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .library{
+  background:linear-gradient(180deg,rgba(28,28,30,.68),rgba(22,22,24,.78))!important
+}
+html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .libTools,
+html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .psProjectMain,
+html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .psProjectRows{
+  background:rgba(38,38,41,.82)!important;border-color:rgba(255,255,255,.09)!important
+}
+html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .psProjectSidebar{
+  background:linear-gradient(180deg,rgba(44,45,49,.90),rgba(29,30,34,.86))!important;
+  border-color:rgba(255,255,255,.09)!important
+}
+html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .psSidebarTop,
+html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .psProjectSummary{
+  background:linear-gradient(to bottom,rgba(47,48,52,.95),rgba(35,36,40,.72),rgba(21,22,26,.13))!important;
+  border-color:rgba(255,255,255,.08)!important
+}
+html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .libSearch,
+html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .psSummaryCard,
+html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .psProjectActions button{
+  background:rgba(72,72,74,.60)!important;color:#f5f5f7!important;border-color:rgba(255,255,255,.08)!important
+}
+html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .psProjectText strong,
+html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .psSummaryCard b,
+html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .psEmpty b{
+  color:#f5f5f7!important
+}
+html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .psProjectText small,
+html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .psSummaryCard span{color:#a5aab0!important}
+html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .psMetaChip{background:rgba(255,255,255,.07)!important;color:#b8bdc4!important}
+
+html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .library{
+  background:linear-gradient(180deg,rgba(10,34,82,.66),rgba(1,21,61,.84))!important
+}
+html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .libTools,
+html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .psProjectMain,
+html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .psProjectRows{
+  background:rgba(10,34,82,.78)!important;border-color:rgba(208,216,233,.10)!important
+}
+html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .psProjectSidebar{
+  background:linear-gradient(180deg,rgba(10,34,82,.92),rgba(3,21,57,.89))!important;
+  border-color:rgba(208,216,233,.10)!important
+}
+html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .psSidebarTop,
+html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .psProjectSummary{
+  background:linear-gradient(to bottom,rgba(24,51,104,.94),rgba(10,34,82,.70),rgba(1,21,61,.10))!important;
+  border-color:rgba(208,216,233,.09)!important
+}
+html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .libSearch,
+html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .psSummaryCard,
+html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .psProjectActions button{
+  background:rgba(43,71,125,.62)!important;color:#f7f9ff!important;border-color:rgba(208,216,233,.09)!important
+}
+html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .psProjectText strong,
+html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .psSummaryCard b,
+html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .psEmpty b{color:#f7f9ff!important}
+html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .psProjectText small,
+html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .psSummaryCard span{color:#b8c5df!important}
+html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .psMetaChip{background:rgba(208,216,233,.09)!important;color:#c6d3ec!important}
+
+html[data-tahoe-mode="gray"][data-tahoe-embedded="1"] .library{
+  background:linear-gradient(180deg,rgba(226,229,232,.74),rgba(210,214,218,.80))!important
+}
+html[data-tahoe-mode="gray"][data-tahoe-embedded="1"] .libTools,
+html[data-tahoe-mode="gray"][data-tahoe-embedded="1"] .psProjectMain,
+html[data-tahoe-mode="gray"][data-tahoe-embedded="1"] .psProjectRows{
+  background:rgba(238,240,242,.86)!important
+}
+
+/* Responsive */
+@media(max-width:900px){
+  html[data-tahoe-embedded="1"] .libTools{
+    grid-template-columns:minmax(0,1fr) auto!important;
+  }
+  html[data-tahoe-embedded="1"] .libTools>.btn:first-of-type{display:none!important}
+  html[data-tahoe-embedded="1"] .psProjectShell{
+    grid-template-columns:170px 8px minmax(0,1fr)!important
+  }
+  html[data-tahoe-embedded="1"] .psProjectSummary{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important
+  }
+  html[data-tahoe-embedded="1"] .psProjectSecond{
+    padding-left:0!important;
+    flex-wrap:wrap!important
+  }
+  html[data-tahoe-embedded="1"] .psProjectMeta{order:2;flex-basis:100%!important}
+}
+@media(max-width:620px){
+  html[data-tahoe-embedded="1"] .library{padding:0!important}
+  html[data-tahoe-embedded="1"] .libBody{height:100dvh!important;gap:6px!important}
+  html[data-tahoe-embedded="1"] .libTools{
+    border-radius:0!important;border-left:0!important;border-right:0!important;border-top:0!important;
+    padding:7px!important;
+  }
+  html[data-tahoe-embedded="1"] .libTools>.btn{
+    min-width:74px!important;padding:0 8px!important
+  }
+  html[data-tahoe-embedded="1"] .psProjectShell{
+    grid-template-columns:minmax(0,1fr)!important
+  }
+  html[data-tahoe-embedded="1"] .psProjectSidebar,
+  html[data-tahoe-embedded="1"] .psProjectSplit{
+    display:none!important
+  }
+  html[data-tahoe-embedded="1"] .psProjectMain{
+    border-radius:0!important;border-left:0!important;border-right:0!important;border-bottom:0!important
+  }
+  html[data-tahoe-embedded="1"] .psProjectSummary{
+    padding:7px!important;gap:5px!important
+  }
+  html[data-tahoe-embedded="1"] .psSummaryCard{
+    padding:7px!important;border-radius:11px!important;text-align:center!important
+  }
+  html[data-tahoe-embedded="1"] .psSummaryCard b{font-size:15px!important}
+  html[data-tahoe-embedded="1"] .psSummaryCard span{font-size:8px!important}
+  html[data-tahoe-embedded="1"] .psProjectList{padding:7px!important}
+  html[data-tahoe-embedded="1"] .psProjectRow{padding:7px!important}
+  html[data-tahoe-embedded="1"] .psProjectIcon{width:32px!important;height:32px!important;flex-basis:32px!important}
+  html[data-tahoe-embedded="1"] .psProjectText strong{font-size:12px!important}
+  html[data-tahoe-embedded="1"] .psProjectOpen{height:29px!important}
+  html[data-tahoe-embedded="1"] .psProjectActions{
+    width:100%!important;justify-content:flex-end!important
+  }
+  html[data-tahoe-embedded="1"] .psProjectActions button{
+    height:27px!important;font-size:8px!important;padding:0 6px!important
+  }
+}
+</style>
+
+<script id="tahoePowerCacheFixV42">
+(()=>{
+  if(window.parent!==window && 'serviceWorker' in navigator){
+    navigator.serviceWorker.getRegistrations().then(regs=>{
+      regs.filter(r=>r.scope.includes('/apps/powerslide/')).forEach(r=>r.unregister().catch(()=>{}))
+    }).catch(()=>{});
+    if('caches' in window){
+      caches.keys().then(keys=>Promise.all(
+        keys.filter(k=>/^kb1954-(app|runtime)-/.test(k)).map(k=>caches.delete(k))
+      )).catch(()=>{})
+    }
+  }
+})();
+</script>
+
+
+<style id="tahoePowerV43">
+.redoFlip{display:inline-block;transform:scaleX(-1)}
+.mobilePowerActions{display:none}
+
+/* Mobile ordering:
+   1. Undo/Redo/Present/PPTX/Fullscreen/Exit
+   2. Tool rows + Slide editor
+   3. Properties
+   4. Horizontal thumbnails
+*/
+@media(max-width:900px){
+ html[data-tahoe-embedded="1"] .editor{
+   display:grid!important;
+   grid-template-columns:minmax(0,1fr)!important;
+   grid-template-rows:auto minmax(0,1fr) auto 126px!important;
+   height:100dvh!important;
+   min-height:0!important;
+   overflow:hidden!important;
+   padding:0!important;
+   gap:0!important
+ }
+
+ html[data-tahoe-embedded="1"] .mobilePowerActions{
+   grid-column:1!important;
+   grid-row:1!important;
+   position:relative!important;
+   z-index:50!important;
+   display:grid!important;
+   grid-template-columns:40px 40px minmax(82px,1fr) minmax(72px,1fr) 40px 40px!important;
+   gap:5px!important;
+   padding:6px!important;
+   min-height:46px!important;
+   background:rgba(249,251,252,.94)!important;
+   border-bottom:1px solid var(--line)!important;
+   box-shadow:0 6px 22px rgba(0,0,0,.06)!important;
+   backdrop-filter:blur(18px) saturate(155%)!important;
+   -webkit-backdrop-filter:blur(18px) saturate(155%)!important
+ }
+ html[data-tahoe-embedded="1"] .mobilePowerActions .inspectorAction{
+   height:34px!important;
+   min-width:0!important;
+   padding:0 7px!important;
+   border-radius:10px!important;
+   display:flex!important;
+   align-items:center!important;
+   justify-content:center!important;
+   gap:4px!important;
+   font-size:10px!important
+ }
+ html[data-tahoe-embedded="1"] .mobilePowerActions .inspectorAction i{
+   font-size:18px!important;
+   line-height:1!important
+ }
+ html[data-tahoe-embedded="1"] .mobilePowerActions .primary{
+   background:var(--tahoe-accent,#0b6fe8)!important;
+   color:#fff!important
+ }
+ html[data-tahoe-embedded="1"] .mobilePowerActions .exitAction{
+   color:#ff453a!important
+ }
+ html[data-tahoe-embedded="1"] .mobilePowerActions .exitAction:active{
+   background:rgba(255,69,58,.12)!important
+ }
+
+ /* Workspace stays above Properties. All tool rows remain above canvas. */
+ html[data-tahoe-embedded="1"] .workspace{
+   grid-column:1!important;
+   grid-row:2!important;
+   height:auto!important;
+   min-height:0!important;
+   overflow:hidden!important;
+   border:0!important;
+   border-radius:0!important;
+   grid-template-rows:auto minmax(0,1fr) 58px!important
+ }
+ html[data-tahoe-embedded="1"] .stageScroll{
+   min-height:0!important;
+   overflow:auto!important
+ }
+
+ /* Only the Properties pane moves BELOW the slide editor. */
+ html[data-tahoe-embedded="1"] .inspector{
+   position:relative!important;
+   grid-column:1!important;
+   grid-row:3!important;
+   left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
+   transform:none!important;
+   z-index:32!important;
+   width:100%!important;
+   height:auto!important;
+   min-height:0!important;
+   max-height:178px!important;
+   display:grid!important;
+   grid-template-rows:auto minmax(0,1fr)!important;
+   border:0!important;
+   border-top:1px solid var(--line)!important;
+   border-bottom:1px solid var(--line)!important;
+   border-radius:0!important;
+   box-shadow:0 -7px 24px rgba(0,0,0,.05)!important;
+   overflow:hidden!important;
+   background:rgba(247,249,251,.94)!important;
+   backdrop-filter:blur(18px) saturate(155%)!important;
+   -webkit-backdrop-filter:blur(18px) saturate(155%)!important
+ }
+
+ /* Hide duplicate action strip inside Properties on mobile:
+    mobilePowerActions above the slide now owns these controls. */
+ html[data-tahoe-embedded="1"] .inspector>.inspectorTopActions{
+   display:none!important
+ }
+ html[data-tahoe-embedded="1"] .inspector>.paneHead{
+   position:relative!important;
+   top:auto!important;
+   height:30px!important;
+   min-height:30px!important;
+   padding:0 9px!important;
+   background:rgba(255,255,255,.44)!important;
+   border-bottom:1px solid var(--line)!important
+ }
+ html[data-tahoe-embedded="1"] .inspector>.paneHead span{
+   font-size:9px!important;
+   letter-spacing:.045em!important
+ }
+ html[data-tahoe-embedded="1"] #closeInspector{
+   width:25px!important;height:25px!important
+ }
+ html[data-tahoe-embedded="1"] .inspectorBody{
+   min-height:0!important;
+   max-height:146px!important;
+   overflow:auto!important;
+   padding:6px 8px 8px!important;
+   display:flex!important;
+   align-items:flex-start!important;
+   gap:8px!important;
+   scroll-snap-type:x proximity!important;
+   overscroll-behavior:contain!important;
+   scrollbar-width:none!important
+ }
+ html[data-tahoe-embedded="1"] .inspectorBody::-webkit-scrollbar{display:none!important}
+ html[data-tahoe-embedded="1"] .inspectorBody>.propSection{
+   flex:0 0 min(86vw,330px)!important;
+   min-width:min(86vw,330px)!important;
+   margin:0!important;
+   padding:7px!important;
+   border-radius:11px!important;
+   background:rgba(255,255,255,.44)!important;
+   border:1px solid rgba(0,0,0,.055)!important;
+   scroll-snap-align:start!important
+ }
+
+ /* Thumbnails remain bottom. */
+ html[data-tahoe-embedded="1"] .rail{
+   grid-column:1!important;
+   grid-row:4!important;
+   height:126px!important;
+   min-height:126px!important
+ }
+
+ /* Properties button collapses only the panel below the editor. */
+ html[data-tahoe-embedded="1"] .editor.mobilePropsCollapsed{
+   grid-template-rows:auto minmax(0,1fr) 0 126px!important
+ }
+ html[data-tahoe-embedded="1"] .editor.mobilePropsCollapsed .inspector{
+   height:0!important;
+   max-height:0!important;
+   min-height:0!important;
+   opacity:0!important;
+   pointer-events:none!important;
+   border:0!important
+ }
+
+ /* Tahoe themes */
+ html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .mobilePowerActions,
+ html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .inspector{
+   background:rgba(28,28,30,.95)!important;
+   border-color:rgba(255,255,255,.08)!important
+ }
+ html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .inspectorBody>.propSection{
+   background:rgba(58,58,60,.60)!important;
+   border-color:rgba(255,255,255,.08)!important
+ }
+ html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .mobilePowerActions,
+ html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .inspector{
+   background:rgba(1,21,61,.96)!important;
+   border-color:rgba(208,216,233,.10)!important
+ }
+ html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .inspectorBody>.propSection{
+   background:rgba(24,51,104,.62)!important;
+   border-color:rgba(208,216,233,.09)!important
+ }
+ html[data-tahoe-mode="gray"][data-tahoe-embedded="1"] .mobilePowerActions,
+ html[data-tahoe-mode="gray"][data-tahoe-embedded="1"] .inspector{
+   background:rgba(235,237,239,.96)!important
+ }
+}
+
+@media(max-width:520px){
+ html[data-tahoe-embedded="1"] .editor{
+   grid-template-rows:auto minmax(0,1fr) auto 112px!important
+ }
+ html[data-tahoe-embedded="1"] .mobilePowerActions{
+   grid-template-columns:36px 36px minmax(70px,1fr) minmax(62px,1fr) 36px 36px!important;
+   gap:3px!important;
+   padding:5px 4px!important
+ }
+ html[data-tahoe-embedded="1"] .mobilePowerActions .inspectorAction{
+   height:32px!important;
+   padding:0 4px!important;
+   font-size:9px!important
+ }
+ html[data-tahoe-embedded="1"] .mobilePowerActions .inspectorAction i{font-size:17px!important}
+ html[data-tahoe-embedded="1"] .inspector{max-height:160px!important}
+ html[data-tahoe-embedded="1"] .inspectorBody{max-height:128px!important}
+ html[data-tahoe-embedded="1"] .editor.mobilePropsCollapsed{
+   grid-template-rows:auto minmax(0,1fr) 0 112px!important
+ }
+}
+</style>
+
+
+<style id="tahoePowerV45">
+/* =========================================================
+   v45 PowerSlide mobile workspace
+   - tools = icon-only, exactly 2 rows
+   - slide editor immediately under tools
+   - properties strictly below slide editor, never overlaying it
+   - properties title/header strip removed
+   - thumbnails ~50% smaller
+   ========================================================= */
+@media(max-width:900px){
+
+  /* Overall order:
+     row1 actions
+     row2 workspace (tools + canvas + notes)
+     row3 properties
+     row4 tiny thumbnails
+  */
+  html[data-tahoe-embedded="1"] .editor{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-rows:auto minmax(0,1fr) auto 64px!important;
+    height:100dvh!important;
+    min-height:0!important;
+    overflow:hidden!important;
+    padding:0!important;
+    gap:0!important
+  }
+
+  /* Workspace is ALWAYS above Properties in layout + stacking. */
+  html[data-tahoe-embedded="1"] .workspace{
+    position:relative!important;
+    z-index:40!important;
+    grid-column:1!important;
+    grid-row:2!important;
+    min-height:0!important;
+    height:auto!important;
+    overflow:hidden!important;
+    border:0!important;
+    border-radius:0!important;
+    display:grid!important;
+    grid-template-rows:auto minmax(0,1fr) 0!important;
+    background:var(--panel,#fff)!important
+  }
+
+  /* Remove notes/blank strip below canvas on mobile. */
+  html[data-tahoe-embedded="1"] .notesBar{
+    display:none!important
+  }
+
+  /* TOOL BAR: 12 tools = 6 columns x 2 rows */
+  html[data-tahoe-embedded="1"] .toolrow{
+    position:relative!important;
+    z-index:45!important;
+    display:grid!important;
+    grid-template-columns:repeat(6,minmax(0,1fr))!important;
+    grid-template-rows:repeat(2,42px)!important;
+    grid-auto-rows:42px!important;
+    gap:4px!important;
+    min-height:88px!important;
+    height:88px!important;
+    max-height:88px!important;
+    overflow:hidden!important;
+    padding:5px 6px!important;
+    background:rgba(249,251,252,.96)!important;
+    border-bottom:1px solid var(--line)!important;
+    box-shadow:0 5px 16px rgba(0,0,0,.045)!important;
+    backdrop-filter:blur(16px) saturate(155%)!important;
+    -webkit-backdrop-filter:blur(16px) saturate(155%)!important
+  }
+  html[data-tahoe-embedded="1"] .toolrow .toolGroup{
+    display:contents!important
+  }
+  html[data-tahoe-embedded="1"] .toolrow .toolBtn{
+    width:100%!important;
+    min-width:0!important;
+    height:42px!important;
+    padding:0!important;
+    display:grid!important;
+    place-items:center!important;
+    border-radius:10px!important;
+    overflow:hidden!important;
+    background:rgba(255,255,255,.52)!important;
+    border:1px solid rgba(0,0,0,.05)!important;
+    color:#3b424c!important
+  }
+  html[data-tahoe-embedded="1"] .toolrow .toolBtn span{
+    display:none!important
+  }
+  html[data-tahoe-embedded="1"] .toolrow .toolBtn svg,
+  html[data-tahoe-embedded="1"] .toolrow .toolBtn .hi{
+    width:20px!important;
+    height:20px!important;
+    flex:0 0 20px!important
+  }
+  html[data-tahoe-embedded="1"] .toolrow .toolBtn>i{
+    font-size:21px!important;
+    line-height:1!important
+  }
+  html[data-tahoe-embedded="1"] .toolrow .toolBtn.accent,
+  html[data-tahoe-embedded="1"] #mobileProps{
+    color:var(--tahoe-accent,#0b6fe8)!important;
+    background:rgba(var(--tahoe-accent-rgb,11,111,232),.07)!important
+  }
+  html[data-tahoe-embedded="1"] .toolrow .toolBtn:active{
+    transform:scale(.96)!important;
+    background:rgba(var(--tahoe-accent-rgb,11,111,232),.12)!important
+  }
+
+  /* Canvas starts immediately under the 2-row tools and gets maximum room. */
+  html[data-tahoe-embedded="1"] .stageScroll{
+    position:relative!important;
+    z-index:41!important;
+    min-height:0!important;
+    height:100%!important;
+    overflow:auto!important;
+    padding:8px 5px!important;
+    display:flex!important;
+    align-items:flex-start!important;
+    justify-content:center!important;
+    overscroll-behavior:contain!important
+  }
+  html[data-tahoe-embedded="1"] .slideCanvas{
+    position:relative!important;
+    z-index:42!important;
+    margin:0 auto!important
+  }
+
+  /* PROPERTIES: below slide editor only, never floating/overlaying canvas. */
+  html[data-tahoe-embedded="1"] .inspector{
+    position:relative!important;
+    z-index:20!important;
+    grid-column:1!important;
+    grid-row:3!important;
+    left:auto!important;
+    right:auto!important;
+    top:auto!important;
+    bottom:auto!important;
+    transform:none!important;
+    width:100%!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:150px!important;
+    display:block!important;
+    overflow:hidden!important;
+    border:0!important;
+    border-top:1px solid var(--line)!important;
+    border-bottom:1px solid var(--line)!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+    background:rgba(247,249,251,.96)!important;
+    backdrop-filter:blur(16px) saturate(150%)!important;
+    -webkit-backdrop-filter:blur(16px) saturate(150%)!important
+  }
+
+  /* Requested: remove the blank/title bar above Properties. */
+  html[data-tahoe-embedded="1"] .inspector>.paneHead,
+  html[data-tahoe-embedded="1"] .inspector>.inspectorTopActions{
+    display:none!important
+  }
+  html[data-tahoe-embedded="1"] .inspectorBody{
+    min-height:0!important;
+    max-height:150px!important;
+    overflow:auto!important;
+    padding:6px!important;
+    display:flex!important;
+    align-items:flex-start!important;
+    gap:6px!important;
+    scroll-snap-type:x proximity!important;
+    scrollbar-width:none!important
+  }
+  html[data-tahoe-embedded="1"] .inspectorBody::-webkit-scrollbar{display:none!important}
+  html[data-tahoe-embedded="1"] .inspectorBody>.propSection{
+    flex:0 0 min(86vw,320px)!important;
+    min-width:min(86vw,320px)!important;
+    margin:0!important;
+    padding:7px!important;
+    border-radius:11px!important;
+    background:rgba(255,255,255,.45)!important;
+    border:1px solid rgba(0,0,0,.055)!important;
+    scroll-snap-align:start!important
+  }
+  html[data-tahoe-embedded="1"] .inspectorBody>.emptyInspector{
+    width:100%!important;
+    min-height:70px!important;
+    padding:12px!important;
+    display:grid!important;
+    place-items:center!important
+  }
+
+  /* Properties button collapses the whole below-canvas panel. */
+  html[data-tahoe-embedded="1"] .editor.mobilePropsCollapsed{
+    grid-template-rows:auto minmax(0,1fr) 0 64px!important
+  }
+  html[data-tahoe-embedded="1"] .editor.mobilePropsCollapsed .inspector{
+    height:0!important;
+    max-height:0!important;
+    min-height:0!important;
+    opacity:0!important;
+    pointer-events:none!important;
+    border:0!important
+  }
+
+  /* THUMBNAILS: about 50% of previous 126px/104px sizing. */
+  html[data-tahoe-embedded="1"] .rail{
+    position:relative!important;
+    z-index:30!important;
+    grid-column:1!important;
+    grid-row:4!important;
+    width:100%!important;
+    height:64px!important;
+    min-height:64px!important;
+    max-height:64px!important;
+    display:flex!important;
+    flex-direction:row!important;
+    align-items:stretch!important;
+    overflow:hidden!important;
+    border:0!important;
+    border-top:1px solid var(--line)!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+    background:rgba(247,249,251,.94)!important
+  }
+  html[data-tahoe-embedded="1"] .rail .paneHead,
+  html[data-tahoe-embedded="1"] .railResizer{
+    display:none!important
+  }
+  html[data-tahoe-embedded="1"] .slideList{
+    flex:1!important;
+    display:flex!important;
+    align-items:center!important;
+    gap:4px!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    padding:4px 5px!important;
+    min-width:0!important;
+    scrollbar-width:none!important
+  }
+  html[data-tahoe-embedded="1"] .slideList::-webkit-scrollbar{display:none!important}
+  html[data-tahoe-embedded="1"] .thumbRow{
+    flex:0 0 78px!important;
+    width:78px!important;
+    height:54px!important;
+    min-height:54px!important;
+    display:grid!important;
+    grid-template-columns:12px minmax(0,1fr)!important;
+    gap:2px!important;
+    margin:0!important;
+    padding:3px!important;
+    border-radius:9px!important
+  }
+  html[data-tahoe-embedded="1"] .thumbNo{
+    padding-top:2px!important;
+    font-size:7px!important
+  }
+  html[data-tahoe-embedded="1"] .thumb{
+    width:60px!important;
+    max-width:60px!important;
+    min-width:60px!important;
+    align-self:center!important;
+    border-radius:5px!important
+  }
+  html[data-tahoe-embedded="1"] .thumbAdd{
+    flex:0 0 58px!important;
+    width:58px!important;
+    height:52px!important;
+    min-height:52px!important;
+    margin:5px 5px 5px 0!important;
+    padding:0 4px!important;
+    border-radius:10px!important;
+    font-size:9px!important;
+    line-height:1.05!important;
+    white-space:normal!important
+  }
+
+  /* Themes */
+  html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .toolrow,
+  html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .inspector,
+  html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .rail{
+    background:rgba(28,28,30,.96)!important;
+    border-color:rgba(255,255,255,.08)!important
+  }
+  html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .toolrow .toolBtn{
+    background:rgba(72,72,74,.56)!important;
+    color:#f3f3f6!important;
+    border-color:rgba(255,255,255,.07)!important
+  }
+  html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .inspectorBody>.propSection{
+    background:rgba(58,58,60,.62)!important;
+    border-color:rgba(255,255,255,.08)!important
+  }
+
+  html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .toolrow,
+  html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .inspector,
+  html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .rail{
+    background:rgba(1,21,61,.97)!important;
+    border-color:rgba(208,216,233,.09)!important
+  }
+  html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .toolrow .toolBtn{
+    background:rgba(43,71,125,.60)!important;
+    color:#f7f9ff!important;
+    border-color:rgba(208,216,233,.08)!important
+  }
+  html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .inspectorBody>.propSection{
+    background:rgba(24,51,104,.63)!important;
+    border-color:rgba(208,216,233,.09)!important
+  }
+
+  html[data-tahoe-mode="gray"][data-tahoe-embedded="1"] .toolrow,
+  html[data-tahoe-mode="gray"][data-tahoe-embedded="1"] .inspector,
+  html[data-tahoe-mode="gray"][data-tahoe-embedded="1"] .rail{
+    background:rgba(237,239,241,.97)!important
+  }
+}
+
+@media(max-width:520px){
+  html[data-tahoe-embedded="1"] .editor{
+    grid-template-rows:auto minmax(0,1fr) auto 58px!important
+  }
+  html[data-tahoe-embedded="1"] .toolrow{
+    grid-template-rows:repeat(2,38px)!important;
+    grid-auto-rows:38px!important;
+    min-height:80px!important;
+    height:80px!important;
+    max-height:80px!important;
+    gap:3px!important;
+    padding:4px!important
+  }
+  html[data-tahoe-embedded="1"] .toolrow .toolBtn{
+    height:38px!important;
+    border-radius:9px!important
+  }
+  html[data-tahoe-embedded="1"] .toolrow .toolBtn svg,
+  html[data-tahoe-embedded="1"] .toolrow .toolBtn .hi{
+    width:18px!important;height:18px!important
+  }
+  html[data-tahoe-embedded="1"] .toolrow .toolBtn>i{font-size:19px!important}
+
+  html[data-tahoe-embedded="1"] .inspector{
+    max-height:136px!important
+  }
+  html[data-tahoe-embedded="1"] .inspectorBody{
+    max-height:136px!important;
+    padding:5px!important
+  }
+
+  html[data-tahoe-embedded="1"] .rail{
+    height:58px!important;
+    min-height:58px!important;
+    max-height:58px!important
+  }
+  html[data-tahoe-embedded="1"] .thumbRow{
+    flex-basis:70px!important;
+    width:70px!important;
+    height:49px!important;
+    min-height:49px!important
+  }
+  html[data-tahoe-embedded="1"] .thumb{
+    width:54px!important;
+    max-width:54px!important;
+    min-width:54px!important
+  }
+  html[data-tahoe-embedded="1"] .thumbAdd{
+    flex-basis:52px!important;
+    width:52px!important;
+    height:47px!important;
+    min-height:47px!important;
+    margin:5px 4px 5px 0!important;
+    font-size:8px!important
+  }
+  html[data-tahoe-embedded="1"] .editor.mobilePropsCollapsed{
+    grid-template-rows:auto minmax(0,1fr) 0 58px!important
+  }
+}
+</style>
+
+\n<style id="tahoePowerFastV46">\nhtml[data-fast-mode="1"] *,html[data-fast-mode="1"] *::before,html[data-fast-mode="1"] *::after{scroll-behavior:auto!important;transition-duration:.001ms!important;animation-duration:.001ms!important}\nhtml[data-fast-mode="1"] .topbar,html[data-fast-mode="1"] .rail,html[data-fast-mode="1"] .workspace,html[data-fast-mode="1"] .inspector,html[data-fast-mode="1"] .toolrow,html[data-fast-mode="1"] .mobilePowerActions,html[data-fast-mode="1"] .library,html[data-fast-mode="1"] .libTop,html[data-fast-mode="1"] .libBody,html[data-fast-mode="1"] .libTools,html[data-fast-mode="1"] .psProjectSidebar,html[data-fast-mode="1"] .psProjectMain,html[data-fast-mode="1"] .psSidebarTop,html[data-fast-mode="1"] .psProjectSummary{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}\nhtml[data-fast-mode="1"][data-tahoe-mode="light"] .rail,html[data-fast-mode="1"][data-tahoe-mode="light"] .workspace,html[data-fast-mode="1"][data-tahoe-mode="light"] .inspector,html[data-fast-mode="1"][data-tahoe-mode="light"] .toolrow{background:#f4f8fb!important}\nhtml[data-fast-mode="1"][data-tahoe-mode="dark"] .rail,html[data-fast-mode="1"][data-tahoe-mode="dark"] .workspace,html[data-fast-mode="1"][data-tahoe-mode="dark"] .inspector,html[data-fast-mode="1"][data-tahoe-mode="dark"] .toolrow{background:#1c1c1e!important}\nhtml[data-fast-mode="1"][data-tahoe-mode="navy"] .rail,html[data-fast-mode="1"][data-tahoe-mode="navy"] .workspace,html[data-fast-mode="1"][data-tahoe-mode="navy"] .inspector,html[data-fast-mode="1"][data-tahoe-mode="navy"] .toolrow{background:#01153d!important}\n</style>\n
+
+<style id="tahoePowerFastV47">
+html[data-fast-mode="1"] *,
+html[data-fast-mode="1"] *::before,
+html[data-fast-mode="1"] *::after{
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  filter:none!important;
+  animation:none!important;
+  transition:none!important;
+  scroll-behavior:auto!important;
+  will-change:auto!important
+}
+html[data-fast-mode="1"] .topbar,
+html[data-fast-mode="1"] .rail,
+html[data-fast-mode="1"] .workspace,
+html[data-fast-mode="1"] .inspector,
+html[data-fast-mode="1"] .toolrow,
+html[data-fast-mode="1"] .mobilePowerActions,
+html[data-fast-mode="1"] .library,
+html[data-fast-mode="1"] .libTop,
+html[data-fast-mode="1"] .libBody,
+html[data-fast-mode="1"] .libTools,
+html[data-fast-mode="1"] .psProjectSidebar,
+html[data-fast-mode="1"] .psProjectMain,
+html[data-fast-mode="1"] .psSidebarTop,
+html[data-fast-mode="1"] .psProjectSummary{
+  box-shadow:none!important
+}
+html[data-fast-mode="1"][data-tahoe-mode="light"] .rail,
+html[data-fast-mode="1"][data-tahoe-mode="light"] .workspace,
+html[data-fast-mode="1"][data-tahoe-mode="light"] .inspector,
+html[data-fast-mode="1"][data-tahoe-mode="light"] .toolrow,
+html[data-fast-mode="1"][data-tahoe-mode="light"] .mobilePowerActions{
+  background:#f4f8fb!important
+}
+html[data-fast-mode="1"][data-tahoe-mode="dark"] .rail,
+html[data-fast-mode="1"][data-tahoe-mode="dark"] .workspace,
+html[data-fast-mode="1"][data-tahoe-mode="dark"] .inspector,
+html[data-fast-mode="1"][data-tahoe-mode="dark"] .toolrow,
+html[data-fast-mode="1"][data-tahoe-mode="dark"] .mobilePowerActions{
+  background:#1c1c1e!important
+}
+html[data-fast-mode="1"][data-tahoe-mode="gray"] .rail,
+html[data-fast-mode="1"][data-tahoe-mode="gray"] .workspace,
+html[data-fast-mode="1"][data-tahoe-mode="gray"] .inspector,
+html[data-fast-mode="1"][data-tahoe-mode="gray"] .toolrow,
+html[data-fast-mode="1"][data-tahoe-mode="gray"] .mobilePowerActions{
+  background:#e8eaed!important
+}
+html[data-fast-mode="1"][data-tahoe-mode="navy"] .rail,
+html[data-fast-mode="1"][data-tahoe-mode="navy"] .workspace,
+html[data-fast-mode="1"][data-tahoe-mode="navy"] .inspector,
+html[data-fast-mode="1"][data-tahoe-mode="navy"] .toolrow,
+html[data-fast-mode="1"][data-tahoe-mode="navy"] .mobilePowerActions{
+  background:#01153d!important
+}
+</style>
+
+
+<style id="tahoeTypographyV51">
+html[data-tahoe-embedded="1"] .topbar,
+html[data-tahoe-embedded="1"] .rail,
+html[data-tahoe-embedded="1"] .inspector,
+html[data-tahoe-embedded="1"] .toolrow,
+html[data-tahoe-embedded="1"] .library{font-weight:var(--tahoe-body-weight,400)}
+html[data-tahoe-embedded="1"] .libBrand h1,
+html[data-tahoe-embedded="1"] .finderPreviewName{
+  font-weight:var(--tahoe-title-weight,700)!important;
+  text-transform:var(--tahoe-title-case,none)!important
+}
+html[data-tahoe-embedded="1"] .paneHead,
+html[data-tahoe-embedded="1"] .finderPaneHead{
+  font-weight:var(--tahoe-section-weight,700)!important;
+  text-transform:var(--tahoe-section-case,uppercase)!important
+}
+</style>
+
+
+<style id="tahoePowerV58">
+/* =========================================================
+   v58 — PowerSlide uses Tahoe Admin UI language directly.
+   DOM now carries: window pro-readonly / sidebar / sidebar-top /
+   content / page so the app follows the same structural model.
+   ========================================================= */
+html[data-tahoe-embedded="1"]{
+ --tahoe-window-radius:var(--tahoe-radius,26px);
+ --tahoe-line:rgba(31,42,52,.085);
+ --tahoe-card:rgba(246,246,247,.80);
+}
+html[data-tahoe-embedded="1"] .tahoeAppWindow{min-width:0;min-height:0}
+html[data-tahoe-embedded="1"] .tahoeAppSidebar{
+ min-width:0;
+ background:linear-gradient(180deg,rgba(222,247,255,.70),rgba(236,249,253,.60))!important;
+ border:1px solid rgba(255,255,255,.48)!important;
+ border-radius:max(18px,calc(var(--tahoe-radius,26px) - 9px))!important;
+ box-shadow:inset 0 0 0 .5px rgba(255,255,255,.35),0 1px 1px rgba(255,255,255,.26)!important;
+ backdrop-filter:blur(8px) saturate(140%)!important;
+ -webkit-backdrop-filter:blur(8px) saturate(140%)!important;
+ isolation:isolate;
+}
+html[data-tahoe-embedded="1"] .tahoeAppSidebarTop{
+ position:sticky!important;top:0!important;z-index:24!important;
+ background:transparent!important;isolation:isolate!important;overflow:visible!important;
+ border-bottom:0!important;
+}
+html[data-tahoe-embedded="1"] .tahoeAppSidebarTop:before{
+ content:"";position:absolute;z-index:0;pointer-events:none;
+ left:-18px;right:-18px;top:-12px;height:calc(100% + 60px);
+ background:linear-gradient(to bottom,rgba(255,255,255,.96) 0%,rgba(242,251,255,.72) 55%,rgba(214,239,252,.18) 100%);
+ backdrop-filter:blur(10px) saturate(165%);-webkit-backdrop-filter:blur(10px) saturate(165%);
+ -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 20%,rgba(0,0,0,.5) 55%,transparent 100%);
+ mask-image:linear-gradient(to bottom,#000 0%,#000 20%,rgba(0,0,0,.5) 55%,transparent 100%);
+ transform:translate3d(0,0,0)
+}
+html[data-tahoe-embedded="1"] .tahoeAppSidebarTop>*{position:relative;z-index:1}
+html[data-tahoe-embedded="1"] .tahoeAppPage{
+ min-width:0;min-height:0;
+ background:linear-gradient(180deg,rgba(255,255,255,.82),rgba(255,255,255,.73))!important;
+}
+html[data-tahoe-embedded="1"] .tahoeAppToolbar{
+ position:relative;z-index:20;background:transparent!important;isolation:isolate;overflow:visible
+}
+html[data-tahoe-embedded="1"] .tahoeAppToolbar:before{
+ content:"";position:absolute;z-index:-1;pointer-events:none;
+ left:-12px;right:-12px;top:-9px;height:calc(100% + 42px);
+ background:linear-gradient(to bottom,rgba(255,255,255,.95) 0%,rgba(250,253,255,.78) 48%,rgba(224,243,255,.14) 100%);
+ backdrop-filter:blur(10px) saturate(165%);-webkit-backdrop-filter:blur(10px) saturate(165%);
+ -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 30%,rgba(0,0,0,.5) 65%,transparent 100%);
+ mask-image:linear-gradient(to bottom,#000 0%,#000 30%,rgba(0,0,0,.5) 65%,transparent 100%)
+}
+
+/* Projects page toolbar now includes ChatGPT-style sidebar control. */
+html[data-tahoe-embedded="1"] .libTools{
+ grid-template-columns:40px minmax(0,1fr) auto auto!important;
+ align-items:center!important
+}
+html[data-tahoe-embedded="1"] .psSidebarToggle{
+ width:34px;height:34px;display:grid;place-items:center;border:0;border-radius:50%;
+ background:rgba(255,255,255,.78);color:#3e454d;cursor:pointer;
+ box-shadow:0 4px 14px rgba(0,0,0,.06)
+}
+html[data-tahoe-embedded="1"] .psSidebarToggle i{font-size:18px}
+html[data-tahoe-embedded="1"] .psSidebarToggle:hover{background:#fff}
+html[data-tahoe-embedded="1"] .psSidebarHead{
+ min-height:34px;display:flex;align-items:center;gap:8px
+}
+html[data-tahoe-embedded="1"] .psSidebarHead strong{flex:1;min-width:0}
+html[data-tahoe-embedded="1"] .psSidebarHead .psSidebarToggle{
+ width:30px;height:30px;flex:0 0 30px;background:rgba(255,255,255,.44);box-shadow:none
+}
+
+/* Match Admin .window > .sidebar + split + .main composition. */
+html[data-tahoe-embedded="1"] .psProjectShell.window.pro-readonly{
+ position:relative!important;left:auto!important;top:auto!important;transform:none!important;
+ width:100%!important;height:100%!important;
+ grid-template-columns:var(--ps-sidebar-w) 10px minmax(0,1fr)!important;
+ border:0!important;border-radius:0!important;background:transparent!important;
+ box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+ overflow:hidden!important;transition:grid-template-columns .23s ease!important
+}
+html[data-tahoe-embedded="1"] .psProjectSidebar.sidebar{
+ margin:0!important;padding:0 10px 14px!important;overflow:auto!important
+}
+html[data-tahoe-embedded="1"] .psSidebarTop.sidebar-top{
+ margin:0 -10px!important;padding:12px 10px 8px!important
+}
+html[data-tahoe-embedded="1"] .psProjectMain.content{
+ height:100%!important;padding:0!important;overflow:hidden!important;
+ border-radius:max(18px,calc(var(--tahoe-radius,26px) - 9px))!important
+}
+html[data-tahoe-embedded="1"] .psProjectList.page{animation:none!important}
+
+/* Hide/show like ChatGPT: content expands to the left edge. */
+html[data-tahoe-embedded="1"].ps-sidebar-hidden .psProjectShell.window.pro-readonly,
+html[data-tahoe-embedded="1"] .psProjectShell.sidebar-hidden{
+ grid-template-columns:0 0 minmax(0,1fr)!important
+}
+html[data-tahoe-embedded="1"].ps-sidebar-hidden .psProjectSidebar,
+html[data-tahoe-embedded="1"] .psProjectShell.sidebar-hidden .psProjectSidebar{
+ opacity:0!important;transform:translateX(-18px)!important;pointer-events:none!important;
+ border-width:0!important;padding-left:0!important;padding-right:0!important
+}
+html[data-tahoe-embedded="1"].ps-sidebar-hidden .psProjectSplit,
+html[data-tahoe-embedded="1"] .psProjectShell.sidebar-hidden .psProjectSplit{opacity:0!important;pointer-events:none!important}
+
+/* Slide editor sidebar also collapses; toolbar button brings it back. */
+html[data-tahoe-embedded="1"] .editor{
+ transition:grid-template-columns .23s ease!important
+}
+html[data-tahoe-embedded="1"] .editor.editor-sidebar-hidden{
+ grid-template-columns:0 minmax(0,1fr) 292px!important
+}
+html[data-tahoe-embedded="1"] .editor.editor-sidebar-hidden .rail{
+ opacity:0!important;pointer-events:none!important;transform:translateX(-18px)!important;
+ min-width:0!important;width:0!important;border:0!important
+}
+html[data-tahoe-embedded="1"] .psEditorSidebarToggle{
+ flex:0 0 auto!important;color:#333c46!important;background:rgba(255,255,255,.68)!important;
+ border:1px solid rgba(255,255,255,.60)!important
+}
+html[data-tahoe-embedded="1"] .psEditorSidebarToggle i{font-size:17px}
+
+/* More Admin-like projects page cards/rows. */
+html[data-tahoe-embedded="1"] .psProjectSummary{
+ padding:12px 14px!important;gap:9px!important;
+ background:transparent!important;border-bottom:0!important
+}
+html[data-tahoe-embedded="1"] .psSummaryCard{
+ min-height:60px!important;border-radius:16px!important;
+ background:rgba(246,246,247,.80)!important;border:1px solid rgba(255,255,255,.77)!important
+}
+html[data-tahoe-embedded="1"] .psProjectList{padding:4px 14px 22px!important}
+html[data-tahoe-embedded="1"] .psProjectRows{
+ border-radius:18px!important;background:rgba(246,246,247,.80)!important;border:1px solid rgba(255,255,255,.81)!important
+}
+html[data-tahoe-embedded="1"] .psProjectRow{min-height:58px!important;padding:10px 13px!important}
+html[data-tahoe-embedded="1"] .psProjectRow+.psProjectRow{border-top:1px solid rgba(31,42,52,.085)!important}
+
+/* Same theme response as parent Tahoe. */
+html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .tahoeAppSidebar,
+html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .psProjectSidebar{
+ background:linear-gradient(180deg,rgba(42,43,47,.92),rgba(29,30,34,.88))!important;
+ border-color:rgba(255,255,255,.10)!important
+}
+html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .tahoeAppPage,
+html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .psProjectMain{
+ background:rgba(28,28,30,.92)!important;color:#f5f5f7!important
+}
+html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .tahoeAppSidebarTop:before,
+html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .tahoeAppToolbar:before{
+ background:linear-gradient(to bottom,rgba(47,48,52,.95),rgba(35,36,40,.72),rgba(21,22,26,.10))!important
+}
+html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .tahoeAppSidebar{
+ background:linear-gradient(180deg,rgba(10,34,82,.94),rgba(3,21,57,.90))!important;border-color:rgba(208,216,233,.11)!important
+}
+html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .tahoeAppPage{
+ background:rgba(1,21,61,.94)!important;color:#f7f9ff!important
+}
+html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .tahoeAppSidebarTop:before,
+html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .tahoeAppToolbar:before{
+ background:linear-gradient(to bottom,rgba(24,51,104,.95),rgba(10,34,82,.72),rgba(1,21,61,.10))!important
+}
+html[data-tahoe-mode="gray"][data-tahoe-embedded="1"] .tahoeAppSidebar{
+ background:linear-gradient(180deg,rgba(226,229,232,.90),rgba(211,215,219,.84))!important
+}
+html[data-tahoe-mode="gray"][data-tahoe-embedded="1"] .tahoeAppPage{background:rgba(242,243,245,.93)!important}
+
+/* Responsive child window. */
+@media(max-width:900px){
+ html[data-tahoe-embedded="1"] .libTools{grid-template-columns:38px minmax(0,1fr) auto!important}
+ html[data-tahoe-embedded="1"] #importProjectBtn{display:none!important}
+ html[data-tahoe-embedded="1"] .psProjectShell.window.pro-readonly{grid-template-columns:170px 8px minmax(0,1fr)!important}
+ html[data-tahoe-embedded="1"].ps-sidebar-hidden .psProjectShell.window.pro-readonly{grid-template-columns:0 0 minmax(0,1fr)!important}
+ html[data-tahoe-embedded="1"] .editor.editor-sidebar-hidden{grid-template-columns:minmax(0,1fr)!important}
+ html[data-tahoe-embedded="1"] .editor.editor-sidebar-hidden .rail{display:none!important}
+}
+@media(max-width:620px){
+ html[data-tahoe-embedded="1"] .psSidebarToggle{display:none!important}
+ html[data-tahoe-embedded="1"] .libTools{grid-template-columns:minmax(0,1fr) auto!important}
+ html[data-tahoe-embedded="1"] .psProjectShell.window.pro-readonly{grid-template-columns:minmax(0,1fr)!important}
+ html[data-tahoe-embedded="1"] .psProjectSidebar,html[data-tahoe-embedded="1"] .psProjectSplit{display:none!important}
+}
+</style>
+
+
+<style id="tahoePowerV59">
+/* ==========================================================
+   v59 PowerSlide sidebar = Tahoe Admin sidebar behavior
+   - same floating rounded glass panel
+   - sticky .sidebar-top glass drag/header region
+   - thumbnails/list scroll underneath the top glass
+   ========================================================== */
+
+/* Project Library sidebar */
+html[data-tahoe-embedded="1"] .psProjectSidebar.sidebar.tahoeAppSidebar{
+  position:relative!important;
+  overflow:hidden!important;
+  display:flex!important;
+  flex-direction:column!important;
+  min-height:0!important;
+  background:linear-gradient(180deg,rgba(226,247,255,.74),rgba(239,249,253,.64))!important;
+  border:1px solid rgba(255,255,255,.56)!important;
+  border-radius:max(18px,calc(var(--tahoe-radius,26px) - 9px))!important;
+  box-shadow:inset 0 0 0 .5px rgba(255,255,255,.42),0 12px 32px rgba(55,100,130,.08)!important;
+  backdrop-filter:blur(14px) saturate(155%)!important;
+  -webkit-backdrop-filter:blur(14px) saturate(155%)!important;
+}
+html[data-tahoe-embedded="1"] .psProjectSidebar .psSidebarTop.sidebar-top{
+  position:sticky!important;
+  top:0!important;
+  z-index:40!important;
+  flex:0 0 auto!important;
+  margin:0 -10px!important;
+  padding:12px 10px 10px!important;
+  background:transparent!important;
+  border:0!important;
+  overflow:visible!important;
+  isolation:isolate!important;
+}
+html[data-tahoe-embedded="1"] .psProjectSidebar .psSidebarTop.sidebar-top:before{
+  content:""!important;
+  position:absolute!important;
+  z-index:-1!important;
+  left:-12px!important;
+  right:-12px!important;
+  top:-14px!important;
+  height:calc(100% + 54px)!important;
+  background:linear-gradient(to bottom,
+    rgba(255,255,255,.97) 0%,
+    rgba(247,253,255,.91) 32%,
+    rgba(229,246,255,.64) 64%,
+    rgba(211,237,251,.12) 100%)!important;
+  backdrop-filter:blur(15px) saturate(170%)!important;
+  -webkit-backdrop-filter:blur(15px) saturate(170%)!important;
+  -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 42%,rgba(0,0,0,.72) 69%,transparent 100%)!important;
+  mask-image:linear-gradient(to bottom,#000 0%,#000 42%,rgba(0,0,0,.72) 69%,transparent 100%)!important;
+  pointer-events:none!important;
+}
+html[data-tahoe-embedded="1"] .psProjectSidebar .psSidebarList{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  padding:0 0 14px!important;
+  scrollbar-width:none!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+html[data-tahoe-embedded="1"] .psProjectSidebar .psSidebarList::-webkit-scrollbar{display:none!important}
+
+/* Editor slide thumbnail sidebar */
+html[data-tahoe-embedded="1"] #rail.rail.sidebar.tahoeAppSidebar{
+  position:relative!important;
+  overflow:hidden!important;
+  display:flex!important;
+  flex-direction:column!important;
+  min-height:0!important;
+  padding:0 10px 12px!important;
+  background:linear-gradient(180deg,rgba(226,247,255,.74),rgba(239,249,253,.64))!important;
+  border:1px solid rgba(255,255,255,.56)!important;
+  border-radius:max(18px,calc(var(--tahoe-radius,26px) - 9px))!important;
+  box-shadow:inset 0 0 0 .5px rgba(255,255,255,.42),0 12px 32px rgba(55,100,130,.08)!important;
+  backdrop-filter:blur(14px) saturate(155%)!important;
+  -webkit-backdrop-filter:blur(14px) saturate(155%)!important;
+}
+html[data-tahoe-embedded="1"] #rail .paneHead.sidebar-top.tahoeAppSidebarTop{
+  position:sticky!important;
+  top:0!important;
+  z-index:45!important;
+  flex:0 0 auto!important;
+  margin:0 -10px!important;
+  padding:12px 10px 10px!important;
+  background:transparent!important;
+  border:0!important;
+  overflow:visible!important;
+  isolation:isolate!important;
+}
+html[data-tahoe-embedded="1"] #rail .paneHead.sidebar-top.tahoeAppSidebarTop:before{
+  content:""!important;
+  position:absolute!important;
+  z-index:-1!important;
+  left:-12px!important;
+  right:-12px!important;
+  top:-14px!important;
+  height:calc(100% + 62px)!important;
+  background:linear-gradient(to bottom,
+    rgba(255,255,255,.97) 0%,
+    rgba(247,253,255,.91) 30%,
+    rgba(229,246,255,.64) 63%,
+    rgba(211,237,251,.12) 100%)!important;
+  backdrop-filter:blur(15px) saturate(170%)!important;
+  -webkit-backdrop-filter:blur(15px) saturate(170%)!important;
+  -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 40%,rgba(0,0,0,.74) 70%,transparent 100%)!important;
+  mask-image:linear-gradient(to bottom,#000 0%,#000 40%,rgba(0,0,0,.74) 70%,transparent 100%)!important;
+  pointer-events:none!important;
+}
+html[data-tahoe-embedded="1"] #rail #thumbs{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  padding:8px 0 16px!important;
+  margin:0!important;
+  scrollbar-width:none!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+html[data-tahoe-embedded="1"] #rail #thumbs::-webkit-scrollbar{display:none!important}
+
+/* New slide button stays inside the scrolling thumbnail content visually. */
+html[data-tahoe-embedded="1"] #rail .railFoot{
+  flex:0 0 auto!important;
+  position:relative!important;
+  z-index:6!important;
+  padding:8px 0 0!important;
+  background:transparent!important;
+}
+
+/* Dark/Navy/Gray follow same top-glass behavior */
+html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .psProjectSidebar.sidebar.tahoeAppSidebar,
+html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] #rail.rail.sidebar.tahoeAppSidebar{
+  background:linear-gradient(180deg,rgba(42,43,47,.93),rgba(29,30,34,.89))!important;
+  border-color:rgba(255,255,255,.11)!important;
+}
+html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .psProjectSidebar .psSidebarTop.sidebar-top:before,
+html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] #rail .paneHead.sidebar-top.tahoeAppSidebarTop:before{
+  background:linear-gradient(to bottom,rgba(48,49,53,.98),rgba(38,39,43,.90),rgba(28,29,33,.52),rgba(20,21,24,.06))!important;
+}
+html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .psProjectSidebar.sidebar.tahoeAppSidebar,
+html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] #rail.rail.sidebar.tahoeAppSidebar{
+  background:linear-gradient(180deg,rgba(10,34,82,.95),rgba(3,21,57,.91))!important;
+  border-color:rgba(208,216,233,.12)!important;
+}
+html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .psProjectSidebar .psSidebarTop.sidebar-top:before,
+html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] #rail .paneHead.sidebar-top.tahoeAppSidebarTop:before{
+  background:linear-gradient(to bottom,rgba(25,52,105,.98),rgba(13,39,90,.90),rgba(5,26,67,.54),rgba(1,21,61,.05))!important;
+}
+html[data-tahoe-mode="gray"][data-tahoe-embedded="1"] .psProjectSidebar.sidebar.tahoeAppSidebar,
+html[data-tahoe-mode="gray"][data-tahoe-embedded="1"] #rail.rail.sidebar.tahoeAppSidebar{
+  background:linear-gradient(180deg,rgba(228,231,234,.94),rgba(213,217,221,.88))!important;
+}
+</style>
+
+<style id="tahoePowerV63Responsive">
+/* v63: respond to the actual resizable Tahoe PowerSlide window, not a fixed desktop width. */
+html[data-tahoe-embedded="1"] #editorView.editor{
+  min-width:0!important;min-height:0!important;
+  grid-template-columns:var(--rail-w,220px) minmax(0,1fr) clamp(220px,24vw,292px)!important;
+}
+html[data-tahoe-embedded="1"] #editorView.editor.editor-sidebar-hidden{
+  grid-template-columns:0 minmax(0,1fr) clamp(220px,24vw,292px)!important;
+}
+html[data-tahoe-embedded="1"] .workspace,
+html[data-tahoe-embedded="1"] .stageScroll,
+html[data-tahoe-embedded="1"] .stageShell{min-width:0!important;min-height:0!important}
+html[data-tahoe-embedded="1"] .stageShell{
+  max-width:100%!important;will-change:width!important
+}
+html[data-tahoe-embedded="1"] .slideCanvas{max-width:100%!important}
+/* Keep the resize hit-area inside the rounded sidebar so it is actually draggable. */
+html[data-tahoe-embedded="1"] #rail{position:relative!important}
+html[data-tahoe-embedded="1"] #rail .railResizer{
+  display:block!important;right:0!important;top:46px!important;bottom:0!important;height:auto!important;width:9px!important;
+  z-index:80!important;cursor:col-resize!important;touch-action:none!important;background:transparent!important
+}
+html[data-tahoe-embedded="1"] #rail .railResizer:after{
+  left:4px!important;background:rgba(72,96,112,.13)!important
+}
+html[data-tahoe-embedded="1"] #rail .railResizer:hover:after,
+html[data-tahoe-embedded="1"] body.resizingRail #rail .railResizer:after{
+  width:2px!important;background:var(--tahoe-accent,#0b6fe8)!important
+}
+@media (min-width:901px) and (max-width:1180px){
+  html[data-tahoe-embedded="1"] #editorView.editor{gap:8px!important;padding:8px!important}
+  html[data-tahoe-embedded="1"] .toolrow{padding-left:6px!important;padding-right:6px!important;gap:3px!important}
+  html[data-tahoe-embedded="1"] .toolBtn{padding-left:7px!important;padding-right:7px!important;font-size:10px!important}
+  html[data-tahoe-embedded="1"] .notesBar{padding:7px 8px!important}
+}
+@media(max-width:900px){
+  html[data-tahoe-embedded="1"] #rail .railResizer{display:none!important}
+  html[data-tahoe-embedded="1"] #editorView.editor,
+  html[data-tahoe-embedded="1"] #editorView.editor.editor-sidebar-hidden{grid-template-columns:minmax(0,1fr)!important}
+}
+</style>
+
+
+<style id="tahoePowerV64Canvas">
+/* v64: PowerPoint-like stage. The canvas fits the real center column, never the inspector,
+   can zoom with Ctrl/Cmd+wheel, and pans with Space+drag or middle mouse. */
+html[data-tahoe-embedded="1"] .workspace{
+  position:relative!important;
+  grid-template-rows:48px minmax(0,1fr)!important;
+}
+html[data-tahoe-embedded="1"] .stageScroll{
+  min-width:0!important;min-height:0!important;
+  display:flex!important;align-items:flex-start!important;justify-content:flex-start!important;
+  overflow:auto!important;overscroll-behavior:contain!important;
+  padding:24px!important;scrollbar-gutter:stable!important;
+}
+html[data-tahoe-embedded="1"] .stageShell{
+  flex:0 0 auto!important;min-width:120px!important;max-width:none!important;
+  margin:auto!important;will-change:width!important;
+}
+html[data-tahoe-embedded="1"] .slideCanvas{width:100%!important;max-width:none!important;height:auto!important}
+html[data-tahoe-embedded="1"] .stageScroll.spacePan{cursor:grab!important}
+html[data-tahoe-embedded="1"] .stageScroll.isPanning{cursor:grabbing!important;user-select:none!important}
+html[data-tahoe-embedded="1"] .stageScroll.isPanning *{cursor:grabbing!important}
+html[data-tahoe-embedded="1"] .stageZoomBar{
+  position:absolute!important;right:14px!important;bottom:14px!important;z-index:45!important;
+  display:flex!important;align-items:center!important;gap:4px!important;padding:5px!important;
+  border:1px solid rgba(255,255,255,.68)!important;border-radius:13px!important;
+  background:rgba(249,251,253,.82)!important;box-shadow:0 8px 24px rgba(31,50,70,.13)!important;
+  backdrop-filter:blur(14px) saturate(160%)!important;-webkit-backdrop-filter:blur(14px) saturate(160%)!important;
+}
+html[data-tahoe-embedded="1"] .stageZoomBar button{
+  height:30px!important;min-width:30px!important;padding:0 8px!important;border-radius:9px!important;
+  border:1px solid rgba(0,0,0,.07)!important;background:rgba(255,255,255,.70)!important;
+  color:#303842!important;font:600 11px/1 system-ui,-apple-system,sans-serif!important;cursor:pointer!important
+}
+html[data-tahoe-embedded="1"] .stageZoomBar .zoomValue{min-width:54px!important;font-variant-numeric:tabular-nums!important}
+html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .stageZoomBar,
+html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .stageZoomBar{background:rgba(34,38,45,.84)!important;border-color:rgba(255,255,255,.12)!important}
+html[data-tahoe-mode="dark"][data-tahoe-embedded="1"] .stageZoomBar button,
+html[data-tahoe-mode="navy"][data-tahoe-embedded="1"] .stageZoomBar button{background:rgba(255,255,255,.08)!important;border-color:rgba(255,255,255,.09)!important;color:#f5f7fa!important}
+@media(max-width:900px){
+  html[data-tahoe-embedded="1"] .workspace{grid-template-rows:44px minmax(0,1fr)!important}
+  html[data-tahoe-embedded="1"] .stageScroll{padding:14px!important}
+  html[data-tahoe-embedded="1"] .stageZoomBar{right:9px!important;bottom:9px!important}
+  html[data-tahoe-embedded="1"] .stageZoomBar .zoomFit{display:none!important}
+}
+</style>
+
+</body>
+</html>
