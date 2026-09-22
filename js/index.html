@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0d12">
+<title>JS Forge v1.1 — Gemini AI Coding Studio</title>
+<style>
+:root{--bg:#0b0d12;--panel:#12151d;--panel2:#171b25;--text:#f5f7fb;--muted:#9199aa;--line:#262c39;--accent:#8ab4ff;--good:#52d273;--bad:#ff6b75;--r:18px}
+*{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:14px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,textarea,select{font:inherit}button{color:inherit}.app{height:100dvh;display:grid;grid-template-rows:auto 1fr auto;overflow:hidden}
+.top{height:56px;padding:8px 10px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line);background:rgba(11,13,18,.9);backdrop-filter:blur(18px);z-index:5}
+.brand{font-weight:800;letter-spacing:-.3px;margin-right:auto}.brand b{color:var(--accent)}.pill,.icon{border:1px solid var(--line);background:var(--panel2);border-radius:12px;min-height:38px;padding:0 12px}.icon{width:40px;padding:0;font-size:17px}.primary{background:var(--accent);color:#07101e;border-color:transparent;font-weight:800}
+.workspace{min-height:0;position:relative}.view{display:none;height:100%;min-height:0}.view.active{display:flex}
+#chat{flex-direction:column}.messages{flex:1;overflow:auto;padding:16px 14px 120px}.welcome{max-width:720px;margin:8vh auto 0;text-align:center}.welcome h1{font-size:clamp(30px,8vw,56px);line-height:1;margin:0 0 12px;letter-spacing:-2px}.welcome p{color:var(--muted);max-width:560px;margin:auto}.chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:22px}.chip{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:9px 12px;color:#dce2ed}
+.msg{max-width:820px;margin:0 auto 12px;padding:12px 14px;border:1px solid var(--line);border-radius:16px;background:var(--panel)}.msg.user{background:#172236}.msg .meta{font-size:11px;color:var(--muted);margin-bottom:5px}.composer{position:absolute;left:10px;right:10px;bottom:10px;max-width:900px;margin:auto;border:1px solid var(--line);border-radius:20px;background:rgba(18,21,29,.96);padding:10px;box-shadow:0 16px 50px #0008;backdrop-filter:blur(20px)}
+textarea{width:100%;min-height:64px;max-height:180px;resize:none;border:0;outline:0;background:transparent;color:var(--text);padding:6px}.compose-actions{display:flex;align-items:center;gap:7px}.status{font-size:12px;color:var(--muted);margin-right:auto}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--muted);margin-right:5px}.dot.good{background:var(--good)}
+#code{flex-direction:column}.codebar{display:flex;gap:6px;padding:8px;border-bottom:1px solid var(--line);overflow:auto}.tab{white-space:nowrap;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:7px 11px}.tab.active{background:#20283a;border-color:#3c4a67}.editor{flex:1;width:100%;border:0;outline:0;resize:none;padding:14px 16px;background:#0e1118;color:#e9edf5;font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;tab-size:2}
+#preview{background:#fff}.preview-frame{width:100%;height:100%;border:0;background:white}
+#console{flex-direction:column}.console-head{padding:10px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}.logs{flex:1;overflow:auto;padding:10px;font:12px/1.55 ui-monospace,monospace}.log{padding:7px 8px;border-bottom:1px solid #1b202b;white-space:pre-wrap;word-break:break-word}.log.error{color:#ff9299}.log.warn{color:#ffd479}
+.bottom{height:62px;padding:6px 8px calc(6px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:rgba(11,13,18,.96);display:grid;grid-template-columns:repeat(4,1fr);z-index:6}.nav{border:0;background:transparent;color:var(--muted);border-radius:12px;font-size:11px}.nav span{display:block;font-size:19px;line-height:22px}.nav.active{color:var(--text);background:var(--panel2)}
+.modal{position:fixed;inset:0;background:#0009;display:none;place-items:center;padding:16px;z-index:20}.modal.open{display:grid}.card{width:min(520px,100%);background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:0 24px 80px #000}.card h2{margin:0 0 6px}.card p{color:var(--muted);margin:0 0 14px}.field{width:100%;border:1px solid var(--line);background:#0d1016;color:var(--text);border-radius:12px;padding:12px;outline:0;margin:5px 0 10px}.row{display:flex;gap:8px}.row>*{flex:1}.small{font-size:12px;color:var(--muted)}.danger{color:#ff8f96}.desktop-files{display:none}
+@media(min-width:900px){.app{grid-template-rows:auto 1fr}.bottom{display:none}.workspace{display:grid;grid-template-columns:220px minmax(320px,1fr) minmax(360px,1fr)}.desktop-files{display:block;border-right:1px solid var(--line);padding:12px}.desktop-files h3{margin:5px 5px 12px}.file{padding:9px;border-radius:9px;color:var(--muted)}.file:hover{background:var(--panel2);color:var(--text)}.view{display:flex!important;border-right:1px solid var(--line)}#chat{display:none!important}#code{grid-column:2}#preview{grid-column:3}.workspace.chatmode #code,.workspace.chatmode #preview{display:none!important}.workspace.chatmode #chat{display:flex!important;grid-column:2/4}.composer{bottom:18px}.top{padding-inline:14px}}
+.fast *{backdrop-filter:none!important;animation:none!important;transition:none!important}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">JS <b>Forge</b></div>
+    <button class="pill" id="projectBtn">Untitled ▾</button>
+    <button class="icon" id="runBtn" title="Run">▶</button>
+    <button class="icon" id="settingsBtn" title="Settings">⚙</button>
+  </header>
+
+  <main class="workspace" id="workspace">
+    <aside class="desktop-files">
+      <h3>Project</h3>
+      <div class="file">▰ index.html</div><div class="file"># style.css</div><div class="file">JS app.js</div>
+      <hr style="border:0;border-top:1px solid var(--line);margin:14px 0">
+      <button class="pill" id="desktopAI" style="width:100%">✨ AI Prompt</button>
+      <button class="pill" id="exportBtn" style="width:100%;margin-top:8px">Export HTML</button>
+    </aside>
+
+    <section class="view active" id="chat">
+      <div class="messages" id="messages">
+        <div class="welcome" id="welcome">
+          <h1>Describe it.<br><span style="color:var(--accent)">Build it.</span></h1>
+          <p>Gemini generates a complete web app, then JS Forge runs it instantly. Ask for changes or let AI fix errors.</p>
+          <div class="chips">
+            <button class="chip">Build a calculator with history</button>
+            <button class="chip">Create a modern todo app</button>
+            <button class="chip">Make a mobile music player UI</button>
+          </div>
+        </div>
+      </div>
+      <div class="composer">
+        <textarea id="prompt" placeholder="Describe what you want to build or change…"></textarea>
+        <div class="compose-actions">
+          <div class="status"><span class="dot" id="apiDot"></span><span id="apiStatus">Gemini setup needed</span></div>
+          <button class="pill" id="setupBtn">Gemini</button>
+          <button class="pill" id="fixBtn">Fix</button>
+          <button class="pill primary" id="generateBtn">Generate ↑</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="code">
+      <div class="codebar">
+        <button class="tab active" data-file="html">index.html</button>
+        <button class="tab" data-file="css">style.css</button>
+        <button class="tab" data-file="js">app.js</button>
+      </div>
+      <textarea class="editor" id="editor" spellcheck="false"></textarea>
+    </section>
+
+    <section class="view" id="preview"><iframe class="preview-frame" id="frame" sandbox="allow-scripts allow-forms allow-modals allow-popups"></iframe></section>
+
+    <section class="view" id="console">
+      <div class="console-head"><b>Console</b><span style="color:var(--muted);margin-right:auto" id="errorCount">0 errors</span><button class="pill" id="clearLogs">Clear</button></div>
+      <div class="logs" id="logs"></div>
+    </section>
+  </main>
+
+  <nav class="bottom">
+    <button class="nav active" data-view="chat"><span>✦</span>AI</button>
+    <button class="nav" data-view="code"><span>⌘</span>Code</button>
+    <button class="nav" data-view="preview"><span>▣</span>Preview</button>
+    <button class="nav" data-view="console"><span>⚠</span>Console</button>
+  </nav>
+</div>
+
+<div class="modal" id="settingsModal">
+  <div class="card">
+    <h2>Gemini Setup</h2>
+    <p>Your key is stored only in this browser. For a public/shared deployment, use a server-side proxy instead.</p>
+    <label>Gemini API key</label>
+    <input class="field" id="apiKey" type="password" autocomplete="off" placeholder="Paste your NEW Gemini key">
+    <div class="row">
+      <div><label>Model</label><input class="field" id="model" value="gemini-flash-latest"></div>
+      <div><label>Fast mode</label><select class="field" id="fastMode"><option value="1">On</option><option value="0">Off</option></select></div>
+    </div>
+    <div class="small danger">Do not reuse the key previously posted in chat. Rotate it first.</div>
+    <div class="row" style="margin-top:14px">
+      <button class="pill" id="closeSettings">Cancel</button>
+      <button class="pill" id="testKey">Test</button>
+      <button class="pill primary" id="saveSettings">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const defaults={
+ html:`<main class="demo"><h1>JS Forge</h1><p>Describe an app in the AI tab, then tap Generate.</p><button id="hello">Try me</button></main>`,
+ css:`*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;font-family:system-ui;background:#f5f7fb;color:#172033}.demo{text-align:center;padding:32px}button{border:0;border-radius:12px;padding:12px 18px;background:#172033;color:white}`,
+ js:`document.querySelector('#hello')?.addEventListener('click',()=>alert('Ready to build!'));`
+};
+let project=JSON.parse(localStorage.getItem('jsforge.project')||'null')||{name:'Untitled',...defaults,history:[]};
+let activeFile='html', logs=[], busy=false;
+const editor=$('#editor'), frame=$('#frame'), workspace=$('#workspace');
+
+function saveProject(){localStorage.setItem('jsforge.project',JSON.stringify(project));$('#projectBtn').textContent=project.name+' ▾')}
+function syncEditor(){project[activeFile]=editor.value;saveProject()}
+function loadEditor(){editor.value=project[activeFile]||''}
+function doc(){
+ const bridge=`<script>
+(()=>{const send=(type,args)=>parent.postMessage({__jsforge:1,type,args:args.map(x=>{try{return typeof x==='string'?x:JSON.stringify(x)}catch(e){return String(x)}})},'*');
+['log','warn','error','info'].forEach(k=>{const o=console[k];console[k]=(...a)=>{send(k,a);o(...a)}});addEventListener('error',e=>send('error',[e.message+' @ '+e.filename+':'+e.lineno]));addEventListener('unhandledrejection',e=>send('error',['Unhandled promise: '+e.reason]));})();
+<\/script>`;
+ return `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>${project.css}</style></head><body>${project.html}${bridge}<script>${project.js}<\/script></body></html>`;
+}
+function run(){syncEditor();logs=[];renderLogs();frame.srcdoc=doc();showView('preview')}
+function showView(id){$$('.view').forEach(v=>v.classList.toggle('active',v.id===id));$$('.nav').forEach(n=>n.classList.toggle('active',n.dataset.view===id));if(innerWidth>=900){workspace.classList.toggle('chatmode',id==='chat');}if(id==='code')loadEditor()}
+function renderLogs(){const box=$('#logs');box.innerHTML=logs.map(x=>`<div class="log ${x.type}">[${x.type}] ${esc(x.text)}</div>`).join('');$('#errorCount').textContent=`${logs.filter(x=>x.type==='error').length} errors`;box.scrollTop=box.scrollHeight}
+function esc(s){return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+addEventListener('message',e=>{if(e.data?.__jsforge){logs.push({type:e.data.type,text:e.data.args.join(' ')});renderLogs()}});
+$$('.nav').forEach(n=>n.onclick=()=>showView(n.dataset.view));
+$$('.tab').forEach(t=>t.onclick=()=>{syncEditor();activeFile=t.dataset.file;$$('.tab').forEach(x=>x.classList.toggle('active',x===t));loadEditor()});
+editor.addEventListener('input',()=>{clearTimeout(editor._t);editor._t=setTimeout(syncEditor,300)});
+editor.addEventListener('keydown',e=>{if(e.key==='Tab'){e.preventDefault();let s=editor.selectionStart;editor.setRangeText('  ',s,editor.selectionEnd,'end')}});
+$('#runBtn').onclick=run; $('#desktopAI').onclick=()=>showView('chat');
+$('#clearLogs').onclick=()=>{logs=[];renderLogs()};
+$$('.chip').forEach(c=>c.onclick=()=>{$('#prompt').value=c.textContent;$('#prompt').focus()});
+
+function getCfg(){return {key:localStorage.getItem('jsforge.geminiKey')||'',model:localStorage.getItem('jsforge.model')||'gemini-flash-latest'}}
+function apiState(){const c=getCfg(),ok=!!c.key;$('#apiDot').className='dot '+(ok?'good':'');$('#apiStatus').textContent=ok?c.model:'Tap here to setup Gemini';$('#apiStatus').style.cursor='pointer';$('#apiStatus').onclick=openSettings;$('#apiDot').onclick=openSettings}
+function openSettings(){const c=getCfg();$('#apiKey').value=c.key;$('#model').value=c.model;$('#fastMode').value=document.documentElement.classList.contains('fast')?'1':'0';$('#settingsModal').classList.add('open')}
+$('#settingsBtn').onclick=openSettings; $('#setupBtn').onclick=openSettings; $('#closeSettings').onclick=()=>$('#settingsModal').classList.remove('open');
+$('#saveSettings').onclick=()=>{localStorage.setItem('jsforge.geminiKey',$('#apiKey').value.trim());localStorage.setItem('jsforge.model',$('#model').value.trim()||'gemini-flash-latest');document.documentElement.classList.toggle('fast',$('#fastMode').value==='1');localStorage.setItem('jsforge.fast',$('#fastMode').value);$('#settingsModal').classList.remove('open');apiState()};
+async function gemini(userText){
+ const {key,model}=getCfg(); if(!key){openSettings();throw Error('Add your Gemini API key first.')}
+ const system=`You are the coding engine inside JS Forge. Build polished browser apps using plain HTML, CSS and JavaScript. Mobile-first, responsive, accessible, fast, and complete. Preserve working existing features when modifying. Return ONLY valid JSON, no markdown fences, with exactly these string fields: name, html, css, js, summary. HTML must contain body content only (no html/head/body tags). CSS is raw CSS. JS is raw browser JavaScript. Do not use external dependencies unless explicitly requested.`;
+ const body={system_instruction:{parts:[{text:system}]},contents:[{role:'user',parts:[{text:userText}]}],generationConfig:{responseMimeType:'application/json',temperature:.25}};
+ const url=`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+ const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','X-goog-api-key':key},body:JSON.stringify(body)});
+ const data=await r.json(); if(!r.ok)throw Error(data?.error?.message||`Gemini HTTP ${r.status}`);
+ const text=data?.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('')||''; if(!text)throw Error('Gemini returned no code.');
+ try{return JSON.parse(text)}catch{throw Error('Gemini returned invalid project JSON. Try again.')}
+}
+function context(req,fix=false){
+ const errors=logs.filter(x=>x.type==='error').map(x=>x.text).join('\n');
+ return `${fix?'Repair the project and return the complete corrected project.':'Modify/build the project according to the request.'}
+USER REQUEST: ${req||'Fix all current runtime and syntax errors.'}
+CURRENT PROJECT:
+HTML:
+${project.html}
+CSS:
+${project.css}
+JAVASCRIPT:
+${project.js}
+${errors?`RUNTIME ERRORS:\n${errors}`:''}`;
+}
+function addMsg(role,text){$('#welcome')?.remove();const d=document.createElement('div');d.className='msg '+role;d.innerHTML=`<div class="meta">${role==='user'?'You':'Gemini'}</div>${esc(text)}`;$('#messages').append(d);$('#messages').scrollTop=$('#messages').scrollHeight}
+async function generate(fix=false){
+ if(busy)return;
+ if(!getCfg().key){openSettings();return;}
+ const p=$('#prompt'),req=p.value.trim(); if(!fix&&!req)return;
+ busy=true; $('#generateBtn').disabled=true; if(req)addMsg('user',req); addMsg('ai',fix?'Checking and repairing the project…':'Generating your project…');
+ try{
+   syncEditor(); const old={html:project.html,css:project.css,js:project.js,name:project.name};
+   const out=await gemini(context(req,fix));
+   project.history=(project.history||[]).slice(-14); project.history.push({...old,at:Date.now()});
+   project.name=(out.name||project.name||'Untitled').slice(0,50); project.html=out.html??project.html; project.css=out.css??project.css; project.js=out.js??project.js;
+   saveProject(); loadEditor(); p.value=''; addMsg('ai',out.summary||'Project updated.'); run();
+ }catch(e){addMsg('ai','Error: '+e.message);showView('chat')}finally{busy=false;$('#generateBtn').disabled=false}
+}
+$('#generateBtn').onclick=()=>generate(false); $('#fixBtn').onclick=()=>generate(true);
+$('#prompt').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();generate(false)}});
+
+$('#testKey').onclick=async()=>{const k=$('#apiKey').value.trim(),m=$('#model').value.trim();if(!k)return alert('Paste your new Gemini key first.');const oldK=localStorage.getItem('jsforge.geminiKey'),oldM=localStorage.getItem('jsforge.model');localStorage.setItem('jsforge.geminiKey',k);localStorage.setItem('jsforge.model',m);try{await gemini('Return a tiny valid project JSON that displays the word OK.');apiState();alert('Gemini connection works. Tap Save, then Generate.')}catch(e){alert(e.message);if(oldK===null)localStorage.removeItem('jsforge.geminiKey');else localStorage.setItem('jsforge.geminiKey',oldK);if(oldM===null)localStorage.removeItem('jsforge.model');else localStorage.setItem('jsforge.model',oldM)}};
+$('#exportBtn').onclick=()=>{syncEditor();const blob=new Blob([doc().replace(/<script>\(\(\)=>\{const send=.*?<\/script>/s,'')],{type:'text/html'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(project.name||'js-forge-project').replace(/[^\w-]+/g,'-')+'.html';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
+$('#projectBtn').onclick=()=>{const n=prompt('Project name',project.name);if(n){project.name=n.trim()||project.name;saveProject()}};
+if(localStorage.getItem('jsforge.fast')!=='0')document.documentElement.classList.add('fast');
+saveProject();loadEditor();apiState();frame.srcdoc=doc();
+if(!getCfg().key)setTimeout(openSettings,350);
+</script>
+</body>
+</html>
