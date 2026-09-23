@@ -6,7 +6,62 @@
       "family": "SONYHEAD5",
       "file": "SONYHEAD5-Regular.ttf",
       "format": "truetype",
-      "source": "local"
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "SFHelloKOKH-Thin",
+      "name": "SFHelloKOKH Thin",
+      "family": "SFHelloKOKH",
+      "file": "SFHelloKOKH-Thin.woff",
+      "format": "woff",
+      "source": "local",
+      "weight": 100
+    },
+    {
+      "id": "SFHelloKOKH-Light",
+      "name": "SFHelloKOKH Light",
+      "family": "SFHelloKOKH",
+      "file": "SFHelloKOKH-Light.woff",
+      "format": "woff",
+      "source": "local",
+      "weight": 300
+    },
+    {
+      "id": "SFHelloKOKH-Regular",
+      "name": "SFHelloKOKH Regular",
+      "family": "SFHelloKOKH",
+      "file": "SFHelloKOKH-Regular.woff",
+      "format": "woff",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "SFHelloKOKH-Medium",
+      "name": "SFHelloKOKH Medium",
+      "family": "SFHelloKOKH",
+      "file": "SFHelloKOKH-Medium.woff",
+      "format": "woff",
+      "source": "local",
+      "weight": 500
+    },
+    {
+      "id": "SFHelloKOKH-Semibold",
+      "name": "SFHelloKOKH Semibold",
+      "family": "SFHelloKOKH",
+      "file": "SFHelloKOKH-Semibold.woff",
+      "format": "woff",
+      "source": "local",
+      "weight": 600
+    },
+    {
+      "id": "SFHelloKOKH-Bold",
+      "name": "SFHelloKOKH Bold",
+      "family": "SFHelloKOKH",
+      "file": "SFHelloKOKH-Bold.woff",
+      "format": "woff",
+      "source": "local",
+      "weight": 700
     }
   ]
 }
