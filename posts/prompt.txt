@@ -1,0 +1,3123 @@
+# MASTER DEVELOPMENT PROMPT
+
+You are a senior full-stack web application engineer, UI/UX architect, Firebase engineer, performance engineer, accessibility engineer, and security-minded frontend developer.
+
+Your task is to inspect the provided existing `index.html` project completely and rebuild/upgrade it into a production-quality version while preserving the current application **100%**.
+
+The attached/existing HTML is the absolute SOURCE OF TRUTH.
+
+Do not create a different application.
+
+Do not simplify it.
+
+Do not remove existing features.
+
+Do not redesign it into something unrelated.
+
+Do not replace working systems with mockups.
+
+Do not create placeholder functionality.
+
+Do not create multiple HTML/JS/CSS application files.
+
+The goal is:
+
+**CURRENT PROJECT × 100% FEATURE PRESERVATION + MORE THEMES + BETTER ARCHITECTURE + BETTER PERFORMANCE + BETTER MOBILE UX + BETTER ADMIN CONTROLS + BETTER RELIABILITY**
+
+---
+
+# 1. MAIN DELIVERABLE
+
+Return one production-ready file:
+
+`index.html`
+
+The file must contain:
+
+- HTML
+- CSS
+- JavaScript
+- Firebase integration
+- UI components
+- theme engine
+- responsive system
+- application logic
+- feed logic
+- admin logic
+- creator logic
+- upload logic
+- authentication logic
+- audio player logic
+- image gallery logic
+- notification logic
+- social logic
+- settings
+- accessibility
+- loading states
+- error states
+
+inside the same HTML file.
+
+Structure:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- metadata -->
+  <!-- fonts/icons/external dependencies -->
+  <style>
+    /* ALL application CSS */
+  </style>
+</head>
+
+<body>
+  <!-- ALL application HTML -->
+
+  <script type="module">
+    /* ALL application JavaScript */
+  </script>
+</body>
+</html>
+```
+
+Do NOT split application code into:
+
+- app.js
+- style.css
+- theme.js
+- admin.js
+- firebase.js
+- components.js
+- separate page files
+
+Everything must remain in one main `index.html`.
+
+External Firebase ES modules/CDNs and externally hosted media/fonts may still be loaded when required.
+
+Use existing asset URLs where necessary.
+
+Prefer inline SVG for application icons.
+
+---
+
+# 2. FIRST ACTION: REVERSE ENGINEER THE EXISTING PROJECT
+
+Before writing new code, inspect the complete existing HTML from beginning to end.
+
+Build an internal feature map containing:
+
+1. page structure
+2. CSS architecture
+3. CSS variables
+4. responsive breakpoints
+5. Firebase initialization
+6. authentication
+7. user database
+8. role system
+9. Pro system
+10. blocked-user system
+11. presence system
+12. posts
+13. likes
+14. views
+15. seen users
+16. follows
+17. followers
+18. favorites
+19. saved posts
+20. share counts
+21. notifications
+22. creator requests
+23. post approval
+24. restore requests
+25. deletion/recovery
+26. Cloudinary
+27. image upload
+28. audio upload
+29. GitHub audio storage
+30. composer
+31. drafts
+32. audience permissions
+33. feed filtering
+34. feed search
+35. user profiles
+36. admin dashboard
+37. settings
+38. login screen
+39. policy screens
+40. shared-post preview
+41. offline/online indication
+42. Android WebView hooks
+43. touch interactions
+44. fullscreen media
+45. image gallery
+46. audio player
+47. lazy loading
+48. pagination
+49. performance optimization
+50. localStorage/sessionStorage behavior
+
+Do not begin deleting or replacing systems before understanding their dependencies.
+
+---
+
+# 3. NON-NEGOTIABLE RULE: PRESERVE EVERYTHING
+
+Every existing working feature must survive.
+
+A feature can be internally refactored only when:
+
+- the same behavior remains,
+- the same stored Firebase data continues working,
+- existing users continue working,
+- existing posts continue working,
+- existing share links continue working,
+- existing storage data continues working,
+- existing roles continue working,
+- existing UI workflows continue working.
+
+Do not perform unnecessary Firebase schema migrations.
+
+Backward compatibility is mandatory.
+
+---
+
+# 4. APPLICATION IDENTITY
+
+Preserve:
+
+**JESUS LOVEME**
+
+Application purpose:
+
+A church/community platform for sermon posts containing:
+
+- images
+- image galleries
+- audio
+- titles
+- captions
+- creator profiles
+- audience permissions
+- engagement
+- sharing
+- following
+- saved posts
+- activity
+- notifications
+
+Do not transform it into a generic Instagram clone, podcast site, blog, ecommerce store, or dashboard.
+
+---
+
+# 5. EXISTING AUTHENTICATION — PRESERVE 100%
+
+Keep Firebase Google authentication.
+
+Maintain:
+
+- Firebase initialization
+- Google popup login
+- Android Google ID token login
+- Android WebView compatibility
+- auth-state monitoring
+- loading/preload state
+- logout current device
+- logout all devices
+- force-logout timestamp
+- persistent user profile
+- auth gate
+- blocked-account handling
+- reconnect handling
+- slow-network fallback
+
+Login must never leave the application permanently stuck on a loading screen.
+
+Provide clear states:
+
+- checking session
+- signed out
+- signing in
+- signed in
+- Firebase unavailable
+- network unavailable
+- blocked user
+- authentication error
+
+---
+
+# 6. ROLE / ACCESS MODEL
+
+Preserve existing roles and capabilities.
+
+Support:
+
+- viewer
+- content creator
+- subscriber
+- Pro
+- admin
+
+Admin detection must remain compatible with the current project configuration.
+
+## Viewer
+
+Can:
+
+- login
+- browse permitted posts
+- view profiles
+- follow
+- like
+- save
+- share
+- search
+- receive notifications
+- request publishing access
+
+Cannot publish until authorized.
+
+## Content creator
+
+Can:
+
+- create posts
+- edit own posts
+- delete own posts
+- upload media
+- configure audience
+- manage own storage
+
+Normal creator posts continue through approval behavior where applicable.
+
+## Pro user
+
+Keep Pro functionality.
+
+At minimum preserve existing behavior:
+
+- Pro badge/crown
+- increased image limit
+- direct publishing behavior where current code permits it
+- administrator-controlled Pro switch
+
+Existing approximate media limits must remain compatible:
+
+- regular creator: 5 images
+- Pro: 30 images
+- administrator: unlimited
+
+Do not silently reduce these limits.
+
+## Administrator
+
+Administrator can manage the complete system.
+
+---
+
+# 7. CREATOR REQUEST WORKFLOW
+
+Preserve:
+
+Viewer → Request Upload Access → Pending → Admin Review → Approved/Rejected.
+
+User UI must show:
+
+- upload access required
+- request button
+- pending state
+- approved state
+- rejected state where appropriate
+
+Admin receives creator requests inside the existing admin/request interface.
+
+Admin can:
+
+- approve
+- reject
+- change access later
+
+---
+
+# 8. POST COMPOSER
+
+Preserve and improve the current composer.
+
+Keep tabs:
+
+### Create Post
+### Audience
+### Upgrade/Admin area where applicable
+
+Create Post contains:
+
+- title
+- caption
+- image collection
+- audio collection
+- storage selector
+- HD control
+- clear
+- publish/update
+- progress
+- validation
+
+The composer must work beautifully on:
+
+- 320px phones
+- 360px phones
+- 390px phones
+- 430px phones
+- tablets
+- desktop browsers
+
+No clipped buttons.
+
+No horizontal overflow.
+
+---
+
+# 9. COMPOSER DRAFTS
+
+Maintain automatic local draft recovery.
+
+Store unfinished content through localStorage.
+
+Draft should include:
+
+- title
+- caption
+- audience
+- selected users
+- image URLs
+- image HD state
+- audio URLs
+- public/private audio state
+- storage selection
+- relevant media options
+
+Closing composer should not unexpectedly destroy unfinished work.
+
+After successful publishing, clear the completed draft.
+
+---
+
+# 10. IMAGE SYSTEM
+
+Maintain all current image workflows.
+
+Images can be:
+
+- pasted as URLs
+- uploaded to Cloudinary
+- multiple files selected
+- drag reordered
+
+Continue supporting common formats:
+
+- JPG
+- JPEG
+- PNG
+- WebP
+- GIF
+- HEIC/HEIF where browser allows
+- AVIF
+- other browser-compatible image formats
+
+### Image conversion
+
+Preserve automatic WebP conversion.
+
+Normal mode should use optimized compression.
+
+HD mode should prioritize image quality while avoiding unnecessarily larger output.
+
+Never destroy original image aspect ratio.
+
+---
+
+# 11. IMAGE DUPLICATE PROTECTION
+
+Retain existing duplicate-media protection.
+
+Prevent accidental duplicate images:
+
+- within the same composer
+- against existing platform posts where current behavior does this
+
+Provide clear feedback instead of silently failing.
+
+---
+
+# 12. IMAGE GALLERY
+
+Each post can contain multiple images.
+
+Preserve/improve:
+
+- horizontal slide/swipe
+- slide indicator
+- image counter
+- lazy image loading
+- preload next images
+- touch gesture
+- mouse behavior
+- fullscreen
+- HD badge
+- profile overlay
+- clean-image mode
+
+Maintain correct aspect ratios.
+
+Images must never stretch.
+
+---
+
+# 13. AUDIO SYSTEM
+
+This is a critical feature.
+
+Do not simplify it to a normal `<audio controls>` element.
+
+Preserve the custom audio UI.
+
+Every audio item needs:
+
+- play
+- pause
+- stop
+- seek/progress
+- elapsed time
+- total duration
+- mute
+- back 10 seconds
+- forward 10 seconds
+- loop
+- visual playing state
+
+Posts may contain multiple audio tracks.
+
+When multiple tracks exist:
+
+- horizontal audio navigation
+- indicators/dots
+- active-track state
+
+Only appropriate audio should play at once unless intentionally designed otherwise.
+
+---
+
+# 14. NOW PLAYING
+
+Retain the current concept of the Now Playing control.
+
+When audio is active:
+
+- show animated equalizer
+- allow jumping back to the active post
+- preserve playback state during safe feed re-rendering where possible
+
+Store/restore:
+
+- post
+- audio source
+- current position
+- volume
+- muted state
+
+Do not restart music simply because feed UI refreshed.
+
+---
+
+# 15. AUDIO UPLOAD
+
+Preserve Cloudinary audio upload.
+
+Supported examples:
+
+- MP3
+- M4A
+- AAC
+- WAV
+- OGG
+- OGA
+- WebM
+
+Maintain reasonable file-size validation consistent with current app.
+
+Keep upload progress.
+
+Show:
+
+- preparing
+- uploading
+- percentage
+- completed
+- failed
+
+Never freeze the whole UI during an upload.
+
+---
+
+# 16. AUDIO PRIVACY
+
+Retain per-audio public setting.
+
+This matters for shared post previews.
+
+A public shared post should expose only audio explicitly permitted for public/shared playback when the viewer is signed out.
+
+---
+
+# 17. AUDIO STORAGE LINKS
+
+Keep the existing Audio Storage manager.
+
+Allow creators to save multiple storage bases/folders.
+
+Preserve GitHub-folder based audio discovery/storage workflow.
+
+Provide:
+
+- add storage
+- edit
+- delete
+- save
+- browse/select
+
+---
+
+# 18. PRIVATE CLOUDINARY STORAGE
+
+Each creator can configure their own Cloudinary storage.
+
+Preserve multiple Cloudinary storage entries.
+
+Each storage contains:
+
+- Cloud Name
+- Upload Preset
+- Folder
+
+Allow:
+
+- Add Storage
+- Save Settings
+- Remove Storage
+- Select Storage inside composer
+
+Never expose another user's private storage configuration to other ordinary users.
+
+---
+
+# 19. POST DATA MODEL
+
+Remain compatible with current post records.
+
+Support fields equivalent to:
+
+```js
+{
+  id,
+  authorUid,
+  authorName,
+  authorEmail,
+  authorPhoto,
+
+  title,
+  caption,
+
+  images: [],
+  hdImages: [],
+  hdUpload,
+
+  audioUrl,
+  audioUrls: [],
+  audioPublic: [],
+
+  audience,
+  audienceUsers: [],
+
+  likes,
+  shares,
+  views,
+
+  createdAt,
+  updatedAt,
+
+  status,
+
+  shareToken,
+
+  deleted,
+  deletedAt,
+  deletedBy,
+
+  restoreRequested,
+  restoreRequestedAt
+}
+```
+
+Do not make existing Firebase posts unreadable.
+
+---
+
+# 20. POST AUDIENCE SYSTEM
+
+Preserve every existing audience type:
+
+1. Public
+2. Following
+3. Followers
+4. Followers + Following
+5. Only Me
+6. Selected Users
+
+For selected users, provide a user chooser based on relationships/user directory.
+
+Audience enforcement is functional behavior, not decoration.
+
+Posts must actually be filtered according to audience rules.
+
+---
+
+# 21. FEED
+
+The feed is the application's primary surface.
+
+Preserve the current compact vertically centered feed/card concept.
+
+Requirements:
+
+- smooth
+- mobile-first
+- no layout shift
+- no blank feed during simple updates
+- preserve current scroll position where reasonable
+- progressive rendering
+- stable media sizes
+- fast initial paint
+
+Keep approximately the same current narrow feed width on phones.
+
+On desktop, increase width moderately rather than turning it into a huge social network grid.
+
+---
+
+# 22. FEED PAGINATION
+
+Do not render thousands of posts at once.
+
+Continue incremental feed rendering.
+
+Preserve concepts equivalent to:
+
+- initial render batch
+- secondary batches
+- Firebase page size
+- load older posts
+- IntersectionObserver sentinel
+- manual Load More fallback
+
+The existing project uses progressive feed rendering; improve it instead of removing it.
+
+---
+
+# 23. IMAGE PERFORMANCE
+
+Maintain advanced image performance.
+
+Use:
+
+- lazy loading
+- `loading="lazy"`
+- `decoding="async"`
+- strategic eager first images
+- `fetchpriority`
+- controlled preloading
+- IntersectionObserver
+- bounded preload cache
+- preload concurrency limits
+
+Fast scrolling on mobile is a priority.
+
+---
+
+# 24. FAST MODE
+
+Keep Fast Mode.
+
+Fast Mode is intended for:
+
+- older devices
+- low-powered Android phones
+- poor GPUs
+- slower mobile browsers
+
+When enabled:
+
+- disable/reduce expensive backdrop blur
+- reduce heavy shadows
+- reduce nonessential transitions
+- disable costly effects
+- retain usability and layout
+
+Fast Mode must not become an ugly broken mode.
+
+Persist preference locally.
+
+---
+
+# 25. CLEAN IMAGE VIEW
+
+Keep the existing clean-media/profile-overlay switch.
+
+Allow profile/media overlay information to hide when the user wants an uncluttered image.
+
+Persist preference.
+
+Admin controls should still work independently.
+
+---
+
+# 26. SOCIAL SYSTEM
+
+Keep:
+
+- Follow
+- Unfollow
+- Followers
+- Following
+- Favorites
+- Saved posts
+- Likes
+- Seen users
+- Views
+- Shares
+
+Do not replace these with fake local counters.
+
+Use Firebase-backed state where currently expected.
+
+---
+
+# 27. FOLLOW SYSTEM
+
+Users can follow other users.
+
+Show follower/following information in:
+
+- feed profiles
+- full profile
+- search
+- current account panel
+
+Update UI quickly after follow/unfollow.
+
+Avoid requiring a complete reload.
+
+---
+
+# 28. FAVORITE USERS
+
+Preserve favorite-user support separately from Follow.
+
+Favorite state should persist.
+
+Visually distinguish it from following.
+
+---
+
+# 29. SAVED POSTS
+
+Users can bookmark/save posts.
+
+Keep Save functionality.
+
+Saved state must persist through Firebase/local application data as in existing architecture.
+
+Users should be able to filter/view Saved posts.
+
+---
+
+# 30. LIKES
+
+Like/unlike should:
+
+- update optimistically
+- persist to Firebase
+- update post total
+- prevent duplicate per-user likes
+- roll back appropriately when Firebase operation fails
+
+---
+
+# 31. VIEW / SEEN SYSTEM
+
+Preserve BOTH concepts:
+
+- numeric views
+- identified seen users
+
+A signed-in viewer may be stored inside `sermonPostSeen`.
+
+Show compact seen-user avatars.
+
+Opening Seen By should display:
+
+- users
+- avatar
+- name
+- timestamp where available
+- total views
+
+Avoid artificially incrementing a view repeatedly during the same session.
+
+---
+
+# 32. SHARE SYSTEM
+
+Keep native sharing.
+
+Use:
+
+1. Android bridge if running inside Android WebView
+2. `navigator.share`
+3. clipboard fallback
+
+Preserve share counts.
+
+Preserve existing shared-post URLs/tokens.
+
+Do not break links already distributed to users.
+
+---
+
+# 33. SHARED POST PREVIEW
+
+A shared link must open the intended post.
+
+Signed-out visitor receives a clean preview.
+
+Preserve:
+
+- hidden normal app chrome where applicable
+- clean shared layout
+- public media
+- publicly permitted audio
+- fullscreen
+- sign-in CTA
+- See More Posts behavior
+
+Signing in from shared preview must transition properly into the full application.
+
+---
+
+# 34. USER PROFILES
+
+Clicking the author opens their profile.
+
+Profile should support:
+
+- avatar
+- name
+- follower count
+- following state
+- online indicator
+- Pro badge if applicable
+- Follow/Unfollow
+- Favorite
+- user's permitted posts
+
+Do not expose sensitive internal account configuration.
+
+---
+
+# 35. CURRENT USER PROFILE PANEL
+
+Preserve the panel/tab organization.
+
+At minimum retain:
+
+- Profile
+- Request
+- All Users
+- Online
+- Activity Log
+- Recover
+- Policy
+- Setting
+- Storage
+
+Show admin-only tabs only to administrators.
+
+Show recovery when relevant.
+
+---
+
+# 36. ONLINE PRESENCE
+
+Keep Firebase realtime presence.
+
+Handle:
+
+- online
+- offline
+- last active
+- connection loss
+- logout
+- page closure
+- reconnect
+
+Use Firebase `.info/connected` pattern when current architecture does so.
+
+Admin Online screen should show:
+
+- total users
+- online users
+- offline users
+- per-user status
+
+Regular user profile can display appropriate presence information.
+
+---
+
+# 37. NOTIFICATIONS
+
+Preserve realtime notifications.
+
+Examples:
+
+- new follower
+- post interaction
+- post sharing
+- creator/admin workflow
+- other existing notification events
+
+Notifications need:
+
+- unread badge
+- notification list
+- Read All
+- Clear
+- click-through where supported
+
+Use realtime Firebase listener rather than polling aggressively.
+
+---
+
+# 38. ADMIN REVIEW BADGE
+
+Administrator should see an independent review badge for:
+
+- creator requests
+- pending posts
+- restore requests
+
+Clicking the badge should take the admin directly to the Request/review interface.
+
+---
+
+# 39. ADMIN DASHBOARD
+
+Do not create a totally separate admin page.
+
+Keep administration integrated into the application profile/admin panel.
+
+Admin areas:
+
+### Request
+- creator requests
+- pending posts
+- restore requests
+
+### All Users
+- access
+- role/status
+- Pro
+- block
+- delete data
+- management actions
+
+### Online
+- total
+- online
+- offline
+- manage user
+
+### Activity Log
+- recovery
+- logs
+
+### Setting
+- statistics
+- login customization
+- global app customization
+
+---
+
+# 40. ADMIN USER MANAGEMENT
+
+Administrator can:
+
+- Allow creator
+- Set Pending
+- Remove creator access
+- Make Pro
+- Remove Pro
+- Block
+- Unblock
+- Permanently delete user data
+
+Never allow accidental modification of the administrator's own critical account through ordinary user controls.
+
+Use confirmation dialogs for destructive actions.
+
+---
+
+# 41. BLOCKED USER
+
+If blocked:
+
+- hide application feed
+- hide composer
+- prevent publishing
+- prevent normal platform access
+- stop inappropriate interactions
+
+Administrator remains able to inspect/manage the account.
+
+Blocking should also mark or suppress that user's posts according to the existing behavior.
+
+Unblocking should restore functionality cleanly.
+
+---
+
+# 42. POST MODERATION
+
+Regular creator publishing behavior should remain compatible with current moderation.
+
+Administrator can:
+
+- Approve
+- Pending/unpublish
+- Delete
+- Restore
+- Permanently Delete
+
+Pro/Admin direct publication rules should remain compatible with the existing project.
+
+---
+
+# 43. SOFT DELETE / TRASH
+
+Do not immediately permanently destroy normal deleted posts.
+
+Use the existing soft-delete concept.
+
+Fields may include:
+
+```js
+deleted: true
+deletedAt
+deletedBy
+deletedByName
+```
+
+Deleted posts should disappear from normal feed.
+
+---
+
+# 44. RECOVERY
+
+Creators can see their deleted posts and request restoration.
+
+Admin receives:
+
+- restore request
+- post preview
+- requester
+- Restore
+- Reject
+
+Admin activity area can restore posts manually.
+
+Permanent deletion should require explicit confirmation.
+
+---
+
+# 45. ACTIVITY LOG
+
+Maintain an admin activity/recovery system.
+
+Provide useful information such as:
+
+- recently deleted posts
+- restoration events
+- creator requests
+- moderation actions
+- account changes where stored
+
+The existing "clear activity display" behavior should hide historical display without damaging actual users/posts/follows/recovery data.
+
+---
+
+# 46. FEED SETTINGS
+
+Keep the floating Feed Setting interface.
+
+Include:
+
+- feed filters
+- search
+- theme
+- Fast Mode
+- clean media option when appropriate
+- Now Playing
+
+Panel can collapse and reopen.
+
+Remember collapsed preference when useful.
+
+---
+
+# 47. SEARCH
+
+Preserve and enhance search.
+
+Search tabs:
+
+- All
+- Title
+- Content
+- People
+
+Search must work on:
+
+- post titles
+- captions
+- creators/users
+
+Results should update quickly.
+
+Clicking:
+
+- post result → navigate to post
+- user result → open profile
+
+Avoid loading the complete database repeatedly on every keystroke.
+
+Cache appropriately.
+
+Debounce search input.
+
+---
+
+# 48. FEED FILTERS
+
+Preserve existing feed filtering semantics.
+
+At minimum allow meaningful categories such as:
+
+- All
+- Following
+- Followers/relationships where supported
+- Saved
+- My posts
+- other filters already present in the source
+
+Persist selected filter in localStorage.
+
+---
+
+# 49. FULLSCREEN MEDIA
+
+Keep fullscreen post image/media mode.
+
+Support:
+
+- native browser Fullscreen API
+- WebKit fallback
+- Android app fullscreen bridge/behavior where available
+- custom app fullscreen fallback
+
+Escape closes fullscreen on desktop.
+
+A visible exit button must exist.
+
+---
+
+# 50. RESPONSIVE DESIGN
+
+Mobile is the first priority.
+
+The finished application must be tested mentally/structurally at:
+
+- 320×568
+- 360×640
+- 375×667
+- 390×844
+- 393×852
+- 412×915
+- 430×932
+- 768×1024
+- 820×1180
+- 1024×768
+- 1280×800
+- 1440×900
+- 1920×1080
+- ultrawide monitors
+
+No horizontal page scrolling.
+
+No clipped dialog.
+
+No button outside viewport.
+
+No modal taller than viewport without internal scrolling.
+
+Use:
+
+```css
+env(safe-area-inset-top)
+env(safe-area-inset-bottom)
+```
+
+where appropriate.
+
+---
+
+# 51. MOBILE BOTTOM NAVIGATION
+
+Preserve the bottom navigation concept.
+
+Provide:
+
+- Home
+- Search
+- Create
+- Saved
+
+Navigation must float elegantly near bottom.
+
+Respect safe-area inset.
+
+Hide/reveal appropriately during scrolling if retaining existing behavior.
+
+Do not overlap composer or critical actions.
+
+---
+
+# 52. TOP BAR
+
+Preserve compact top bar:
+
+Left:
+- avatar
+- name
+- user status/follower info
+
+Right:
+- login/logout as appropriate
+- feed settings
+- notifications
+- admin review notification
+- create post
+
+Keep it visually compact.
+
+Mobile must not overflow.
+
+---
+
+# 53. TOUCH UX
+
+This application must feel native on phones.
+
+Support:
+
+- pointer events
+- touch-friendly buttons
+- minimum useful hit areas
+- swipe image gallery
+- drag media order
+- ripple feedback
+- no browser blue highlight
+- no accidental text selection while dragging
+
+Preserve existing touch-ripple behavior.
+
+---
+
+# 54. SCROLL UX
+
+Use smooth scrolling only where useful.
+
+Avoid scroll-jacking.
+
+Topbar/bottom bar auto hide/reveal must never make controls impossible to recover.
+
+Scrolling must remain 60fps where device allows it.
+
+---
+
+# 55. THEME ENGINE — MAJOR UPGRADE
+
+The current visual appearance is Theme 1 and must remain available **unchanged as closely as possible**.
+
+Call it:
+
+### 1. JESUS LOVEME Classic
+
+Then add a professional theme system.
+
+Use:
+
+```html
+<body data-theme="classic">
+```
+
+and CSS custom properties.
+
+Do NOT duplicate the whole stylesheet per theme.
+
+Create semantic variables such as:
+
+```css
+--bg
+--bg-elevated
+--surface
+--surface-2
+--surface-3
+--glass
+--text
+--text-secondary
+--text-muted
+--border
+--accent
+--accent-2
+--danger
+--success
+--warning
+--shadow
+--shadow-soft
+--card-radius
+--control-radius
+--media-radius
+--blur
+--feed-width
+```
+
+---
+
+# 56. REQUIRED THEMES
+
+Create at least these themes:
+
+### Theme 1 — JESUS LOVEME Classic
+The current original blue/navy visual style.
+
+### Theme 2 — OLED Black
+- true black background
+- minimal glow
+- very high contrast
+- ideal for OLED phones
+
+### Theme 3 — Dark Pro
+- graphite
+- sophisticated neutral surfaces
+- softer than OLED
+
+### Theme 4 — Navy Pro
+- deep navy
+- blue accents
+- church/media premium look
+
+### Theme 5 — Light
+- clean white
+- pale cool gray
+- strong readable typography
+- dark icons
+
+### Theme 6 — Soft Gray
+- professional neutral gray
+- low visual fatigue
+
+### Theme 7 — Glass
+- translucent surfaces
+- premium blur
+- bright edge highlights
+- use Fast Mode fallback
+
+### Theme 8 — Aurora
+- subtle blue/cyan/violet background gradients
+- restrained premium glow
+
+### Theme 9 — Ocean
+- dark teal/navy
+- cyan accents
+
+### Theme 10 — Warm
+- subtle warm cream/brown palette
+- appropriate contrast
+
+### Theme 11 — Editorial
+- sophisticated publication feel
+- cleaner flat surfaces
+- restrained borders
+- premium typography hierarchy
+
+### Theme 12 — Minimal Pro
+- reduced decoration
+- minimal shadow
+- extremely clean UI
+
+---
+
+# 57. THEME RULES
+
+Changing theme must NOT:
+
+- reload page
+- reload Firebase
+- stop audio
+- reset feed
+- lose scroll position
+- close current panel
+- clear draft
+
+Persist theme in localStorage.
+
+Add backward compatibility:
+
+If existing `sermonDarkMode` preference exists, map it intelligently into the new theme system.
+
+---
+
+# 58. THEME SELECTOR
+
+Inside Settings add a beautiful Theme selector.
+
+Prefer visual miniature theme cards.
+
+Each card shows:
+
+- theme name
+- background preview
+- surface preview
+- accent
+- active checkmark
+
+Changing theme previews/applies immediately.
+
+---
+
+# 59. USER VS ADMIN THEME PREFERENCES
+
+Support two concepts:
+
+### User theme
+Local/personal preference.
+
+### Admin default theme
+Global default for users without a preference.
+
+Admin can set the platform's default theme through Firebase app settings.
+
+User's explicit personal preference should normally override the default.
+
+Include "Use platform default" option.
+
+---
+
+# 60. ADMIN DESIGN SETTINGS
+
+Expand global admin settings significantly.
+
+Administrator should be able to remotely control:
+
+- platform/login title
+- default theme
+- accent color
+- secondary accent
+- card width
+- global radius
+- avatar radius
+- media radius
+- glass intensity
+- feed density
+- show/hide image overlay
+- welcome image URL
+- application logo/icon URL
+- optional background/wallpaper URL
+- announcement text
+- maintenance message
+- enable/disable registrations/login if desired
+- enable/disable creator requests
+- enable/disable uploads
+- global Fast Mode recommendation
+
+Store global public configuration in the existing Firebase app-settings location/schema where possible.
+
+Do not require redeployment for ordinary visual settings.
+
+---
+
+# 61. LIVE ADMIN CUSTOMIZATION
+
+When administrator saves global design settings:
+
+Firebase updates → connected clients receive realtime update → CSS variables update immediately.
+
+No reload.
+
+Do not interrupt active audio.
+
+Do not remove feed.
+
+---
+
+# 62. DESIGN LANGUAGE
+
+Keep the original identity but make all themes feel expensive and deliberate.
+
+Use:
+
+- restrained glass
+- correct spacing
+- hierarchy
+- soft shadows
+- thin borders
+- smooth transitions
+- excellent Khmer rendering
+- polished controls
+
+Avoid:
+
+- giant gradients
+- excessive neon
+- random glass everywhere
+- huge shadows
+- childish rounded cards
+- inconsistent icon sets
+- clutter
+
+---
+
+# 63. TYPOGRAPHY
+
+Primary font should remain appropriate for Khmer + Latin.
+
+Maintain current `Kantumruy Pro` compatibility.
+
+Keep custom Krasar support where currently required.
+
+Fallback:
+
+```css
+font-family:
+  "Kantumruy Pro",
+  system-ui,
+  -apple-system,
+  BlinkMacSystemFont,
+  "Segoe UI",
+  sans-serif;
+```
+
+Ensure Khmer:
+
+- line-height
+- diacritics
+- wrapping
+- title rendering
+- button labels
+
+render correctly.
+
+---
+
+# 64. ICONS
+
+Use a consistent icon strategy.
+
+Prefer:
+
+1. existing inline SVG icons
+2. Remixicon where already used
+3. inline SVG for new critical controls
+
+Do not introduce multiple unnecessary icon libraries.
+
+All icons must inherit theme color where appropriate.
+
+---
+
+# 65. CARD GEOMETRY
+
+Preserve the existing relationship where radius/gap values can be centrally controlled.
+
+Retain/adapt variables similar to:
+
+```css
+--avatar-radius
+--gap
+--media-radius
+--audio-radius
+--card-radius
+```
+
+Allow theme/admin settings to influence geometry without breaking layout.
+
+---
+
+# 66. PERFORMANCE TARGET
+
+The application is used heavily on mobile.
+
+Prioritize:
+
+1. input responsiveness
+2. feed scrolling
+3. fast first content
+4. low memory usage
+5. reduced Firebase reads
+6. efficient DOM updates
+
+Avoid unnecessary full-feed `innerHTML` rebuilds.
+
+When updating one post, patch that post when practical.
+
+---
+
+# 67. FIREBASE PERFORMANCE
+
+Use realtime listeners carefully.
+
+Do not create duplicate listeners after:
+
+- re-login
+- opening panels
+- changing themes
+- opening composer
+
+Every listener should have a clearly managed unsubscribe reference.
+
+On account/session change:
+
+- stop old listeners
+- clear stale state
+- attach new listeners once
+
+---
+
+# 68. FIREBASE DATABASE COMPATIBILITY
+
+Continue working with the current database namespaces, including concepts equivalent to:
+
+```text
+sermonPosts
+sermonPostLikes
+sermonPostSeen
+sermonPostSaves
+sermonFollows
+sermonNotifications
+sermonUsers
+shareCounts
+```
+
+and existing related structures discovered in the source.
+
+Do not rename paths simply to make code prettier.
+
+---
+
+# 69. USER DATA CLEANUP
+
+Admin "permanently delete user data" must clean references carefully.
+
+Remove appropriate:
+
+- user profile
+- user's posts
+- likes
+- seen entries
+- saves
+- follows
+- notifications associated with removed posts/user
+- related auxiliary data
+
+Do not damage unrelated users.
+
+Require confirmation.
+
+---
+
+# 70. NETWORK / OFFLINE STATE
+
+Keep visible connection state.
+
+When browser goes offline:
+
+- show Offline indicator
+- preserve existing rendered feed
+- keep local draft
+- do not wipe UI
+
+When online returns:
+
+- reconnect Firebase
+- refresh stale data carefully
+- remove offline status after successful restoration
+
+---
+
+# 71. ERROR HANDLING
+
+Every asynchronous workflow needs an error state.
+
+Examples:
+
+- Firebase error
+- login popup blocked
+- upload failed
+- invalid URL
+- Cloudinary error
+- network disconnect
+- permission denied
+- post no longer exists
+- profile unavailable
+- unauthorized action
+
+Never fail silently for critical actions.
+
+Do not leave buttons permanently disabled after error.
+
+Use reusable toast/status component instead of excessive `alert()` where safe, while retaining confirmation semantics.
+
+---
+
+# 72. LOADING STATES
+
+Use polished:
+
+- skeleton post
+- image skeleton
+- profile skeleton
+- upload progress
+- button loading
+- login preload
+
+Do not show a completely blank application while ordinary background requests run.
+
+---
+
+# 73. SECURITY HARDENING
+
+Preserve and improve:
+
+- text escaping
+- URL sanitization
+- safe image URL parsing
+- safe audio URL parsing
+- caption URL restrictions where current behavior expects them
+- rate limiting/client throttling
+- permission checks before UI actions
+- Firebase rules assumptions
+- CSP awareness
+
+Never use raw user-generated HTML with `innerHTML` unless escaped/sanitized.
+
+Never trust client-side role UI as actual database authorization.
+
+Document Firebase rule expectations inside comments.
+
+---
+
+# 74. CLIENT ACTION THROTTLING
+
+Preserve protections for excessive:
+
+- publishing
+- liking
+- viewing
+- sharing
+- repeated interactions
+
+UX should stay responsive without enabling spam.
+
+---
+
+# 75. ACCESSIBILITY
+
+Add/retain:
+
+- semantic buttons
+- labels
+- `aria-label`
+- `aria-expanded`
+- `aria-hidden`
+- dialog roles
+- keyboard navigation
+- visible focus
+- Escape handling
+- screen-reader status updates
+
+Do not sacrifice design.
+
+---
+
+# 76. MOTION
+
+Transitions should feel premium.
+
+Recommended timings:
+
+- microinteraction: 120–180ms
+- panel: 180–260ms
+- larger modal: 220–320ms
+
+Use:
+
+```css
+@media (prefers-reduced-motion: reduce)
+```
+
+Disable unnecessary animation for those users.
+
+---
+
+# 77. RIPPLE EFFECT
+
+Keep the current touch ripple concept.
+
+It should:
+
+- originate at touch point
+- scale based on target
+- remove itself after animation
+- not intercept pointer events
+- work in all themes
+
+---
+
+# 78. ADMIN STATISTICS
+
+Improve existing admin statistics without creating expensive reads.
+
+Show available counts such as:
+
+- total users
+- online users
+- offline users
+- published posts
+- pending posts
+- restore requests
+- total views
+- total likes
+- creator requests
+
+Prefer values derived from already-loaded data.
+
+---
+
+# 79. LOGIN SCREEN
+
+Preserve the existing authentication gate concept.
+
+Contains:
+
+- platform title
+- icon
+- welcome art
+- Google sign-in
+- Privacy Policy
+- Terms/App Policy
+- loading/skeleton state
+
+Admin should be able to change login title globally.
+
+Expand to optionally change:
+
+- welcome image
+- logo/icon
+- background treatment
+- default theme
+
+---
+
+# 80. PRIVACY AND TERMS
+
+Keep both dialogs:
+
+- Privacy Policy
+- Terms / App Policy
+
+Use scrollable polished modal.
+
+Do not remove existing church/community usage wording without reason.
+
+---
+
+# 81. PWA READINESS
+
+Even though main requirement is single HTML, make the page PWA-ready where possible.
+
+Include:
+
+- theme-color
+- mobile-web-app-capable
+- Apple mobile metadata
+- favicon
+- responsive viewport
+
+Do not create additional files unless explicitly requested.
+
+If manifest/service worker cannot be legitimately implemented entirely under the one-file requirement, leave the application architecturally ready rather than producing fake broken PWA behavior.
+
+---
+
+# 82. ANDROID WEBVIEW COMPATIBILITY
+
+Preserve bridge integrations equivalent to:
+
+```js
+window.AndroidAuth
+window.AndroidMedia
+window.AndroidShare
+window.AndroidPrint
+```
+
+Do not break browser mode if those objects do not exist.
+
+Always feature-detect.
+
+---
+
+# 83. DESKTOP EXPERIENCE
+
+Desktop should remain centered and elegant.
+
+Do not stretch every post to 1000px.
+
+Use theme/configurable feed width around the existing compact design.
+
+Allow slightly larger desktop width through variables.
+
+Dialogs can use larger useful widths when needed.
+
+---
+
+# 84. MOBILE EXPERIENCE
+
+Mobile is priority #1.
+
+Important:
+
+- composer nearly full viewport
+- sticky header only where useful
+- safe bottom padding
+- thumb-friendly controls
+- correct text wrapping
+- media almost edge-to-edge inside feed card
+- smooth swiping
+- fast scrolling
+- no accidental zoom from small inputs
+- no tiny click targets
+
+For mobile form inputs, use at least `16px` font size where needed to prevent iOS auto zoom.
+
+---
+
+# 85. CODE ORGANIZATION INSIDE THE SINGLE HTML
+
+Single file does NOT mean messy code.
+
+Organize JavaScript with clear section comments:
+
+```js
+// =====================================================
+// CONFIG
+// =====================================================
+
+// =====================================================
+// STATE
+// =====================================================
+
+// =====================================================
+// HELPERS
+// =====================================================
+
+// =====================================================
+// THEME ENGINE
+// =====================================================
+
+// =====================================================
+// FIREBASE
+// =====================================================
+
+// =====================================================
+// AUTH
+// =====================================================
+
+// =====================================================
+// USERS / PROFILES
+// =====================================================
+
+// =====================================================
+// PRESENCE
+// =====================================================
+
+// =====================================================
+// SOCIAL
+// =====================================================
+
+// =====================================================
+// POSTS
+// =====================================================
+
+// =====================================================
+// FEED
+// =====================================================
+
+// =====================================================
+// MEDIA
+// =====================================================
+
+// =====================================================
+// AUDIO
+// =====================================================
+
+// =====================================================
+// COMPOSER
+// =====================================================
+
+// =====================================================
+// CLOUDINARY
+// =====================================================
+
+// =====================================================
+// NOTIFICATIONS
+// =====================================================
+
+// =====================================================
+// ADMIN
+// =====================================================
+
+// =====================================================
+// SETTINGS
+// =====================================================
+
+// =====================================================
+// EVENTS
+// =====================================================
+```
+
+Do the same for CSS.
+
+---
+
+# 86. CENTRAL APPLICATION STATE
+
+Avoid hundreds of unrelated globals where possible.
+
+Gradually organize runtime state:
+
+```js
+const state = {
+  user: null,
+  profile: null,
+
+  posts: [],
+  users: {},
+  presence: {},
+
+  follows: {},
+  followers: {},
+  likedPosts: new Set(),
+  savedPosts: new Set(),
+  favorites: new Set(),
+
+  notifications: {},
+
+  feed: {
+    filter: "all",
+    search: "",
+    searchType: "all",
+    rendered: 0
+  },
+
+  media: {
+    playingPostId: null
+  },
+
+  ui: {
+    theme: "classic",
+    fastMode: false,
+    cleanImageView: true
+  }
+};
+```
+
+However, do not perform a risky total rewrite solely for architectural purity.
+
+Working behavior is more important.
+
+---
+
+# 87. EVENT DELEGATION
+
+Prefer delegated event handlers for repeated dynamic items.
+
+Example:
+
+- feed posts
+- admin rows
+- notification rows
+- search results
+- media controls
+
+Avoid attaching hundreds of duplicate event listeners each feed render.
+
+---
+
+# 88. CSS THEME ARCHITECTURE
+
+Example:
+
+```css
+:root,
+[data-theme="classic"] {
+  --bg:#081522;
+  --surface:rgba(12,29,45,.94);
+  --text:#fff;
+  --muted:rgba(255,255,255,.72);
+  --accent:#72c2ff;
+}
+
+[data-theme="oled"] {
+  --bg:#000;
+  --surface:#080808;
+  --text:#fff;
+  --muted:#aaa;
+  --accent:#8bd4ff;
+}
+
+[data-theme="light"] {
+  --bg:#f5f7fa;
+  --surface:#fff;
+  --text:#15171a;
+  --muted:#68707a;
+  --accent:#1677ff;
+}
+```
+
+Actual final palette should be more complete.
+
+Every component must use semantic variables instead of hardcoding dark colors wherever possible.
+
+---
+
+# 89. THEME TRANSITION
+
+Changing theme may gently transition:
+
+- background
+- border
+- text
+- surface
+- accent
+
+Do not animate every property.
+
+Avoid large repaints.
+
+Disable transition during initial page startup to prevent flash.
+
+---
+
+# 90. SYSTEM THEME OPTION
+
+Add:
+
+### System
+
+When selected:
+
+```js
+window.matchMedia("(prefers-color-scheme: dark)")
+```
+
+chooses appropriate light/dark theme.
+
+Listen for system changes.
+
+Allow user to override at any time.
+
+---
+
+# 91. OPTIONAL AUTO OLED
+
+If desired, offer:
+
+"Use OLED theme in dark mode"
+
+but keep this optional and off by default.
+
+Do not overcomplicate primary settings.
+
+---
+
+# 92. ADMIN REMOTE THEME SETTINGS DATA MODEL
+
+Extend appSettings safely, e.g.:
+
+```js
+{
+  type: "appSettings",
+
+  loginTitle: "JESUS LOVEME",
+
+  defaultTheme: "classic",
+
+  design: {
+    accent: "#72c2ff",
+    accent2: "#00d3b8",
+    cardWidth: 390,
+    avatarRadius: 6,
+    globalRadius: 18,
+    glassBlur: 14,
+    feedDensity: "comfortable"
+  },
+
+  welcomeImage: "...",
+  appIcon: "...",
+
+  hideImageOverlay: true,
+
+  updatedAt: ...,
+  updatedBy: ...
+}
+```
+
+Backward compatibility:
+
+If old app settings contain only existing fields, everything must continue working.
+
+---
+
+# 93. KEEP EXISTING LOCALSTORAGE DATA
+
+Do not wipe user preferences.
+
+Recognize existing keys such as the current:
+
+- feed filter
+- dark mode
+- Fast Mode
+- clean image view
+- composer draft
+
+Migrate them only when necessary.
+
+Migration should be one-way safe and non-destructive.
+
+---
+
+# 94. EMPTY STATES
+
+Provide attractive empty states for:
+
+- no posts
+- no search result
+- no saved posts
+- no followers
+- no following
+- no online users
+- no notifications
+- no pending creator requests
+- no pending posts
+- no restore requests
+- no deleted posts
+- no configured Cloudinary storage
+- no audio storage
+
+Do not leave blank white/black space.
+
+---
+
+# 95. CONFIRMATION SYSTEM
+
+Replace most browser `window.confirm()` usage with the current custom confirmation dialog where practical.
+
+Need configurable:
+
+- title
+- message
+- Cancel
+- Confirm
+- danger mode
+
+Use especially for:
+
+- logout
+- deleting post
+- permanent delete
+- deleting user data
+- blocking account
+- removing storage
+
+---
+
+# 96. TOAST SYSTEM
+
+Add reusable toast notifications.
+
+Types:
+
+- success
+- error
+- warning
+- info
+
+Examples:
+
+- Post published
+- Submitted for approval
+- Image uploaded
+- Audio uploaded
+- Saved
+- Followed
+- Theme changed
+- Storage saved
+- Connection restored
+
+Mobile friendly.
+
+Do not let toasts cover bottom navigation.
+
+---
+
+# 97. OPTIMISTIC UI
+
+Use optimistic state for safe interactions:
+
+- likes
+- saves
+- follow
+- favorite
+
+Then:
+
+Firebase success → retain state.
+
+Firebase error → roll back state + show toast.
+
+Do not use optimistic behavior for dangerous/admin operations.
+
+---
+
+# 98. CAPTION RULES
+
+Preserve current URL restriction/sanitization behavior in post caption where the original requires it.
+
+Prevent unsafe/inappropriate raw markup injection.
+
+Titles and captions should remain plain text unless a deliberately safe formatter exists.
+
+---
+
+# 99. POST OWNER MENU
+
+Post owner/admin menu retains:
+
+- Edit
+- Delete
+
+Admin additionally has moderation controls.
+
+Menu must not permanently cover media.
+
+Close it when:
+
+- tapping outside
+- opening another menu
+- Escape
+
+---
+
+# 100. ADMIN POST STATUS
+
+Admin can switch:
+
+Pending ↔ Published
+
+Use a compact switch/status control.
+
+State changes update Firebase.
+
+Do not hide pending status from administrator.
+
+Ordinary users should not see unauthorized pending content.
+
+---
+
+# 101. PRO UPGRADE UI
+
+Keep existing Pro concept.
+
+Admin controls who is Pro.
+
+Pro visual treatment:
+
+- small crown/badge
+- elegant, not oversized
+- visible in profile
+- optional beside creator name
+
+Do not turn Pro into fake payment UI unless payment is specifically requested.
+
+---
+
+# 102. SEARCH PERFORMANCE
+
+For large datasets:
+
+- normalize strings once
+- debounce around 100–200ms
+- reuse loaded post/user indexes
+- avoid Firebase read per keystroke
+- optionally load additional searchable page only when needed
+
+Khmer text search must work without corrupting Unicode.
+
+---
+
+# 103. NETWORK SAFETY
+
+All remote requests should:
+
+- catch timeout/error
+- restore button states
+- not destroy current UI
+- log useful diagnostic details to console
+- show understandable user feedback
+
+---
+
+# 104. MEMORY MANAGEMENT
+
+When:
+
+- closing dialogs
+- changing user
+- rerendering feed
+- stopping media
+
+clean:
+
+- event listeners when appropriate
+- observers
+- timeouts
+- intervals
+- Firebase listeners
+- temporary blob references
+
+No growing memory leak after hours of use.
+
+---
+
+# 105. AUDIO MEMORY MANAGEMENT
+
+Only preload metadata unless playback requires more.
+
+Avoid loading every full audio file in a large feed.
+
+Use:
+
+```html
+<audio preload="metadata">
+```
+
+Stop or release inactive media intelligently.
+
+---
+
+# 106. PRESERVE SCROLL POSITION
+
+Operations such as:
+
+- like
+- save
+- follow
+- theme change
+- notification update
+
+must not jump the feed to top.
+
+Publishing a new post may intentionally navigate/reveal it.
+
+---
+
+# 107. CONNECTION RECOVERY
+
+If Firebase disconnects and reconnects:
+
+- update presence
+- restart required watchers once
+- refresh data safely
+- maintain active session
+- preserve current draft
+- preserve theme
+- preserve audio if practical
+
+Avoid creating duplicate watchers during reconnect.
+
+---
+
+# 108. DATA SANITIZATION
+
+Create central helpers:
+
+```js
+escapeHTML()
+safeImageURL()
+safeAudioURL()
+safeExternalURL()
+clampText()
+normalizeAudience()
+```
+
+Use consistently.
+
+Reject:
+
+- `javascript:` URLs
+- dangerous data where inappropriate
+- malformed schemes
+- executable injection attempts
+
+---
+
+# 109. SECURITY HEADERS / META
+
+Preserve sensible meta security:
+
+- CSP
+- referrer policy
+- permissions policy
+
+Update CSP only if newly required trusted resources are actually introduced.
+
+Do not weaken it unnecessarily.
+
+---
+
+# 110. UI QUALITY BAR
+
+Everything must appear intentionally designed.
+
+Check:
+
+- exact alignment
+- button spacing
+- icon centering
+- border consistency
+- panel radius
+- text truncation
+- avatar sizing
+- modal scrolling
+- input focus
+- hover
+- active
+- disabled
+- loading
+- error
+- pressed states
+
+No obvious unfinished component.
+
+---
+
+# 111. NO FAKE FEATURES
+
+A button must not exist unless it works.
+
+Forbidden:
+
+```js
+console.log("TODO")
+alert("Coming soon")
+```
+
+for required functionality.
+
+No dead controls.
+
+No placeholder dashboard.
+
+No simulated Firebase interactions.
+
+---
+
+# 112. PRESERVE CURRENT DATABASE
+
+This upgrade must be deployable over the current site without forcing all users to recreate:
+
+- account
+- profile
+- posts
+- likes
+- saves
+- follows
+- notifications
+- Cloudinary settings
+
+Migration code may fill new optional defaults, but old records must remain valid.
+
+---
+
+# 113. COMMENT DANGEROUS SECTIONS
+
+Add concise developer comments around:
+
+- Firebase config
+- administrator identity
+- app settings
+- theme definitions
+- Cloudinary upload
+- database path definitions
+- role checks
+- destructive admin operations
+
+Do not flood normal code with obvious comments.
+
+---
+
+# 114. FIREBASE RULES AWARENESS
+
+Frontend role checks are not security.
+
+The final code should be designed assuming Firebase rules enforce:
+
+- authenticated writes
+- owner editing
+- admin moderation
+- role/profile constraints
+- restricted storage/config updates
+
+Do not pretend UI hiding replaces database security.
+
+---
+
+# 115. PERFORMANCE MODE AUTOMATION
+
+Fast Mode remains manually available.
+
+Optionally recommend/enable lightweight effects when:
+
+- `prefers-reduced-motion`
+- limited hardware hints
+- Save-Data header/API
+- very small mobile device
+
+But never surprise users by permanently changing their preference without explanation.
+
+---
+
+# 116. REDUCED DATA
+
+When `navigator.connection?.saveData === true`:
+
+- reduce preload distance
+- avoid unnecessary HD preloading
+- prioritize first slide
+- audio metadata only
+
+Do not block user-requested HD media.
+
+---
+
+# 117. FEED MEDIA PRELOAD
+
+Continue intelligent preloading:
+
+Current post:
+- first slide high priority
+
+Upcoming posts:
+- first few slides preloaded
+
+Far posts:
+- lazy only
+
+Never preload hundreds of HD images simultaneously.
+
+---
+
+# 118. CSS PERFORMANCE
+
+Prefer:
+
+- transform
+- opacity
+
+for animation.
+
+Avoid animating:
+
+- width
+- height
+- top
+- left
+- large filter blur
+
+where not necessary.
+
+Use expensive `backdrop-filter` strategically.
+
+Fast Mode disables most blur.
+
+---
+
+# 119. Z-INDEX SYSTEM
+
+Create a clear system:
+
+```css
+--z-feed:1;
+--z-sticky:20;
+--z-nav:30;
+--z-popover:50;
+--z-dialog:80;
+--z-fullscreen:100;
+--z-toast:120;
+```
+
+Prevent modal/toolbox conflicts.
+
+---
+
+# 120. FINAL QA CHECKLIST
+
+Before returning the final HTML, verify all of the following manually by tracing the code.
+
+### Authentication
+- Google login
+- logout
+- logout all
+- blocked account
+- session restore
+
+### Feed
+- initial load
+- pagination
+- scroll
+- filter
+- search
+
+### Post
+- image gallery
+- audio
+- like
+- share
+- save
+- view
+- seen
+- profile
+- fullscreen
+
+### Composer
+- title
+- caption
+- images
+- HD
+- audio
+- drag reorder
+- Cloudinary
+- audience
+- draft
+- publish
+- edit
+
+### Social
+- follow
+- unfollow
+- favorite
+- followers
+- following
+
+### Notifications
+- receive
+- badge
+- read
+- clear
+- navigation
+
+### Profile
+- current profile
+- other profile
+- online status
+- posts
+- Pro
+
+### Admin
+- creator request
+- approve/reject post
+- users
+- Pro
+- block/unblock
+- delete data
+- online
+- activity
+- recovery
+- global settings
+
+### Themes
+Test EVERY theme on:
+- feed
+- post
+- audio
+- composer
+- profile
+- admin
+- search
+- notifications
+- login
+- dialogs
+- bottom nav
+
+### Responsive
+Test phone/tablet/desktop.
+
+---
+
+# 121. REGRESSION REQUIREMENT
+
+If an existing feature works in the provided source and your new version breaks it, the upgrade is considered FAILED.
+
+New architecture is never an excuse for regression.
+
+Priority order:
+
+1. Preserve functionality
+2. Preserve data
+3. Preserve familiar workflow
+4. Fix bugs
+5. Improve performance
+6. Add themes
+7. Improve visual polish
+8. Add carefully selected enhancements
+
+---
+
+# 122. DEVELOPMENT STRATEGY
+
+Do NOT rewrite blindly.
+
+Use this process:
+
+### Phase A — Audit
+Read entire original HTML.
+
+### Phase B — Map
+Identify every DOM ID, class, data attribute, Firebase path, and event dependency.
+
+### Phase C — Stabilize
+Preserve existing functionality first.
+
+### Phase D — Refactor
+Remove duplication carefully.
+
+### Phase E — Theme Engine
+Convert visual constants to semantic CSS variables.
+
+### Phase F — Add Themes
+Add all requested themes.
+
+### Phase G — Admin Customization
+Connect global visual settings to Firebase.
+
+### Phase H — Performance
+Optimize observers, listeners, rendering, media.
+
+### Phase I — Responsive
+Test all viewport classes.
+
+### Phase J — Regression
+Compare new implementation against original feature by feature.
+
+Only then produce final `index.html`.
+
+---
+
+# 123. DO NOT DO THESE THINGS
+
+Do NOT:
+
+- rebuild it using React
+- rebuild with Vue
+- rebuild with Angular
+- require npm
+- require Node.js
+- require Vite
+- require Webpack
+- require a build command
+- require a backend server
+- move CSS into another file
+- move JS into another file
+- change Firebase database paths without reason
+- remove Firebase
+- replace Firebase with localStorage
+- remove Cloudinary
+- remove Google login
+- remove Android bridge support
+- remove admin
+- remove moderation
+- remove audience
+- remove audio
+- remove image gallery
+- remove share links
+- remove recovery
+- remove presence
+- remove social features
+- remove notifications
+- remove search
+- remove saved posts
+- remove Fast Mode
+- fake features
+- produce a prototype
+
+---
+
+# 124. CODE QUALITY REQUIREMENT
+
+The finished HTML should be:
+
+- readable
+- maintainable
+- modular internally
+- secure by frontend standards
+- fast
+- responsive
+- accessible
+- backward compatible
+- production ready
+
+Avoid:
+
+- repeated functions
+- repeated CSS
+- duplicate listeners
+- unexplained magic numbers
+- uncontrolled globals
+- huge synchronous DOM work
+- repeated full Firebase reads
+
+---
+
+# 125. FINAL OUTPUT FORMAT
+
+Return:
+
+## 1. Final `index.html`
+
+The complete working application.
+
+Do not omit sections.
+
+Do not respond with:
+
+> "rest of code unchanged"
+
+Do not write:
+
+> "insert your existing code here"
+
+Do not provide pseudo code.
+
+Return the FULL file.
+
+## 2. Very short change summary
+
+After the code, summarize:
+
+- preserved systems
+- new theme engine
+- admin enhancements
+- performance improvements
+- bug fixes
+
+## 3. Firebase compatibility notes
+
+Mention only database-rule changes that are actually necessary.
+
+Do not ask the user to rebuild the whole Firebase project.
+
+---
+
+# 126. DEFINITION OF DONE
+
+The application is complete only when:
+
+- it opens directly in browser
+- it remains one HTML application
+- current Firebase data works
+- Google login works
+- existing users work
+- existing posts work
+- images work
+- audio works
+- Cloudinary works
+- feed works
+- search works
+- likes work
+- follows work
+- saved posts work
+- seen/views work
+- share links work
+- notifications work
+- audience rules work
+- composer works
+- drafts work
+- admin works
+- creator approval works
+- post approval works
+- Pro works
+- blocking works
+- recovery works
+- presence works
+- mobile works
+- desktop works
+- Fast Mode works
+- clean image mode works
+- Classic theme preserves the current appearance
+- all new themes work
+- theme changing does not restart the app
+- no critical console errors occur
+- no buttons are fake
+- no current functionality is intentionally removed
+
+---
+
+# FINAL COMMAND
+
+Use the existing uploaded `index.html` as the authoritative implementation reference.
+
+**Rebuild and upgrade that exact application—not merely something visually similar.**
+
+Preserve its current features, data structures, Firebase compatibility, interaction model, media behavior, administrative workflows, mobile behavior, and overall JESUS LOVEME identity.
+
+The current UI becomes the **Classic** theme.
+
+Add the complete multi-theme system and professional upgrades described above without sacrificing any existing functionality.
+
+The finished deliverable must be a **fully working, production-ready, single-file `index.html` application**, not a demo, mockup, prototype, abbreviated sample, or partial implementation.
+
+When there is a conflict between making the code shorter and keeping an existing feature working, **keep the feature working**.
+
+When there is a conflict between redesigning something and maintaining compatibility, **maintain compatibility**.
+
+When uncertain whether an existing behavior is intentional, inspect the source and preserve it rather than deleting it.
+
+Build the strongest possible version of this project while remaining 100% compatible with the original.
