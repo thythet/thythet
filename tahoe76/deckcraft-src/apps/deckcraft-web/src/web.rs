@@ -31,6 +31,14 @@ pub fn start() {
         // Load real OpenType/TrueType Khmer faces before the editor initializes.
         // Both the slide renderer and egui's widget glyph fallback need them.
         let khmer_face = load_tahoe_fonts().await;
+        // Tahoe shares one font manifest with the editor. Register every Khmer face
+        // in egui as well as FontDb, so UI text and generated slides use the same fonts.
+        let db = deckcraft_fonts::FontDb::global();
+        let khmer_ui_faces: Vec<_> = db.families().into_iter()
+            .flat_map(|family| db.styles(&family).into_iter().map(move |style| (family.clone(), style)))
+            .map(|(family, style)| db.face(&family, &style))
+            .filter(|face| face.covers('ក') && !face.is_color() && face.data().len() < (20 << 20))
+            .collect();
         let default_khmer_family = khmer_face.as_ref().map(|f| f.family.clone())
             .unwrap_or_else(|| "SONYHEAD5".to_owned());
 
@@ -49,9 +57,7 @@ pub fn start() {
                     let mut app = SlideApp::new(Session::new(), services(inbox.clone(), cc.egui_ctx.clone()));
                     // egui/epaint has a separate font atlas from DeckCraft's document font database.
                     // Install the Khmer face in both, or dialogs/edit boxes still show tofu squares.
-                    if let Some(ref face) = khmer_face {
-                        app.ui_fonts.faces.push(face.clone());
-                    }
+                    app.ui_fonts.faces.extend(khmer_ui_faces.iter().cloned());
                     let q = query();
                     if !q.contains("blank") {
                         if let Err(e) = deckcraft_engine::sample::open_sample(&mut app.session) {
