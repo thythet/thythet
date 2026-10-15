@@ -265,111 +265,164 @@ impl TypographyPanel {
         if !self.open { return; }
         let mut open = self.open;
         let mut apply_now = false;
+        let mut cancel_now = false;
         egui::Window::new("Apply Formatting")
             .id(egui::Id::new("tahoe-typography-apply"))
             .open(&mut open)
-            .default_width(415.0)
-            .resizable(true)
+            .default_width(392.0)
+            .min_width(365.0)
+            .resizable(false)
+            .collapsible(false)
             .show(ctx, |ui| {
-                ui.heading("What do you want to change?");
-                ui.small("Select where the chosen formatting should be applied. Other text stays unchanged.");
-                ui.separator();
-                ui.label("Apply formatting to:");
+                // Compact editor modeled after the user's supplied mini-formatting reference.
+                ui.spacing_mut().item_spacing.y = 8.0;
+                ui.label(egui::RichText::new("APPLY TO").strong().size(11.0).color(egui::Color32::GRAY));
                 egui::ComboBox::from_id_salt("tahoe-format-scope")
                     .selected_text(self.scope.label())
-                    .width(330.0)
+                    .width(ui.available_width() - 14.0)
                     .show_ui(ui, |ui| {
-                        for scope in [ApplyScope::All, ApplyScope::Box, ApplyScope::Selection,
-                            ApplyScope::Headings, ApplyScope::Verses, ApplyScope::Content,
-                            ApplyScope::CurrentSlide, ApplyScope::SelectedSlides, ApplyScope::VerseNumbers] {
+                        for scope in [ApplyScope::Box, ApplyScope::Selection, ApplyScope::Headings,
+                            ApplyScope::Verses, ApplyScope::VerseNumbers, ApplyScope::Content,
+                            ApplyScope::CurrentSlide, ApplyScope::SelectedSlides, ApplyScope::All] {
                             ui.selectable_value(&mut self.scope, scope, scope.label());
                         }
                     });
-                let guidance = match self.scope {
-                    ApplyScope::All => "Changes all slide text. Hidden source slide is protected.",
-                    ApplyScope::Box => "Select a text box on the canvas first.",
-                    ApplyScope::Selection => "Highlight characters inside a text box first.",
-                    ApplyScope::Headings => "Changes Bible reference titles only.",
-                    ApplyScope::Verses => "Changes Bible verse bodies; headings stay unchanged.",
-                    ApplyScope::Content => "Changes non-Bible text only.",
-                    ApplyScope::CurrentSlide => "Changes every text box on the current slide.",
-                    ApplyScope::SelectedSlides => "Ctrl/Shift-select slide thumbnails first.",
-                    ApplyScope::VerseNumbers => "Changes verse-number digits and styling only.",
-                };
-                ui.small(guidance);
-                ui.separator();
-                ui.label("Choose formatting (tick only what should change):");
+                ui.add_space(3.0);
+                ui.label(egui::RichText::new("FORMATTING  ·  check to change").strong().size(11.0).color(egui::Color32::GRAY));
                 ui.horizontal(|ui| {
-                    ui.checkbox(&mut self.set_font, "Font");
-                    if self.set_font {
+                    ui.checkbox(&mut self.set_font, "");
+                    ui.add_sized([45.0, 25.0], egui::Label::new("Font"));
+                    ui.add_enabled_ui(self.set_font, |ui| {
                         egui::ComboBox::from_id_salt("tahoe-apply-font")
-                            .selected_text(&self.font).width(190.0).show_ui(ui, |ui| {
+                            .selected_text(&self.font).width(158.0).show_ui(ui, |ui| {
                                 for family in deckcraft_fonts::FontDb::global().families() {
                                     ui.selectable_value(&mut self.font, family.clone(), family);
                                 }
                             });
+                    });
+                    ui.checkbox(&mut self.set_size, "");
+                    ui.add_enabled(self.set_size, egui::DragValue::new(&mut self.font_size)
+                        .range(1.0..=200.0).speed(0.5).suffix(" pt"));
+                });
+                ui.horizontal(|ui| {
+                    let mut style_enabled = self.set_bold || self.set_italic || self.set_underline;
+                    if ui.checkbox(&mut style_enabled, "").changed() {
+                        self.set_bold = style_enabled;
+                        self.set_italic = style_enabled;
+                        self.set_underline = style_enabled;
                     }
-                });
-                ui.horizontal(|ui| {
-                    ui.checkbox(&mut self.set_size, "Size");
-                    if self.set_size { ui.add(egui::DragValue::new(&mut self.font_size).range(1.0..=200.0).speed(0.5).suffix(" pt")); }
-                });
-                ui.horizontal(|ui| {
-                    ui.checkbox(&mut self.set_spacing, "Line spacing");
-                    if self.set_spacing { ui.add(egui::DragValue::new(&mut self.line_spacing).range(0.5..=4.0).speed(0.05)); }
-                });
-                ui.horizontal(|ui| { ui.checkbox(&mut self.set_bold,"Bold"); if self.set_bold { ui.checkbox(&mut self.bold,"On"); } });
-                ui.horizontal(|ui| { ui.checkbox(&mut self.set_italic,"Italic"); if self.set_italic { ui.checkbox(&mut self.italic,"On"); } });
-                ui.horizontal(|ui| { ui.checkbox(&mut self.set_underline,"Underline"); if self.set_underline { ui.checkbox(&mut self.underline,"On"); } });
-                ui.horizontal(|ui| { ui.checkbox(&mut self.set_color,"Color"); if self.set_color { ui.text_edit_singleline(&mut self.color); } });
-                ui.horizontal(|ui| {
-                    ui.checkbox(&mut self.set_align,"Horizontal align");
-                    if self.set_align {
-                        egui::ComboBox::from_id_salt("tahoe-apply-align").selected_text(&self.align).show_ui(ui,|ui|{
-                            for a in ["left","center","right","justify"] { ui.selectable_value(&mut self.align,a.to_owned(),a); }
-                        });
+                    ui.add_sized([45.0, 25.0], egui::Label::new("Style"));
+                    for (title, flag, enabled) in [
+                        ("B", &mut self.bold, &mut self.set_bold),
+                        ("I", &mut self.italic, &mut self.set_italic),
+                        ("U", &mut self.underline, &mut self.set_underline),
+                    ] {
+                        let on = *enabled && *flag;
+                        if ui.add_sized([42.0, 28.0], egui::Button::new(title).selected(on)).clicked() {
+                            *flag = !on;
+                            *enabled = true;
+                        }
                     }
-                });
-                ui.horizontal(|ui| {
-                    ui.checkbox(&mut self.set_anchor,"Vertical align");
-                    if self.set_anchor {
-                        egui::ComboBox::from_id_salt("tahoe-apply-anchor").selected_text(&self.anchor).show_ui(ui,|ui|{
-                            for a in ["top","middle","bottom"] { ui.selectable_value(&mut self.anchor,a.to_owned(),a); }
-                        });
-                    }
+                    ui.checkbox(&mut self.set_color, "");
+                    ui.add_enabled_ui(self.set_color, |ui| {
+                        ui.add_sized([70.0, 27.0], egui::TextEdit::singleline(&mut self.color));
+                    });
                 });
                 if self.scope == ApplyScope::VerseNumbers {
-                    ui.checkbox(&mut self.convert_numbers,"Convert verse number digits");
-                    if self.convert_numbers {
-                        egui::ComboBox::from_id_salt("tahoe-verse-digits")
-                            .selected_text(self.number_style.label()).show_ui(ui,|ui|{
-                                for style in [VerseNumberStyle::Khmer,VerseNumberStyle::English,VerseNumberStyle::Source] {
-                                    ui.selectable_value(&mut self.number_style,style,style.label());
-                                }
-                            });
-                    }
-                    ui.label("Verse number position");
-                    egui::ComboBox::from_id_salt("tahoe-verse-baseline")
-                        .selected_text(self.baseline.label()).show_ui(ui, |ui| {
-                            for option in [VerseBaseline::Normal, VerseBaseline::Super, VerseBaseline::Sub] {
-                                ui.selectable_value(&mut self.baseline, option, option.label());
+                    ui.separator();
+                    ui.label(egui::RichText::new("VERSE NUMBERS").strong().size(11.0).color(egui::Color32::GRAY));
+                    ui.horizontal(|ui| {
+                        ui.add_sized([85.0, 24.0], egui::Label::new("Position"));
+                        for (mode, label) in [
+                            (VerseBaseline::Normal, "Normal"),
+                            (VerseBaseline::Super, "X²"),
+                            (VerseBaseline::Sub, "X₂"),
+                        ] {
+                            if ui.add_sized([72.0, 28.0], egui::Button::new(label).selected(self.baseline == mode)).clicked() {
+                                self.baseline = mode;
+                                self.set_baseline = true;
                             }
-                        });
-                    ui.small("Changes only numeric verse prefixes, not the verse text.");
-                } else {
-                    ui.checkbox(&mut self.set_baseline,"Superscript / subscript");
-                    if self.set_baseline {
-                        egui::ComboBox::from_id_salt("tahoe-apply-baseline").selected_text(self.baseline.label()).show_ui(ui,|ui|{
-                            for v in [VerseBaseline::Normal,VerseBaseline::Super,VerseBaseline::Sub]{
-                                ui.selectable_value(&mut self.baseline,v,v.label());
-                            }
-                        });
-                    }
+                        }
+                    });
+                    ui.horizontal(|ui| {
+                        ui.checkbox(&mut self.convert_numbers, "");
+                        ui.add_sized([62.0, 24.0], egui::Label::new("Digits"));
+                        if ui.add_sized([110.0, 28.0], egui::Button::new("123")
+                            .selected(self.number_style == VerseNumberStyle::English)).clicked() {
+                            self.number_style = VerseNumberStyle::English;
+                            self.convert_numbers = true;
+                        }
+                        if ui.add_sized([110.0, 28.0], egui::Button::new("១២៣")
+                            .selected(self.number_style == VerseNumberStyle::Khmer)).clicked() {
+                            self.number_style = VerseNumberStyle::Khmer;
+                            self.convert_numbers = true;
+                        }
+                    });
                 }
                 ui.separator();
-                if ui.add_sized(egui::vec2(230.0, 32.0), egui::Button::new(format!("Apply to {}", self.scope.label()))).clicked() { apply_now = true; }
+                egui::CollapsingHeader::new("More options").id_salt("tahoe-apply-more")
+                    .default_open(false).show(ui, |ui| {
+                        ui.horizontal(|ui| {
+                            ui.checkbox(&mut self.set_spacing, "");
+                            ui.add_sized([67.0, 25.0], egui::Label::new("Spacing"));
+                            ui.add_enabled(self.set_spacing, egui::DragValue::new(&mut self.line_spacing)
+                                .range(0.5..=4.0).speed(0.05));
+                        });
+                        ui.horizontal(|ui| {
+                            ui.checkbox(&mut self.set_align, "");
+                            ui.add_sized([67.0, 25.0], egui::Label::new("Align"));
+                            ui.add_enabled_ui(self.set_align, |ui| {
+                                egui::ComboBox::from_id_salt("tahoe-apply-align")
+                                    .selected_text(&self.align).show_ui(ui, |ui| {
+                                        for v in ["left", "center", "right", "justify"] {
+                                            ui.selectable_value(&mut self.align, v.to_owned(), v);
+                                        }
+                                    });
+                            });
+                        });
+                        ui.horizontal(|ui| {
+                            ui.checkbox(&mut self.set_anchor, "");
+                            ui.add_sized([67.0, 25.0], egui::Label::new("Vertical"));
+                            ui.add_enabled_ui(self.set_anchor, |ui| {
+                                egui::ComboBox::from_id_salt("tahoe-apply-anchor")
+                                    .selected_text(&self.anchor).show_ui(ui, |ui| {
+                                        for v in ["top", "middle", "bottom"] {
+                                            ui.selectable_value(&mut self.anchor, v.to_owned(), v);
+                                        }
+                                    });
+                            });
+                        });
+                        if self.scope != ApplyScope::VerseNumbers {
+                            ui.horizontal(|ui| {
+                                ui.checkbox(&mut self.set_baseline, "Position");
+                                ui.add_enabled_ui(self.set_baseline, |ui| {
+                                    egui::ComboBox::from_id_salt("tahoe-apply-baseline")
+                                        .selected_text(self.baseline.label()).show_ui(ui, |ui| {
+                                            for v in [VerseBaseline::Normal, VerseBaseline::Super, VerseBaseline::Sub] {
+                                                ui.selectable_value(&mut self.baseline, v, v.label());
+                                            }
+                                        });
+                                });
+                            });
+                        }
+                    });
+                ui.separator();
+                ui.horizontal(|ui| {
+                    ui.label(egui::RichText::new(self.scope.label()).small().color(egui::Color32::GRAY));
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        if ui.add_sized([72.0, 30.0],
+                            egui::Button::new(egui::RichText::new("Apply").color(egui::Color32::WHITE).strong())
+                                .fill(egui::Color32::from_rgb(232, 121, 66))).clicked() {
+                            apply_now = true;
+                        }
+                        if ui.add_sized([68.0, 30.0], egui::Button::new("Cancel")).clicked() {
+                            cancel_now = true;
+                        }
+                    });
+                });
                 if !self.status.is_empty() { ui.small(&self.status); }
             });
+        if cancel_now { open = false; }
         self.open = open;
         if apply_now {
             self.status = match self.apply(app) {
