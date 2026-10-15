@@ -1258,6 +1258,17 @@ fn parse_smart_bible_ref(line: &str) -> Option<SmartBibleRef> {
     })
 }
 
+// Program times like ព្រះបន្ទូលម៉ោង5:30 are headings, never chapter:verse refs.
+fn is_service_time_heading(line: &str) -> bool {
+    let compact: String = normalize_digits(line).chars()
+        .filter(|c| !c.is_whitespace() && !matches!(c, '\u{200b}' | '\u{200c}' | '\u{200d}'))
+        .collect();
+    if compact.contains("ម៉ោង") && compact.contains("ព្រះបន្ទូល") { return true; }
+    // General service schedule labels (not Bible book names).
+    ["ម៉ោង", "ពេល", "កម្មវិធី", "ថ្វាយបង្គំ"].iter()
+        .any(|word| compact.contains(word) && compact.chars().any(|c| c.is_ascii_digit()) && compact.contains(':'))
+}
+
 fn parse_smart_tokens(input: &str) -> Result<Vec<SmartToken>, String> {
     let mut out = Vec::new();
     let mut text = Vec::<String>::new();
@@ -1276,7 +1287,7 @@ fn parse_smart_tokens(input: &str) -> Result<Vec<SmartToken>, String> {
             flush(&mut out, &mut text);
             continue;
         }
-        if line.starts_with("ព្រះបន្ទូលម៉ោង") {
+        if is_service_time_heading(line) {
             flush(&mut out, &mut text);
             out.push(SmartToken::Heading(line.to_string()));
             continue;
@@ -1301,7 +1312,7 @@ fn parse_smart_tokens(input: &str) -> Result<Vec<SmartToken>, String> {
             let has_chapter = left.chars().last().is_some_and(|c| c.is_ascii_digit());
             let has_verse = right.trim().chars().next().is_some_and(|c| c.is_ascii_digit());
             let has_book_letters = left.chars().any(|c| ('ក'..='៿').contains(&c));
-            if has_book_letters && has_chapter && has_verse {
+            if has_book_letters && has_chapter && has_verse && !is_service_time_heading(line) {
                 let book_text = left.trim_end_matches(|c:char| c.is_ascii_digit()).trim();
                 let hints = smart_book_candidates(book_text).into_iter().take(3)
                     .map(|(_,name,_)| name.to_owned()).collect::<Vec<_>>();
