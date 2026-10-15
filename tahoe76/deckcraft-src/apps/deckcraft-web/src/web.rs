@@ -1051,20 +1051,28 @@ async fn load_tahoe_fonts() -> Option<std::sync::Arc<deckcraft_fonts::FontFace>>
         return None;
     };
     let db = deckcraft_fonts::FontDb::global();
+    // Optional user-provided pack is only considered when actually installed.
+    // Without this probe, 40 missing requests can stall WASM startup.
+    let khmer_os_installed = fetch_url_bytes("../../assets/fonts/khmer-os/KhmerOSsiemreap.ttf")
+        .await.is_ok();
     let mut added = 0usize;
     for font in fonts {
         let Some(file) = font.get("file").and_then(serde_json::Value::as_str) else { continue };
         // Only preload font binaries shipped with this WASM build. Missing Khmer OS
         // files and remote sources previously caused dozens of serial network requests
         // and kept the editor behind its 20-second startup timeout.
-        if !file.starts_with("SFHelloKOKH-") { continue; }
+        if !file.starts_with("SFHelloKOKH-") && !(khmer_os_installed && file.starts_with("khmer-os/")) { continue; }
         let mut urls = Vec::new();
         // GitHub Actions generates TrueType siblings for original WOFF fonts.
         // WOFF containers are not accepted by DeckCraft's native font/shaping engine.
         if let Some(stem) = file.strip_suffix(".woff").or_else(|| file.strip_suffix(".woff2")) {
             urls.push(format!("fonts/{stem}.ttf"));
         } else if file.ends_with(".ttf") || file.ends_with(".otf") {
-            urls.push(format!("fonts/{file}"));
+            if file.starts_with("khmer-os/") {
+                urls.push(format!("../../assets/fonts/{file}"));
+            } else {
+                urls.push(format!("fonts/{file}"));
+            }
         }
         // Fonts are loaded from compiled local TTF siblings only, never external URLs.
         let mut ok = false;
