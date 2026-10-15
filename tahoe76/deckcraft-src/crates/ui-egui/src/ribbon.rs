@@ -2169,12 +2169,7 @@ fn record(app: &mut SlideApp, ui: &mut Ui) {
             }
         }
     });
-    group(ui, |ui| {
-        if big_button(ui, Icon::Help, "Learn\nMore", true).clicked() {
-            app.open_url(deckcraft_engine::links::APP_PAGE);
-        }
-    });
-}
+ }
 
 fn comment_nav(app: &mut SlideApp, ui: &mut Ui, forward: bool) {
     let (icon, label, id) = if forward { (Icon::NextComment, "Next", "comment.next") } else { (Icon::PrevComment, "Previous", "comment.prev") };

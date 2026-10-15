@@ -516,7 +516,10 @@ fn tile(ui: &mut Ui, label: &str, theme: Option<&deckcraft_model::Theme>, big: b
 fn new_tiles(app: &mut SlideApp, ui: &mut Ui, query: &str, limit: usize, blank: bool) -> bool {
     let q = query.trim().to_lowercase();
     let themes: Vec<deckcraft_model::Theme> =
-        deckcraft_model::theme::builtin_themes().into_iter().filter(|th| q.is_empty() || th.name.to_lowercase().contains(&q)).collect();
+        deckcraft_model::theme::builtin_themes().into_iter().filter(|th| {
+            let label = if th.name == "DeckCraft" { "Classic" } else { &th.name };
+            q.is_empty() || label.to_lowercase().contains(&q)
+        }).collect();
     let sample = q.is_empty() || "sample deck northern lights".contains(&q);
     if themes.is_empty() && !sample {
         return false;

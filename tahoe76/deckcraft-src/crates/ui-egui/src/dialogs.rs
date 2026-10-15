@@ -465,7 +465,7 @@ fn photo_album_dialog(app: &mut SlideApp, ui: &mut Ui, d: &mut Dialog) -> bool {
         check(ui, d, "Captions under pictures", "captions", false);
         check(ui, d, "ALL pictures black and white", "grayscale", false);
         ui.label("Album theme");
-        album_choice(ui, d, "album_theme", "theme", "DeckCraft", &ALBUM_THEMES.iter().map(|n| (*n, *n)).collect::<Vec<_>>());
+        album_choice(ui, d, "album_theme", "theme", "DeckCraft", &ALBUM_THEMES.iter().map(|n| (*n, if *n == "DeckCraft" { "Classic" } else { *n })).collect::<Vec<_>>());
     });
     let captions = d.fields.get("captions").is_some_and(|v| v == "1");
     let grayscale = d.fields.get("grayscale").is_some_and(|v| v == "1");
@@ -2067,24 +2067,8 @@ fn body(app: &mut SlideApp, ui: &mut Ui, d: &mut Dialog) -> bool {
             ok || cancel
         }
         "about" => {
-            let tab = d.get("tab", "about");
-            ui.horizontal(|ui| {
-                for (k, l) in [("about", "About"), ("contributors", "Contributors"), ("models", "Models")] {
-                    if ui.selectable_label(tab == k, l).clicked() {
-                        d.fields.insert("tab".into(), k.into());
-                    }
-                }
-            });
-            ui.separator();
-            match tab.as_str() {
-                "contributors" | "models" => {
-                    // The credits need room for the table; the About tab keeps its compact size.
-                    ui.set_min_size(vec2(640.0, 380.0));
-                    ui.set_max_height(380.0);
-                    if tab == "models" { crate::credits::models_ui(ui) } else { crate::credits::contributors_ui(ui) }
-                }
-                _ => about(app, ui),
-            }
+            // Product and contributor information belongs outside the PowerSlidePro editor.
+            about(app, ui);
             let (ok, _) = buttons(ui, "Close");
             ok
         }
@@ -2603,21 +2587,10 @@ fn pretty_equation(s: &str) -> String {
 }
 
 pub fn about(_app: &mut SlideApp, ui: &mut Ui) {
-    let t = Tokens::get(ui.ctx());
     ui.vertical_centered(|ui| {
-        let (r, _) = ui.allocate_exact_size(vec2(64.0, 64.0), Sense::hover());
-        paint_logo(ui.painter(), r);
         ui.label(egui::RichText::new("PowerSlidePro").font(theme::bold(22.0)));
-        ui.label(egui::RichText::new(version_line()).color(t.text_dim));
         ui.add_space(6.0);
-        ui.label("Presentations and slide shows, rebuilt from scratch in pure Rust.");
-        ui.label("An open-source, clean-room project. Not affiliated with Microsoft.");
-        ui.add_space(6.0);
-        
-        
-        
-        ui.add_space(6.0);
-        
+        ui.label("Presentation editor");
     });
 }
 
@@ -3232,7 +3205,7 @@ fn find_dialog(app: &mut SlideApp, ui: &mut Ui, d: &mut Dialog) -> bool {
     if find_next {
         let list = app.session.execute("text.find", &q).ok().and_then(|v| v.as_array().cloned()).unwrap_or_default();
         if list.is_empty() {
-            d.fields.insert("status".into(), format!("DeckCraft can't find “{text}”."));
+            d.fields.insert("status".into(), format!("PowerSlidePro can't find “{text}”."));
             d.fields.remove("cur");
         } else {
             let n = d.get("next", "0").parse::<usize>().unwrap_or(0) % list.len();
