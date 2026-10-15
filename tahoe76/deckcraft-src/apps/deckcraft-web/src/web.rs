@@ -1061,6 +1061,13 @@ fn remove_native_smart_input() {
 fn sync_native_smart_input(ctx: &egui::Context, rect: egui::Rect, text: &mut String) {
     let Some(window) = web_sys::window() else { return };
     let Some(document) = window.document() else { return };
+    if document.get_element_by_id("tahoe-smart-khmer-font").is_none() {
+        if let Ok(style) = document.create_element("style") {
+            style.set_id("tahoe-smart-khmer-font");
+            style.set_text_content(Some("@font-face{font-family:'Tahoe Smart Battambang';src:url('../../assets/fonts/khmer-os/KhmerOSbattambang.ttf') format('truetype');font-weight:400;font-display:swap;}"));
+            if let Some(head) = document.head() { let _ = head.append_child(&style); }
+        }
+    }
     let canvas = document.get_element_by_id(CANVAS_ID);
     let Some(canvas) = canvas else { return };
     let screen = ctx.content_rect();
