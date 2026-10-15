@@ -198,15 +198,15 @@ enum ApplyScope {
 impl ApplyScope {
     fn label(self) -> &'static str {
         match self {
-            Self::All => "All presentation text",
-            Self::Box => "Only this text box",
-            Self::Selection => "Only selected characters",
-            Self::Headings => "All Bible chapter/book headings",
-            Self::Verses => "All Bible verse content",
-            Self::Content => "All non-Bible content",
-            Self::CurrentSlide => "Current slide",
-            Self::SelectedSlides => "Selected slides",
-            Self::VerseNumbers => "Bible verse numbers only",
+            Self::All => "Everything (all slides)",
+            Self::Box => "This text box",
+            Self::Selection => "Highlighted words only",
+            Self::Headings => "Bible headings (book / chapter)",
+            Self::Verses => "Bible verses (not headings)",
+            Self::Content => "Other content (not Bible)",
+            Self::CurrentSlide => "Everything on this slide",
+            Self::SelectedSlides => "Everything on selected slides",
+            Self::VerseNumbers => "Verse numbers only",
         }
     }
 }
@@ -254,26 +254,30 @@ impl Default for TypographyPanel {
 }
 impl TypographyPanel {
     fn ui(&mut self, ctx: &egui::Context, app: &mut SlideApp) {
-        egui::Area::new(egui::Id::new("tahoe-format-apply-shortcut"))
-            .anchor(egui::Align2::RIGHT_TOP, egui::vec2(-12.0, 85.0))
-            .show(ctx, |ui| {
-                if ui.small_button("Aa · Apply To").clicked() { self.open = !self.open; }
-            });
+        // Opened from the Home ribbon; never float a duplicate button over tabs.
+        let ribbon_open = ctx.data_mut(|d| {
+            let key = egui::Id::new("tahoe-format-apply-open");
+            let clicked = d.get_temp::<bool>(key).unwrap_or(false);
+            if clicked { d.insert_temp(key, false); }
+            clicked
+        });
+        if ribbon_open { self.open = true; }
         if !self.open { return; }
         let mut open = self.open;
         let mut apply_now = false;
-        egui::Window::new("Typography · Apply To")
+        egui::Window::new("Apply Formatting")
             .id(egui::Id::new("tahoe-typography-apply"))
             .open(&mut open)
-            .default_width(340.0)
+            .default_width(415.0)
             .resizable(true)
             .show(ctx, |ui| {
-                ui.label("Apply font and paragraph formatting by text role.");
+                ui.heading("What do you want to change?");
+                ui.small("Select where the chosen formatting should be applied. Other text stays unchanged.");
                 ui.separator();
-                ui.label("Apply to");
+                ui.label("Apply formatting to:");
                 egui::ComboBox::from_id_salt("tahoe-format-scope")
                     .selected_text(self.scope.label())
-                    .width(275.0)
+                    .width(330.0)
                     .show_ui(ui, |ui| {
                         for scope in [ApplyScope::All, ApplyScope::Box, ApplyScope::Selection,
                             ApplyScope::Headings, ApplyScope::Verses, ApplyScope::Content,
@@ -281,7 +285,20 @@ impl TypographyPanel {
                             ui.selectable_value(&mut self.scope, scope, scope.label());
                         }
                     });
+                let guidance = match self.scope {
+                    ApplyScope::All => "Changes all slide text. Hidden source slide is protected.",
+                    ApplyScope::Box => "Select a text box on the canvas first.",
+                    ApplyScope::Selection => "Highlight characters inside a text box first.",
+                    ApplyScope::Headings => "Changes Bible reference titles only.",
+                    ApplyScope::Verses => "Changes Bible verse bodies; headings stay unchanged.",
+                    ApplyScope::Content => "Changes non-Bible text only.",
+                    ApplyScope::CurrentSlide => "Changes every text box on the current slide.",
+                    ApplyScope::SelectedSlides => "Ctrl/Shift-select slide thumbnails first.",
+                    ApplyScope::VerseNumbers => "Changes verse-number digits and styling only.",
+                };
+                ui.small(guidance);
                 ui.separator();
+                ui.label("Choose formatting (tick only what should change):");
                 ui.horizontal(|ui| {
                     ui.checkbox(&mut self.set_font, "Font");
                     if self.set_font {
@@ -350,7 +367,7 @@ impl TypographyPanel {
                     }
                 }
                 ui.separator();
-                if ui.button("Apply formatting").clicked() { apply_now = true; }
+                if ui.add_sized(egui::vec2(230.0, 32.0), egui::Button::new(format!("Apply to {}", self.scope.label()))).clicked() { apply_now = true; }
                 if !self.status.is_empty() { ui.small(&self.status); }
             });
         self.open = open;
