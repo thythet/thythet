@@ -83,7 +83,7 @@ pub fn start() {
         if let Some(el) = document.get_element_by_id(LOADING_ID) {
             match result {
                 Ok(()) => el.remove(),
-                Err(e) => el.set_inner_html(&format!("<p>DeckCraft failed to start: {e:?}</p><p>A browser with WebGPU or WebGL2 is required.</p>")),
+                Err(e) => el.set_inner_html(&format!("<p>PowerSlidePro failed to start: {e:?}</p><p>A browser with WebGPU or WebGL2 is required.</p>")),
             }
         }
     });
@@ -514,9 +514,11 @@ impl BibleGenerator {
                 .join("\n\n");
 
             let body_height = if self.include_reference { 385.0 } else { 435.0 };
-            app.run("insert.textBox", json!({"rect": [60.0, 45.0, 840.0, body_height], "text": body}))?;
+            app.run("insert.textBox", json!({"rect": [60.0, 35.0, 840.0, 45.0], "text": format!("{} {}", book.name, self.chapter)}))?;
+            self.apply_text_style(app, 26.0, false)?;
+            app.run("insert.textBox", json!({"rect": [60.0, 90.0, 840.0, body_height - 45.0], "text": body}))?;
             let fitted = estimate_bible_font(&group, self.max_font_size, self.min_font_size);
-            self.apply_text_style(app, fitted, true)?;
+            self.apply_text_style(app, fitted, false)?;
             app.run("format.autofit", json!({"mode": "shrink"}))?;
 
             if self.include_reference {
@@ -536,9 +538,7 @@ impl BibleGenerator {
         }
         app.run("format.size", json!({"size": size}))?;
         app.run("format.alignCenter", json!({}))?;
-        if middle {
-            app.run("format.anchor", json!({"anchor": "middle"}))?;
-        }
+        app.run("format.anchor", json!({"anchor": if middle { "middle" } else { "top" }}))?;
         Ok(())
     }
 }
@@ -958,9 +958,11 @@ fn apply_smart_slides(app: &mut SlideApp, slides: &[SmartSlide], replace: bool, 
                 };
                 app.run("slide.rename", json!({"name": format!("Bible · {reference}")}))?;
                 let body = verses.iter().map(|v| format!("{}  {}", v.number, v.text)).collect::<Vec<_>>().join("\n\n");
-                app.run("insert.textBox", json!({"rect": [60.0, 45.0, 840.0, 385.0], "text": body}))?;
+                app.run("insert.textBox", json!({"rect": [60.0, 35.0, 840.0, 45.0], "text": format!("{book_name} {chapter}")}))?;
+                apply_generated_style(app, font, 26.0, false)?;
+                app.run("insert.textBox", json!({"rect": [60.0, 90.0, 840.0, 340.0], "text": body}))?;
                 let size = estimate_bible_font(verses, 36.0, 18.0);
-                apply_generated_style(app, font, size, true)?;
+                apply_generated_style(app, font, size, false)?;
                 app.run("format.autofit", json!({"mode": "shrink"}))?;
                 app.run("insert.textBox", json!({"rect": [60.0, 455.0, 840.0, 45.0], "text": reference}))?;
                 apply_generated_style(app, font, 18.0, false)?;
@@ -978,9 +980,7 @@ fn apply_generated_style(app: &mut SlideApp, font: &str, size: f32, middle: bool
     }
     app.run("format.size", json!({"size": size}))?;
     app.run("format.alignCenter", json!({}))?;
-    if middle {
-        app.run("format.anchor", json!({"anchor": "middle"}))?;
-    }
+    app.run("format.anchor", json!({"anchor": if middle { "middle" } else { "top" }}))?;
     Ok(())
 }
 
