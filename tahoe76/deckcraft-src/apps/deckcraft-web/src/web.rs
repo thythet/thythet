@@ -1134,6 +1134,17 @@ fn normalize_book_key(s: &str) -> String {
 
 fn resolve_smart_book(raw: &str) -> Option<(&'static str, &'static str)> {
     let needle = normalize_book_key(raw);
+    // Common Khmer church spelling variants (Bible 1954 catalog uses អេភេសូ).
+    // Keep the canonical catalog name/data unchanged for generated content.
+    let alias = match needle.as_str() {
+        "អេភេសូរ" | "អេភេស" => Some("EPH"),
+        _ => None,
+    };
+    if let Some(id) = alias {
+        if let Some((id, name, _)) = bible_data::BOOKS.iter().find(|(book_id, _, _)| *book_id == id) {
+            return Some((*id, *name));
+        }
+    }
     for (id, name, _) in bible_data::BOOKS {
         let canon = normalize_book_key(name);
         if needle.eq_ignore_ascii_case(id) || needle == canon {
@@ -1222,6 +1233,16 @@ fn parse_smart_tokens(input: &str) -> Result<Vec<SmartToken>, String> {
             flush(&mut out, &mut text);
             out.push(SmartToken::Bible(reference));
             continue;
+        }
+        // A Bible-shaped reference with an unknown book should never quietly
+        // become a plain-text slide: explain the typo instead.
+        let normalized = repair_smart_refs(line);
+        if let Some((left, right)) = normalized.rsplit_once(':') {
+            let has_chapter = left.chars().last().is_some_and(|c| c.is_ascii_digit());
+            let has_verse = right.trim().chars().next().is_some_and(|c| c.is_ascii_digit());
+            if has_chapter && has_verse {
+                return Err(format!("Unknown Bible reference: {line}. Check the book name or chapter/verse numbers."));
+            }
         }
         text.push(line.to_string());
     }
