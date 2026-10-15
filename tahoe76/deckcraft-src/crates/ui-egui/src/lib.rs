@@ -191,7 +191,7 @@ fn command_for(purpose: FilePurpose, name: &str, bytes: &[u8]) -> Result<&'stati
         FilePurpose::Open => open_command(name),
         FilePurpose::Infer => infer_command(name, bytes),
     };
-    cmd.ok_or_else(|| format!("{name}: DeckCraft can't open this kind of file"))
+    cmd.ok_or_else(|| format!("{name}: PowerSlidePro can't open this kind of file"))
 }
 
 /// How long a transient status message stays visible.
@@ -392,7 +392,7 @@ pub const UI_COMMANDS: &[(&str, &str, Option<&str>, &str)] = &[
         Some("Cmd+P"),
         "{layout?, perPage?, slides?, includeHidden?, frame?, paper?: letter|a4|legal|a3, orientation?: portrait|landscape}",
     ),
-    ("app.about", "About DeckCraft", None, "{}"),
+    ("app.about", "About PowerSlidePro", None, "{}"),
     ("app.palette", "Command Palette", Some("Cmd+Shift+P"), "{}"),
     ("app.preferences", "Preferences…", Some("Cmd+,"), "{}"),
     ("app.openDialog", "Open…", None, "{purpose?}"),
@@ -744,7 +744,7 @@ impl SlideApp {
             "deckcraft" => ("deckcraft", "deckcraft", false),
             "gif" => ("gif", "gif", false),
             other => {
-                self.set_status(format!("DeckCraft can't export “{other}”"));
+                self.set_status(format!("PowerSlidePro can't export “{other}”"));
                 return false;
             }
         };
