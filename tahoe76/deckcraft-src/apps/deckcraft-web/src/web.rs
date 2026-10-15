@@ -86,6 +86,11 @@ pub fn start() {
                 }),
             )
             .await;
+        // Load the optional Khmer OS pack only after the editor has mounted.
+        // The first paint must never wait for 40 font network requests.
+        if result.is_ok() {
+            wasm_bindgen_futures::spawn_local(async { load_remaining_tahoe_fonts().await; });
+        }
         if let Some(el) = document.get_element_by_id(LOADING_ID) {
             match result {
                 Ok(()) => el.remove(),
@@ -1383,15 +1388,18 @@ async fn load_tahoe_fonts() -> Option<std::sync::Arc<deckcraft_fonts::FontFace>>
     let db = deckcraft_fonts::FontDb::global();
     // Optional user-provided pack is only considered when actually installed.
     // Without this probe, 40 missing requests can stall WASM startup.
-    let khmer_os_installed = fetch_url_bytes("../../assets/fonts/khmer-os/KhmerOSsiemreap.ttf")
-        .await.is_ok();
+    // No pack-wide availability probe: each essential font is requested directly.
     let mut added = 0usize;
     for font in fonts {
         let Some(file) = font.get("file").and_then(serde_json::Value::as_str) else { continue };
         // Only preload font binaries shipped with this WASM build. Missing Khmer OS
         // files and remote sources previously caused dozens of serial network requests
         // and kept the editor behind its 20-second startup timeout.
-        if !file.starts_with("SFHelloKOKH-") && !(khmer_os_installed && file.starts_with("khmer-os/")) { continue; }
+        let essential = matches!(file,
+            "khmer-os/KhmerOSbattambang.ttf"
+            | "khmer-os/KhmerOSBattambang-Bold.ttf"
+            | "SFHelloKOKH-Regular.woff");
+        if !essential { continue; }
         let mut urls = Vec::new();
         // GitHub Actions generates TrueType siblings for original WOFF fonts.
         // WOFF containers are not accepted by DeckCraft's native font/shaping engine.
@@ -1438,6 +1446,26 @@ async fn load_tahoe_fonts() -> Option<std::sync::Arc<deckcraft_fonts::FontFace>>
         log::warn!("No installed DeckCraft face covers Khmer characters! Check converted font assets.");
     }
     selected
+}
+
+
+async fn load_remaining_tahoe_fonts() {
+    let Ok(manifest) = fetch_url_text("../../assets/fonts/fonts.json").await else { return };
+    let Ok(value) = serde_json::from_str::<serde_json::Value>(&manifest) else { return };
+    let Some(fonts) = value.get("fonts").and_then(serde_json::Value::as_array) else { return };
+    let db = deckcraft_fonts::FontDb::global();
+    let mut added = 0;
+    for font in fonts {
+        let Some(file) = font.get("file").and_then(serde_json::Value::as_str) else { continue };
+        if !file.starts_with("khmer-os/") { continue; }
+        if matches!(file,"khmer-os/KhmerOSbattambang.ttf" | "khmer-os/KhmerOSBattambang-Bold.ttf") { continue; }
+        if !(file.ends_with(".ttf") || file.ends_with(".otf")) { continue; }
+        let url = format!("../../assets/fonts/{file}");
+        if let Ok(bytes) = fetch_url_bytes(&url).await {
+            added += db.add_font(bytes);
+        }
+    }
+    log::info!("PowerSlidePro: {} optional Khmer font faces loaded after startup", added);
 }
 
 fn smart_bible_groups(verses: &[BibleVerse]) -> Vec<Vec<BibleVerse>> {
