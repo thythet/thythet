@@ -213,7 +213,7 @@ impl Backstage {
 /// Save As and Change File Type: (id for [`SlideApp::export_as`], label, detail).
 pub const SAVE_TYPES: [(&str, &str, &str); 6] = [
     ("pptx", "PowerPoint Presentation (*.pptx)", "Opens in PowerPoint and other presentation apps"),
-    ("deckcraft", "DeckCraft Presentation (*.deckcraft)", "DeckCraft's own format: everything is kept"),
+    ("deckcraft", "PowerSlidePro Project (*.deckcraft)", "Editable project format: all elements are kept"),
     ("pdf", "PDF (*.pdf)", "A fixed copy that keeps its layout on any device"),
     ("outline", "Outline (*.txt)", "The slide titles and bullet text as plain text"),
     ("png", "PNG Picture (*.png)", "The current slide as a picture"),
@@ -531,7 +531,7 @@ fn new_tiles(app: &mut SlideApp, ui: &mut Ui, query: &str, limit: usize, blank: 
             if shown >= limit {
                 break;
             }
-            if tile(ui, &th.name, Some(&th), false).clicked() {
+            if tile(ui, if th.name == "DeckCraft" { "Classic" } else { &th.name }, Some(&th), false).clicked() {
                 let _ = app.run("file.new", json!({"theme": th.name}));
             }
             shown += 1;
