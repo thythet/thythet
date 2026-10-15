@@ -196,6 +196,22 @@ struct BibleBook {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum VerseNumberStyle { Khmer, English, Source }
+impl VerseNumberStyle {
+    fn label(self) -> &'static str { match self { Self::Khmer => "Khmer (១២៣)", Self::English => "English (123)", Self::Source => "Bible source" } }
+}
+fn format_bible_number(n: usize, style: VerseNumberStyle) -> String {
+    let digits = n.to_string();
+    if style == VerseNumberStyle::Khmer { digits.chars().map(|c| char::from_u32(c as u32 - '0' as u32 + '០' as u32).unwrap_or(c)).collect() } else { digits }
+}
+fn bible_reference(name: &str, chapter: usize, first: usize, last: usize, style: VerseNumberStyle) -> String {
+    let c = format_bible_number(chapter, style);
+    let a = format_bible_number(first, style);
+    if first == last { format!("{name} {c}:{a}") } else { format!("{name} {c}:{a}–{}",format_bible_number(last,style)) }
+}
+const BIBLE_DEFAULT_FONT: &str = "Khmer OS Battambang";
+
 enum BibleGroupMode {
     One,
     Two,
@@ -231,6 +247,7 @@ struct BibleGenerator {
     include_verse_numbers: bool,
     title_slide: bool,
     font_family: String,
+    number_style: VerseNumberStyle,
     status: String,
 }
 
@@ -247,12 +264,13 @@ impl Default for BibleGenerator {
             loading_id: String::new(),
             pending_book: Rc::new(RefCell::new(None)),
             group_mode: BibleGroupMode::BestFit,
-            max_font_size: 34.0,
+            max_font_size: 40.0,
             min_font_size: 20.0,
             include_reference: true,
             include_verse_numbers: true,
             title_slide: false,
-            font_family: "SONYHEAD5".into(),
+            font_family: BIBLE_DEFAULT_FONT.into(),
+            number_style: VerseNumberStyle::Khmer,
             status: String::new(),
         }
     }
@@ -324,6 +342,7 @@ impl BibleGenerator {
 
                 ui.horizontal(|ui| {
                     ui.checkbox(&mut self.include_verse_numbers, "Verse numbers");
+                    egui::ComboBox::from_id_salt("bible_number_style").selected_text(self.number_style.label()).show_ui(ui,|ui| {for mode in [VerseNumberStyle::Khmer, VerseNumberStyle::English, VerseNumberStyle::Source] {ui.selectable_value(&mut self.number_style,mode,mode.label());}});
                     ui.checkbox(&mut self.include_reference, "Reference");
                     ui.checkbox(&mut self.title_slide, "Title slide");
                 });
@@ -501,32 +520,27 @@ impl BibleGenerator {
             made += 1;
         }
 
-        for group in groups {
+        let passage_reference = bible_reference(&book.name, self.chapter, first, last, self.number_style);
+        for (group_index, group) in groups.into_iter().enumerate() {
             app.run("slide.new", json!({"layout": "blank"}))?;
-            let gfirst = group.first().map_or(first, |v| v.number);
-            let glast = group.last().map_or(gfirst, |v| v.number);
-            let generated_reference = if gfirst == glast {
-                format!("{} {}:{}", book.name, self.chapter, gfirst)
+            let has_heading = group_index == 0 && self.include_reference;
+            app.run("slide.rename", json!({"name": format!("Bible · {passage_reference}")}))?;
+            let body = group.iter().map(|v| {
+                if self.include_verse_numbers {
+                    format!("{}  {}", format_bible_number(v.number,self.number_style), v.text)
+                } else { v.text.clone() }
+            }).collect::<Vec<_>>().join("\n\n");
+            if has_heading {
+                app.run("insert.textBox", json!({"rect": [12.0, 18.0, 936.0, 86.4], "text": passage_reference}))?;
+                self.apply_text_style(app, 44.0, false)?;
+                app.run("format.bold", json!({}))?;
+                app.run("insert.textBox", json!({"rect": [22.8, 114.0, 914.4, 410.0], "text": body}))?;
+                self.apply_text_style(app, 38.0, false)?;
             } else {
-                format!("{} {}:{}–{}", book.name, self.chapter, gfirst, glast)
-            };
-            app.run("slide.rename", json!({"name": format!("Bible · {generated_reference}")}))?;
-            let body = group
-                .iter()
-                .map(|v| {
-                    if self.include_verse_numbers { format!("{}  {}", v.number, v.text) } else { v.text.clone() }
-                })
-                .collect::<Vec<_>>()
-                .join("\n\n");
-
-            let body_height = 355.0;
-            app.run("insert.textBox", json!({"rect": [60.0, 25.0, 840.0, 80.0], "text": format!("{} {}", book.name, self.chapter)}))?;
-            self.apply_text_style(app, 44.0, false)?;
-            app.run("insert.textBox", json!({"rect": [60.0, 115.0, 840.0, body_height], "text": body}))?;
-            let fitted = estimate_bible_font(&group, self.max_font_size, self.min_font_size);
-            self.apply_text_style(app, fitted, false)?;
+                app.run("insert.textBox", json!({"rect": [22.8, 12.0, 914.4, 489.6], "text": body}))?;
+                self.apply_text_style(app, 40.0, false)?;
+            }
             app.run("format.autofit", json!({"mode": "shrink"}))?;
-
             made += 1;
         }
         Ok(made)
@@ -562,7 +576,7 @@ enum SmartToken {
 
 enum SmartSlide {
     Title(String),
-    Bible { book_name: String, chapter: usize, verses: Vec<BibleVerse> },
+    Bible { book_name: String, chapter: usize, verse_start: usize, verse_end: usize, first_group: bool, verses: Vec<BibleVerse> },
     Text(String),
 }
 
@@ -582,7 +596,7 @@ impl Default for SmartGenerator {
             input: String::new(),
             status: String::new(),
             running: false,
-            font_family: "SONYHEAD5".into(),
+            font_family: BIBLE_DEFAULT_FONT.into(),
             pending: Rc::new(RefCell::new(None)),
         }
     }
@@ -873,8 +887,8 @@ async fn build_smart_slides(input: &str) -> Result<Vec<SmartSlide>, String> {
                 }
                 let start = r.verse_start.max(1).min(verses.len());
                 let end = r.verse_end.max(start).min(verses.len());
-                for group in smart_bible_groups(&verses[start - 1..end]) {
-                    slides.push(SmartSlide::Bible { book_name: r.book_name.clone(), chapter: r.chapter, verses: group });
+                for (i,group) in smart_bible_groups(&verses[start - 1..end]).into_iter().enumerate() {
+                    slides.push(SmartSlide::Bible { book_name: r.book_name.clone(), chapter: r.chapter, verse_start: start, verse_end: end, first_group: i == 0, verses: group });
                 }
             }
         }
@@ -944,25 +958,24 @@ fn apply_smart_slides(app: &mut SlideApp, slides: &[SmartSlide], replace: bool, 
                 app.run("slide.new", json!({"layout": "blank"}))?;
                 app.run("slide.rename", json!({"name": "Smart · Application"}))?;
                 app.run("insert.textBox", json!({"rect": [70.0, 55.0, 820.0, 445.0], "text": text}))?;
-                apply_generated_style(app, font, 27.0, true)?;
+                apply_generated_style(app, font, 38.0, false)?;
                 app.run("format.autofit", json!({"mode": "shrink"}))?;
             }
-            SmartSlide::Bible { book_name, chapter, verses } => {
+            SmartSlide::Bible { book_name, chapter, verse_start, verse_end, first_group, verses } => {
                 app.run("slide.new", json!({"layout": "blank"}))?;
-                let first = verses.first().map_or(1, |v| v.number);
-                let last = verses.last().map_or(first, |v| v.number);
-                let reference = if first == last {
-                    format!("{book_name} {chapter}:{first}")
-                } else {
-                    format!("{book_name} {chapter}:{first}–{last}")
-                };
+                let reference = bible_reference(book_name, *chapter, *verse_start, *verse_end, VerseNumberStyle::Khmer);
                 app.run("slide.rename", json!({"name": format!("Bible · {reference}")}))?;
-                let body = verses.iter().map(|v| format!("{}  {}", v.number, v.text)).collect::<Vec<_>>().join("\n\n");
-                app.run("insert.textBox", json!({"rect": [60.0, 25.0, 840.0, 80.0], "text": format!("{book_name} {chapter}")}))?;
-                apply_generated_style(app, font, 44.0, false)?;
-                app.run("insert.textBox", json!({"rect": [60.0, 115.0, 840.0, 355.0], "text": body}))?;
-                let size = estimate_bible_font(verses, 36.0, 18.0);
-                apply_generated_style(app, font, size, false)?;
+                let body = verses.iter().map(|v| format!("{}  {}", format_bible_number(v.number, VerseNumberStyle::Khmer), v.text)).collect::<Vec<_>>().join("\n\n");
+                if *first_group {
+                    app.run("insert.textBox", json!({"rect": [12.0, 18.0, 936.0, 86.4], "text": reference}))?;
+                    apply_generated_style(app, font, 44.0, false)?;
+                    app.run("format.bold", json!({}))?;
+                    app.run("insert.textBox", json!({"rect": [22.8, 114.0, 914.4, 410.0], "text": body}))?;
+                    apply_generated_style(app, font, 38.0, false)?;
+                } else {
+                    app.run("insert.textBox", json!({"rect": [22.8, 12.0, 914.4, 489.6], "text": body}))?;
+                    apply_generated_style(app, font, 40.0, false)?;
+                }
                 app.run("format.autofit", json!({"mode": "shrink"}))?;
             }
         }
