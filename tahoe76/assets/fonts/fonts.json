@@ -102,6 +102,366 @@
       "source": "google-fonts",
       "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosanskhmer/NotoSansKhmer[wdth,wght].ttf",
       "weight": 400
+    },
+    {
+      "id": "khmer-os--khmerossiemreap-ttf",
+      "name": "Khmer OS Siemreap",
+      "family": "Khmer OS Siemreap",
+      "file": "khmer-os/!KhmerOSSiemreap.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmer-os-battambang-kh-auto-ttf",
+      "name": "Khmer OS Battambang-Kh Auto",
+      "family": "Khmer OS Battambang-Kh Auto",
+      "file": "khmer-os/Khmer OS Battambang-Kh Auto.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmer-os-content-kh-auto-ttf",
+      "name": "Khmer OS Content-Kh Auto",
+      "family": "Khmer OS Content-Kh Auto",
+      "file": "khmer-os/Khmer OS Content-Kh Auto.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmer-os-fasthand-kh-auto-ttf",
+      "name": "Khmer OS Fasthand-Kh Auto",
+      "family": "Khmer OS Fasthand-Kh Auto",
+      "file": "khmer-os/Khmer OS Fasthand-Kh Auto.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmer-os-freehand-kh-auto-ttf",
+      "name": "Khmer OS Freehand-Kh Auto",
+      "family": "Khmer OS Freehand-Kh Auto",
+      "file": "khmer-os/Khmer OS Freehand-Kh Auto.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmer-os-pheatra-c1-ttf",
+      "name": "Khmer OS Pheatra C1",
+      "family": "Khmer OS Pheatra C1",
+      "file": "khmer-os/Khmer OS Pheatra C1.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmer-os-pheatra-c5-ttf",
+      "name": "Khmer OS Pheatra C5",
+      "family": "Khmer OS Pheatra C5",
+      "file": "khmer-os/Khmer OS Pheatra C5.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmer-os-siemreap-kh-auto-ttf",
+      "name": "Khmer OS Siemreap-Kh Auto",
+      "family": "Khmer OS Siemreap-Kh Auto",
+      "file": "khmer-os/Khmer OS Siemreap-Kh Auto.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmer-os-kh-auto-ttf",
+      "name": "Khmer OS-Kh Auto",
+      "family": "Khmer OS-Kh Auto",
+      "file": "khmer-os/Khmer OS-Kh Auto.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmeros-ttf",
+      "name": "Khmer OS",
+      "family": "Khmer OS",
+      "file": "khmer-os/KhmerOS.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmerosapsra-ttf",
+      "name": "Khmer OS Apsra",
+      "family": "Khmer OS Apsra",
+      "file": "khmer-os/KhmerOSApsra.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmerosb-ttf",
+      "name": "Khmer OS b",
+      "family": "Khmer OS b",
+      "file": "khmer-os/KhmerOSb.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 700
+    },
+    {
+      "id": "khmer-os-khmerosbassac-ttf",
+      "name": "Khmer OS Bassac",
+      "family": "Khmer OS Bassac",
+      "file": "khmer-os/KhmerOSBassac.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmerosbattambang-bold-ttf",
+      "name": "Khmer OS Battambang",
+      "family": "Khmer OS Battambang",
+      "file": "khmer-os/KhmerOSBattambang-Bold.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 700
+    },
+    {
+      "id": "khmer-os-khmerosbattambang-ttf",
+      "name": "Khmer OS battambang",
+      "family": "Khmer OS battambang",
+      "file": "khmer-os/KhmerOSbattambang.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmerosbokor-ttf",
+      "name": "Khmer OS bokor",
+      "family": "Khmer OS bokor",
+      "file": "khmer-os/KhmerOSbokor.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmerosclassic-ttf",
+      "name": "Khmer OS classic",
+      "family": "Khmer OS classic",
+      "file": "khmer-os/KhmerOSclassic.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmeroscontent-bold-ttf",
+      "name": "Khmer OS Content",
+      "family": "Khmer OS Content",
+      "file": "khmer-os/KhmerOSContent-Bold.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 700
+    },
+    {
+      "id": "khmer-os-khmeroscontent-ttf",
+      "name": "Khmer OS content",
+      "family": "Khmer OS content",
+      "file": "khmer-os/KhmerOScontent.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmerosdangrek-ttf",
+      "name": "Khmer OS Dangrek",
+      "family": "Khmer OS Dangrek",
+      "file": "khmer-os/KhmerOSDangrek.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmerosfasthand-ttf",
+      "name": "Khmer OS fasthand",
+      "family": "Khmer OS fasthand",
+      "file": "khmer-os/KhmerOSfasthand.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmerosfreehand-ttf",
+      "name": "Khmer OS freehand",
+      "family": "Khmer OS freehand",
+      "file": "khmer-os/KhmerOSfreehand.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmeroskangrey-ttf",
+      "name": "Khmer OS Kangrey",
+      "family": "Khmer OS Kangrey",
+      "file": "khmer-os/KhmerOSKangrey.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmeroskiensvay-ttf",
+      "name": "Khmer OS kiensvay",
+      "family": "Khmer OS kiensvay",
+      "file": "khmer-os/KhmerOSkiensvay.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmeroskoulen-ttf",
+      "name": "Khmer OS Koulen",
+      "family": "Khmer OS Koulen",
+      "file": "khmer-os/KhmerOSKoulen.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmerosmetalchrieng-ttf",
+      "name": "Khmer OS metalchrieng",
+      "family": "Khmer OS metalchrieng",
+      "file": "khmer-os/KhmerOSmetalchrieng.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmerosmoul-ttf",
+      "name": "Khmer OS Moul",
+      "family": "Khmer OS Moul",
+      "file": "khmer-os/KhmerOSMoul.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmerosmoullight-ttf",
+      "name": "Khmer OS MoulLight",
+      "family": "Khmer OS MoulLight",
+      "file": "khmer-os/KhmerOSMoulLight.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmerosmoulpali-ttf",
+      "name": "Khmer OS Moulpali",
+      "family": "Khmer OS Moulpali",
+      "file": "khmer-os/KhmerOSMoulpali.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmerosmuol-ttf",
+      "name": "Khmer OS muol",
+      "family": "Khmer OS muol",
+      "file": "khmer-os/KhmerOSmuol.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmerosmuollight-kh-auto-ttf",
+      "name": "Khmer OS muollight-Kh Auto",
+      "family": "Khmer OS muollight-Kh Auto",
+      "file": "khmer-os/KhmerOSmuollight-Kh Auto.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmerosmuollight-ttf",
+      "name": "Khmer OS muollight",
+      "family": "Khmer OS muollight",
+      "file": "khmer-os/KhmerOSmuollight.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmerosmuolpali-ttf",
+      "name": "Khmer OS muolpali",
+      "family": "Khmer OS muolpali",
+      "file": "khmer-os/KhmerOSmuolpali.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmerosnew-bold-ttf",
+      "name": "Khmer OS New",
+      "family": "Khmer OS New",
+      "file": "khmer-os/KhmerOSNew-Bold.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 700
+    },
+    {
+      "id": "khmer-os-khmerosnew-regular-ttf",
+      "name": "Khmer OS New",
+      "family": "Khmer OS New",
+      "file": "khmer-os/KhmerOSNew-Regular.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmerosniroth-ttf",
+      "name": "Khmer OS niroth",
+      "family": "Khmer OS niroth",
+      "file": "khmer-os/KhmerOSniroth.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmerossiemreap-ttf",
+      "name": "Khmer OS siemreap",
+      "family": "Khmer OS siemreap",
+      "file": "khmer-os/KhmerOSsiemreap.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmerossys-ttf",
+      "name": "Khmer OS sys",
+      "family": "Khmer OS sys",
+      "file": "khmer-os/KhmerOSsys.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-khmeroswatphnom-ttf",
+      "name": "Khmer OS watphnom",
+      "family": "Khmer OS watphnom",
+      "file": "khmer-os/KhmerOSwatphnom.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
+    },
+    {
+      "id": "khmer-os-kunkhmer-ttf",
+      "name": "KunKhmer",
+      "family": "KunKhmer",
+      "file": "khmer-os/KunKhmer.ttf",
+      "format": "truetype",
+      "source": "local",
+      "weight": 400
     }
   ]
 }
