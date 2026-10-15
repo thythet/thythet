@@ -533,7 +533,7 @@ impl BibleGenerator {
             if has_heading {
                 app.run("insert.textBox", json!({"rect": [12.0, 18.0, 936.0, 86.4], "text": passage_reference}))?;
                 self.apply_text_style(app, 44.0, false)?;
-                app.run("format.bold", json!({}))?;
+                app.run("format.bold", json!({"on": true}))?;
                 app.run("insert.textBox", json!({"rect": [22.8, 114.0, 914.4, 410.0], "text": body}))?;
                 self.apply_text_style(app, 38.0, false)?;
             } else {
@@ -552,6 +552,7 @@ impl BibleGenerator {
         }
         app.run("format.size", json!({"size": size}))?;
         app.run("format.alignCenter", json!({}))?;
+        app.run("format.lineSpacing", json!({"lines": 1.5}))?;
         app.run("format.anchor", json!({"anchor": if middle { "middle" } else { "top" }}))?;
         Ok(())
     }
@@ -969,7 +970,7 @@ fn apply_smart_slides(app: &mut SlideApp, slides: &[SmartSlide], replace: bool, 
                 if *first_group {
                     app.run("insert.textBox", json!({"rect": [12.0, 18.0, 936.0, 86.4], "text": reference}))?;
                     apply_generated_style(app, font, 44.0, false)?;
-                    app.run("format.bold", json!({}))?;
+                    app.run("format.bold", json!({"on": true}))?;
                     app.run("insert.textBox", json!({"rect": [22.8, 114.0, 914.4, 410.0], "text": body}))?;
                     apply_generated_style(app, font, 38.0, false)?;
                 } else {
@@ -990,6 +991,7 @@ fn apply_generated_style(app: &mut SlideApp, font: &str, size: f32, middle: bool
     }
     app.run("format.size", json!({"size": size}))?;
     app.run("format.alignCenter", json!({}))?;
+    app.run("format.lineSpacing", json!({"lines": 1.5}))?;
     app.run("format.anchor", json!({"anchor": if middle { "middle" } else { "top" }}))?;
     Ok(())
 }
