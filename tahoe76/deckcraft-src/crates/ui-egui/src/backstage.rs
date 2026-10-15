@@ -689,12 +689,8 @@ fn task(ui: &mut Ui, icon: Icon, button: &str, title: &str, detail: &str, enable
 /// presentations (with a link to Open). The same page is the start screen.
 fn home(app: &mut SlideApp, ui: &mut Ui, bs: &mut Backstage, out: &mut Outcome) {
     let t = Tokens::get(ui.ctx());
-    ui.horizontal(|ui| {
-        let (r, _) = ui.allocate_exact_size(vec2(36.0, 36.0), Sense::hover());
-        crate::dialogs::paint_logo(ui.painter(), r);
-        ui.label(RichText::new("DeckCraft").font(theme::bold(24.0)).color(t.text));
-    });
-    ui.add_space(18.0);
+    // Tahoe supplies the PowerSlidePro branding in its own app chrome.
+
     ui.horizontal(|ui| {
         ui.label(RichText::new("New").font(theme::bold(16.0)).color(t.text));
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
@@ -733,8 +729,6 @@ fn home(app: &mut SlideApp, ui: &mut Ui, bs: &mut Backstage, out: &mut Outcome) 
             }
         });
     }
-    ui.add_space(30.0);
-    ui.hyperlink_to("Join the ArtCraft community on Discord", deckcraft_engine::links::DISCORD);
 }
 
 /// New: a blank presentation, then every theme and starter template, with a search box.
@@ -1036,15 +1030,7 @@ fn print(app: &mut SlideApp, ui: &mut Ui, bs: &mut Backstage) {
             {
                 app.print_pdf(print_params(bs, s));
             }
-            ui.add_space(6.0);
-            dim(
-                ui,
-                if app.services.pick_save.is_some() {
-                    "DeckCraft prints through a PDF: it opens in your PDF viewer, where you choose the printer."
-                } else {
-                    "DeckCraft prints through a PDF: it downloads, ready to print from your browser or PDF viewer."
-                },
-            );
+
             ui.add_space(14.0);
             heading(ui, "Settings");
             let scope = match bs.print_scope {
@@ -1330,51 +1316,20 @@ fn bullets(ui: &mut Ui, items: &[&str]) {
     ui.add_space(10.0);
 }
 
-/// Account: the interface's appearance and what DeckCraft is. DeckCraft has no accounts, so
-/// there is nothing to sign in to.
+/// Account / appearance settings. Sign-in and product branding belong to Tahoe.
 fn account(app: &mut SlideApp, ui: &mut Ui) {
-    let t = Tokens::get(ui.ctx());
-    ui.horizontal_top(|ui| {
-        ui.vertical(|ui| {
-            ui.set_width(340.0);
-            heading(ui, "Appearance");
-            let dark = app.ui.brightness == theme::Brightness::Dark;
-            egui::ComboBox::from_id_salt("backstage_appearance").width(260.0).selected_text(if dark { "Dark" } else { "Light" }).show_ui(ui, |ui| {
-                for (on, label) in [(false, "Light"), (true, "Dark")] {
-                    if ui.selectable_label(dark == on, label).clicked() {
-                        let _ = app.run("view.dark", json!({"on": on}));
-                    }
+    heading(ui, "Appearance");
+    let dark = app.ui.brightness == theme::Brightness::Dark;
+    egui::ComboBox::from_id_salt("backstage_appearance")
+        .width(260.0)
+        .selected_text(if dark { "Dark" } else { "Light" })
+        .show_ui(ui, |ui| {
+            for (on, label) in [(false, "Light"), (true, "Dark")] {
+                if ui.selectable_label(dark == on, label).clicked() {
+                    let _ = app.run("view.dark", json!({"on":on}));
                 }
-            });
-            ui.add_space(16.0);
-            heading(ui, "User Information");
-            dim(ui, "DeckCraft has no accounts: there is nothing to sign in to, and your presentations stay on your device.");
-        });
-        ui.add_space(40.0);
-        ui.vertical(|ui| {
-            heading(ui, "Product Information");
-            ui.horizontal(|ui| {
-                let (r, _) = ui.allocate_exact_size(vec2(40.0, 40.0), Sense::hover());
-                crate::dialogs::paint_logo(ui.painter(), r);
-                ui.label(RichText::new("DeckCraft").font(theme::bold(24.0)).color(t.text));
-            });
-            dim(ui, &crate::dialogs::version_line());
-            dim(ui, "Open source under MIT OR Apache-2.0. Not affiliated with Microsoft.");
-            ui.add_space(14.0);
-            if task(
-                ui,
-                Icon::Help,
-                "About DeckCraft",
-                "About DeckCraft",
-                "The version, the people and models who built it, and where to find us.",
-                true,
-            ) {
-                let _ = app.run("app.about", json!({}));
             }
-            ui.hyperlink_to("Join our community on Discord", deckcraft_engine::links::DISCORD);
-            ui.hyperlink_to("Source on GitHub", deckcraft_engine::links::GITHUB);
         });
-    });
 }
 
 #[cfg(test)]
