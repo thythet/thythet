@@ -337,7 +337,7 @@ fn split_bible_slide(app: &mut SlideApp, i: usize) -> Result<(), String> {
     app.run("slide.go", json!({"index": i + 1}))?;
     app.run("text.set", json!({"id": copy_id.0, "text": second}))?;
     app.run("slide.rename", json!({"index": i + 1, "name": format!("{name} · 2/2")}))?;
-    app.notify("Bible slide split into two editable slides.".into());
+    app.notify("Bible slide split into two editable slides.");
     Ok(())
 }
 
