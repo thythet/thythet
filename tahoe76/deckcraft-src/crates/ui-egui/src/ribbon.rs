@@ -77,9 +77,9 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
         if cfg!(target_arch = "wasm32") {
             // Single compact quick-access row. Tahoe owns window movement, resizing and visibility.
             for (glyph, color, tooltip, action) in [
-                ("×", Color32::from_rgb(255, 95, 86), "Close DeckCraft", "close"),
-                ("−", Color32::from_rgb(255, 189, 46), "Hide DeckCraft", "minimize"),
-                ("+", Color32::from_rgb(40, 196, 78), "Zoom DeckCraft", "zoom"),
+                ("×", Color32::from_rgb(255, 95, 86), "Close PowerSlidePro", "close"),
+                ("−", Color32::from_rgb(255, 189, 46), "Hide PowerSlidePro", "minimize"),
+                ("+", Color32::from_rgb(40, 196, 78), "Zoom PowerSlidePro", "zoom"),
             ] {
                 let button = egui::Button::new(egui::RichText::new(glyph).size(12.0).color(Color32::from_black_alpha(145)))
                     .fill(color).corner_radius(12.0).min_size(vec2(20.0, 20.0));
@@ -105,7 +105,7 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
             }
         }
         let title =
-            app.session.active().map(|d| format!("{}{}", d.title(), if dirty { " — Edited" } else { "" })).unwrap_or_else(|| "DeckCraft".into());
+            app.session.active().map(|d| format!("{}{}", d.title(), if dirty { " — Edited" } else { "" })).unwrap_or_else(|| "PowerSlidePro".into());
         ui.painter().text(rect.center(), Align2::CENTER_CENTER, title, theme::font(13.0), t.text);
         // Right side.
         let mut right = ui.new_child(
@@ -534,7 +534,7 @@ fn font_group(app: &mut SlideApp, ui: &mut Ui, st: &Value) {
                         }
                     }
                     ui.separator();
-                    // Fonts installed while DeckCraft runs (e.g. into ~/.local/share/fonts).
+                    // Fonts installed while PowerSlidePro runs (e.g. into ~/.local/share/fonts).
                     if ui.button("Rescan Installed Fonts").clicked() {
                         run(app, "font.rescan", json!({}));
                         ui.close();
