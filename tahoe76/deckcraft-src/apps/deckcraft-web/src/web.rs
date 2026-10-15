@@ -28,6 +28,12 @@ pub fn start() {
             log::error!("missing <canvas id=\"{CANVAS_ID}\">");
             return;
         };
+        // Load real OpenType/TrueType Khmer faces before the editor initializes.
+        // Both the slide renderer and egui's widget glyph fallback need them.
+        let khmer_face = load_tahoe_fonts().await;
+        let default_khmer_family = khmer_face.as_ref().map(|f| f.family.clone())
+            .unwrap_or_else(|| "SONYHEAD5".to_owned());
+
         // Tahoe web build uses eframe's native Glow/WebGL2 renderer.
         // This avoids the wgpu/WebGPU initialization path, which can stall inside embedded app windows.
         let mut options = eframe::WebOptions::default();
@@ -41,6 +47,11 @@ pub fn start() {
                     log::info!("deckcraft-web {}: Glow/WebGL2 renderer", env!("CARGO_PKG_VERSION"));
                     let inbox: Inbox = Inbox::default();
                     let mut app = SlideApp::new(Session::new(), services(inbox.clone(), cc.egui_ctx.clone()));
+                    // egui/epaint has a separate font atlas from DeckCraft's document font database.
+                    // Install the Khmer face in both, or dialogs/edit boxes still show tofu squares.
+                    if let Some(ref face) = khmer_face {
+                        app.ui_fonts.faces.push(face.clone());
+                    }
                     let q = query();
                     if !q.contains("blank") {
                         if let Err(e) = deckcraft_engine::sample::open_sample(&mut app.session) {
@@ -52,7 +63,11 @@ pub fn start() {
                     if q.contains("show") {
                         app.start_show(0, false);
                     }
-                    Ok(Box::new(WebShell { app, inbox, smart: SmartGenerator::default(), bible: BibleGenerator::default(), presenting: false }))
+                    let mut smart = SmartGenerator::default();
+                    smart.font_family = default_khmer_family.clone();
+                    let mut bible = BibleGenerator::default();
+                    bible.font_family = default_khmer_family.clone();
+                    Ok(Box::new(WebShell { app, inbox, smart, bible, presenting: false }))
                 }),
             )
             .await;
@@ -1009,45 +1024,71 @@ async fn fetch_url_text(url: &str) -> Result<String, String> {
     text.as_string().ok_or_else(|| "Response was not text.".to_string())
 }
 
-async fn load_tahoe_fonts() {
+async fn load_tahoe_fonts() -> Option<std::sync::Arc<deckcraft_fonts::FontFace>> {
     let manifest = match fetch_url_text("../../assets/fonts/fonts.json").await {
-        Ok(v) => v,
-        Err(e) => {
-            log::warn!("Tahoe font manifest: {e}");
-            return;
-        }
+        Ok(s) => s,
+        Err(e) => { log::warn!("Khmer font manifest unavailable: {e}"); return None; }
     };
     let Ok(value) = serde_json::from_str::<serde_json::Value>(&manifest) else {
-        log::warn!("Tahoe font manifest is invalid JSON");
-        return;
+        log::warn!("Invalid Tahoe fonts.json"); return None;
     };
-    let Some(fonts) = value.get("fonts").and_then(serde_json::Value::as_array) else { return };
+    let Some(fonts) = value.get("fonts").and_then(serde_json::Value::as_array) else {
+        return None;
+    };
     let db = deckcraft_fonts::FontDb::global();
+    let mut added = 0usize;
     for font in fonts {
         let Some(file) = font.get("file").and_then(serde_json::Value::as_str) else { continue };
         let mut urls = Vec::new();
+        // GitHub Actions generates TrueType siblings for original WOFF fonts.
+        // WOFF containers are not accepted by DeckCraft's native font/shaping engine.
+        if let Some(stem) = file.strip_suffix(".woff").or_else(|| file.strip_suffix(".woff2")) {
+            urls.push(format!("fonts/{stem}.ttf"));
+        } else if file.ends_with(".ttf") || file.ends_with(".otf") {
+            urls.push(format!("fonts/{file}"));
+        }
         if let Some(url) = font.get("url").and_then(serde_json::Value::as_str) {
             urls.push(url.to_string());
         }
+        // Reuse the user's existing Tahoe font assets. Keep binaries out of the source ZIP.
         urls.push(format!("../../assets/fonts/{file}"));
-        // Compatibility with the user's earlier Tahoe font libraries without duplicating binaries in Tahoe76.
         urls.push(format!("../../../tahoe/assets/fonts/{file}"));
+        // The older Tahoe font library is a last resort for TTF/OTF sources.
         urls.push(format!("../../../tahoe6/assets/fonts/{file}"));
-        let mut loaded = false;
+        let mut ok = false;
         for url in urls {
+            // Only pass native sfnt files to FontDb. Fetch returns error for missing routes.
+            if !url.to_ascii_lowercase().ends_with(".ttf") &&
+               !url.to_ascii_lowercase().ends_with(".otf") &&
+               !url.to_ascii_lowercase().ends_with(".ttc") {
+                continue;
+            }
             let Ok(bytes) = fetch_url_bytes(&url).await else { continue };
-            if db.add_font(bytes) > 0 {
-                log::info!("DeckCraft loaded Tahoe font {file} from {url}");
-                loaded = true;
+            let n = db.add_font(bytes);
+            if n > 0 {
+                added += n;
+                log::info!("DeckCraft Khmer font loaded: {file} ({url}), {n} face(s)");
+                ok = true;
+                break;
+            }
+            // An earlier manifest entry may already have registered this font.
+            if db.has_family(font.get("family").and_then(serde_json::Value::as_str).unwrap_or("")) {
+                ok = true;
                 break;
             }
         }
-        if !loaded {
-            log::warn!("DeckCraft could not load Tahoe font {file}; use TTF/OTF/TTC for DeckCraft's native font engine");
-        }
+        if !ok { log::warn!("No native TTF/OTF face was found for {file}"); }
     }
+    let selected = db.fallback_for_filtered('ក', u32::MAX, |f| {
+        f.covers('ខ') && !f.is_color() && f.data().len() < (20 << 20)
+    });
+    if let Some(ref face) = selected {
+        log::info!("DeckCraft Khmer glyph fallback active: {} {} ({} new faces)", face.family, face.style, added);
+    } else {
+        log::warn!("No installed DeckCraft face covers Khmer characters! Check converted font assets.");
+    }
+    selected
 }
-
 
 fn smart_bible_groups(verses: &[BibleVerse]) -> Vec<Vec<BibleVerse>> {
     let mut out = Vec::new();

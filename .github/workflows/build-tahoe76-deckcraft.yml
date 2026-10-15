@@ -42,7 +42,7 @@ jobs:
       - name: Install wasm-opt
         run: |
           sudo apt-get update
-          sudo apt-get install -y binaryen
+          sudo apt-get install -y binaryen python3-fonttools
 
       - name: Build DeckCraft Web
         run: |
@@ -52,7 +52,26 @@ jobs:
           cd tahoe76/deckcraft-src/apps/deckcraft-web
           trunk build --release
           test -f ../../../apps/deckcraft-web/index.html
-          find ../../../apps/deckcraft-web -maxdepth 1 -type f -print
+          cd ../../..
+          /usr/bin/python3 - <<'PY'
+          from fontTools.ttLib import TTFont
+          from pathlib import Path
+          source = Path("../../tahoe6/assets/fonts")
+          target = Path("apps/deckcraft-web/fonts")
+          target.mkdir(parents=True, exist_ok=True)
+          for src in sorted(source.glob("SFHelloKOKH-*.woff")):
+              font = TTFont(str(src))
+              font.flavor = None
+              dest = target / (src.stem + ".ttf")
+              font.save(str(dest))
+              cmap = TTFont(str(dest)).getBestCmap() or {}
+              khmer = sum(0x1780 <= cp <= 0x17FF for cp in cmap)
+              print(f"{src.name} -> {dest.name}; {len(cmap)} characters, {khmer} Khmer")
+              if src.stem == "SFHelloKOKH-Regular" and khmer < 20:
+                  raise RuntimeError("Khmer glyph coverage validation failed")
+          assert (target / "SFHelloKOKH-Regular.ttf").is_file(), "Regular Khmer font conversion missing"
+          PY
+          find apps/deckcraft-web -maxdepth 2 -type f -print
 
       - name: Validate build
         run: |
@@ -60,6 +79,7 @@ jobs:
           test "$(find tahoe76/data/books -maxdepth 1 -name '*.json' | wc -l)" -eq 66
           test -f tahoe76/apps/deckcraft-web/index.html
           find tahoe76/apps/deckcraft-web -maxdepth 1 -name '*.wasm' -print -quit | grep -q .
+          test -s tahoe76/apps/deckcraft-web/fonts/SFHelloKOKH-Regular.ttf
 
       - name: Commit compiled DeckCraft Web
         run: |
@@ -80,4 +100,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: deckcraft-web
-          path: tahoe76/apps/deckcraft-web
+          path: |
+            tahoe76/apps/deckcraft-web
+            !tahoe76/apps/deckcraft-web/fonts/**
