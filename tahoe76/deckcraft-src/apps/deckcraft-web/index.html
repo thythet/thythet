@@ -4,6 +4,32 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
   <title>DeckCraft</title>
+  <script>
+    (() => {
+      const showError = (message) => {
+        const el = document.getElementById("deckcraft_loading");
+        if (!el) return;
+        el.style.pointerEvents = "auto";
+        el.style.padding = "24px";
+        el.style.textAlign = "center";
+        el.style.whiteSpace = "pre-wrap";
+        el.textContent = "DeckCraft startup error\n\n" + String(message);
+      };
+      window.addEventListener("error", (event) => {
+        showError(event.error?.stack || event.message || "Unknown JavaScript error");
+      });
+      window.addEventListener("unhandledrejection", (event) => {
+        const reason = event.reason;
+        showError(reason?.stack || reason?.message || reason || "Unhandled promise rejection");
+      });
+      window.setTimeout(() => {
+        const el = document.getElementById("deckcraft_loading");
+        if (el && el.isConnected && el.textContent.includes("Loading DeckCraft")) {
+          el.textContent = "DeckCraft is taking too long to start.\nThe renderer or WebAssembly startup may have failed.";
+        }
+      }, 20000);
+    })();
+  </script>
   <link data-trunk rel="rust" data-bin="deckcraft-web" data-wasm-opt="z" data-weak-refs />
   <link data-trunk rel="icon" href="../../assets/app-icon/hicolor/32x32/apps/ai.storyteller.deckcraft.png" />
   <style>
