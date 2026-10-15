@@ -1054,6 +1054,10 @@ async fn load_tahoe_fonts() -> Option<std::sync::Arc<deckcraft_fonts::FontFace>>
     let mut added = 0usize;
     for font in fonts {
         let Some(file) = font.get("file").and_then(serde_json::Value::as_str) else { continue };
+        // Only preload font binaries shipped with this WASM build. Missing Khmer OS
+        // files and remote sources previously caused dozens of serial network requests
+        // and kept the editor behind its 20-second startup timeout.
+        if !file.starts_with("SFHelloKOKH-") { continue; }
         let mut urls = Vec::new();
         // GitHub Actions generates TrueType siblings for original WOFF fonts.
         // WOFF containers are not accepted by DeckCraft's native font/shaping engine.
@@ -1062,14 +1066,7 @@ async fn load_tahoe_fonts() -> Option<std::sync::Arc<deckcraft_fonts::FontFace>>
         } else if file.ends_with(".ttf") || file.ends_with(".otf") {
             urls.push(format!("fonts/{file}"));
         }
-        if let Some(url) = font.get("url").and_then(serde_json::Value::as_str) {
-            urls.push(url.to_string());
-        }
-        // Reuse the user's existing Tahoe font assets. Keep binaries out of the source ZIP.
-        urls.push(format!("../../assets/fonts/{file}"));
-        urls.push(format!("../../../tahoe/assets/fonts/{file}"));
-        // The older Tahoe font library is a last resort for TTF/OTF sources.
-        urls.push(format!("../../../tahoe6/assets/fonts/{file}"));
+        // Fonts are loaded from compiled local TTF siblings only, never external URLs.
         let mut ok = false;
         for url in urls {
             // Only pass native sfnt files to FontDb. Fetch returns error for missing routes.
