@@ -221,6 +221,14 @@ struct TypographyPanel {
     set_font: bool,
     set_size: bool,
     set_spacing: bool,
+    set_bold: bool, bold: bool,
+    set_italic: bool, italic: bool,
+    set_underline: bool, underline: bool,
+    set_color: bool, color: String,
+    set_align: bool, align: String,
+    set_anchor: bool, anchor: String,
+    set_baseline: bool,
+    convert_numbers: bool, number_style: VerseNumberStyle,
     baseline: VerseBaseline,
     status: String,
 }
@@ -230,6 +238,11 @@ impl Default for TypographyPanel {
             open: false, scope: ApplyScope::Box,
             font: BIBLE_DEFAULT_FONT.to_owned(), font_size: 40.0, line_spacing: 1.5,
             set_font: true, set_size: true, set_spacing: false,
+            set_bold: false, bold: false, set_italic: false, italic: false,
+            set_underline: false, underline: false, set_color: false, color: "#000000".into(),
+            set_align: false, align: "center".into(),
+            set_anchor: false, anchor: "top".into(), set_baseline: false,
+            convert_numbers: false, number_style: VerseNumberStyle::Khmer,
             baseline: VerseBaseline::Normal, status: String::new(),
         }
     }
@@ -283,7 +296,36 @@ impl TypographyPanel {
                     ui.checkbox(&mut self.set_spacing, "Line spacing");
                     if self.set_spacing { ui.add(egui::DragValue::new(&mut self.line_spacing).range(0.5..=4.0).speed(0.05)); }
                 });
+                ui.horizontal(|ui| { ui.checkbox(&mut self.set_bold,"Bold"); if self.set_bold { ui.checkbox(&mut self.bold,"On"); } });
+                ui.horizontal(|ui| { ui.checkbox(&mut self.set_italic,"Italic"); if self.set_italic { ui.checkbox(&mut self.italic,"On"); } });
+                ui.horizontal(|ui| { ui.checkbox(&mut self.set_underline,"Underline"); if self.set_underline { ui.checkbox(&mut self.underline,"On"); } });
+                ui.horizontal(|ui| { ui.checkbox(&mut self.set_color,"Color"); if self.set_color { ui.text_edit_singleline(&mut self.color); } });
+                ui.horizontal(|ui| {
+                    ui.checkbox(&mut self.set_align,"Horizontal align");
+                    if self.set_align {
+                        egui::ComboBox::from_id_salt("tahoe-apply-align").selected_text(&self.align).show_ui(ui,|ui|{
+                            for a in ["left","center","right","justify"] { ui.selectable_value(&mut self.align,a.to_owned(),a); }
+                        });
+                    }
+                });
+                ui.horizontal(|ui| {
+                    ui.checkbox(&mut self.set_anchor,"Vertical align");
+                    if self.set_anchor {
+                        egui::ComboBox::from_id_salt("tahoe-apply-anchor").selected_text(&self.anchor).show_ui(ui,|ui|{
+                            for a in ["top","middle","bottom"] { ui.selectable_value(&mut self.anchor,a.to_owned(),a); }
+                        });
+                    }
+                });
                 if self.scope == ApplyScope::VerseNumbers {
+                    ui.checkbox(&mut self.convert_numbers,"Convert verse number digits");
+                    if self.convert_numbers {
+                        egui::ComboBox::from_id_salt("tahoe-verse-digits")
+                            .selected_text(self.number_style.label()).show_ui(ui,|ui|{
+                                for style in [VerseNumberStyle::Khmer,VerseNumberStyle::English,VerseNumberStyle::Source] {
+                                    ui.selectable_value(&mut self.number_style,style,style.label());
+                                }
+                            });
+                    }
                     ui.label("Verse number position");
                     egui::ComboBox::from_id_salt("tahoe-verse-baseline")
                         .selected_text(self.baseline.label()).show_ui(ui, |ui| {
@@ -292,6 +334,15 @@ impl TypographyPanel {
                             }
                         });
                     ui.small("Changes only numeric verse prefixes, not the verse text.");
+                } else {
+                    ui.checkbox(&mut self.set_baseline,"Superscript / subscript");
+                    if self.set_baseline {
+                        egui::ComboBox::from_id_salt("tahoe-apply-baseline").selected_text(self.baseline.label()).show_ui(ui,|ui|{
+                            for v in [VerseBaseline::Normal,VerseBaseline::Super,VerseBaseline::Sub]{
+                                ui.selectable_value(&mut self.baseline,v,v.label());
+                            }
+                        });
+                    }
                 }
                 ui.separator();
                 if ui.button("Apply formatting").clicked() { apply_now = true; }
@@ -315,11 +366,30 @@ impl TypographyPanel {
         if self.set_spacing {
             app.run("format.lineSpacing", json!({"lines":self.line_spacing.clamp(0.5,4.0)}))?;
         }
+        if self.set_bold { app.run("format.bold",json!({"on":self.bold}))?; }
+        if self.set_italic { app.run("format.italic",json!({"on":self.italic}))?; }
+        if self.set_underline { app.run("format.underline",json!({"on":self.underline}))?; }
+        if self.set_color { app.run("format.color",json!({"color":self.color.trim()}))?; }
+        if self.set_align { app.run("format.align",json!({"align":self.align}))?; }
+        if self.set_anchor { app.run("format.anchor",json!({"anchor":self.anchor}))?; }
+        if self.set_baseline && self.scope != ApplyScope::VerseNumbers {
+            match self.baseline {
+                VerseBaseline::Normal => {
+                    app.run("format.superscript",json!({"on":false}))?;
+                    app.run("format.subscript",json!({"on":false}))?;
+                }
+                VerseBaseline::Super => { app.run("format.superscript",json!({"on":true}))?; }
+                VerseBaseline::Sub => { app.run("format.subscript",json!({"on":true}))?; }
+            }
+        }
         Ok(())
     }
     fn apply(&self, app: &mut SlideApp) -> Result<usize, String> {
         let Some(state) = app.session.active() else { return Err("No active presentation.".into()) };
         let current = state.selection.slide;
+        if self.set_color && (self.color.len()!=7 || !self.color.starts_with('#') || !self.color[1..].chars().all(|c|c.is_ascii_hexdigit())) {
+            return Err("Color must be a hexadecimal value like #112233.".into());
+        }
         if self.scope == ApplyScope::Selection {
             if !state.selection.text.as_ref().is_some_and(|t| t.is_range()) {
                 return Err("Highlight characters inside a text box first.".into());
@@ -370,11 +440,20 @@ impl TypographyPanel {
                         .map(|body| body.paragraphs.iter().enumerate().filter_map(|(i,p)| {
                             let plain = p.runs.iter().map(|r| r.text.as_str()).collect::<String>();
                             let n = plain.chars().take_while(|c| c.is_ascii_digit() || ('០'..='៩').contains(c)).count();
-                            (n > 0).then_some((i,n))
+                            (n > 0).then_some((i,n,plain.chars().take(n).collect::<String>()))
                         }).collect()).unwrap_or_default();
-                    for (para,n) in paragraphs {
+                    for (para,n,prefix) in paragraphs {
                         app.run("text.edit", json!({"id":id,"at":[para,0]}))?;
                         app.run("text.select", json!({"anchor":[para,0],"caret":[para,n]}))?;
+                        let mut new_len = n;
+                        if self.convert_numbers && self.number_style != VerseNumberStyle::Source {
+                            if let Ok(number) = normalize_digits(&prefix).parse::<usize>() {
+                                let converted = format_bible_number(number,self.number_style);
+                                new_len = converted.chars().count();
+                                app.run("text.insert",json!({"text":converted}))?;
+                                app.run("text.select",json!({"anchor":[para,0],"caret":[para,new_len]}))?;
+                            }
+                        }
                         self.apply_to_selected(app)?;
                         match self.baseline {
                             VerseBaseline::Normal => {
@@ -617,6 +696,14 @@ impl BibleGenerator {
                     }
                 });
 
+                ui.horizontal(|ui| {
+                    ui.label("Verse numbers");
+                    egui::ComboBox::from_id_salt("smart-verse-digits").selected_text(self.number_style.label()).show_ui(ui,|ui|{
+                        for style in [VerseNumberStyle::Khmer,VerseNumberStyle::English,VerseNumberStyle::Source] {
+                            ui.selectable_value(&mut self.number_style,style,style.label());
+                        }
+                    });
+                });
                 if !self.status.is_empty() {
                     ui.separator();
                     ui.label(&self.status);
@@ -812,6 +899,7 @@ struct SmartGenerator {
     status: String,
     running: bool,
     font_family: String,
+    number_style: VerseNumberStyle,
     pending: Rc<RefCell<Option<Result<(bool, Vec<SmartSlide>), String>>>>,
 }
 
@@ -823,6 +911,7 @@ impl Default for SmartGenerator {
             status: String::new(),
             running: false,
             font_family: BIBLE_DEFAULT_FONT.into(),
+            number_style: VerseNumberStyle::Khmer,
             pending: Rc::new(RefCell::new(None)),
         }
     }
@@ -937,7 +1026,7 @@ impl SmartGenerator {
         let Some(result) = pending else { return };
         self.running = false;
         match result {
-            Ok((replace, slides)) => match apply_smart_slides(app, &slides, replace, &self.input, &self.font_family) {
+            Ok((replace, slides)) => match apply_smart_slides(app, &slides, replace, &self.input, &self.font_family, self.number_style) {
                 Ok(n) => {
                     self.status = format!("Generated {n} slide{}. Slide 0 remains the hidden Smart Generate input.", if n == 1 { "" } else { "s" });
                     app.notify(self.status.clone());
@@ -1154,7 +1243,7 @@ fn split_text_for_slides(text: &str, limit: usize) -> Vec<String> {
     out
 }
 
-fn apply_smart_slides(app: &mut SlideApp, slides: &[SmartSlide], replace: bool, source: &str, font: &str) -> Result<usize, String> {
+fn apply_smart_slides(app: &mut SlideApp, slides: &[SmartSlide], replace: bool, source: &str, font: &str, number_style: VerseNumberStyle) -> Result<usize, String> {
     let len = app.session.active().map(|d| d.doc.slides.len()).unwrap_or(0);
     if len == 0 {
         app.run("file.new", json!({}))?;
@@ -1189,9 +1278,9 @@ fn apply_smart_slides(app: &mut SlideApp, slides: &[SmartSlide], replace: bool, 
             }
             SmartSlide::Bible { book_name, chapter, verse_start, verse_end, first_group, verses } => {
                 app.run("slide.new", json!({"layout": "blank"}))?;
-                let reference = bible_reference(book_name, *chapter, *verse_start, *verse_end, VerseNumberStyle::Khmer);
+                let reference = bible_reference(book_name, *chapter, *verse_start, *verse_end, number_style);
                 app.run("slide.rename", json!({"name": format!("Bible · {reference}")}))?;
-                let body = verses.iter().map(|v| format!("{}  {}", format_bible_number(v.number, VerseNumberStyle::Khmer), v.text)).collect::<Vec<_>>().join("\n\n");
+                let body = verses.iter().map(|v| format!("{}  {}", format_bible_number(v.number, number_style), v.text)).collect::<Vec<_>>().join("\n\n");
                 if *first_group {
                     app.run("insert.textBox", json!({"rect": [12.0, 18.0, 936.0, 86.4], "text": reference}))?;
                     apply_generated_style(app, font, 44.0, false)?;
