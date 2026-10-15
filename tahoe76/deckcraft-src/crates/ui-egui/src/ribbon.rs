@@ -1531,7 +1531,7 @@ fn design(app: &mut SlideApp, ui: &mut Ui) {
                     paint_theme_tile(p, r, th);
                 }
             },
-            |i| names.get(i).cloned().unwrap_or_default(),
+            |i| names.get(i).map(|n| if n == "DeckCraft" { "Classic".to_owned() } else { n.clone() }).unwrap_or_default(),
         ) && let Some(n) = names.get(i)
         {
             run(app, "design.theme", json!({"name": n}));
@@ -3310,7 +3310,7 @@ fn slide_master(app: &mut SlideApp, ui: &mut Ui) {
         let r = big_button(ui, Icon::Themes, "Themes", true);
         egui::Popup::menu(&r).show(|ui| {
             for th in deckcraft_model::theme::builtin_themes() {
-                if ui.button(&th.name).clicked() {
+                if ui.button(if th.name == "DeckCraft" { "Classic" } else { &th.name }).clicked() {
                     run(app, "design.theme", json!({"name": th.name}));
                 }
             }
