@@ -81,8 +81,8 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
                 ("−", Color32::from_rgb(255, 189, 46), "Hide PowerSlidePro", "minimize"),
                 ("+", Color32::from_rgb(40, 196, 78), "Zoom PowerSlidePro", "zoom"),
             ] {
-                let button = egui::Button::new(egui::RichText::new(glyph).size(12.0).color(Color32::from_black_alpha(145)))
-                    .fill(color).corner_radius(12.0).min_size(vec2(20.0, 20.0));
+                let button = egui::Button::new(egui::RichText::new(glyph).size(8.4).color(Color32::from_black_alpha(145)))
+                    .fill(color).corner_radius(7.0).min_size(vec2(14.0, 14.0));
                 if child.add(button).on_hover_text(tooltip).clicked() {
                     ui.ctx().data_mut(|d| d.insert_temp(egui::Id::new(("tahoe-deckcraft-window", action)), true));
                 }
