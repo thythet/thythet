@@ -331,7 +331,7 @@ impl TypographyPanel {
         let prior_text_shape = state.selection.text.as_ref().map(|t| t.shape);
         let selected_slides = state.selection.slides.clone();
         let slides = &state.doc.slides;
-        let mut targets: Vec<(usize, Vec<deckcraft_model::ShapeId>)> = Vec::new();
+        let mut targets: Vec<(usize, Vec<deckcraft_engine::model::ShapeId>)> = Vec::new();
         for (index,slide) in slides.iter().enumerate() {
             if slide.name == "✦ Smart Generate Input" { continue; }
             if self.scope == ApplyScope::CurrentSlide && index != current { continue; }
