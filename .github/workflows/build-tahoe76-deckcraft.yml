@@ -86,15 +86,30 @@ jobs:
           set -euxo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -f tahoe76/apps/deckcraft-web tahoe76/deckcraft-src/Cargo.lock
-          if git diff --cached --quiet; then
-            echo "No compiled changes to commit."
-          else
-            git commit -m "Build DeckCraft Web for Tahoe76"
+          # Compiled WASM and font files are binary: rebasing a build commit
+          # over another build's changed artifacts creates unresolvable conflicts.
+          # Preserve this build's outputs and place them on the latest main tip.
+          build_output="$(mktemp -d)"
+          cp -a tahoe76/apps/deckcraft-web "$build_output/deckcraft-web"
+          cp tahoe76/deckcraft-src/Cargo.lock "$build_output/Cargo.lock"
+          for attempt in 1 2 3; do
             git fetch origin main
-            git rebase origin/main
-            git push origin HEAD:main
-          fi
+            git reset --hard origin/main
+            rm -rf tahoe76/apps/deckcraft-web
+            cp -a "$build_output/deckcraft-web" tahoe76/apps/deckcraft-web
+            cp "$build_output/Cargo.lock" tahoe76/deckcraft-src/Cargo.lock
+            git add -A tahoe76/apps/deckcraft-web tahoe76/deckcraft-src/Cargo.lock
+            git add -f tahoe76/apps/deckcraft-web
+            if git diff --cached --quiet; then
+              echo "Compiled outputs already current."
+              break
+            fi
+            git commit -m "Build DeckCraft Web for Tahoe76"
+            if git push origin HEAD:main; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+          done
 
       - name: Upload compiled DeckCraft artifact
         uses: actions/upload-artifact@v4
