@@ -34,6 +34,11 @@ jobs:
         with:
           tool: trunk
 
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: tahoe76/deckcraft-src
+
       - name: Install wasm-opt
         run: |
           sudo apt-get update
