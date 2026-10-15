@@ -71,7 +71,7 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
                 .max_rect(Rect::from_min_max(pos2(rect.min.x + left, rect.min.y), pos2((rect.min.x + 700.0).min(rect.max.x - 150.0), rect.max.y)))
                 .layout(egui::Layout::left_to_right(egui::Align::Center)),
         );
-        child.spacing_mut().item_spacing.x = 3.0;
+        child.spacing_mut().item_spacing.x = if cfg!(target_arch = "wasm32") { 8.0 } else { 3.0 };
         let has_doc = app.session.active().is_some();
         let dirty = app.session.active().is_some_and(|d| d.is_dirty());
         if cfg!(target_arch = "wasm32") {
@@ -81,9 +81,12 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
                 ("−", Color32::from_rgb(255, 189, 46), "Hide PowerSlidePro", "minimize"),
                 ("+", Color32::from_rgb(40, 196, 78), "Zoom PowerSlidePro", "zoom"),
             ] {
-                let button = egui::Button::new(egui::RichText::new(glyph).size(8.4).color(Color32::from_black_alpha(145)))
-                    .fill(color).corner_radius(7.0).min_size(vec2(14.0, 14.0));
-                if child.add(button).on_hover_text(tooltip).clicked() {
+                // Tahoe web traffic lights: true 28px circles with legible 14px icons.
+                // Keep the existing commands, hit targets and hover titles unchanged.
+                let button = egui::Button::new(egui::RichText::new(glyph).size(14.0).strong().color(Color32::from_black_alpha(185)))
+                    .fill(color).corner_radius(14.0).min_size(vec2(28.0, 28.0))
+                    .stroke(Stroke::NONE).frame(true);
+                if child.add_sized(vec2(28.0, 28.0), button).on_hover_text(tooltip).clicked() {
                     ui.ctx().data_mut(|d| d.insert_temp(egui::Id::new(("tahoe-deckcraft-window", action)), true));
                 }
             }
