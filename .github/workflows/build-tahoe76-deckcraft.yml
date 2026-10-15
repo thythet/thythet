@@ -66,12 +66,13 @@ jobs:
           set -euxo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -f tahoe76/apps/deckcraft-web
+          git add -f tahoe76/apps/deckcraft-web tahoe76/deckcraft-src/Cargo.lock
           if git diff --cached --quiet; then
             echo "No compiled changes to commit."
           else
             git commit -m "Build DeckCraft Web for Tahoe76"
-            git pull --rebase origin main
+            git fetch origin main
+            git rebase origin/main
             git push origin HEAD:main
           fi
 
