@@ -120,13 +120,23 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
         if icon_toggle(&mut right, Icon::Search, "Search commands (⇧⌘P)", true, false).clicked() {
             app.palette = Some((String::new(), 0));
         }
-        // Keep the Slide Show projector symbol inside the Present pill.
+        // Present pill: real projector-screen pictogram, not a font-dependent square glyph.
         let share = right.add(
-            egui::Button::new(egui::RichText::new("▣  Present").color(t.accent_text).font(theme::bold(13.0)))
+            egui::Button::new(egui::RichText::new("      Present").color(t.accent_text).font(theme::bold(13.0)))
                 .fill(t.accent)
                 .corner_radius(control_h / 2.0)
-                .min_size(vec2(100.0, control_h)),
+                .min_size(vec2(110.0, control_h)),
         );
+        let ink = Stroke::new(1.5, t.accent_text);
+        let icon_x = share.rect.left() + 15.0;
+        let icon_y = share.rect.center().y;
+        let painter = right.painter();
+        painter.line_segment([pos2(icon_x-6.0, icon_y-5.0), pos2(icon_x+6.0, icon_y-5.0)], ink);
+        painter.line_segment([pos2(icon_x-5.0, icon_y-4.0), pos2(icon_x-5.0, icon_y+3.0)], ink);
+        painter.line_segment([pos2(icon_x+5.0, icon_y-4.0), pos2(icon_x+5.0, icon_y+3.0)], ink);
+        painter.line_segment([pos2(icon_x-5.0, icon_y+3.0), pos2(icon_x+5.0, icon_y+3.0)], ink);
+        painter.line_segment([pos2(icon_x, icon_y+3.0), pos2(icon_x, icon_y+7.0)], ink);
+        painter.line_segment([pos2(icon_x-3.0, icon_y+7.0), pos2(icon_x+3.0, icon_y+7.0)], ink);
         if share.clicked() && has_doc {
             let from = app.session.active().map(|d| d.selection.slide).unwrap_or(0);
             // Slide 0 is hidden Smart Generate source; never present a hidden slide.
