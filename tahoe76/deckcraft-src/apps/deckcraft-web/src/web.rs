@@ -419,7 +419,6 @@ struct BibleBook {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
-#[derive(Clone, Copy, PartialEq, Eq)]
 enum VerseNumberStyle { Khmer, English, Source }
 impl VerseNumberStyle {
     fn label(self) -> &'static str { match self { Self::Khmer => "Khmer (១២៣)", Self::English => "English (123)", Self::Source => "Bible source" } }
@@ -436,6 +435,7 @@ fn bible_reference(name: &str, chapter: usize, first: usize, last: usize, style:
 const BIBLE_DEFAULT_FONT: &str = "Khmer OS battambang";
 const BIBLE_BOLD_FONT: &str = "Khmer OS Battambang";
 
+#[derive(Clone, Copy, PartialEq, Eq)]
 enum BibleGroupMode {
     One,
     Two,
