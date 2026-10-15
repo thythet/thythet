@@ -157,7 +157,12 @@ fn list(app: &mut SlideApp, ui: &mut Ui) {
             }
         }
         if resp.double_clicked() {
-            app.start_show(i, false);
+            if smart_zero && i == 0 {
+                // Opening the source slide launches Smart Generate instead of presenting hidden content.
+                ui.ctx().data_mut(|d| d.insert_temp(egui::Id::new("tahoe-smart-quick"), true));
+            } else {
+                app.start_show(i, false);
+            }
         }
         if resp.drag_started() && !(smart_zero && i == 0) {
             app.thumb_drag = Some((i, i));

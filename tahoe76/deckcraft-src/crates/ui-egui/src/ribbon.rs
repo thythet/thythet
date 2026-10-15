@@ -125,6 +125,9 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
         );
         if share.clicked() && has_doc {
             let from = app.session.active().map(|d| d.selection.slide).unwrap_or(0);
+            // Slide 0 is hidden Smart Generate source; never present a hidden slide.
+            let hidden = app.session.active().and_then(|d| d.doc.slides.get(from)).is_some_and(|s| s.hidden);
+            let from = if hidden { app.show_start_index() } else { from };
             app.start_show(from, false);
         }
         if icon_toggle(&mut right, Icon::CommentsBubble, "Comments", has_doc, app.ui.pane.as_deref() == Some("comments")).clicked() {
