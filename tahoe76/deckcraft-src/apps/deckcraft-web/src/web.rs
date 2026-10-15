@@ -82,7 +82,7 @@ pub fn start() {
                     smart.font_family = if db.has_family(BIBLE_DEFAULT_FONT) { BIBLE_DEFAULT_FONT.to_owned() } else { default_khmer_family.clone() };
                     let mut bible = BibleGenerator::default();
                     bible.font_family = if db.has_family(BIBLE_DEFAULT_FONT) { BIBLE_DEFAULT_FONT.to_owned() } else { default_khmer_family.clone() };
-                    Ok(Box::new(WebShell { app, inbox, smart, bible, presenting: false }))
+                    Ok(Box::new(WebShell { app, inbox, smart, bible, typography: TypographyPanel::default(), presenting: false }))
                 }),
             )
             .await;
@@ -106,6 +106,7 @@ struct WebShell {
     inbox: Inbox,
     smart: SmartGenerator,
     bible: BibleGenerator,
+    typography: TypographyPanel,
     presenting: bool,
 }
 
@@ -166,6 +167,7 @@ impl eframe::App for WebShell {
             }
             self.smart.ui(ui.ctx(), &mut self.app);
             self.bible.ui(ui.ctx(), &mut self.app);
+            self.typography.ui(ui.ctx(), &mut self.app);
         }
     }
 }
@@ -178,6 +180,227 @@ impl WebShell {
         }
         self.presenting = active;
         post_parent_present(active);
+    }
+}
+
+
+
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum ApplyScope {
+    All, Box, Selection, Headings, Verses, Content, CurrentSlide, SelectedSlides, VerseNumbers,
+}
+impl ApplyScope {
+    fn label(self) -> &'static str {
+        match self {
+            Self::All => "All presentation text",
+            Self::Box => "Only this text box",
+            Self::Selection => "Only selected characters",
+            Self::Headings => "All Bible chapter/book headings",
+            Self::Verses => "All Bible verse content",
+            Self::Content => "All non-Bible content",
+            Self::CurrentSlide => "Current slide",
+            Self::SelectedSlides => "Selected slides",
+            Self::VerseNumbers => "Bible verse numbers only",
+        }
+    }
+}
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum VerseBaseline { Normal, Super, Sub }
+impl VerseBaseline {
+    fn label(self) -> &'static str {
+        match self { Self::Normal => "Normal", Self::Super => "Superscript", Self::Sub => "Subscript" }
+    }
+}
+struct TypographyPanel {
+    open: bool,
+    scope: ApplyScope,
+    font: String,
+    font_size: f32,
+    line_spacing: f32,
+    set_font: bool,
+    set_size: bool,
+    set_spacing: bool,
+    baseline: VerseBaseline,
+    status: String,
+}
+impl Default for TypographyPanel {
+    fn default() -> Self {
+        Self {
+            open: false, scope: ApplyScope::Box,
+            font: BIBLE_DEFAULT_FONT.to_owned(), font_size: 40.0, line_spacing: 1.5,
+            set_font: true, set_size: true, set_spacing: false,
+            baseline: VerseBaseline::Normal, status: String::new(),
+        }
+    }
+}
+impl TypographyPanel {
+    fn ui(&mut self, ctx: &egui::Context, app: &mut SlideApp) {
+        egui::Area::new(egui::Id::new("tahoe-format-apply-shortcut"))
+            .anchor(egui::Align2::RIGHT_TOP, egui::vec2(-12.0, 85.0))
+            .show(ctx, |ui| {
+                if ui.small_button("Aa · Apply To").clicked() { self.open = !self.open; }
+            });
+        if !self.open { return; }
+        let mut open = self.open;
+        let mut apply_now = false;
+        egui::Window::new("Typography · Apply To")
+            .id(egui::Id::new("tahoe-typography-apply"))
+            .open(&mut open)
+            .default_width(340.0)
+            .resizable(true)
+            .show(ctx, |ui| {
+                ui.label("Apply font and paragraph formatting by text role.");
+                ui.separator();
+                ui.label("Apply to");
+                egui::ComboBox::from_id_salt("tahoe-format-scope")
+                    .selected_text(self.scope.label())
+                    .width(275.0)
+                    .show_ui(ui, |ui| {
+                        for scope in [ApplyScope::All, ApplyScope::Box, ApplyScope::Selection,
+                            ApplyScope::Headings, ApplyScope::Verses, ApplyScope::Content,
+                            ApplyScope::CurrentSlide, ApplyScope::SelectedSlides, ApplyScope::VerseNumbers] {
+                            ui.selectable_value(&mut self.scope, scope, scope.label());
+                        }
+                    });
+                ui.separator();
+                ui.horizontal(|ui| {
+                    ui.checkbox(&mut self.set_font, "Font");
+                    if self.set_font {
+                        egui::ComboBox::from_id_salt("tahoe-apply-font")
+                            .selected_text(&self.font).width(190.0).show_ui(ui, |ui| {
+                                for family in deckcraft_fonts::FontDb::global().families() {
+                                    ui.selectable_value(&mut self.font, family.clone(), family);
+                                }
+                            });
+                    }
+                });
+                ui.horizontal(|ui| {
+                    ui.checkbox(&mut self.set_size, "Size");
+                    if self.set_size { ui.add(egui::DragValue::new(&mut self.font_size).range(1.0..=200.0).speed(0.5).suffix(" pt")); }
+                });
+                ui.horizontal(|ui| {
+                    ui.checkbox(&mut self.set_spacing, "Line spacing");
+                    if self.set_spacing { ui.add(egui::DragValue::new(&mut self.line_spacing).range(0.5..=4.0).speed(0.05)); }
+                });
+                if self.scope == ApplyScope::VerseNumbers {
+                    ui.label("Verse number position");
+                    egui::ComboBox::from_id_salt("tahoe-verse-baseline")
+                        .selected_text(self.baseline.label()).show_ui(ui, |ui| {
+                            for option in [VerseBaseline::Normal, VerseBaseline::Super, VerseBaseline::Sub] {
+                                ui.selectable_value(&mut self.baseline, option, option.label());
+                            }
+                        });
+                    ui.small("Changes only numeric verse prefixes, not the verse text.");
+                }
+                ui.separator();
+                if ui.button("Apply formatting").clicked() { apply_now = true; }
+                if !self.status.is_empty() { ui.small(&self.status); }
+            });
+        self.open = open;
+        if apply_now {
+            self.status = match self.apply(app) {
+                Ok(n) => format!("Applied formatting to {n} text item(s)."),
+                Err(e) => e,
+            };
+        }
+    }
+    fn apply_to_selected(&self, app: &mut SlideApp) -> Result<(), String> {
+        if self.set_font && !self.font.trim().is_empty() {
+            app.run("format.font", json!({"family":self.font.trim()}))?;
+        }
+        if self.set_size {
+            app.run("format.size", json!({"size":self.font_size.clamp(1.0,200.0)}))?;
+        }
+        if self.set_spacing {
+            app.run("format.lineSpacing", json!({"lines":self.line_spacing.clamp(0.5,4.0)}))?;
+        }
+        Ok(())
+    }
+    fn apply(&self, app: &mut SlideApp) -> Result<usize, String> {
+        let Some(state) = app.session.active() else { return Err("No active presentation.".into()) };
+        let current = state.selection.slide;
+        if self.scope == ApplyScope::Selection {
+            if !state.selection.text.as_ref().is_some_and(|t| t.is_range()) {
+                return Err("Highlight characters inside a text box first.".into());
+            }
+            self.apply_to_selected(app)?;
+            return Ok(1);
+        }
+        let prior_shapes = state.selection.shapes.clone();
+        let prior_text_shape = state.selection.text.as_ref().map(|t| t.shape);
+        let selected_slides = state.selection.slides.clone();
+        let slides = &state.doc.slides;
+        let mut targets: Vec<(usize, Vec<deckcraft_model::ShapeId>)> = Vec::new();
+        for (index,slide) in slides.iter().enumerate() {
+            if slide.name == "✦ Smart Generate Input" { continue; }
+            if self.scope == ApplyScope::CurrentSlide && index != current { continue; }
+            if self.scope == ApplyScope::SelectedSlides && !selected_slides.contains(&slide.id) { continue; }
+            let is_bible = slide.name.starts_with("Bible · ");
+            let has_heading = is_bible && slide.shapes.len() > 1;
+            let ids: Vec<_> = slide.shapes.iter().enumerate().filter_map(|(n,shape)| {
+                if shape.text.is_none() { return None; }
+                let is_current = index == current &&
+                    (prior_shapes.contains(&shape.id) || prior_text_shape == Some(shape.id));
+                let is_heading = has_heading && n == 0;
+                let included = match self.scope {
+                    ApplyScope::All | ApplyScope::CurrentSlide | ApplyScope::SelectedSlides => true,
+                    ApplyScope::Box => is_current,
+                    ApplyScope::Selection => false,
+                    ApplyScope::Headings => is_heading,
+                    ApplyScope::Verses | ApplyScope::VerseNumbers => is_bible && !is_heading,
+                    ApplyScope::Content => !is_bible,
+                };
+                included.then_some(shape.id)
+            }).collect();
+            if !ids.is_empty() { targets.push((index,ids)); }
+        }
+        if targets.is_empty() {
+            return Err("No matching text boxes. Select a box or choose a different Apply To scope.".into());
+        }
+        let mut count = 0;
+        for (index,ids) in targets {
+            app.run("slide.go", json!({"index":index}))?;
+            for id in ids {
+                if self.scope == ApplyScope::VerseNumbers {
+                    let paragraphs: Vec<_> = app.session.active()
+                        .and_then(|st| st.doc.slides.get(index))
+                        .and_then(|sl| sl.shape(id))
+                        .and_then(|sh| sh.text.as_ref())
+                        .map(|body| body.paragraphs.iter().enumerate().filter_map(|(i,p)| {
+                            let plain = p.runs.iter().map(|r| r.text.as_str()).collect::<String>();
+                            let n = plain.chars().take_while(|c| c.is_ascii_digit() || ('០'..='៩').contains(c)).count();
+                            (n > 0).then_some((i,n))
+                        }).collect()).unwrap_or_default();
+                    for (para,n) in paragraphs {
+                        app.run("text.edit", json!({"id":id,"at":[para,0]}))?;
+                        app.run("text.select", json!({"anchor":[para,0],"caret":[para,n]}))?;
+                        self.apply_to_selected(app)?;
+                        match self.baseline {
+                            VerseBaseline::Normal => {
+                                app.run("format.superscript", json!({"on":false}))?;
+                                app.run("format.subscript", json!({"on":false}))?;
+                            }
+                            VerseBaseline::Super => { app.run("format.superscript", json!({"on":true}))?; }
+                            VerseBaseline::Sub => { app.run("format.subscript", json!({"on":true}))?; }
+                        }
+                        count += 1;
+                    }
+                    app.run("text.exit", json!({}))?;
+                } else {
+                    app.run("selection.select", json!({"ids":[id]}))?;
+                    self.apply_to_selected(app)?;
+                    count += 1;
+                }
+            }
+        }
+        app.run("slide.go", json!({"index":current}))?;
+        if !prior_shapes.is_empty() {
+            let _ = app.run("selection.select", json!({"ids":prior_shapes}));
+        } else if let Some(id) = prior_text_shape {
+            let _ = app.run("selection.select", json!({"ids":[id]}));
+        }
+        Ok(count)
     }
 }
 
