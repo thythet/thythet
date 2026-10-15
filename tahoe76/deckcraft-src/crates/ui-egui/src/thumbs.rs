@@ -304,7 +304,7 @@ fn split_body_text(text: &str) -> Option<(String, String)> {
 
 fn split_bible_slide(app: &mut SlideApp, i: usize) -> Result<(), String> {
     let (name, body_id, body_text) = {
-        let st = app.session.active().map_err(|e| e.to_string())?;
+        let st = app.session.active().ok_or_else(|| "No active presentation.".to_string())?;
         let slide = st.doc.slides.get(i).ok_or_else(|| "Slide not found.".to_string())?;
         let mut texts: Vec<(deckcraft_model::ShapeId, String)> = slide
             .shapes
@@ -321,7 +321,7 @@ fn split_bible_slide(app: &mut SlideApp, i: usize) -> Result<(), String> {
     app.run("slide.go", json!({"index": i}))?;
     app.run("slide.duplicate", json!({"index": i}))?;
     let copy_id = {
-        let st = app.session.active().map_err(|e| e.to_string())?;
+        let st = app.session.active().ok_or_else(|| "No active presentation.".to_string())?;
         let copy = st.doc.slides.get(i + 1).ok_or_else(|| "Could not create the split slide.".to_string())?;
         copy.shapes
             .iter()

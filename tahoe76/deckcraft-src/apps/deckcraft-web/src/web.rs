@@ -714,7 +714,9 @@ fn repair_smart_refs(s: &str) -> String {
 
 fn normalize_book_key(s: &str) -> String {
     normalize_digits(s)
-        .replace([' ', '\t', '\u{200b}', '\u{200c}', '\u{200d}', '-', '_', '.', '៖', ':'], "")
+        .chars()
+        .filter(|c| !matches!(*c, ' ' | '\t' | '\u{200b}' | '\u{200c}' | '\u{200d}' | '-' | '_' | '.' | '៖' | ':'))
+        .collect::<String>()
         .replace("ទី", "")
         .replace("យ៉ូ", "យូ")
         .to_lowercase()
@@ -800,7 +802,7 @@ fn parse_smart_tokens(input: &str) -> Result<Vec<SmartToken>, String> {
         }
         if let Some(rest) = line.strip_prefix("ចំណងជើង") {
             flush(&mut out, &mut text);
-            let title = rest.trim_start_matches([':', '៖', ' ', '-']).trim();
+            let title = rest.trim_start_matches(|c: char| matches!(c, ':' | '៖' | ' ' | '-')).trim();
             if !title.is_empty() {
                 out.push(SmartToken::Title(title.to_string()));
             }
