@@ -166,7 +166,7 @@ fn every_page_renders() {
         (Page::SaveAs, "Not saved yet"),
         (Page::Print, "Print Hidden Slides"),
         (Page::Export, "Create PDF Document"),
-        (Page::Account, "About DeckCraft"),
+        (Page::Account, "Appearance"),
     ];
     for (p, marker) in checks {
         h.state_mut().run("app.backstage", json!({"page": p.id()})).unwrap();
@@ -175,6 +175,14 @@ fn every_page_renders() {
         assert!(h.query_all_by_label_contains(marker).next().is_some(), "{} shows “{marker}”", p.label());
         let selected = h.query_all_by_label(p.label()).any(|n| in_nav(n.rect()));
         assert!(selected, "{} is in the side menu", p.label());
+        // The File pages must not reintroduce legacy engine branding.
+        for legacy in ["DeckCraft", "ArtCraft", "Product Information", "User Information", "Discord"] {
+            assert!(
+                h.query_all_by_label_contains(legacy).next().is_none(),
+                "{} must not show legacy label “{legacy}”",
+                p.label()
+            );
+        }
     }
     assert!(h.state_mut().run("app.backstage", json!({"page": "share"})).is_err(), "Share (cloud) isn't offered");
 }
