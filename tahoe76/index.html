@@ -6207,10 +6207,21 @@ window.addEventListener("load",handlePwaLaunchShortcut,{once:true});
 
 if('serviceWorker' in navigator&&location.protocol!=='file:'){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=76',{scope:'./',updateViaCache:'none'}).catch(()=>{}),{once:true})}
 
-applyState();render();applyProfile();requestAnimationFrame(updateNavTextMasks);
-ffSeed();ffBind();bindDesktopApps();syncFinderTahoeStyle();ffRender();
-if(ff.window&&innerWidth>760){const fw=$("#finderWindow");Object.assign(fw.style,ff.window);syncFinderTahoeStyle()}
-restoreDesktopAppState("bible");restoreDesktopAppState("powerslide");restoreDesktopAppState("deckcraft");arrangeDesktopLaunchers();bindDesktopContextMenu();
+/* Bind core controls before optional app modules: one failed module must never freeze Tahoe. */
+const tahoeSafeInit=(label,fn)=>{try{fn()}catch(e){console.error("[Tahoe startup] "+label,e);try{sessionStorage.setItem("tahoe.lastStartupError",label+": "+String(e?.message||e))}catch{}}};
+tahoeSafeInit("dashboard",()=>{applyState();render();applyProfile();requestAnimationFrame(updateNavTextMasks)});
+tahoeSafeInit("main controls",()=>{
+  $("#hideWindowBtn").onclick=minimizeWindow;
+  $("#minimizeBtn").onclick=minimizeWindow;
+  $("#zoomWindowBtn").onclick=zoomWindow;
+  $("#resetWindowBtn").onclick=()=>resetWindow();
+});
+tahoeSafeInit("finder seed",()=>ffSeed());
+tahoeSafeInit("finder controls",()=>ffBind());
+tahoeSafeInit("desktop apps",()=>bindDesktopApps());
+tahoeSafeInit("finder rendering",()=>{syncFinderTahoeStyle();ffRender()});
+tahoeSafeInit("finder window restore",()=>{if(ff.window&&innerWidth>760){const fw=$("#finderWindow");Object.assign(fw.style,ff.window);syncFinderTahoeStyle()}});
+tahoeSafeInit("app windows restore",()=>{for(const id of ["bible","powerslide","deckcraft"])tahoeSafeInit("restore "+id,()=>restoreDesktopAppState(id));arrangeDesktopLaunchers();bindDesktopContextMenu()});
 focusTahoeWindow(win);
 win.addEventListener("pointerdown",()=>focusTahoeWindow(win),{capture:true});
 $("#finderWindow").addEventListener("pointerdown",()=>focusTahoeWindow($("#finderWindow")),{capture:true});
