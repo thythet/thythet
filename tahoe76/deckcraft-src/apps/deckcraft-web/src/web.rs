@@ -696,14 +696,6 @@ impl BibleGenerator {
                     }
                 });
 
-                ui.horizontal(|ui| {
-                    ui.label("Verse numbers");
-                    egui::ComboBox::from_id_salt("smart-verse-digits").selected_text(self.number_style.label()).show_ui(ui,|ui|{
-                        for style in [VerseNumberStyle::Khmer,VerseNumberStyle::English,VerseNumberStyle::Source] {
-                            ui.selectable_value(&mut self.number_style,style,style.label());
-                        }
-                    });
-                });
                 if !self.status.is_empty() {
                     ui.separator();
                     ui.label(&self.status);
@@ -959,6 +951,14 @@ impl SmartGenerator {
                                 ui.selectable_value(&mut self.font_family, family.clone(), family);
                             }
                         });
+                });
+                ui.horizontal(|ui| {
+                    ui.label("Verse numbers");
+                    egui::ComboBox::from_id_salt("smart-verse-digits").selected_text(self.number_style.label()).show_ui(ui,|ui|{
+                        for style in [VerseNumberStyle::Khmer,VerseNumberStyle::English,VerseNumberStyle::Source] {
+                            ui.selectable_value(&mut self.number_style,style,style.label());
+                        }
+                    });
                 });
                 if !self.status.is_empty() {
                     ui.separator();
