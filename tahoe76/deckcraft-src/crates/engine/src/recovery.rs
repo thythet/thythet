@@ -39,13 +39,21 @@ pub(crate) const UID_MASK: u64 = (1 << 53) - 1;
 
 /// This process's random id, with the low 24 bits clear so its document uids (id + counter) don't
 /// run into another instance's.
+#[cfg(target_arch = "wasm32")]
+pub fn instance_id() -> u64 {
+    // Browser builds do not have a meaningful OS process id, and std::process::id()
+    // can panic on wasm32. Web recovery is not shared through the native filesystem,
+    // so a fixed non-zero process base plus NEXT_UID is sufficient for document ids.
+    1 << 24
+}
+
+#[cfg(not(target_arch = "wasm32"))]
 pub fn instance_id() -> u64 {
     static ID: OnceLock<u64> = OnceLock::new();
     *ID.get_or_init(|| {
         use std::hash::{BuildHasher, Hasher};
         let mut h = std::collections::hash_map::RandomState::new().build_hasher();
         h.write_u32(std::process::id());
-        #[cfg(not(target_arch = "wasm32"))]
         if let Ok(d) = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH) {
             h.write_u128(d.as_nanos());
         }
