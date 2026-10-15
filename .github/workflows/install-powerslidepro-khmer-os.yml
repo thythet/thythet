@@ -1,0 +1,51 @@
+name: Install PowerSlidePro Khmer OS fonts
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tahoe76/PowerSlidePro-KhmerOS-assets.zip'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: tahoe-khmer-os-font-install
+  cancel-in-progress: false
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Validate and extract original Khmer OS fonts
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          archive=Path('tahoe76/PowerSlidePro-KhmerOS-assets.zip')
+          target=Path('tahoe76/assets/fonts/khmer-os')
+          assert archive.is_file(), 'Upload the ZIP to tahoe76/ first'
+          with ZipFile(archive) as z:
+              entries=[i for i in z.infolist() if not i.is_dir()]
+              assert len(entries)==40, f'Expected 40 font files, found {len(entries)}'
+              target.mkdir(parents=True,exist_ok=True)
+              for i in entries:
+                  name=Path(i.filename).name
+                  assert i.filename.startswith('tahoe76/assets/fonts/khmer-os/') and name.endswith('.ttf'),i.filename
+                  data=z.read(i)
+                  assert data[:4] in (b'\x00\x01\x00\x00',b'OTTO',b'true',b'ttcf'),name
+                  (target/name).write_bytes(data)
+          assert len(list(target.glob('*.ttf')))==40
+          print('Installed 40 Khmer OS fonts')
+          PY
+      - name: Commit extracted font files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f tahoe76/assets/fonts/khmer-os/
+          if ! git diff --cached --quiet; then
+            git commit -m "Install 40 PowerSlidePro Khmer OS fonts"
+            git fetch origin main
+            git rebase origin/main
+            git push origin HEAD:main
+          fi
