@@ -922,6 +922,7 @@ impl SmartGenerator {
             self.restore_from_first_slide(app);
         }
         if !self.open {
+            remove_native_smart_input();
             return;
         }
 
@@ -937,12 +938,14 @@ impl SmartGenerator {
                 ui.strong("Slide 0 · Bible program input");
                 ui.small("Paste the whole program here. Slide 0 is the permanent hidden Smart Generate source; generated slides start at 1.");
                 ui.add_space(6.0);
-                ui.add(
-                    egui::TextEdit::multiline(&mut self.input)
-                        .desired_rows(17)
-                        .desired_width(f32::INFINITY)
-                        .hint_text("ព្រះបន្ទូលម៉ោង5:30\nរ៉ូម2:1-16\n1កូរិនថូស13:4\n1ពេត្រុស4:8\nលូកា6:31\n\nព្រះបន្ទូលម៉ោង9:30\nចំណងជើង: ការថ្វាយដែលមានតម្លៃ\nម៉ាកុស14:1-9\nម៉ាកុស12:41-44\n2សាំយ៉ូអែល24:18-25")
+                // Native browser textarea: Chrome/Safari shape Khmer combining marks,
+                // line wrapping and cursor clusters correctly; egui's glyph-by-glyph
+                // TextEdit does not. Sync the text into the existing Smart Generate source.
+                let (input_rect, _) = ui.allocate_exact_size(
+                    egui::vec2(ui.available_width().max(260.0), 380.0),
+                    egui::Sense::hover(),
                 );
+                sync_native_smart_input(ctx, input_rect, &mut self.input);
                 ui.add_space(6.0);
                 ui.horizontal(|ui| {
                     ui.label("Khmer font");
@@ -992,6 +995,7 @@ impl SmartGenerator {
                 }
             });
         self.open = open;
+        if !self.open { remove_native_smart_input(); }
     }
 
     fn restore_from_first_slide(&mut self, app: &SlideApp) {
@@ -1046,6 +1050,48 @@ impl SmartGenerator {
                 app.notify(e);
             }
         }
+    }
+}
+
+/// Native DOM editing is essential for accurate Khmer shaping and line breaks.
+fn remove_native_smart_input() {
+    let Some(document) = web_sys::window().and_then(|w| w.document()) else { return };
+    if let Some(node) = document.get_element_by_id("tahoe-smart-khmer-input") { node.remove(); }
+}
+fn sync_native_smart_input(ctx: &egui::Context, rect: egui::Rect, text: &mut String) {
+    let Some(window) = web_sys::window() else { return };
+    let Some(document) = window.document() else { return };
+    let canvas = document.get_element_by_id(CANVAS_ID);
+    let Some(canvas) = canvas else { return };
+    let screen = ctx.content_rect();
+    let bounds = canvas.get_bounding_client_rect();
+    let sx = bounds.width() / f64::from(screen.width().max(1.0));
+    let sy = bounds.height() / f64::from(screen.height().max(1.0));
+    let left = bounds.left() + f64::from(rect.left()) * sx;
+    let top = bounds.top() + f64::from(rect.top()) * sy;
+    let width = f64::from(rect.width()) * sx;
+    let height = f64::from(rect.height()) * sy;
+
+    let el = if let Some(el) = document.get_element_by_id("tahoe-smart-khmer-input") {
+        el
+    } else {
+        let Ok(el) = document.create_element("textarea") else { return };
+        el.set_id("tahoe-smart-khmer-input");
+        let _ = el.set_attribute("spellcheck","false");
+        let _ = el.set_attribute("aria-label","Smart Generate Bible program text");
+        if let Ok(area) = el.clone().dyn_into::<web_sys::HtmlTextAreaElement>() {
+            area.set_value(text);
+        }
+        if let Some(body) = document.body() { let _ = body.append_child(&el); }
+        el
+    };
+    let css = format!(
+        "position:fixed;z-index:2147482000;left:{left:.1}px;top:{top:.1}px;width:{width:.1}px;height:{height:.1}px;box-sizing:border-box;resize:none;padding:9px 12px;border:1px solid #b9bec5;border-radius:6px;background:white;color:#202020;font-family:'Tahoe Smart Battambang','Khmer OS Battambang',sans-serif;font-size:19px;line-height:1.75;direction:ltr;text-align:left;unicode-bidi:plaintext;white-space:pre-wrap;overflow-wrap:break-word;overflow-y:auto;outline-offset:-2px;"
+    );
+    let _ = el.set_attribute("style",&css);
+    if let Ok(area) = el.dyn_into::<web_sys::HtmlTextAreaElement>() {
+        let current = area.value();
+        if *text != current { *text = current; }
     }
 }
 
