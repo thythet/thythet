@@ -1132,6 +1132,42 @@ fn normalize_book_key(s: &str) -> String {
         .to_lowercase()
 }
 
+fn book_edit_distance(a: &str, b: &str) -> usize {
+    // Damerau-Levenshtein (adjacent transpositions included), bounded to short book names.
+    let a: Vec<char> = a.chars().collect();
+    let b: Vec<char> = b.chars().collect();
+    let mut d = vec![vec![0usize; b.len()+1]; a.len()+1];
+    for i in 0..=a.len() { d[i][0] = i; }
+    for j in 0..=b.len() { d[0][j] = j; }
+    for i in 1..=a.len() {
+        for j in 1..=b.len() {
+            let cost = usize::from(a[i-1] != b[j-1]);
+            let mut v = (d[i-1][j]+1).min(d[i][j-1]+1).min(d[i-1][j-1]+cost);
+            if i>1 && j>1 && a[i-1]==b[j-2] && a[i-2]==b[j-1] {
+                v = v.min(d[i-2][j-2]+1);
+            }
+            d[i][j] = v;
+        }
+    }
+    d[a.len()][b.len()]
+}
+
+fn smart_book_candidates(raw: &str) -> Vec<(&'static str, &'static str, usize)> {
+    let needle = normalize_book_key(raw);
+    let mut matches: Vec<_> = bible_data::BOOKS.iter().filter_map(|(id,name,_)| {
+        let canon = normalize_book_key(name);
+        // Keep numbered books distinct: don't guess a missing 1/2/3 prefix.
+        let prefix_a = needle.chars().next().filter(|c| c.is_ascii_digit());
+        let prefix_b = canon.chars().next().filter(|c| c.is_ascii_digit());
+        if prefix_a != prefix_b { return None; }
+        let distance = book_edit_distance(&needle, &canon);
+        let limit = if canon.chars().count() >= 9 { 2 } else { 1 };
+        (distance <= limit).then_some((*id,*name,distance))
+    }).collect();
+    matches.sort_by_key(|(_,_,d)| *d);
+    matches
+}
+
 fn resolve_smart_book(raw: &str) -> Option<(&'static str, &'static str)> {
     let needle = normalize_book_key(raw);
     // Common Khmer church spelling variants (Bible 1954 catalog uses អេភេសូ).
@@ -1155,6 +1191,13 @@ fn resolve_smart_book(raw: &str) -> Option<(&'static str, &'static str)> {
             if needle == format!("{last}{base}") || needle == format!("{base}{last}") {
                 return Some((*id, *name));
             }
+        }
+    }
+    // Auto-correct only a single clear nearest name. Ambiguous names require review.
+    let candidates = smart_book_candidates(raw);
+    if let Some((id, name, distance)) = candidates.first().copied() {
+        if !candidates.iter().skip(1).any(|(_,_,other)| *other == distance) {
+            return Some((id,name));
         }
     }
     None
@@ -1242,7 +1285,14 @@ fn parse_smart_tokens(input: &str) -> Result<Vec<SmartToken>, String> {
             let has_verse = right.trim().chars().next().is_some_and(|c| c.is_ascii_digit());
             let has_book_letters = left.chars().any(|c| ('ក'..='៿').contains(&c));
             if has_book_letters && has_chapter && has_verse {
-                return Err(format!("Unknown Bible reference: {line}. Check the book name or chapter/verse numbers."));
+                let book_text = left.trim_end_matches(|c:char| c.is_ascii_digit()).trim();
+                let hints = smart_book_candidates(book_text).into_iter().take(3)
+                    .map(|(_,name,_)| name.to_owned()).collect::<Vec<_>>();
+                return Err(if hints.is_empty() {
+                    format!("Unknown Bible reference: {line}. Check the book name and verse numbers.")
+                } else {
+                    format!("Uncertain Bible reference: {line}. Did you mean {}?", hints.join(" / "))
+                });
             }
         }
         text.push(line.to_string());
