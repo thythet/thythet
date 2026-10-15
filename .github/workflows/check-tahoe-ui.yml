@@ -1,0 +1,65 @@
+name: Validate Tahoe UI JavaScript
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tahoe76/index.html'
+      - '.github/workflows/check-tahoe-ui.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract inline JavaScript
+        run: |
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          class Scripts(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.current = None
+                  self.files = []
+              def handle_starttag(self, tag, attrs):
+                  if tag != "script": return
+                  attributes = dict(attrs)
+                  typ = attributes.get("type", "").lower()
+                  if "src" not in attributes and typ in ("", "text/javascript", "module"):
+                      self.current = []
+                      self.is_module = typ == "module"
+              def handle_data(self, data):
+                  if self.current is not None:
+                      self.current.append(data)
+              def handle_endtag(self, tag):
+                  if tag == "script" and self.current is not None:
+                      value = "".join(self.current)
+                      self.current = None
+                      if value.strip():
+                          self.files.append((value, self.is_module))
+          parser = Scripts()
+          parser.feed(Path("tahoe76/index.html").read_text())
+          folder = Path("/tmp/tahoe-scripts")
+          folder.mkdir(exist_ok=True)
+          for index, (source, module) in enumerate(parser.files):
+              path = folder / f"inline-{index}.{'mjs' if module else 'js'}"
+              path.write_text(source)
+              print(f"Checking {path}")
+          assert parser.files, "Tahoe has no inline JS"
+          PY
+
+      - name: Check JavaScript syntax using Node
+        run: |
+          set -euo pipefail
+          for file in /tmp/tahoe-scripts/*; do node --check "$file"; done
+
+      - name: Verify exactly 66 Bible book files
+        run: |
+          test "$(find tahoe76/data/books -maxdepth 1 -type f -name '*.json' | wc -l)" -eq 66
