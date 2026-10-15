@@ -1,0 +1,70 @@
+name: Build Tahoe76 DeckCraft Web
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tahoe76/deckcraft-src/**'
+      - '.github/workflows/build-tahoe76-deckcraft.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust + WASM target
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install Trunk
+        uses: taiki-e/install-action@v2
+        with:
+          tool: trunk
+
+      - name: Install wasm-opt
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y binaryen
+
+      - name: Build DeckCraft Web
+        run: |
+          set -euxo pipefail
+          rm -rf tahoe76/apps/deckcraft-web
+          mkdir -p tahoe76/apps/deckcraft-web
+          cd tahoe76/deckcraft-src/apps/deckcraft-web
+          trunk build --release
+          test -f ../../../apps/deckcraft-web/index.html
+          find ../../../apps/deckcraft-web -maxdepth 1 -type f -print
+
+      - name: Validate build
+        run: |
+          set -euxo pipefail
+          test "$(find tahoe76/data/books -maxdepth 1 -name '*.json' | wc -l)" -eq 66
+          test -f tahoe76/apps/deckcraft-web/index.html
+          find tahoe76/apps/deckcraft-web -maxdepth 1 -name '*.wasm' -print -quit | grep -q .
+
+      - name: Commit compiled DeckCraft Web
+        run: |
+          set -euxo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f tahoe76/apps/deckcraft-web
+          if git diff --cached --quiet; then
+            echo "No compiled changes to commit."
+          else
+            git commit -m "Build DeckCraft Web for Tahoe76"
+            git push
+          fi
+
+      - name: Upload compiled DeckCraft artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: deckcraft-web
+          path: tahoe76/apps/deckcraft-web
