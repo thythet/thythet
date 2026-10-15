@@ -11,12 +11,18 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: tahoe76-deckcraft-web
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install Rust + WASM target
         uses: dtolnay/rust-toolchain@stable
@@ -60,7 +66,8 @@ jobs:
             echo "No compiled changes to commit."
           else
             git commit -m "Build DeckCraft Web for Tahoe76"
-            git push
+            git pull --rebase origin main
+            git push origin HEAD:main
           fi
 
       - name: Upload compiled DeckCraft artifact
