@@ -1330,8 +1330,12 @@ async fn build_smart_slides(input: &str) -> Result<Vec<SmartSlide>, String> {
                 if verses.is_empty() {
                     return Err(format!("{} {} has no verses.", r.book_name, r.chapter));
                 }
-                let start = r.verse_start.max(1).min(verses.len());
-                let end = r.verse_end.max(start).min(verses.len());
+                if r.verse_start == 0 || r.verse_end < r.verse_start || r.verse_end > verses.len() {
+                    return Err(format!("Invalid verses for {} {}: {}–{}. Chapter has {} verses.",
+                        r.book_name, r.chapter, r.verse_start, r.verse_end, verses.len()));
+                }
+                let start = r.verse_start;
+                let end = r.verse_end;
                 for (i,group) in smart_bible_groups(&verses[start - 1..end]).into_iter().enumerate() {
                     slides.push(SmartSlide::Bible { book_name: r.book_name.clone(), chapter: r.chapter, verse_start: start, verse_end: end, first_group: i == 0, verses: group });
                 }
