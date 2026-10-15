@@ -56,7 +56,7 @@ jobs:
           /usr/bin/python3 - <<'PY'
           from fontTools.ttLib import TTFont
           from pathlib import Path
-          source = Path("../../tahoe6/assets/fonts")
+          source = Path("../tahoe6/assets/fonts")
           target = Path("apps/deckcraft-web/fonts")
           target.mkdir(parents=True, exist_ok=True)
           for src in sorted(source.glob("SFHelloKOKH-*.woff")):
