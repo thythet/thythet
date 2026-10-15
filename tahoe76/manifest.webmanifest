@@ -2,7 +2,7 @@
   "id": "./",
   "name": "Tahoe",
   "short_name": "Tahoe",
-  "description": "Tahoe dashboard with Bible 1954, AllSong worship library, PowerSlide, and DeckCraft Web.",
+  "description": "Tahoe dashboard with Bible 1954, AllSong worship library, PowerSlide, and PowerSlidePro.",
   "start_url": "./?source=pwa",
   "scope": "./",
   "display": "standalone",
@@ -74,9 +74,9 @@
       ]
     },
     {
-      "name": "DeckCraft Web",
-      "short_name": "DeckCraft",
-      "description": "Open DeckCraft Web presentation editor with Bible Generate.",
+      "name": "PowerSlidePro Web",
+      "short_name": "PowerSlidePro",
+      "description": "Open PowerSlidePro Web presentation editor with Bible Generate.",
       "url": "./?open=deckcraft",
       "icons": [
         {
