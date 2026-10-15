@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-  <title>DeckCraft</title>
+  <title>PowerSlidePro</title>
   <script>
     (() => {
       const showError = (message) => {
@@ -13,7 +13,7 @@
         el.style.padding = "24px";
         el.style.textAlign = "center";
         el.style.whiteSpace = "pre-wrap";
-        el.textContent = "DeckCraft startup error\n\n" + String(message);
+        el.textContent = "PowerSlidePro startup error\n\n" + String(message);
       };
       window.addEventListener("error", (event) => {
         showError(event.error?.stack || event.message || "Unknown JavaScript error");
@@ -24,8 +24,8 @@
       });
       window.setTimeout(() => {
         const el = document.getElementById("deckcraft_loading");
-        if (el && el.isConnected && el.textContent.includes("Loading DeckCraft")) {
-          el.textContent = "DeckCraft is taking too long to start.\nThe renderer or WebAssembly startup may have failed.";
+        if (el && el.isConnected && el.textContent.includes("Loading PowerSlidePro")) {
+          el.textContent = "PowerSlidePro is taking too long to start.\nThe renderer or WebAssembly startup may have failed.";
         }
       }, 20000);
     })();
@@ -52,6 +52,6 @@ dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
 <link rel="modulepreload" href="./deckcraft-web-7c85b38b62d33728.js" crossorigin="anonymous" integrity="sha384-PoQanromMo9GGGe4ZS4giVXTrqbb2jTk8C5vpzucRmnrxyuaaDI2zHOVuPvE1aXn"><link rel="preload" href="./deckcraft-web-7c85b38b62d33728_bg.wasm" crossorigin="anonymous" integrity="sha384-LJPQC0WV0F6gxGDwOYQbrbx4C/MwRbMxUl7waT7l28wMjr1MBZJcN2hDcn7wdqR7" as="fetch" type="application/wasm"></head>
 <body>
   <canvas id="deckcraft_canvas"></canvas>
-  <div id="deckcraft_loading">Loading DeckCraft&hellip;</div>
+  <div id="deckcraft_loading">Loading PowerSlidePro&hellip;</div>
 </body>
 </html>
