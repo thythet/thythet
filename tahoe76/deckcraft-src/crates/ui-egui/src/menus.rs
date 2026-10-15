@@ -299,6 +299,15 @@ mod tests {
 
     /// #79: the palette listed two "Export…" entries and the first (`file.export`) failed with "missing `path`".
     #[test]
+    fn palette_has_no_legacy_community_links() {
+        let session = deckcraft_engine::Session::with_new();
+        assert!(
+            palette_items(&session, "community").iter().all(|(_, label, _)| label != "Community Links"),
+            "Legacy community links must not appear in the command palette"
+        );
+    }
+
+    #[test]
     fn palette_has_one_export_entry_that_opens_the_dialog() {
         let session = deckcraft_engine::Session::with_new();
         for query in ["exp", "export"] {
