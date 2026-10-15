@@ -1197,6 +1197,16 @@ fn home(app: &mut SlideApp, ui: &mut Ui) {
     let st = fmt_state(app);
     clipboard_group(app, ui);
     slides_group(app, ui);
+    if cfg!(target_arch = "wasm32") {
+        group(ui, |ui| {
+            if ui.add_sized(vec2(105.0, 42.0), egui::Button::new("Aa  Apply To\nFormatting"))
+                .on_hover_text("Apply font or size to this box, selected text, Bible headings, verses, or every slide")
+                .clicked()
+            {
+                ui.ctx().data_mut(|d| d.insert_temp(egui::Id::new("tahoe-format-apply-open"), true));
+            }
+        });
+    }
     font_group(app, ui, &st);
     paragraph_group(app, ui, &st);
     group(ui, |ui| {
