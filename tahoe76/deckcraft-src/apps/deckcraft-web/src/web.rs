@@ -519,20 +519,14 @@ impl BibleGenerator {
                 .collect::<Vec<_>>()
                 .join("\n\n");
 
-            let body_height = if self.include_reference { 385.0 } else { 435.0 };
-            app.run("insert.textBox", json!({"rect": [60.0, 35.0, 840.0, 45.0], "text": format!("{} {}", book.name, self.chapter)}))?;
-            self.apply_text_style(app, 26.0, false)?;
-            app.run("insert.textBox", json!({"rect": [60.0, 90.0, 840.0, body_height - 45.0], "text": body}))?;
+            let body_height = 355.0;
+            app.run("insert.textBox", json!({"rect": [60.0, 25.0, 840.0, 80.0], "text": format!("{} {}", book.name, self.chapter)}))?;
+            self.apply_text_style(app, 44.0, false)?;
+            app.run("insert.textBox", json!({"rect": [60.0, 115.0, 840.0, body_height], "text": body}))?;
             let fitted = estimate_bible_font(&group, self.max_font_size, self.min_font_size);
             self.apply_text_style(app, fitted, false)?;
             app.run("format.autofit", json!({"mode": "shrink"}))?;
 
-            if self.include_reference {
-                let reference = generated_reference.clone();
-                app.run("insert.textBox", json!({"rect": [60.0, 455.0, 840.0, 45.0], "text": reference}))?;
-                self.apply_text_style(app, 17.0, false)?;
-                app.run("format.autofit", json!({"mode": "shrink"}))?;
-            }
             made += 1;
         }
         Ok(made)
@@ -964,14 +958,11 @@ fn apply_smart_slides(app: &mut SlideApp, slides: &[SmartSlide], replace: bool, 
                 };
                 app.run("slide.rename", json!({"name": format!("Bible · {reference}")}))?;
                 let body = verses.iter().map(|v| format!("{}  {}", v.number, v.text)).collect::<Vec<_>>().join("\n\n");
-                app.run("insert.textBox", json!({"rect": [60.0, 35.0, 840.0, 45.0], "text": format!("{book_name} {chapter}")}))?;
-                apply_generated_style(app, font, 26.0, false)?;
-                app.run("insert.textBox", json!({"rect": [60.0, 90.0, 840.0, 340.0], "text": body}))?;
+                app.run("insert.textBox", json!({"rect": [60.0, 25.0, 840.0, 80.0], "text": format!("{book_name} {chapter}")}))?;
+                apply_generated_style(app, font, 44.0, false)?;
+                app.run("insert.textBox", json!({"rect": [60.0, 115.0, 840.0, 355.0], "text": body}))?;
                 let size = estimate_bible_font(verses, 36.0, 18.0);
                 apply_generated_style(app, font, size, false)?;
-                app.run("format.autofit", json!({"mode": "shrink"}))?;
-                app.run("insert.textBox", json!({"rect": [60.0, 455.0, 840.0, 45.0], "text": reference}))?;
-                apply_generated_style(app, font, 18.0, false)?;
                 app.run("format.autofit", json!({"mode": "shrink"}))?;
             }
         }
