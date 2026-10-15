@@ -29,7 +29,27 @@
 <link id="siteFavicon" rel="icon" href="assets/icon-192.png">
 <link id="siteAppleTouchIcon" rel="apple-touch-icon" href="assets/icon-192.png">
 <title>Tahoe Admin Dashboard Pro v76</title>
+<script>
+/* Recovery rendering mode: avoids costly glass effects on affected Mac browsers.
+   No settings or Firebase data are changed. Remove ?safe=1 to return to normal. */
+try {
+  if (new URLSearchParams(location.search).get("safe")==="1")
+    document.documentElement.classList.add("tahoe-recovery");
+} catch (_) {}
+</script>
 <style>
+/* Diagnostic/recovery rendering path for Mac Chrome click-freeze reports. */
+html.tahoe-recovery *,html.tahoe-recovery *::before,html.tahoe-recovery *::after{
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+  filter:none!important;animation:none!important;transition:none!important;
+  scroll-behavior:auto!important;
+}
+html.tahoe-recovery .window,html.tahoe-recovery .sidebar,
+html.tahoe-recovery .toolbar,html.tahoe-recovery .mac-card{
+  background-color:rgba(248,250,253,.98)!important;
+}
+html.tahoe-recovery .sidebar-top::before,
+html.tahoe-recovery .toolbar::before{display:none!important}
 
 @font-face{
   font-family:"SONYHEAD5";
