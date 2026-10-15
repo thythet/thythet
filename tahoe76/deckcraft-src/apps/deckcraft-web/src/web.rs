@@ -1240,7 +1240,8 @@ fn parse_smart_tokens(input: &str) -> Result<Vec<SmartToken>, String> {
         if let Some((left, right)) = normalized.rsplit_once(':') {
             let has_chapter = left.chars().last().is_some_and(|c| c.is_ascii_digit());
             let has_verse = right.trim().chars().next().is_some_and(|c| c.is_ascii_digit());
-            if has_chapter && has_verse {
+            let has_book_letters = left.chars().any(|c| ('ក'..='៿').contains(&c));
+            if has_book_letters && has_chapter && has_verse {
                 return Err(format!("Unknown Bible reference: {line}. Check the book name or chapter/verse numbers."));
             }
         }
