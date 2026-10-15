@@ -240,21 +240,86 @@ struct TypographyPanel {
 impl Default for TypographyPanel {
     fn default() -> Self {
         Self {
-            open: false, scope: ApplyScope::Box,
-            font: BIBLE_DEFAULT_FONT.to_owned(), font_size: 40.0, line_spacing: 1.5,
+            open: false, scope: ApplyScope::VerseNumbers,
+            font: "Khmer OS Muol Light".to_owned(), font_size: 40.0, line_spacing: 1.15,
             set_font: true, set_size: true, set_spacing: false,
-            set_bold: false, bold: false, set_italic: false, italic: false,
-            set_underline: false, underline: false, set_color: false, color: "#000000".into(),
+            set_bold: true, bold: true, set_italic: true, italic: false,
+            set_underline: true, underline: false, set_color: true, color: "#614000".into(),
             set_align: false, align: "center".into(),
             set_anchor: false, anchor: "top".into(), set_baseline: false,
-            convert_numbers: false, number_style: VerseNumberStyle::Khmer,
+            convert_numbers: false, number_style: VerseNumberStyle::English,
             baseline: VerseBaseline::Normal, status: String::new(),
         }
     }
 }
+// Compact PowerSlidePro controls, sized and painted to match apply-formatting-mini.html.
+// These paint on egui's canvas, so the existing Rust formatting commands stay in charge.
+const FORMAT_ORANGE: egui::Color32 = egui::Color32::from_rgb(232, 121, 66);
+const FORMAT_BORDER: egui::Color32 = egui::Color32::from_rgb(218, 221, 226);
+const FORMAT_MUTED: egui::Color32 = egui::Color32::from_rgb(122, 128, 137);
+const FORMAT_INK: egui::Color32 = egui::Color32::from_rgb(38, 42, 49);
+
+fn format_rule(ui: &mut egui::Ui, width: f32) {
+    let (r, _) = ui.allocate_exact_size(egui::vec2(width, 1.0), egui::Sense::hover());
+    ui.painter().rect_filled(r, 0.0, egui::Color32::from_rgb(238, 240, 242));
+}
+fn format_tick(ui: &mut egui::Ui, checked: &mut bool, tooltip: &str) {
+    let (r, response) = ui.allocate_exact_size(egui::vec2(15.0, 15.0), egui::Sense::click());
+    if response.clicked() { *checked = !*checked; }
+    let fill = if *checked { FORMAT_ORANGE } else { egui::Color32::WHITE };
+    ui.painter().rect_filled(r, egui::CornerRadius::same(4), fill);
+    ui.painter().rect_stroke(r, egui::CornerRadius::same(4),
+        egui::Stroke::new(if *checked { 1.0 } else { 1.3 },
+            if *checked { FORMAT_ORANGE } else { egui::Color32::from_rgb(131, 134, 139) }),
+        egui::StrokeKind::Inside);
+    if *checked {
+        let check = egui::Stroke::new(1.8, egui::Color32::WHITE);
+        ui.painter().line_segment([r.left_top() + egui::vec2(3.5, 7.5),
+            r.left_top() + egui::vec2(6.5, 10.4)], check);
+        ui.painter().line_segment([r.left_top() + egui::vec2(6.5, 10.4),
+            r.left_top() + egui::vec2(12.0, 4.2)], check);
+    }
+    response.on_hover_text(tooltip);
+}
+fn format_segment(ui: &mut egui::Ui, text: &str, width: f32, selected: bool, enabled: bool, bold: bool) -> bool {
+    let (r, response) = ui.allocate_exact_size(egui::vec2(width, 28.0),
+        if enabled { egui::Sense::click() } else { egui::Sense::hover() });
+    let background = if selected { egui::Color32::from_rgb(255, 237, 227) }
+        else { egui::Color32::WHITE };
+    let border = if selected { egui::Color32::from_rgb(235, 153, 95) } else { FORMAT_BORDER };
+    let ink = if selected { egui::Color32::from_rgb(172, 78, 32) }
+        else { egui::Color32::from_rgb(69, 74, 83) };
+    ui.painter().rect_filled(r, egui::CornerRadius::same(6), background);
+    ui.painter().rect_stroke(r, egui::CornerRadius::same(6), egui::Stroke::new(1.0, border),
+        egui::StrokeKind::Inside);
+    ui.painter().text(r.center(), egui::Align2::CENTER_CENTER, text,
+        if bold { egui::FontId::proportional(13.0) } else { egui::FontId::proportional(12.0) },
+        if enabled { ink } else { egui::Color32::from_gray(179) });
+    enabled && response.clicked()
+}
+fn format_label(ui: &mut egui::Ui, label: &str, width: f32) {
+    ui.add_sized([width, 28.0], egui::Label::new(
+        egui::RichText::new(label).size(11.0).color(egui::Color32::from_rgb(91, 96, 105))));
+}
+fn format_section(ui: &mut egui::Ui, label: &str) {
+    ui.label(egui::RichText::new(label).size(10.0).strong().color(FORMAT_MUTED));
+}
+
 impl TypographyPanel {
+    fn selected_count(&self) -> u8 {
+        let style = self.set_bold || self.set_italic || self.set_underline;
+        let mut count = self.set_font as u8 + self.set_size as u8 + style as u8
+            + self.set_color as u8 + self.set_spacing as u8 + self.set_align as u8
+            + self.set_anchor as u8;
+        if self.scope == ApplyScope::VerseNumbers {
+            count += self.set_baseline as u8 + self.convert_numbers as u8;
+        } else {
+            count += self.set_baseline as u8;
+        }
+        count
+    }
+
     fn ui(&mut self, ctx: &egui::Context, app: &mut SlideApp) {
-        // Opened from the Home ribbon; never float a duplicate button over tabs.
         let ribbon_open = ctx.data_mut(|d| {
             let key = egui::Id::new("tahoe-format-apply-open");
             let clicked = d.get_temp::<bool>(key).unwrap_or(false);
@@ -263,167 +328,239 @@ impl TypographyPanel {
         });
         if ribbon_open { self.open = true; }
         if !self.open { return; }
-        let mut open = self.open;
         let mut apply_now = false;
-        let mut cancel_now = false;
+        let mut close_now = false;
+        // 330 CSS-pixel panel, 37px header, 10px body padding, and 45px footer.
         egui::Window::new("Apply Formatting")
             .id(egui::Id::new("tahoe-typography-apply"))
-            .open(&mut open)
-            .default_width(392.0)
-            .min_width(365.0)
+            .title_bar(false)
+            .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
+            .default_width(330.0)
+            .min_width(330.0)
             .resizable(false)
             .collapsible(false)
+            .frame(egui::Frame::NONE
+                .fill(egui::Color32::WHITE)
+                .corner_radius(egui::CornerRadius::same(11))
+                .stroke(egui::Stroke::new(1.0, FORMAT_BORDER))
+                .shadow(egui::Shadow {
+                    offset: [0, 12], blur: 36, spread: 0,
+                    color: egui::Color32::from_black_alpha(32),
+                }))
             .show(ctx, |ui| {
-                // Compact editor modeled after the user's supplied mini-formatting reference.
-                ui.spacing_mut().item_spacing.y = 8.0;
-                ui.label(egui::RichText::new("APPLY TO").strong().size(11.0).color(egui::Color32::GRAY));
-                egui::ComboBox::from_id_salt("tahoe-format-scope")
-                    .selected_text(self.scope.label())
-                    .width(ui.available_width() - 14.0)
-                    .show_ui(ui, |ui| {
-                        for scope in [ApplyScope::Box, ApplyScope::Selection, ApplyScope::Headings,
-                            ApplyScope::Verses, ApplyScope::VerseNumbers, ApplyScope::Content,
-                            ApplyScope::CurrentSlide, ApplyScope::SelectedSlides, ApplyScope::All] {
-                            ui.selectable_value(&mut self.scope, scope, scope.label());
-                        }
+                ui.set_width(330.0);
+                ui.spacing_mut().item_spacing = egui::vec2(0.0, 0.0);
+                ui.visuals_mut().override_text_color = Some(FORMAT_INK);
+                // Header is independent of the padded form, with a full-width rule.
+                ui.allocate_ui_with_layout(egui::vec2(330.0, 36.0),
+                    egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                        ui.add_space(11.0);
+                        ui.label(egui::RichText::new("Apply Formatting").size(13.0).strong());
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                            ui.add_space(7.0);
+                            if ui.add(egui::Button::new(
+                                egui::RichText::new("×").size(22.0).color(egui::Color32::from_rgb(133,137,145)))
+                                .frame(false).min_size(egui::vec2(24.0, 26.0))).clicked() {
+                                close_now = true;
+                            }
+                        });
                     });
-                ui.add_space(3.0);
-                ui.label(egui::RichText::new("FORMATTING  ·  check to change").strong().size(11.0).color(egui::Color32::GRAY));
-                ui.horizontal(|ui| {
-                    ui.checkbox(&mut self.set_font, "");
-                    ui.add_sized([45.0, 25.0], egui::Label::new("Font"));
-                    ui.add_enabled_ui(self.set_font, |ui| {
-                        egui::ComboBox::from_id_salt("tahoe-apply-font")
-                            .selected_text(&self.font).width(158.0).show_ui(ui, |ui| {
-                                for family in deckcraft_fonts::FontDb::global().families() {
-                                    ui.selectable_value(&mut self.font, family.clone(), family);
-                                }
-                            });
-                    });
-                    ui.checkbox(&mut self.set_size, "");
-                    ui.add_enabled(self.set_size, egui::DragValue::new(&mut self.font_size)
-                        .range(1.0..=200.0).speed(0.5).suffix(" pt"));
-                });
-                ui.horizontal(|ui| {
-                    let mut style_enabled = self.set_bold || self.set_italic || self.set_underline;
-                    if ui.checkbox(&mut style_enabled, "").changed() {
-                        self.set_bold = style_enabled;
-                        self.set_italic = style_enabled;
-                        self.set_underline = style_enabled;
-                    }
-                    ui.add_sized([45.0, 25.0], egui::Label::new("Style"));
-                    for (title, flag, enabled) in [
-                        ("B", &mut self.bold, &mut self.set_bold),
-                        ("I", &mut self.italic, &mut self.set_italic),
-                        ("U", &mut self.underline, &mut self.set_underline),
-                    ] {
-                        let on = *enabled && *flag;
-                        if ui.add_sized([42.0, 28.0], egui::Button::new(title).selected(on)).clicked() {
-                            *flag = !on;
-                            *enabled = true;
-                        }
-                    }
-                    ui.checkbox(&mut self.set_color, "");
-                    ui.add_enabled_ui(self.set_color, |ui| {
-                        ui.add_sized([70.0, 27.0], egui::TextEdit::singleline(&mut self.color));
-                    });
-                });
-                if self.scope == ApplyScope::VerseNumbers {
-                    ui.separator();
-                    ui.label(egui::RichText::new("VERSE NUMBERS").strong().size(11.0).color(egui::Color32::GRAY));
+                format_rule(ui, 330.0);
+                egui::Frame::NONE.inner_margin(egui::Margin::symmetric(10, 10)).show(ui, |ui| {
+                    ui.set_width(310.0);
+                    ui.spacing_mut().item_spacing = egui::vec2(6.0, 5.0);
+                    ui.spacing_mut().interact_size.y = 29.0;
+                    ui.visuals_mut().widgets.inactive.bg_fill = egui::Color32::from_rgb(248, 249, 250);
+                    ui.visuals_mut().widgets.inactive.bg_stroke = egui::Stroke::new(1.0, FORMAT_BORDER);
+                    ui.visuals_mut().widgets.hovered.bg_stroke = egui::Stroke::new(1.0, FORMAT_ORANGE);
+                    ui.visuals_mut().widgets.active.bg_stroke = egui::Stroke::new(1.0, FORMAT_ORANGE);
+
+                    format_section(ui, "APPLY TO");
+                    ui.add_space(5.0);
+                    egui::ComboBox::from_id_salt("tahoe-format-scope")
+                        .selected_text(self.scope.label())
+                        .width(310.0)
+                        .show_ui(ui, |ui| {
+                            for scope in [ApplyScope::Box, ApplyScope::Selection, ApplyScope::Headings,
+                                ApplyScope::Verses, ApplyScope::VerseNumbers, ApplyScope::Content,
+                                ApplyScope::CurrentSlide, ApplyScope::SelectedSlides, ApplyScope::All] {
+                                ui.selectable_value(&mut self.scope, scope, scope.label());
+                            }
+                        });
+                    ui.add_space(11.0);
                     ui.horizontal(|ui| {
-                        ui.add_sized([85.0, 24.0], egui::Label::new("Position"));
-                        for (mode, label) in [
-                            (VerseBaseline::Normal, "Normal"),
-                            (VerseBaseline::Super, "X²"),
-                            (VerseBaseline::Sub, "X₂"),
+                        ui.spacing_mut().item_spacing.x = 4.0;
+                        format_section(ui, "FORMATTING");
+                        ui.label(egui::RichText::new("· check to change").size(10.0).color(FORMAT_MUTED));
+                    });
+                    ui.add_space(7.0);
+                    ui.horizontal(|ui| {
+                        ui.spacing_mut().item_spacing.x = 6.0;
+                        format_tick(ui, &mut self.set_font, "Change font");
+                        format_label(ui, "Font", 42.0);
+                        ui.add_enabled_ui(self.set_font, |ui| {
+                            egui::ComboBox::from_id_salt("tahoe-apply-font")
+                                .selected_text(&self.font).width(156.0).show_ui(ui, |ui| {
+                                    for family in deckcraft_fonts::FontDb::global().families() {
+                                        ui.selectable_value(&mut self.font, family.clone(), family);
+                                    }
+                                });
+                        });
+                        ui.add_enabled(self.set_size, egui::DragValue::new(&mut self.font_size)
+                            .range(1.0..=200.0).speed(0.5).min_decimals(0).max_decimals(1)
+                            .suffix(""));
+                        format_tick(ui, &mut self.set_size, "Apply font size");
+                    });
+                    ui.add_space(7.0);
+                    ui.horizontal(|ui| {
+                        ui.spacing_mut().item_spacing.x = 5.0;
+                        let mut style_enabled = self.set_bold || self.set_italic || self.set_underline;
+                        format_tick(ui, &mut style_enabled, "Change text style");
+                        if style_enabled != (self.set_bold || self.set_italic || self.set_underline) {
+                            self.set_bold = style_enabled;
+                            self.set_italic = style_enabled;
+                            self.set_underline = style_enabled;
+                        }
+                        format_label(ui, "Style", 42.0);
+                        for (label, on, set, bold) in [
+                            ("B", &mut self.bold, &mut self.set_bold, true),
+                            ("I", &mut self.italic, &mut self.set_italic, false),
+                            ("U", &mut self.underline, &mut self.set_underline, false),
                         ] {
-                            if ui.add_sized([72.0, 28.0], egui::Button::new(label).selected(self.baseline == mode)).clicked() {
-                                self.baseline = mode;
-                                self.set_baseline = true;
+                            if format_segment(ui, label, 58.0, *on, style_enabled, bold) {
+                                *on = !*on;
+                                *set = true;
                             }
                         }
+                        format_tick(ui, &mut self.set_color, "Apply text color");
+                        let mut color = egui::Color32::from_rgb(
+                            u8::from_str_radix(self.color.get(1..3).unwrap_or("61"), 16).unwrap_or(97),
+                            u8::from_str_radix(self.color.get(3..5).unwrap_or("40"), 16).unwrap_or(64),
+                            u8::from_str_radix(self.color.get(5..7).unwrap_or("00"), 16).unwrap_or(0));
+                        ui.add_enabled_ui(self.set_color, |ui| {
+                            ui.color_edit_button_srgba(&mut color);
+                        });
+                        self.color = format!("#{:02x}{:02x}{:02x}", color.r(), color.g(), color.b());
                     });
-                    ui.horizontal(|ui| {
-                        ui.checkbox(&mut self.convert_numbers, "");
-                        ui.add_sized([62.0, 24.0], egui::Label::new("Digits"));
-                        if ui.add_sized([110.0, 28.0], egui::Button::new("123")
-                            .selected(self.number_style == VerseNumberStyle::English)).clicked() {
-                            self.number_style = VerseNumberStyle::English;
-                            self.convert_numbers = true;
-                        }
-                        if ui.add_sized([110.0, 28.0], egui::Button::new("១២៣")
-                            .selected(self.number_style == VerseNumberStyle::Khmer)).clicked() {
-                            self.number_style = VerseNumberStyle::Khmer;
-                            self.convert_numbers = true;
-                        }
-                    });
-                }
-                ui.separator();
-                egui::CollapsingHeader::new("More options").id_salt("tahoe-apply-more")
-                    .default_open(false).show(ui, |ui| {
+                    if self.scope == ApplyScope::VerseNumbers {
+                        ui.add_space(10.0);
+                        format_rule(ui, 310.0);
+                        ui.add_space(9.0);
+                        format_section(ui, "VERSE NUMBERS");
+                        ui.add_space(7.0);
                         ui.horizontal(|ui| {
-                            ui.checkbox(&mut self.set_spacing, "");
-                            ui.add_sized([67.0, 25.0], egui::Label::new("Spacing"));
-                            ui.add_enabled(self.set_spacing, egui::DragValue::new(&mut self.line_spacing)
-                                .range(0.5..=4.0).speed(0.05));
+                            ui.spacing_mut().item_spacing.x = 6.0;
+                            format_tick(ui, &mut self.set_baseline, "Change verse number position");
+                            format_label(ui, "Position", 42.0);
+                            for (mode, label) in [
+                                (VerseBaseline::Normal, "Normal"),
+                                (VerseBaseline::Super, "X²"),
+                                (VerseBaseline::Sub, "X₂"),
+                            ] {
+                                if format_segment(ui, label, 76.0, self.baseline == mode, true, false) {
+                                    self.baseline = mode;
+                                    self.set_baseline = true;
+                                }
+                            }
                         });
+                        ui.add_space(7.0);
                         ui.horizontal(|ui| {
-                            ui.checkbox(&mut self.set_align, "");
-                            ui.add_sized([67.0, 25.0], egui::Label::new("Align"));
-                            ui.add_enabled_ui(self.set_align, |ui| {
-                                egui::ComboBox::from_id_salt("tahoe-apply-align")
-                                    .selected_text(&self.align).show_ui(ui, |ui| {
-                                        for v in ["left", "center", "right", "justify"] {
-                                            ui.selectable_value(&mut self.align, v.to_owned(), v);
-                                        }
-                                    });
-                            });
+                            ui.spacing_mut().item_spacing.x = 6.0;
+                            format_tick(ui, &mut self.convert_numbers, "Convert verse number digits");
+                            format_label(ui, "Digits", 42.0);
+                            for (mode, label) in [
+                                (VerseNumberStyle::English, "123"),
+                                (VerseNumberStyle::Khmer, "១២៣"),
+                            ] {
+                                if format_segment(ui, label, 115.0, self.number_style == mode, true, false) {
+                                    self.number_style = mode;
+                                    self.convert_numbers = true;
+                                }
+                            }
                         });
-                        ui.horizontal(|ui| {
-                            ui.checkbox(&mut self.set_anchor, "");
-                            ui.add_sized([67.0, 25.0], egui::Label::new("Vertical"));
-                            ui.add_enabled_ui(self.set_anchor, |ui| {
-                                egui::ComboBox::from_id_salt("tahoe-apply-anchor")
-                                    .selected_text(&self.anchor).show_ui(ui, |ui| {
-                                        for v in ["top", "middle", "bottom"] {
-                                            ui.selectable_value(&mut self.anchor, v.to_owned(), v);
-                                        }
-                                    });
-                            });
-                        });
-                        if self.scope != ApplyScope::VerseNumbers {
+                    }
+                    ui.add_space(10.0);
+                    format_rule(ui, 310.0);
+                    ui.add_space(7.0);
+                    egui::CollapsingHeader::new(
+                        egui::RichText::new("More options").size(11.0)
+                            .color(egui::Color32::from_rgb(102, 108, 116)))
+                        .id_salt("tahoe-apply-more")
+                        .default_open(true).show(ui, |ui| {
+                            ui.spacing_mut().item_spacing = egui::vec2(6.0, 7.0);
+                            ui.add_space(4.0);
                             ui.horizontal(|ui| {
-                                ui.checkbox(&mut self.set_baseline, "Position");
-                                ui.add_enabled_ui(self.set_baseline, |ui| {
-                                    egui::ComboBox::from_id_salt("tahoe-apply-baseline")
-                                        .selected_text(self.baseline.label()).show_ui(ui, |ui| {
-                                            for v in [VerseBaseline::Normal, VerseBaseline::Super, VerseBaseline::Sub] {
-                                                ui.selectable_value(&mut self.baseline, v, v.label());
+                                format_tick(ui, &mut self.set_spacing, "Change line spacing");
+                                format_label(ui, "Spacing", 57.0);
+                                ui.add_enabled(self.set_spacing, egui::DragValue::new(&mut self.line_spacing)
+                                    .range(0.5..=4.0).speed(0.05).min_decimals(1).max_decimals(2));
+                            });
+                            ui.horizontal(|ui| {
+                                format_tick(ui, &mut self.set_align, "Change text alignment");
+                                format_label(ui, "Align", 57.0);
+                                ui.add_enabled_ui(self.set_align, |ui| {
+                                    egui::ComboBox::from_id_salt("tahoe-apply-align")
+                                        .selected_text(&self.align).width(218.0).show_ui(ui, |ui| {
+                                            for v in ["left", "center", "right", "justify"] {
+                                                ui.selectable_value(&mut self.align, v.to_owned(), v);
                                             }
                                         });
                                 });
                             });
-                        }
-                    });
-                ui.separator();
-                ui.horizontal(|ui| {
-                    ui.label(egui::RichText::new(self.scope.label()).small().color(egui::Color32::GRAY));
-                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        if ui.add_sized([72.0, 30.0],
-                            egui::Button::new(egui::RichText::new("Apply").color(egui::Color32::WHITE).strong())
-                                .fill(egui::Color32::from_rgb(232, 121, 66))).clicked() {
-                            apply_now = true;
-                        }
-                        if ui.add_sized([68.0, 30.0], egui::Button::new("Cancel")).clicked() {
-                            cancel_now = true;
-                        }
-                    });
+                            ui.horizontal(|ui| {
+                                format_tick(ui, &mut self.set_anchor, "Change vertical alignment");
+                                format_label(ui, "Vertical", 57.0);
+                                ui.add_enabled_ui(self.set_anchor, |ui| {
+                                    egui::ComboBox::from_id_salt("tahoe-apply-anchor")
+                                        .selected_text(&self.anchor).width(218.0).show_ui(ui, |ui| {
+                                            for v in ["top", "middle", "bottom"] {
+                                                ui.selectable_value(&mut self.anchor, v.to_owned(), v);
+                                            }
+                                        });
+                                });
+                            });
+                            if self.scope != ApplyScope::VerseNumbers {
+                                ui.horizontal(|ui| {
+                                    format_tick(ui, &mut self.set_baseline, "Change text baseline");
+                                    format_label(ui, "Position", 57.0);
+                                    ui.add_enabled_ui(self.set_baseline, |ui| {
+                                        egui::ComboBox::from_id_salt("tahoe-apply-baseline")
+                                            .selected_text(self.baseline.label()).width(218.0).show_ui(ui, |ui| {
+                                                for v in [VerseBaseline::Normal, VerseBaseline::Super, VerseBaseline::Sub] {
+                                                    ui.selectable_value(&mut self.baseline, v, v.label());
+                                                }
+                                            });
+                                    });
+                                });
+                            }
+                        });
                 });
-                if !self.status.is_empty() { ui.small(&self.status); }
+                format_rule(ui, 330.0);
+                ui.allocate_ui_with_layout(egui::vec2(330.0, 44.0),
+                    egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                        ui.add_space(10.0);
+                        ui.label(egui::RichText::new(format!("{} selected", self.selected_count()))
+                            .size(10.0).color(egui::Color32::from_rgb(139, 144, 152)));
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                            ui.add_space(10.0);
+                            let button = egui::Button::new(
+                                egui::RichText::new("Apply").strong().color(egui::Color32::WHITE))
+                                .fill(FORMAT_ORANGE).stroke(egui::Stroke::new(1.0, FORMAT_ORANGE))
+                                .corner_radius(6);
+                            if ui.add_sized([61.0, 29.0], button).clicked() { apply_now = true; }
+                            ui.add_space(7.0);
+                            if ui.add_sized([65.0, 29.0],
+                                egui::Button::new("Cancel").fill(egui::Color32::WHITE)
+                                    .stroke(egui::Stroke::new(1.0, FORMAT_BORDER)).corner_radius(6))
+                                .clicked() { close_now = true; }
+                        });
+                    });
+                if !self.status.is_empty() {
+                    ui.add_sized([330.0, 18.0],
+                        egui::Label::new(egui::RichText::new(&self.status).size(10.0).color(FORMAT_MUTED)));
+                }
             });
-        if cancel_now { open = false; }
-        self.open = open;
+        if close_now { self.open = false; }
         if apply_now {
             self.status = match self.apply(app) {
                 Ok(n) => format!("Applied formatting to {n} text item(s)."),
@@ -530,13 +667,15 @@ impl TypographyPanel {
                             }
                         }
                         self.apply_to_selected(app)?;
-                        match self.baseline {
-                            VerseBaseline::Normal => {
-                                app.run("format.superscript", json!({"on":false}))?;
-                                app.run("format.subscript", json!({"on":false}))?;
+                        if self.set_baseline {
+                            match self.baseline {
+                                VerseBaseline::Normal => {
+                                    app.run("format.superscript", json!({"on":false}))?;
+                                    app.run("format.subscript", json!({"on":false}))?;
+                                }
+                                VerseBaseline::Super => { app.run("format.superscript", json!({"on":true}))?; }
+                                VerseBaseline::Sub => { app.run("format.subscript", json!({"on":true}))?; }
                             }
-                            VerseBaseline::Super => { app.run("format.superscript", json!({"on":true}))?; }
-                            VerseBaseline::Sub => { app.run("format.subscript", json!({"on":true}))?; }
                         }
                         count += 1;
                     }
