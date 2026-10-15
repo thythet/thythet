@@ -1,4 +1,4 @@
-const SHELL='tahoe-shell-v78',RUNTIME='tahoe-runtime-v78';
+const SHELL='tahoe-shell-v79',RUNTIME='tahoe-runtime-v79';
 const CORE=['./','index.html','manifest.webmanifest','data/manifest.json','assets/icon-192.png','assets/icon-512.png','assets/powerslide-icon.svg','apps/bible/index.html','apps/powerslide/index.html','apps/powerslide-next/powerslide-next.css','apps/powerslide-next/powerslide-next.js','apps/bible-next/bible-next.css','apps/bible-next/bible-next.js','apps/bible-next/search-worker.js','apps/allsong-next/allsong-next.css','apps/allsong-next/allsong-next.js','data/songs/manifest.json','assets/deckcraft-icon.png','apps/deckcraft-web/index.html'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(SHELL).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>(k.startsWith('tahoe-shell-')||k.startsWith('tahoe-runtime-')||k.startsWith('tahoe-shared-bible-'))&&!([SHELL,RUNTIME,BIBLE_CACHE].includes(k))).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
@@ -7,7 +7,7 @@ async function cacheFirstBible(req){const c=await caches.open(BIBLE_CACHE),hit=a
 async function cacheFirst(req){const c=await caches.open(RUNTIME),hit=await c.match(req);if(hit)return hit;const r=await fetch(req);if(r.ok)c.put(req,r.clone());return r}
 async function networkFirst(req){const c=await caches.open(RUNTIME);try{const r=await fetch(req,{cache:'no-cache'});if(r.ok)c.put(req,r.clone());return r}catch{const hit=await c.match(req);return hit||Response.error()}}
 
-const BIBLE_CACHE='tahoe-shared-bible-v78';
+const BIBLE_CACHE='tahoe-shared-bible-v79';
 async function bibleManifest(){const c=await caches.open(RUNTIME),url=new URL('data/manifest.json',self.location.href).href,hit=await c.match(url);if(hit)return hit.json();return fetch(url).then(r=>r.json())}
 async function bibleStatus(){const c=await caches.open(BIBLE_CACHE),keys=await c.keys();return keys.filter(r=>new URL(r.url).pathname.includes('/data/books/')).length}
 self.addEventListener('message',e=>{const m=e.data||{},port=e.ports?.[0];if(m.type==='BIBLE_STATUS')e.waitUntil(bibleStatus().then(count=>port?.postMessage({ok:true,count})));if(m.type==='CLEAR_BIBLE')e.waitUntil(caches.delete(BIBLE_CACHE).then(()=>caches.open(BIBLE_CACHE)).then(()=>port?.postMessage({ok:true,count:0})));if(m.type==='CACHE_ALL_BIBLE')e.waitUntil((async()=>{const mf=await bibleManifest(),list=mf.books||[],c=await caches.open(BIBLE_CACHE);let done=0;for(const b of list){const req=new Request(new URL('data/books/'+b.id+'.json',self.location.href).href);if(!await c.match(req)){const r=await fetch(req);if(!r.ok)throw Error(b.id);await c.put(req,r.clone())}done++;port?.postMessage({type:'PROGRESS',done,total:list.length})}port?.postMessage({ok:true,count:list.length})})().catch(err=>port?.postMessage({ok:false,error:String(err.message||err)})))})

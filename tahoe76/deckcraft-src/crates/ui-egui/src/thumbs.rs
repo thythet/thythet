@@ -42,6 +42,7 @@ fn list(app: &mut SlideApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
     let Some(st) = app.session.active() else { return };
     let doc = st.doc.clone();
+    let smart_zero = doc.slides.first().is_some_and(|s| s.name == "✦ Smart Generate Input");
     let cur = st.selection.slide;
     let multi = st.selection.slides.clone();
     let width = ui.available_width();
@@ -103,7 +104,7 @@ fn list(app: &mut SlideApp, ui: &mut Ui) {
         p.text(
             pos2(row.min.x + 14.0, img.min.y + 2.0),
             Align2::CENTER_TOP,
-            format!("{}", i + 1),
+            format!("{}", if smart_zero { i } else { i + 1 }),
             theme::font(12.0),
             if selected { t.text } else { t.text_dim },
         );
@@ -158,7 +159,7 @@ fn list(app: &mut SlideApp, ui: &mut Ui) {
         if resp.double_clicked() {
             app.start_show(i, false);
         }
-        if resp.drag_started() {
+        if resp.drag_started() && !(smart_zero && i == 0) {
             app.thumb_drag = Some((i, i));
         }
         resp.context_menu(|ui| slide_menu(app, ui, i));
@@ -186,7 +187,10 @@ fn list(app: &mut SlideApp, ui: &mut Ui) {
                 && to != from + 1
             {
                 let dest = if to > from { to - 1 } else { to };
-                let _ = app.run("slide.move", json!({"from": from, "to": dest}));
+                let dest = if smart_zero { dest.max(1) } else { dest };
+                if !(smart_zero && from == 0) {
+                    let _ = app.run("slide.move", json!({"from": from, "to": dest}));
+                }
             }
             app.thumb_drag = None;
         }
@@ -202,6 +206,15 @@ fn list(app: &mut SlideApp, ui: &mut Ui) {
 }
 
 pub fn slide_menu(app: &mut SlideApp, ui: &mut Ui, i: usize) {
+    // The hidden source slide must stay at index 0; never permit Cut/Delete/Move through this menu.
+    if i == 0 && app.session.active().is_some_and(|d| d.doc.slides.first().is_some_and(|s| s.name == "✦ Smart Generate Input")) {
+        ui.label("Slide 0 · Hidden Smart Generate source");
+        if ui.button("✦ Open Smart Generate").clicked() {
+            ui.ctx().data_mut(|d| d.insert_temp(egui::Id::new("tahoe-smart-quick"), true));
+            ui.close();
+        }
+        return;
+    }
     if app.session.active().is_some_and(|d| d.selection.slide != i && !d.selection.slides.iter().any(|id| d.doc.slide_index(*id) == Some(i))) {
         let _ = app.run("slide.go", json!({"index": i}));
     }

@@ -15,7 +15,14 @@ pub fn status_bar(app: &mut SlideApp, ui: &mut Ui) {
         let Some(st) = app.session.active() else { return };
         let n = st.doc.slides.len();
         let left = match st.selection.target {
-            deckcraft_engine::Target::Slides => format!("Slide {} of {}", (st.selection.slide + 1).min(n.max(1)), n),
+            deckcraft_engine::Target::Slides => {
+                let smart_zero = st.doc.slides.first().is_some_and(|s| s.name == "✦ Smart Generate Input");
+                if smart_zero {
+                    format!("Slide {} of {}", st.selection.slide, n.saturating_sub(1))
+                } else {
+                    format!("Slide {} of {}", (st.selection.slide + 1).min(n.max(1)), n)
+                }
+            },
             _ => "Slide Master".to_string(),
         };
         let p = ui.painter();

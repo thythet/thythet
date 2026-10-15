@@ -59,6 +59,15 @@ pub fn start() {
                         }
                     } else if let Err(e) = app.run("file.new", serde_json::json!({})) {
                         log::error!("new presentation: {e}");
+                    } else {
+                        // Reserve the actual first slide as hidden, editable Smart Generate input.
+                        // Human numbering begins with 0 for this slide; generated slides start at 1.
+                        if let Err(e) = app.run("slide.rename", json!({"index":0,"name":"✦ Smart Generate Input"})) {
+                            log::warn!("Source slide rename: {e}");
+                        }
+                        if let Err(e) = app.run("slide.hide", json!({"index":0,"hidden":true})) {
+                            log::warn!("Source slide hide: {e}");
+                        }
                     }
                     if q.contains("show") {
                         app.start_show(0, false);
@@ -129,6 +138,26 @@ impl eframe::App for WebShell {
         self.app.ui(ui);
         self.sync_present_mode();
         if self.app.show.is_none() {
+            let take = |key: egui::Id| ui.ctx().data_mut(|d| {
+                let clicked = d.get_temp::<bool>(key).unwrap_or(false);
+                if clicked { d.insert_temp(key, false); }
+                clicked
+            });
+            for (action, command) in [("close", "close"), ("minimize", "minimize"), ("zoom", "zoom")] {
+                if take(egui::Id::new(("tahoe-deckcraft-window", action))) {
+                    post_parent_window(command);
+                }
+            }
+            if take(egui::Id::new("tahoe-smart-quick")) {
+                // Source is always slide zero; no source slides are added in front of it.
+                if self.app.session.active().is_some_and(|d| d.doc.slides.first().is_some_and(|s| s.name == "✦ Smart Generate Input")) {
+                    let _ = self.app.run("slide.go", json!({"index": 0}));
+                }
+                self.smart.open = true;
+            }
+            if take(egui::Id::new("tahoe-bible-quick")) {
+                self.bible.open = true;
+            }
             self.smart.ui(ui.ctx(), &mut self.app);
             self.bible.ui(ui.ctx(), &mut self.app);
         }
@@ -225,17 +254,6 @@ impl Default for BibleGenerator {
 
 impl BibleGenerator {
     fn ui(&mut self, ctx: &egui::Context, app: &mut SlideApp) {
-        egui::Area::new(egui::Id::new("deckcraft_bible_quick_button"))
-            .anchor(egui::Align2::RIGHT_TOP, egui::vec2(-12.0, 88.0))
-            .order(egui::Order::Foreground)
-            .show(ctx, |ui| {
-                egui::Frame::popup(ui.style()).show(ui, |ui| {
-                    if ui.button("Bible Generate").clicked() {
-                        self.open = true;
-                    }
-                });
-            });
-
         if !self.open {
             return;
         }
@@ -576,16 +594,6 @@ impl SmartGenerator {
         let first_slide = app.session.active().is_some_and(|d| d.selection.slide == 0);
         if first_slide {
             self.restore_from_first_slide(app);
-            egui::Area::new(egui::Id::new("deckcraft_smart_generate_button"))
-                .anchor(egui::Align2::RIGHT_TOP, egui::vec2(-128.0, 88.0))
-                .order(egui::Order::Foreground)
-                .show(ctx, |ui| {
-                    egui::Frame::popup(ui.style()).show(ui, |ui| {
-                        if ui.button("✦ Smart Generate").clicked() {
-                            self.open = true;
-                        }
-                    });
-                });
         }
         if !self.open {
             return;
@@ -600,8 +608,8 @@ impl SmartGenerator {
             .resizable(true)
             .collapsible(false)
             .show(ctx, |ui| {
-                ui.strong("First slide · Bible program input");
-                ui.small("Paste the whole program here. Slide 1 is kept as the Smart Generate source and hidden from presentation after generation.");
+                ui.strong("Slide 0 · Bible program input");
+                ui.small("Paste the whole program here. Slide 0 is the permanent hidden Smart Generate source; generated slides start at 1.");
                 ui.add_space(6.0);
                 ui.add(
                     egui::TextEdit::multiline(&mut self.input)
@@ -691,7 +699,7 @@ impl SmartGenerator {
         match result {
             Ok((replace, slides)) => match apply_smart_slides(app, &slides, replace, &self.input, &self.font_family) {
                 Ok(n) => {
-                    self.status = format!("Generated {n} slide{}. Slide 1 remains the hidden Smart Generate input.", if n == 1 { "" } else { "s" });
+                    self.status = format!("Generated {n} slide{}. Slide 0 remains the hidden Smart Generate input.", if n == 1 { "" } else { "s" });
                     app.notify(self.status.clone());
                 }
                 Err(e) => {
@@ -982,6 +990,16 @@ fn text_body_plain(body: &deckcraft_engine::model::text::TextBody) -> String {
         .map(|p| p.runs.iter().map(|r| r.text.as_str()).collect::<String>())
         .collect::<Vec<_>>()
         .join("\n")
+}
+
+fn post_parent_window(command: &str) {
+    let Some(window) = web_sys::window() else { return };
+    let Ok(Some(parent)) = window.parent() else { return };
+    let payload = js_sys::Object::new();
+    let _ = js_sys::Reflect::set(&payload, &wasm_bindgen::JsValue::from_str("type"), &wasm_bindgen::JsValue::from_str("tahoe-app-command"));
+    let _ = js_sys::Reflect::set(&payload, &wasm_bindgen::JsValue::from_str("app"), &wasm_bindgen::JsValue::from_str("deckcraft"));
+    let _ = js_sys::Reflect::set(&payload, &wasm_bindgen::JsValue::from_str("command"), &wasm_bindgen::JsValue::from_str(command));
+    let _ = parent.post_message(&payload.into(), "*");
 }
 
 fn post_parent_present(active: bool) {

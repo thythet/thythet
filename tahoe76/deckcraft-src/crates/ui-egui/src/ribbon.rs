@@ -68,13 +68,42 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
         }
         let mut child = ui.new_child(
             egui::UiBuilder::new()
-                .max_rect(Rect::from_min_max(pos2(rect.min.x + left, rect.min.y), pos2(rect.min.x + 420.0, rect.max.y)))
+                .max_rect(Rect::from_min_max(pos2(rect.min.x + left, rect.min.y), pos2((rect.min.x + 700.0).min(rect.max.x - 150.0), rect.max.y)))
                 .layout(egui::Layout::left_to_right(egui::Align::Center)),
         );
-        child.spacing_mut().item_spacing.x = 2.0;
+        child.spacing_mut().item_spacing.x = 3.0;
         let has_doc = app.session.active().is_some();
         let dirty = app.session.active().is_some_and(|d| d.is_dirty());
+        if cfg!(target_arch = "wasm32") {
+            // Single compact quick-access row. Tahoe owns window movement, resizing and visibility.
+            for (glyph, color, tooltip, action) in [
+                ("×", Color32::from_rgb(255, 95, 86), "Close DeckCraft", "close"),
+                ("−", Color32::from_rgb(255, 189, 46), "Hide DeckCraft", "minimize"),
+                ("+", Color32::from_rgb(40, 196, 78), "Zoom DeckCraft", "zoom"),
+            ] {
+                let button = egui::Button::new(egui::RichText::new(glyph).size(12.0).color(Color32::from_black_alpha(145)))
+                    .fill(color).corner_radius(12.0).min_size(vec2(20.0, 20.0));
+                if child.add(button).on_hover_text(tooltip).clicked() {
+                    ui.ctx().data_mut(|d| d.insert_temp(egui::Id::new(("tahoe-deckcraft-window", action)), true));
+                }
+            }
+            child.separator();
+        }
         crate::qat::show(app, &mut child);
+        if cfg!(target_arch = "wasm32") {
+            child.separator();
+            let compact = rect.width() < 950.0;
+            if child.button(if compact { "✦" } else { "✦ Smart" })
+                .on_hover_text("Smart Generate · Bible program and sermon text (slide 0)").clicked()
+            {
+                ui.ctx().data_mut(|d| d.insert_temp(egui::Id::new("tahoe-smart-quick"), true));
+            }
+            if child.button(if compact { "Bible" } else { "Bible Generate" })
+                .on_hover_text("Generate editable Bible slides").clicked()
+            {
+                ui.ctx().data_mut(|d| d.insert_temp(egui::Id::new("tahoe-bible-quick"), true));
+            }
+        }
         let title =
             app.session.active().map(|d| format!("{}{}", d.title(), if dirty { " — Edited" } else { "" })).unwrap_or_else(|| "DeckCraft".into());
         ui.painter().text(rect.center(), Align2::CENTER_CENTER, title, theme::font(13.0), t.text);
