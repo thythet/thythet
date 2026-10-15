@@ -1168,14 +1168,45 @@ body.theme-gray .desktop-app-window{background:rgba(228,230,233,.75)}
 
 
 /* ===== v76 DeckCraft Web desktop app ===== */
-.deckcraft-desktop-window{--deckcraft-bar:50px;background:#17191d}
-#deckCraftFrame{top:var(--deckcraft-bar);height:calc(100% - var(--deckcraft-bar));background:#17191d}
-.deckcraft-window-chrome{position:absolute;z-index:20;left:0;right:0;top:0;height:var(--deckcraft-bar);display:flex;align-items:center;gap:12px;padding:0 14px 0 16px;background:color-mix(in srgb,var(--card) 84%,transparent);border-bottom:1px solid rgba(127,127,127,.16);backdrop-filter:blur(var(--top-glass-blur)) saturate(160%);-webkit-backdrop-filter:blur(var(--top-glass-blur)) saturate(160%);touch-action:none}
-.deckcraft-window-chrome .traffic{flex:0 0 auto;padding:0}
-.deckcraft-brand{display:flex;align-items:center;gap:9px;min-width:0;pointer-events:none}
-.deckcraft-brand img{width:27px;height:27px;border-radius:7px;object-fit:contain}
-.deckcraft-brand-copy{min-width:0;line-height:1.05}.deckcraft-brand-copy strong{display:block;font-size:13px;white-space:nowrap}.deckcraft-brand-copy small{display:block;margin-top:3px;font-size:9px;color:var(--muted);white-space:nowrap}
-.deckcraft-chrome-spacer{flex:1}.deckcraft-chrome-btn{width:33px;height:33px;border:0;border-radius:10px;background:transparent;color:inherit;display:grid;place-items:center;cursor:pointer}.deckcraft-chrome-btn:hover{background:rgba(var(--accent-rgb),.09)}.deckcraft-chrome-btn i{font-size:19px}
+.deckcraft-desktop-window{
+ --deckcraft-bar:64px;
+ background:rgba(255,255,255,.62);
+ border:1px solid rgba(255,255,255,.72);
+ box-shadow:var(--shadow);
+ backdrop-filter:blur(var(--blur)) saturate(145%);
+ -webkit-backdrop-filter:blur(var(--blur)) saturate(145%)
+}
+#deckCraftFrame{top:var(--deckcraft-bar);height:calc(100% - var(--deckcraft-bar));background:#f4f5f6}
+.deckcraft-window-chrome{
+ position:absolute;z-index:20;left:0;right:0;top:0;height:var(--deckcraft-bar);
+ display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:0 15px;
+ background:linear-gradient(180deg,rgba(255,255,255,.88),rgba(243,247,249,.70));
+ border-bottom:1px solid rgba(82,96,107,.10);
+ backdrop-filter:blur(var(--top-glass-blur)) saturate(165%);
+ -webkit-backdrop-filter:blur(var(--top-glass-blur)) saturate(165%);
+ touch-action:none
+}
+.deckcraft-window-chrome .traffic{align-items:center;height:auto;padding:0 4px}
+.deckcraft-brand{display:flex;align-items:center;justify-content:center;gap:9px;min-width:0;pointer-events:none}
+.deckcraft-brand img{width:29px;height:29px;border-radius:8px;object-fit:contain;box-shadow:0 1px 1px rgba(0,0,0,.08)}
+.deckcraft-brand-copy{display:flex;align-items:center;gap:8px;min-width:0;line-height:1}
+.deckcraft-brand-copy strong{display:block;font-size:17px;font-weight:750;white-space:nowrap}
+.deckcraft-brand-copy small{display:inline-flex;align-items:center;padding:5px 8px;border-radius:999px;background:rgba(190,126,18,.10);color:#9a6500;font-size:8px;font-weight:800;letter-spacing:.04em;white-space:nowrap}
+.deckcraft-chrome-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px}
+.deckcraft-chrome-btn{width:38px;height:38px;border:1px solid rgba(255,255,255,.62);border-radius:50%;background:rgba(255,255,255,.54);color:inherit;display:grid;place-items:center;cursor:pointer;box-shadow:0 3px 13px rgba(30,55,75,.08)}
+.deckcraft-chrome-btn:hover{background:rgba(var(--accent-rgb),.09)}.deckcraft-chrome-btn i{font-size:19px}
+body.theme-dark .deckcraft-window-chrome{background:linear-gradient(180deg,rgba(50,50,54,.94),rgba(34,34,38,.78));border-bottom-color:rgba(255,255,255,.09)}
+body.theme-navy .deckcraft-window-chrome{background:linear-gradient(180deg,rgba(24,51,104,.95),rgba(10,34,82,.84));border-bottom-color:rgba(208,216,233,.12)}
+body.theme-gray .deckcraft-window-chrome{background:linear-gradient(180deg,rgba(241,243,245,.93),rgba(224,227,230,.79))}
+.desktop-app-window.app-fullscreen-fallback,.deckcraft-desktop-window.deckcraft-present-mode{
+ left:0!important;top:0!important;right:0!important;bottom:0!important;transform:none!important;
+ width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;
+ border:0!important;border-radius:0!important;z-index:100000!important
+}
+.deckcraft-desktop-window.deckcraft-present-mode .deckcraft-window-chrome{display:none!important}
+.deckcraft-desktop-window.deckcraft-present-mode #deckCraftFrame{top:0!important;height:100%!important}
+.deckcraft-desktop-window.deckcraft-present-mode .desktop-app-resize,
+.deckcraft-desktop-window.deckcraft-present-mode .desktop-app-drag-edge{display:none!important}
 @media(max-width:760px){#deckCraftFrame{top:0;height:100%}.deckcraft-window-chrome{display:none}}
 
 /* ===== v34 Bible: native Tahoe chrome ===== */
@@ -3403,11 +3434,12 @@ body.theme-gray .desktop-context-menu{background:rgba(229,232,235,.9)}
 <section class="desktop-app-window deckcraft-desktop-window" id="deckCraftWindow" aria-label="DeckCraft Web">
   <header class="deckcraft-window-chrome" data-app-drag>
     <div class="traffic"><button class="traffic-dot" id="deckCraftClose" aria-label="Close"></button><button class="traffic-dot" id="deckCraftMin" aria-label="Minimize"></button><button class="traffic-dot" id="deckCraftZoom" aria-label="Zoom"></button></div>
-    <div class="deckcraft-brand"><img src="assets/deckcraft-icon.png" alt=""><div class="deckcraft-brand-copy"><strong>DeckCraft</strong><small>Web · Bible Generate</small></div></div>
-    <div class="deckcraft-chrome-spacer"></div>
-    <button class="deckcraft-chrome-btn" id="deckCraftFullscreen" data-no-drag title="Fullscreen"><i class="ri-fullscreen-line"></i></button>
+    <div class="deckcraft-brand"><img src="assets/deckcraft-icon.png" alt=""><div class="deckcraft-brand-copy"><strong>DeckCraft</strong><small>PRO · PERSONAL</small></div></div>
+    <div class="deckcraft-chrome-actions">
+      <button class="deckcraft-chrome-btn" id="deckCraftFullscreen" data-no-drag title="Fullscreen"><i class="ri-fullscreen-line"></i></button>
+    </div>
   </header>
-  <iframe id="deckCraftFrame" src="about:blank" data-src="apps/deckcraft-web/index.html?blank&v=4" title="DeckCraft Web" loading="lazy" allow="clipboard-read; clipboard-write; fullscreen"></iframe>
+  <iframe id="deckCraftFrame" src="about:blank" data-src="apps/deckcraft-web/index.html?blank&v=77" title="DeckCraft Web" loading="lazy" allow="clipboard-read; clipboard-write; fullscreen"></iframe>
   <i class="desktop-app-drag-edge top" data-app-drag></i><i class="desktop-app-drag-edge bottom" data-app-drag></i><i class="desktop-app-drag-edge left" data-app-drag></i><i class="desktop-app-drag-edge right" data-app-drag></i>
   <i class="desktop-app-resize n" data-app-resize="n"></i><i class="desktop-app-resize s" data-app-resize="s"></i><i class="desktop-app-resize w" data-app-resize="w"></i><i class="desktop-app-resize e" data-app-resize="e"></i><i class="desktop-app-resize nw" data-app-resize="nw"></i><i class="desktop-app-resize ne" data-app-resize="ne"></i><i class="desktop-app-resize sw" data-app-resize="sw"></i><i class="desktop-app-resize se" data-app-resize="se"></i>
 </section>
@@ -3944,7 +3976,7 @@ function openDesktopApp(id){
  // Loading an iframe while its Tahoe window is display:none can leave DeckCraft at 0×0 and stuck during renderer startup.
  requestAnimationFrame(()=>{ensureDesktopAppLoaded(id);setTimeout(()=>sendDesktopAppTheme(id),0)})
 }
-function closeDesktopApp(id){const c=desktopApps[id];$(c.window)?.classList.remove("open");$(c.launcher)?.classList.remove("active")}
+function closeDesktopApp(id){const c=desktopApps[id],el=$(c?.window);el?.classList.remove("open");$(c?.launcher)?.classList.remove("active");if(id==="deckcraft")el?.classList.remove("deckcraft-present-mode","app-fullscreen-fallback")}
 function zoomDesktopApp(id){
  const c=desktopApps[id],el=$(c.window);if(!el)return;
  if(el.dataset.zoomed==="1"){el.dataset.zoomed="0";restoreDesktopAppState(id)}
@@ -3981,6 +4013,7 @@ function bindDesktopApps(){
    if(d.type==="tahoe-powerslide-finder"){if(e.source!==$("#powerSlideFrame")?.contentWindow)return;const reply=payload=>e.source?.postMessage({type:"tahoe-powerslide-finder-result",requestId:d.requestId,...payload},"*");try{if(d.action==="list")reply({ok:true,...await powerslideFinderList()});else if(d.action==="upsert")reply({ok:true,result:await powerslideFinderUpsert(d.project||{})});else if(d.action==="delete"){await powerslideFinderDelete(d.projectId);reply({ok:true})}else if(d.action==="open-folder"){openPowerslideProjectsFinder();reply({ok:true})}else reply({ok:false,error:"Unknown Finder action"})}catch(err){reply({ok:false,error:err?.message||"Finder operation failed"})}return}
    if(d.type==="tahoe-bible-state"){const t=$("#bibleChromeTitle"),sub=$("#bibleChromeSub");if(t&&d.title)t.textContent=d.title;if(sub&&d.subtitle)sub.textContent=d.subtitle;return}
    if(d.type==="tahoe-powerslide-state"){const t=$("#powerChromeTitle"),sub=$("#powerChromeSub");if(t&&d.title)t.textContent=d.title;if(sub&&d.subtitle)sub.textContent=d.subtitle;return}
+   if(d.type==="tahoe-deckcraft-present"){if(e.source!==$("#deckCraftFrame")?.contentWindow)return;const el=$("#deckCraftWindow");if(!el)return;el.classList.toggle("deckcraft-present-mode",!!d.active);el.classList.toggle("app-fullscreen-fallback",!!d.active);focusTahoeWindow(el);updateFullscreenUI();return}
    if(d.type!=="tahoe-app-command")return;
    const id=d.app;if(!desktopApps[id])return;
    if(d.command==="close"||d.command==="minimize")closeDesktopApp(id);

@@ -8,7 +8,7 @@ use wasm_bindgen::JsCast as _;
 mod bible_data;
 
 use serde_json::json;
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 const PRESENTATION_EXTS: &[&str] = &["deckcraft", "pptx", "potx", "ppsx", "txt", "md"];
 const PICTURE_EXTS: &[&str] = &["png", "jpg", "jpeg", "gif", "webp", "bmp", "tif", "tiff"];
@@ -52,7 +52,7 @@ pub fn start() {
                     if q.contains("show") {
                         app.start_show(0, false);
                     }
-                    Ok(Box::new(WebShell { app, inbox, bible: BibleGenerator::default() }))
+                    Ok(Box::new(WebShell { app, inbox, smart: SmartGenerator::default(), bible: BibleGenerator::default(), presenting: false }))
                 }),
             )
             .await;
@@ -74,7 +74,9 @@ fn query() -> String {
 struct WebShell {
     app: SlideApp,
     inbox: Inbox,
+    smart: SmartGenerator,
     bible: BibleGenerator,
+    presenting: bool,
 }
 
 impl eframe::App for WebShell {
@@ -110,9 +112,22 @@ impl eframe::App for WebShell {
 
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         self.app.ui(ui);
+        self.sync_present_mode();
         if self.app.show.is_none() {
+            self.smart.ui(ui.ctx(), &mut self.app);
             self.bible.ui(ui.ctx(), &mut self.app);
         }
+    }
+}
+
+impl WebShell {
+    fn sync_present_mode(&mut self) {
+        let active = self.app.show.is_some();
+        if active == self.presenting {
+            return;
+        }
+        self.presenting = active;
+        post_parent_present(active);
     }
 }
 
@@ -187,7 +202,7 @@ impl Default for BibleGenerator {
             include_reference: true,
             include_verse_numbers: true,
             title_slide: false,
-            font_family: String::new(),
+            font_family: "SONYHEAD5".into(),
             status: String::new(),
         }
     }
@@ -286,9 +301,18 @@ impl BibleGenerator {
 
                 ui.horizontal(|ui| {
                     ui.label("Font");
-                    ui.text_edit_singleline(&mut self.font_family);
+                    let families = deckcraft_fonts::FontDb::global().families();
+                    egui::ComboBox::from_id_salt("bible_font_family")
+                        .selected_text(if self.font_family.trim().is_empty() { "Theme font" } else { self.font_family.as_str() })
+                        .width(220.0)
+                        .show_ui(ui, |ui| {
+                            ui.selectable_value(&mut self.font_family, String::new(), "Theme font");
+                            for family in families {
+                                ui.selectable_value(&mut self.font_family, family.clone(), family);
+                            }
+                        });
                 });
-                ui.small("Leave Font blank to keep DeckCraft/theme font. Autofit Shrink is always applied so long Khmer verses do not crop.");
+                ui.small("Tahoe Khmer fonts are loaded into DeckCraft's real font engine. Autofit Shrink keeps long Khmer verses inside the text box.");
 
                 ui.separator();
                 let selected = self.selected_verses();
@@ -440,6 +464,14 @@ impl BibleGenerator {
 
         for group in groups {
             app.run("slide.new", json!({"layout": "blank"}))?;
+            let gfirst = group.first().map_or(first, |v| v.number);
+            let glast = group.last().map_or(gfirst, |v| v.number);
+            let generated_reference = if gfirst == glast {
+                format!("{} {}:{}", book.name, self.chapter, gfirst)
+            } else {
+                format!("{} {}:{}–{}", book.name, self.chapter, gfirst, glast)
+            };
+            app.run("slide.rename", json!({"name": format!("Bible · {generated_reference}")}))?;
             let body = group
                 .iter()
                 .map(|v| {
@@ -455,13 +487,7 @@ impl BibleGenerator {
             app.run("format.autofit", json!({"mode": "shrink"}))?;
 
             if self.include_reference {
-                let gfirst = group.first().map_or(first, |v| v.number);
-                let glast = group.last().map_or(gfirst, |v| v.number);
-                let reference = if gfirst == glast {
-                    format!("{} {}:{}", book.name, self.chapter, gfirst)
-                } else {
-                    format!("{} {}:{}–{}", book.name, self.chapter, gfirst, glast)
-                };
+                let reference = generated_reference.clone();
                 app.run("insert.textBox", json!({"rect": [60.0, 455.0, 840.0, 45.0], "text": reference}))?;
                 self.apply_text_style(app, 17.0, false)?;
                 app.run("format.autofit", json!({"mode": "shrink"}))?;
@@ -483,6 +509,543 @@ impl BibleGenerator {
         Ok(())
     }
 }
+
+
+#[derive(Clone)]
+struct SmartBibleRef {
+    book_id: String,
+    book_name: String,
+    chapter: usize,
+    verse_start: usize,
+    verse_end: usize,
+}
+
+enum SmartToken {
+    Heading(String),
+    Title(String),
+    Bible(SmartBibleRef),
+    Text(String),
+}
+
+enum SmartSlide {
+    Title(String),
+    Bible { book_name: String, chapter: usize, verses: Vec<BibleVerse> },
+    Text(String),
+}
+
+struct SmartGenerator {
+    open: bool,
+    input: String,
+    status: String,
+    running: bool,
+    font_family: String,
+    pending: Rc<RefCell<Option<Result<(bool, Vec<SmartSlide>), String>>>>,
+}
+
+impl Default for SmartGenerator {
+    fn default() -> Self {
+        Self {
+            open: false,
+            input: String::new(),
+            status: String::new(),
+            running: false,
+            font_family: "SONYHEAD5".into(),
+            pending: Rc::new(RefCell::new(None)),
+        }
+    }
+}
+
+impl SmartGenerator {
+    fn ui(&mut self, ctx: &egui::Context, app: &mut SlideApp) {
+        self.poll(app);
+        let first_slide = app.session.active().is_some_and(|d| d.selection.slide == 0);
+        if first_slide {
+            self.restore_from_first_slide(app);
+            egui::Area::new(egui::Id::new("deckcraft_smart_generate_button"))
+                .anchor(egui::Align2::RIGHT_TOP, egui::vec2(-128.0, 88.0))
+                .order(egui::Order::Foreground)
+                .show(ctx, |ui| {
+                    egui::Frame::popup(ui.style()).show(ui, |ui| {
+                        if ui.button("✦ Smart Generate").clicked() {
+                            self.open = true;
+                        }
+                    });
+                });
+        }
+        if !self.open {
+            return;
+        }
+
+        let mut open = self.open;
+        egui::Window::new("✦ Smart Generate")
+            .id(egui::Id::new("deckcraft_smart_generator"))
+            .open(&mut open)
+            .default_width(560.0)
+            .min_width(440.0)
+            .resizable(true)
+            .collapsible(false)
+            .show(ctx, |ui| {
+                ui.strong("First slide · Bible program input");
+                ui.small("Paste the whole program here. Slide 1 is kept as the Smart Generate source and hidden from presentation after generation.");
+                ui.add_space(6.0);
+                ui.add(
+                    egui::TextEdit::multiline(&mut self.input)
+                        .desired_rows(17)
+                        .desired_width(f32::INFINITY)
+                        .hint_text("ព្រះបន្ទូលម៉ោង5:30\nរ៉ូម2:1-16\n1កូរិនថូស13:4\n1ពេត្រុស4:8\nលូកា6:31\n\nព្រះបន្ទូលម៉ោង9:30\nចំណងជើង: ការថ្វាយដែលមានតម្លៃ\nម៉ាកុស14:1-9\nម៉ាកុស12:41-44\n2សាំយ៉ូអែល24:18-25")
+                );
+                ui.add_space(6.0);
+                ui.horizontal(|ui| {
+                    ui.label("Khmer font");
+                    let families = deckcraft_fonts::FontDb::global().families();
+                    egui::ComboBox::from_id_salt("smart_font_family")
+                        .selected_text(if self.font_family.is_empty() { "Theme font" } else { self.font_family.as_str() })
+                        .width(220.0)
+                        .show_ui(ui, |ui| {
+                            ui.selectable_value(&mut self.font_family, String::new(), "Theme font");
+                            for family in families {
+                                ui.selectable_value(&mut self.font_family, family.clone(), family);
+                            }
+                        });
+                });
+                if !self.status.is_empty() {
+                    ui.separator();
+                    ui.label(&self.status);
+                }
+                ui.separator();
+                ui.horizontal(|ui| {
+                    if ui.button("Sample").clicked() {
+                        self.input = smart_sample().to_string();
+                    }
+                    if ui.button("Repair Refs").clicked() {
+                        self.input = repair_smart_refs(&self.input);
+                        self.status = "Normalized Khmer digits, colons and verse-range punctuation.".into();
+                    }
+                    ui.add_enabled_ui(!self.running, |ui| {
+                        if ui.button("Append").clicked() {
+                            self.request(ctx, false);
+                        }
+                        if ui.button("Generate & Replace").clicked() {
+                            self.request(ctx, true);
+                        }
+                    });
+                });
+                if self.running {
+                    ui.small("Reading Tahoe Bible1954 data and preparing slides…");
+                }
+            });
+        self.open = open;
+    }
+
+    fn restore_from_first_slide(&mut self, app: &SlideApp) {
+        if !self.input.trim().is_empty() {
+            return;
+        }
+        let Some(st) = app.session.active() else { return };
+        let Some(slide) = st.doc.slides.first() else { return };
+        if slide.name != "✦ Smart Generate Input" {
+            return;
+        }
+        let saved = text_body_plain(&slide.notes);
+        if !saved.trim().is_empty() {
+            self.input = saved;
+        }
+    }
+
+    fn request(&mut self, ctx: &egui::Context, replace: bool) {
+        if self.input.trim().is_empty() {
+            self.status = "Paste Bible references or text first.".into();
+            return;
+        }
+        let text = self.input.clone();
+        let pending = self.pending.clone();
+        let ctx = ctx.clone();
+        self.running = true;
+        self.status = "Preparing slides…".into();
+        wasm_bindgen_futures::spawn_local(async move {
+            let result = build_smart_slides(&text).await.map(|slides| (replace, slides));
+            *pending.borrow_mut() = Some(result);
+            ctx.request_repaint();
+        });
+    }
+
+    fn poll(&mut self, app: &mut SlideApp) {
+        let pending = self.pending.borrow_mut().take();
+        let Some(result) = pending else { return };
+        self.running = false;
+        match result {
+            Ok((replace, slides)) => match apply_smart_slides(app, &slides, replace, &self.input, &self.font_family) {
+                Ok(n) => {
+                    self.status = format!("Generated {n} slide{}. Slide 1 remains the hidden Smart Generate input.", if n == 1 { "" } else { "s" });
+                    app.notify(self.status.clone());
+                }
+                Err(e) => {
+                    self.status = e.clone();
+                    app.notify(e);
+                }
+            },
+            Err(e) => {
+                self.status = e.clone();
+                app.notify(e);
+            }
+        }
+    }
+}
+
+fn smart_sample() -> &'static str {
+    "ព្រះបន្ទូលម៉ោង5:30\nរ៉ូម2:1-16\n1កូរិនថូស13:4\n1ពេត្រុស4:8\nលូកា6:31\n\nព្រះបន្ទូលម៉ោង9:30\nចំណងជើង: ការថ្វាយដែលមានតម្លៃ\nម៉ាកុស14:1-9\nម៉ាកុស12:41-44\n2សាំយ៉ូអែល24:18-25\n\nការសំរេចចិត្តអនុវត្តន៏តាមព្រះបន្ទូល\nតើមាន (ដបប្រេងក្រអូប) អ្វីខ្លះនៅក្នុងជីវិតរបស់អ្នក\nដូចជា (ចិត្តគំនិត ពេលវេលា ទំនាក់ទំនង ឬទ្រព្យ សម្បត្តិ) ដែលព្រះអម្ចាស់ចង់ឱ្យអ្នកបំបែក ដើម្បីថ្វាយ និងលើកតម្កើងទ្រង់?"
+}
+
+fn khmer_digit(c: char) -> char {
+    match c {
+        '០' => '0', '១' => '1', '២' => '2', '៣' => '3', '៤' => '4',
+        '៥' => '5', '៦' => '6', '៧' => '7', '៨' => '8', '៩' => '9',
+        _ => c,
+    }
+}
+
+fn normalize_digits(s: &str) -> String {
+    s.chars().map(khmer_digit).collect()
+}
+
+fn repair_smart_refs(s: &str) -> String {
+    normalize_digits(s).replace('៖', ":").replace('–', "-").replace('—', "-")
+}
+
+fn normalize_book_key(s: &str) -> String {
+    normalize_digits(s)
+        .replace([' ', '\t', '\u{200b}', '\u{200c}', '\u{200d}', '-', '_', '.', '៖', ':'], "")
+        .replace("ទី", "")
+        .replace("យ៉ូ", "យូ")
+        .to_lowercase()
+}
+
+fn resolve_smart_book(raw: &str) -> Option<(&'static str, &'static str)> {
+    let needle = normalize_book_key(raw);
+    for (id, name, _) in bible_data::BOOKS {
+        let canon = normalize_book_key(name);
+        if needle.eq_ignore_ascii_case(id) || needle == canon {
+            return Some((*id, *name));
+        }
+        if let Some(last) = canon.chars().last().filter(|c| matches!(c, '1' | '2' | '3')) {
+            let base = canon.trim_end_matches(last);
+            if needle == format!("{last}{base}") || needle == format!("{base}{last}") {
+                return Some((*id, *name));
+            }
+        }
+    }
+    None
+}
+
+fn parse_smart_bible_ref(line: &str) -> Option<SmartBibleRef> {
+    let cleaned = repair_smart_refs(line.trim());
+    let colon = cleaned.rfind(':')?;
+    let left = cleaned[..colon].trim();
+    let right = cleaned[colon + 1..].trim();
+    if left.is_empty() || right.is_empty() {
+        return None;
+    }
+    let mut chapter_at = left.len();
+    let mut saw_digit = false;
+    for (idx, ch) in left.char_indices().rev() {
+        if ch.is_ascii_digit() {
+            saw_digit = true;
+            chapter_at = idx;
+        } else if saw_digit {
+            break;
+        } else if !ch.is_whitespace() {
+            return None;
+        }
+    }
+    if !saw_digit {
+        return None;
+    }
+    let chapter: usize = left[chapter_at..].trim().parse().ok()?;
+    let book_raw = left[..chapter_at].trim();
+    let (book_id, book_name) = resolve_smart_book(book_raw)?;
+    let mut parts = right.splitn(2, '-');
+    let verse_start: usize = parts.next()?.trim().parse().ok()?;
+    let verse_end: usize = parts.next().and_then(|x| x.trim().parse().ok()).unwrap_or(verse_start);
+    Some(SmartBibleRef {
+        book_id: book_id.to_string(),
+        book_name: book_name.to_string(),
+        chapter,
+        verse_start,
+        verse_end: verse_end.max(verse_start),
+    })
+}
+
+fn parse_smart_tokens(input: &str) -> Result<Vec<SmartToken>, String> {
+    let mut out = Vec::new();
+    let mut text = Vec::<String>::new();
+    let flush = |out: &mut Vec<SmartToken>, text: &mut Vec<String>| {
+        if !text.is_empty() {
+            let joined = text.join("\n").trim().to_string();
+            if !joined.is_empty() {
+                out.push(SmartToken::Text(joined));
+            }
+            text.clear();
+        }
+    };
+    for raw in input.lines() {
+        let line = raw.trim();
+        if line.is_empty() {
+            flush(&mut out, &mut text);
+            continue;
+        }
+        if line.starts_with("ព្រះបន្ទូលម៉ោង") {
+            flush(&mut out, &mut text);
+            out.push(SmartToken::Heading(line.to_string()));
+            continue;
+        }
+        if let Some(rest) = line.strip_prefix("ចំណងជើង") {
+            flush(&mut out, &mut text);
+            let title = rest.trim_start_matches([':', '៖', ' ', '-']).trim();
+            if !title.is_empty() {
+                out.push(SmartToken::Title(title.to_string()));
+            }
+            continue;
+        }
+        if let Some(reference) = parse_smart_bible_ref(line) {
+            flush(&mut out, &mut text);
+            out.push(SmartToken::Bible(reference));
+            continue;
+        }
+        text.push(line.to_string());
+    }
+    flush(&mut out, &mut text);
+    if out.is_empty() {
+        return Err("No Bible references or text were recognized.".into());
+    }
+    Ok(out)
+}
+
+async fn build_smart_slides(input: &str) -> Result<Vec<SmartSlide>, String> {
+    let tokens = parse_smart_tokens(input)?;
+    let mut books: HashMap<String, BibleBook> = HashMap::new();
+    let mut slides = Vec::new();
+    for token in tokens {
+        match token {
+            SmartToken::Heading(t) | SmartToken::Title(t) => slides.push(SmartSlide::Title(t)),
+            SmartToken::Text(t) => {
+                for part in split_text_for_slides(&t, 340) {
+                    slides.push(SmartSlide::Text(part));
+                }
+            }
+            SmartToken::Bible(r) => {
+                if !books.contains_key(&r.book_id) {
+                    let raw = fetch_bible_book_text(&r.book_id).await?;
+                    let book = parse_bible_book(&r.book_id, &raw)?;
+                    books.insert(r.book_id.clone(), book);
+                }
+                let book = books.get(&r.book_id).ok_or_else(|| format!("Could not load {}.", r.book_name))?;
+                let verses = book
+                    .chapters
+                    .get(r.chapter.saturating_sub(1))
+                    .ok_or_else(|| format!("{} has no chapter {}.", r.book_name, r.chapter))?;
+                if verses.is_empty() {
+                    return Err(format!("{} {} has no verses.", r.book_name, r.chapter));
+                }
+                let start = r.verse_start.max(1).min(verses.len());
+                let end = r.verse_end.max(start).min(verses.len());
+                for group in smart_bible_groups(&verses[start - 1..end]) {
+                    slides.push(SmartSlide::Bible { book_name: r.book_name.clone(), chapter: r.chapter, verses: group });
+                }
+            }
+        }
+    }
+    if slides.is_empty() {
+        return Err("Nothing was generated from the pasted text.".into());
+    }
+    Ok(slides)
+}
+
+fn split_text_for_slides(text: &str, limit: usize) -> Vec<String> {
+    let mut out = Vec::new();
+    let mut current = String::new();
+    for paragraph in text.lines().map(str::trim).filter(|p| !p.is_empty()) {
+        if paragraph.chars().count() > limit {
+            if !current.is_empty() {
+                out.push(std::mem::take(&mut current));
+            }
+            let chars: Vec<char> = paragraph.chars().collect();
+            for chunk in chars.chunks(limit) {
+                out.push(chunk.iter().collect::<String>());
+            }
+            continue;
+        }
+        let extra = paragraph.chars().count() + if current.is_empty() { 0 } else { 2 };
+        if current.chars().count() + extra > limit && !current.is_empty() {
+            out.push(std::mem::take(&mut current));
+        }
+        if !current.is_empty() {
+            current.push_str("\n\n");
+        }
+        current.push_str(paragraph);
+    }
+    if !current.is_empty() {
+        out.push(current);
+    }
+    out
+}
+
+fn apply_smart_slides(app: &mut SlideApp, slides: &[SmartSlide], replace: bool, source: &str, font: &str) -> Result<usize, String> {
+    let len = app.session.active().map(|d| d.doc.slides.len()).unwrap_or(0);
+    if len == 0 {
+        app.run("file.new", json!({}))?;
+    }
+    if replace {
+        let current_len = app.session.active().map(|d| d.doc.slides.len()).unwrap_or(1);
+        for i in (1..current_len).rev() {
+            app.run("slide.delete", json!({"index": i}))?;
+        }
+    }
+    app.run("slide.go", json!({"index": if replace { 0 } else { app.session.active().map(|d| d.doc.slides.len().saturating_sub(1)).unwrap_or(0) }}))?;
+    app.run("slide.rename", json!({"index": 0, "name": "✦ Smart Generate Input"}))?;
+    app.run("slide.notes", json!({"index": 0, "text": source}))?;
+    app.run("slide.hide", json!({"index": 0, "hidden": true}))?;
+
+    let mut made = 0usize;
+    for slide in slides {
+        match slide {
+            SmartSlide::Title(text) => {
+                app.run("slide.new", json!({"layout": "blank"}))?;
+                app.run("slide.rename", json!({"name": format!("Smart · {}", text.chars().take(42).collect::<String>())}))?;
+                app.run("insert.textBox", json!({"rect": [80.0, 120.0, 800.0, 300.0], "text": text}))?;
+                apply_generated_style(app, font, 38.0, true)?;
+                app.run("format.autofit", json!({"mode": "shrink"}))?;
+            }
+            SmartSlide::Text(text) => {
+                app.run("slide.new", json!({"layout": "blank"}))?;
+                app.run("slide.rename", json!({"name": "Smart · Application"}))?;
+                app.run("insert.textBox", json!({"rect": [70.0, 55.0, 820.0, 445.0], "text": text}))?;
+                apply_generated_style(app, font, 27.0, true)?;
+                app.run("format.autofit", json!({"mode": "shrink"}))?;
+            }
+            SmartSlide::Bible { book_name, chapter, verses } => {
+                app.run("slide.new", json!({"layout": "blank"}))?;
+                let first = verses.first().map_or(1, |v| v.number);
+                let last = verses.last().map_or(first, |v| v.number);
+                let reference = if first == last {
+                    format!("{book_name} {chapter}:{first}")
+                } else {
+                    format!("{book_name} {chapter}:{first}–{last}")
+                };
+                app.run("slide.rename", json!({"name": format!("Bible · {reference}")}))?;
+                let body = verses.iter().map(|v| format!("{}  {}", v.number, v.text)).collect::<Vec<_>>().join("\n\n");
+                app.run("insert.textBox", json!({"rect": [60.0, 45.0, 840.0, 385.0], "text": body}))?;
+                let size = estimate_bible_font(verses, 36.0, 18.0);
+                apply_generated_style(app, font, size, true)?;
+                app.run("format.autofit", json!({"mode": "shrink"}))?;
+                app.run("insert.textBox", json!({"rect": [60.0, 455.0, 840.0, 45.0], "text": reference}))?;
+                apply_generated_style(app, font, 18.0, false)?;
+                app.run("format.autofit", json!({"mode": "shrink"}))?;
+            }
+        }
+        made += 1;
+    }
+    Ok(made)
+}
+
+fn apply_generated_style(app: &mut SlideApp, font: &str, size: f32, middle: bool) -> Result<(), String> {
+    if !font.trim().is_empty() && deckcraft_fonts::FontDb::global().has_family(font.trim()) {
+        app.run("format.font", json!({"family": font.trim()}))?;
+    }
+    app.run("format.size", json!({"size": size}))?;
+    app.run("format.alignCenter", json!({}))?;
+    if middle {
+        app.run("format.anchor", json!({"anchor": "middle"}))?;
+    }
+    Ok(())
+}
+
+fn text_body_plain(body: &deckcraft_engine::model::text::TextBody) -> String {
+    body.paragraphs
+        .iter()
+        .map(|p| p.runs.iter().map(|r| r.text.as_str()).collect::<String>())
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+fn post_parent_present(active: bool) {
+    let Some(window) = web_sys::window() else { return };
+    let Ok(Some(parent)) = window.parent() else { return };
+    let payload = js_sys::Object::new();
+    let _ = js_sys::Reflect::set(&payload, &wasm_bindgen::JsValue::from_str("type"), &wasm_bindgen::JsValue::from_str("tahoe-deckcraft-present"));
+    let _ = js_sys::Reflect::set(&payload, &wasm_bindgen::JsValue::from_str("active"), &wasm_bindgen::JsValue::from_bool(active));
+    let _ = parent.post_message(&payload.into(), "*");
+}
+
+async fn fetch_url_bytes(url: &str) -> Result<Vec<u8>, String> {
+    let window = web_sys::window().ok_or_else(|| "Browser window unavailable.".to_string())?;
+    let response = wasm_bindgen_futures::JsFuture::from(window.fetch_with_str(url))
+        .await
+        .map_err(|e| format!("Font download failed: {e:?}"))?;
+    let response: web_sys::Response = response.dyn_into().map_err(|_| "Font response was invalid.".to_string())?;
+    if !response.ok() {
+        return Err(format!("HTTP {}", response.status()));
+    }
+    let buffer = response.array_buffer().map_err(|e| format!("Font buffer error: {e:?}"))?;
+    let buffer = wasm_bindgen_futures::JsFuture::from(buffer).await.map_err(|e| format!("Font read failed: {e:?}"))?;
+    let bytes = js_sys::Uint8Array::new(&buffer);
+    let mut out = vec![0u8; bytes.length() as usize];
+    bytes.copy_to(&mut out);
+    Ok(out)
+}
+
+async fn fetch_url_text(url: &str) -> Result<String, String> {
+    let window = web_sys::window().ok_or_else(|| "Browser window unavailable.".to_string())?;
+    let response = wasm_bindgen_futures::JsFuture::from(window.fetch_with_str(url))
+        .await
+        .map_err(|e| format!("Download failed: {e:?}"))?;
+    let response: web_sys::Response = response.dyn_into().map_err(|_| "Response was invalid.".to_string())?;
+    if !response.ok() {
+        return Err(format!("HTTP {}", response.status()));
+    }
+    let text = response.text().map_err(|e| format!("Text response error: {e:?}"))?;
+    let text = wasm_bindgen_futures::JsFuture::from(text).await.map_err(|e| format!("Text read failed: {e:?}"))?;
+    text.as_string().ok_or_else(|| "Response was not text.".to_string())
+}
+
+async fn load_tahoe_fonts() {
+    let manifest = match fetch_url_text("../../assets/fonts/fonts.json").await {
+        Ok(v) => v,
+        Err(e) => {
+            log::warn!("Tahoe font manifest: {e}");
+            return;
+        }
+    };
+    let Ok(value) = serde_json::from_str::<serde_json::Value>(&manifest) else {
+        log::warn!("Tahoe font manifest is invalid JSON");
+        return;
+    };
+    let Some(fonts) = value.get("fonts").and_then(serde_json::Value::as_array) else { return };
+    let db = deckcraft_fonts::FontDb::global();
+    for font in fonts {
+        let Some(file) = font.get("file").and_then(serde_json::Value::as_str) else { continue };
+        let mut urls = Vec::new();
+        if let Some(url) = font.get("url").and_then(serde_json::Value::as_str) {
+            urls.push(url.to_string());
+        }
+        urls.push(format!("../../assets/fonts/{file}"));
+        // Compatibility with the user's earlier Tahoe font libraries without duplicating binaries in Tahoe76.
+        urls.push(format!("../../../tahoe/assets/fonts/{file}"));
+        urls.push(format!("../../../tahoe6/assets/fonts/{file}"));
+        let mut loaded = false;
+        for url in urls {
+            let Ok(bytes) = fetch_url_bytes(&url).await else { continue };
+            if db.add_font(bytes) > 0 {
+                log::info!("DeckCraft loaded Tahoe font {file} from {url}");
+                loaded = true;
+                break;
+            }
+        }
+        if !loaded {
+            log::warn!("DeckCraft could not load Tahoe font {file}; use TTF/OTF/TTC for DeckCraft's native font engine");
+        }
+    }
+}
+
 
 fn smart_bible_groups(verses: &[BibleVerse]) -> Vec<Vec<BibleVerse>> {
     let mut out = Vec::new();

@@ -224,6 +224,11 @@ pub fn slide_menu(app: &mut SlideApp, ui: &mut Ui, i: usize) {
         let _ = app.run("slide.duplicate", json!({}));
         ui.close();
     }
+    let bible_slide = app.session.active().and_then(|d| d.doc.slides.get(i)).is_some_and(|s| s.name.starts_with("Bible ·"));
+    if bible_slide && ui.button("Split Bible Slide").clicked() {
+        let _ = split_bible_slide(app, i);
+        ui.close();
+    }
     if ui.button("Delete Slide").clicked() {
         let _ = app.run("slide.delete", json!({}));
         ui.close();
@@ -259,6 +264,81 @@ pub fn slide_menu(app: &mut SlideApp, ui: &mut Ui, i: usize) {
         let _ = app.run("slide.hide", json!({"index": i}));
         ui.close();
     }
+}
+
+
+fn plain_text(body: &deckcraft_model::text::TextBody) -> String {
+    body.paragraphs
+        .iter()
+        .map(|p| p.runs.iter().map(|r| r.text.as_str()).collect::<String>())
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+fn split_body_text(text: &str) -> Option<(String, String)> {
+    let paras: Vec<&str> = text.split("\n\n").map(str::trim).filter(|s| !s.is_empty()).collect();
+    if paras.len() >= 2 {
+        let at = (paras.len() + 1) / 2;
+        return Some((paras[..at].join("\n\n"), paras[at..].join("\n\n")));
+    }
+    let chars: Vec<char> = text.trim().chars().collect();
+    if chars.len() < 12 {
+        return None;
+    }
+    let mid = chars.len() / 2;
+    let mut cut = mid;
+    for offset in 0..(chars.len() / 4).max(1) {
+        if mid + offset < chars.len() && chars[mid + offset].is_whitespace() {
+            cut = mid + offset;
+            break;
+        }
+        if mid >= offset && chars[mid - offset].is_whitespace() {
+            cut = mid - offset;
+            break;
+        }
+    }
+    let a = chars[..cut].iter().collect::<String>().trim().to_string();
+    let b = chars[cut..].iter().collect::<String>().trim().to_string();
+    (!a.is_empty() && !b.is_empty()).then_some((a, b))
+}
+
+fn split_bible_slide(app: &mut SlideApp, i: usize) -> Result<(), String> {
+    let (name, body_id, body_text) = {
+        let st = app.session.active().map_err(|e| e.to_string())?;
+        let slide = st.doc.slides.get(i).ok_or_else(|| "Slide not found.".to_string())?;
+        let mut texts: Vec<(deckcraft_model::ShapeId, String)> = slide
+            .shapes
+            .iter()
+            .filter_map(|shape| shape.text.as_ref().map(|body| (shape.id, plain_text(body))))
+            .filter(|(_, text)| !text.trim().is_empty())
+            .collect();
+        texts.sort_by_key(|(_, text)| std::cmp::Reverse(text.chars().count()));
+        let (id, text) = texts.into_iter().next().ok_or_else(|| "This Bible slide has no text to split.".to_string())?;
+        (slide.name.clone(), id, text)
+    };
+    let (first, second) = split_body_text(&body_text).ok_or_else(|| "This Bible slide is already too short to split.".to_string())?;
+
+    app.run("slide.go", json!({"index": i}))?;
+    app.run("slide.duplicate", json!({"index": i}))?;
+    let copy_id = {
+        let st = app.session.active().map_err(|e| e.to_string())?;
+        let copy = st.doc.slides.get(i + 1).ok_or_else(|| "Could not create the split slide.".to_string())?;
+        copy.shapes
+            .iter()
+            .filter_map(|shape| shape.text.as_ref().map(|body| (shape.id, plain_text(body))))
+            .max_by_key(|(_, text)| text.chars().count())
+            .map(|(id, _)| id)
+            .ok_or_else(|| "Could not find the copied Bible text.".to_string())?
+    };
+
+    app.run("slide.go", json!({"index": i}))?;
+    app.run("text.set", json!({"id": body_id.0, "text": first}))?;
+    app.run("slide.rename", json!({"index": i, "name": format!("{name} · 1/2")}))?;
+    app.run("slide.go", json!({"index": i + 1}))?;
+    app.run("text.set", json!({"id": copy_id.0, "text": second}))?;
+    app.run("slide.rename", json!({"index": i + 1, "name": format!("{name} · 2/2")}))?;
+    app.notify("Bible slide split into two editable slides.".into());
+    Ok(())
 }
 
 fn master_list(app: &mut SlideApp, ui: &mut Ui) {
