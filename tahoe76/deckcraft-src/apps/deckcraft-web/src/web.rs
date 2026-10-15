@@ -79,9 +79,9 @@ pub fn start() {
                         app.start_show(0, false);
                     }
                     let mut smart = SmartGenerator::default();
-                    smart.font_family = default_khmer_family.clone();
+                    smart.font_family = if db.has_family(BIBLE_DEFAULT_FONT) { BIBLE_DEFAULT_FONT.to_owned() } else { default_khmer_family.clone() };
                     let mut bible = BibleGenerator::default();
-                    bible.font_family = default_khmer_family.clone();
+                    bible.font_family = if db.has_family(BIBLE_DEFAULT_FONT) { BIBLE_DEFAULT_FONT.to_owned() } else { default_khmer_family.clone() };
                     Ok(Box::new(WebShell { app, inbox, smart, bible, presenting: false }))
                 }),
             )
@@ -210,7 +210,8 @@ fn bible_reference(name: &str, chapter: usize, first: usize, last: usize, style:
     let a = format_bible_number(first, style);
     if first == last { format!("{name} {c}:{a}") } else { format!("{name} {c}:{a}–{}",format_bible_number(last,style)) }
 }
-const BIBLE_DEFAULT_FONT: &str = "Khmer OS Battambang";
+const BIBLE_DEFAULT_FONT: &str = "Khmer OS battambang";
+const BIBLE_BOLD_FONT: &str = "Khmer OS Battambang";
 
 enum BibleGroupMode {
     One,
@@ -533,6 +534,7 @@ impl BibleGenerator {
             if has_heading {
                 app.run("insert.textBox", json!({"rect": [12.0, 18.0, 936.0, 86.4], "text": passage_reference}))?;
                 self.apply_text_style(app, 44.0, false)?;
+                if deckcraft_fonts::FontDb::global().has_family(BIBLE_BOLD_FONT) {app.run("format.font", json!({"family": BIBLE_BOLD_FONT}))?;}
                 app.run("format.bold", json!({"on": true}))?;
                 app.run("insert.textBox", json!({"rect": [22.8, 114.0, 914.4, 410.0], "text": body}))?;
                 self.apply_text_style(app, 38.0, false)?;
@@ -970,6 +972,7 @@ fn apply_smart_slides(app: &mut SlideApp, slides: &[SmartSlide], replace: bool, 
                 if *first_group {
                     app.run("insert.textBox", json!({"rect": [12.0, 18.0, 936.0, 86.4], "text": reference}))?;
                     apply_generated_style(app, font, 44.0, false)?;
+                    if deckcraft_fonts::FontDb::global().has_family(BIBLE_BOLD_FONT) {app.run("format.font", json!({"family": BIBLE_BOLD_FONT}))?;}
                     app.run("format.bold", json!({"on": true}))?;
                     app.run("insert.textBox", json!({"rect": [22.8, 114.0, 914.4, 410.0], "text": body}))?;
                     apply_generated_style(app, font, 38.0, false)?;
