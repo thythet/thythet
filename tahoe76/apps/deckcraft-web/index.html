@@ -4,10 +4,36 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
   <title>DeckCraft</title>
+  <script>
+    (() => {
+      const showError = (message) => {
+        const el = document.getElementById("deckcraft_loading");
+        if (!el) return;
+        el.style.pointerEvents = "auto";
+        el.style.padding = "24px";
+        el.style.textAlign = "center";
+        el.style.whiteSpace = "pre-wrap";
+        el.textContent = "DeckCraft startup error\n\n" + String(message);
+      };
+      window.addEventListener("error", (event) => {
+        showError(event.error?.stack || event.message || "Unknown JavaScript error");
+      });
+      window.addEventListener("unhandledrejection", (event) => {
+        const reason = event.reason;
+        showError(reason?.stack || reason?.message || reason || "Unhandled promise rejection");
+      });
+      window.setTimeout(() => {
+        const el = document.getElementById("deckcraft_loading");
+        if (el && el.isConnected && el.textContent.includes("Loading DeckCraft")) {
+          el.textContent = "DeckCraft is taking too long to start.\nThe renderer or WebAssembly startup may have failed.";
+        }
+      }, 20000);
+    })();
+  </script>
   
 <script type="module">
-import init, * as bindings from './deckcraft-web-6c2b1f7c9dce054c.js';
-const wasm = await init({ module_or_path: './deckcraft-web-6c2b1f7c9dce054c_bg.wasm' });
+import init, * as bindings from './deckcraft-web-79b1c11528c8e3dd.js';
+const wasm = await init({ module_or_path: './deckcraft-web-79b1c11528c8e3dd_bg.wasm' });
 
 
 window.wasmBindings = bindings;
@@ -23,7 +49,7 @@ dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
     #deckcraft_loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
       color: #b8b8b8; font: 14px system-ui, sans-serif; pointer-events: none; }
   </style>
-<link rel="modulepreload" href="./deckcraft-web-6c2b1f7c9dce054c.js" crossorigin="anonymous" integrity="sha384-atRiOd/7J8C0+PdVzxUfljWLNoKUpeClzyhuwlxq0Wlw+Fk1HfGNT23OvuacSkVS"><link rel="preload" href="./deckcraft-web-6c2b1f7c9dce054c_bg.wasm" crossorigin="anonymous" integrity="sha384-j97YlUGmMvyuXffTdaB6l+hVIyjB4av3yO7DTMHV296VUAUBYomtV2KvtjiLvD2q" as="fetch" type="application/wasm"></head>
+<link rel="modulepreload" href="./deckcraft-web-79b1c11528c8e3dd.js" crossorigin="anonymous" integrity="sha384-izi0vMZEGaIvGGw8GOBsAvIi92oCQwsscZbEwQz6vZIiJFFTHPKStAj6FgoRhhDS"><link rel="preload" href="./deckcraft-web-79b1c11528c8e3dd_bg.wasm" crossorigin="anonymous" integrity="sha384-mWpyXOCMzSLIomQvDZPS4Bho7x5LFXUge+JOGeFYuMVkFFNgZMEsKjzfKw24VBPk" as="fetch" type="application/wasm"></head>
 <body>
   <canvas id="deckcraft_canvas"></canvas>
   <div id="deckcraft_loading">Loading DeckCraft&hellip;</div>
