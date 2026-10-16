@@ -2,7 +2,7 @@
 
 use deckcraft_engine::Target;
 use deckcraft_model::{ShapeKind, anim::AnimClass};
-use egui::{Align2, Color32, CornerRadius, Rect, Sense, Stroke, Ui, pos2, vec2};
+use egui::{Align2, Color32, CornerRadius, Rect, RichText, Sense, Stroke, Ui, pos2, vec2};
 use serde_json::{Value, json};
 
 use crate::SlideApp;
