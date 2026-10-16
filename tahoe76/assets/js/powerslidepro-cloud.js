@@ -15,7 +15,7 @@ function validateData(d){
 return {storages:Array.isArray(d?.storages)?d.storages.slice(0,50).filter(x=>x?.id&&x.cloudName&&x.uploadPreset):[],
  active:String(d?.active||""),files:Array.isArray(d?.files)?d.files.slice(-800).filter(f=>f?.id&&f.url&&f.name):[]};
 }
-function persist(){if(owner)localStorage.setItem(prefix+owner,JSON.stringify(state));}
+function persist(){if(owner)localStorage.setItem(prefix+owner,JSON.stringify(state));window.TahoePowerSlideCloud?.emitList?.();}
 async function save(){
 if(!uid()||owner!==uid())throw Error("Sign in with Google and reopen Cloudinary.");
 persist();
@@ -37,7 +37,7 @@ try{
  if(result){state=validateData(result);persist()}
  remote=true;alertStatus("Cloud library synced with Firebase. Uploaded files are public unless restricted in Cloudinary.");
 }catch(e){remote=false;alertStatus("Local library only. Firebase: "+(e?.message||"Unavailable"));}
-render();
+render();window.TahoePowerSlideCloud?.emitList?.();
 }
 function validURL(f){try{const u=new URL(f.url);return u.protocol==="https:"&&u.hostname==="res.cloudinary.com"&&u.pathname.startsWith("/"+f.cloudName+"/raw/upload/")}catch{return false}}
 function ensureUI(){
@@ -205,7 +205,7 @@ const buffer=await response.arrayBuffer();
 if(buffer.byteLength>36*1024*1024)throw Error("File exceeds 36 MB in-app open limit. Download it instead.");
 const bytes=new Uint8Array(buffer);let raw="";for(let i=0;i<bytes.length;i+=16384)raw+=String.fromCharCode(...bytes.subarray(i,i+16384));
 const win=$("#deckCraftFrame")?.contentWindow;if(!win)throw Error("Open PowerSlidePro first.");
-win.postMessage({type:"tahoe-deckcraft-cloud-open",name:file.name,data:btoa(raw)},location.origin);
+win.postMessage({type:"tahoe-deckcraft-cloud-open",name:file.name,id:file.id,data:btoa(raw)},location.origin);
 alertStatus("Opening "+file.name+" in PowerSlidePro…");
 }
 }
@@ -215,9 +215,20 @@ window.TahoeAdmin?.on?.("profile",()=>{
     $("#pdc-wrap")?.classList.remove("show");
   }
 });
+window.TahoePowerSlideCloud={
+  ensure:async()=>{if(!uid())throw Error("Sign in with Google.");if(owner!==uid())await load();},
+  files:()=>state.files,
+  storages:()=>state.storages,
+  active:()=>state.active,
+  persist:async()=>{await save();},
+  openPanel,
+  fileAction:fileOp,
+  status:alertStatus,
+  emitList:null
+};
 window.addEventListener("message",event=>{
 if(event.origin!==location.origin||event.source!==$("#deckCraftFrame")?.contentWindow)return;
-const msg=event.data;if(msg?.type!=="tahoe-deckcraft-cloud")return;
+const msg=event.data;if(msg?.type!=="tahoe-deckcraft-cloud"||!["save","library"].includes(msg.action))return;
 pending=null;
 if(msg.action==="save"){
 if(!["deckcraft","pptx"].includes(msg.format)||typeof msg.data!=="string")return;
