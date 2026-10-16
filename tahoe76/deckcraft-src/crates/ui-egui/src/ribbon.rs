@@ -109,6 +109,51 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
         }
         let title =
             app.session.active().map(|d| format!("{}{}", d.title(), if dirty { " — Edited" } else { "" })).unwrap_or_else(|| "PowerSlidePro".into());
+        #[cfg(target_arch = "wasm32")]
+        {
+            let edit_id = egui::Id::new("tahoe-powerslidepro-title-edit");
+            let width = (rect.width() * 0.36).clamp(130.0, 390.0);
+            let title_rect = Rect::from_center_size(rect.center(), vec2(width, height - 3.0));
+            let mut editor = ui.new_child(egui::UiBuilder::new().max_rect(title_rect)
+                .layout(egui::Layout::left_to_right(egui::Align::Center)));
+            let editing = editor.ctx().data(|d| d.get_temp::<bool>(edit_id)).unwrap_or(false);
+            if editing {
+                let mut draft = editor.ctx().data(|d| d.get_temp::<String>(edit_id.with("draft"))).unwrap_or_default();
+                let input = editor.add_sized([width - 58.0, control_h], egui::TextEdit::singleline(&mut draft)
+                    .id(edit_id.with("input")).desired_width(width - 58.0));
+                let enter = input.has_focus() && editor.input(|i| i.key_pressed(egui::Key::Enter));
+                let ok = editor.small_button("✓").on_hover_text("Apply filename").clicked() || enter;
+                let cancel = editor.small_button("×").on_hover_text("Cancel rename").clicked()
+                    || editor.input(|i| i.key_pressed(egui::Key::Escape));
+                editor.ctx().data_mut(|d| d.insert_temp(edit_id.with("draft"), draft.clone()));
+                if ok || cancel {
+                    editor.ctx().data_mut(|d| d.insert_temp(edit_id, false));
+                    if ok {
+                        let name = draft.trim().trim_end_matches(".deckcraft").trim_end_matches(".pptx").trim();
+                        if !name.is_empty() && name.chars().count() <= 100 {
+                            if let Some(doc) = app.session.active_mut() {
+                                doc.title = name.to_string();
+                                // Local paths stay untouched; the web editor uses unpathed docs.
+                            }
+                            let _ = app.run("file.properties", json!({"title": name}));
+                        }
+                    }
+                }
+            } else if has_doc {
+                let button = egui::Button::new(RichText::new(&title).font(theme::font(13.0)).color(t.text))
+                    .frame(false).min_size(vec2(width, control_h));
+                if editor.add(button).on_hover_text("Click to rename presentation").clicked() {
+                    let current = app.session.active().map(|d| d.title()).unwrap_or_default();
+                    editor.ctx().data_mut(|d| {
+                        d.insert_temp(edit_id, true);
+                        d.insert_temp(edit_id.with("draft"), current);
+                    });
+                }
+            } else {
+                editor.label(RichText::new(&title).font(theme::font(13.0)).color(t.text));
+            }
+        }
+        #[cfg(not(target_arch = "wasm32"))]
         ui.painter().text(rect.center(), Align2::CENTER_CENTER, title, theme::font(13.0), t.text);
         // Right side.
         let mut right = ui.new_child(

@@ -474,6 +474,9 @@ pub struct SlideApp {
     /// slides and status bar until Esc or Back; with nothing open it is the start screen. Opening,
     /// creating or closing a presentation leaves it.
     pub backstage: Option<backstage::Backstage>,
+    /// Web-only save request: false = Smart Save, true = Save As copy.
+    /// Consumed by the Tahoe bridge instead of triggering a browser download.
+    pub web_save_request: Option<bool>,
     pending_urls: Vec<String>,
     /// Text for the system clipboard from a Copy or Cut command, handed over on the next frame.
     pending_copy: Option<String>,
@@ -556,6 +559,7 @@ impl SlideApp {
             palette: None,
             integrated_titlebar: false,
             backstage: None,
+            web_save_request: None,
             pending_urls: vec![],
             pending_copy: None,
             shot_token: 0,
@@ -1254,26 +1258,35 @@ impl SlideApp {
     }
 
     pub fn save_as_dialog(&mut self, format: &str) {
-        let name = self.session.active().map(|d| d.title()).unwrap_or_else(|| "Presentation".into());
-        let ext = if format == "pptx" { "pptx" } else { "deckcraft" };
-        let suggested = format!("{name}.{ext}");
-        if let Some(pick) = self.services.pick_save.as_mut() {
-            if let Some(path) = pick(&suggested) {
-                match self.session.execute("file.saveAs", &json!({"path": path})) {
-                    Ok(_) => {
-                        self.set_status(format!("Saved {path}"));
-                        self.ui.recent.retain(|p| *p != path);
-                        self.ui.recent.insert(0, path);
+        #[cfg(target_arch = "wasm32")]
+        {
+            let _ = format;
+            self.web_save_request = Some(true);
+            return;
+        }
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            let name = self.session.active().map(|d| d.title()).unwrap_or_else(|| "Presentation".into());
+            let ext = if format == "pptx" { "pptx" } else { "deckcraft" };
+            let suggested = format!("{name}.{ext}");
+            if let Some(pick) = self.services.pick_save.as_mut() {
+                if let Some(path) = pick(&suggested) {
+                    match self.session.execute("file.saveAs", &json!({"path": path})) {
+                        Ok(_) => {
+                            self.set_status(format!("Saved {path}"));
+                            self.ui.recent.retain(|p| *p != path);
+                            self.ui.recent.insert(0, path);
+                        }
+                        Err(e) => self.set_status(e.to_string()),
                     }
+                }
+            } else if let Some(dl) = self.services.download.as_mut()
+                && let Some(d) = self.session.active()
+            {
+                match deckcraft_engine::cmd::file::save_bytes(&d.doc, ext) {
+                    Ok(bytes) => dl(&suggested, &bytes),
                     Err(e) => self.set_status(e.to_string()),
                 }
-            }
-        } else if let Some(dl) = self.services.download.as_mut()
-            && let Some(d) = self.session.active()
-        {
-            match deckcraft_engine::cmd::file::save_bytes(&d.doc, ext) {
-                Ok(bytes) => dl(&suggested, &bytes),
-                Err(e) => self.set_status(e.to_string()),
             }
         }
     }
@@ -1293,13 +1306,21 @@ impl SlideApp {
     }
 
     pub fn save(&mut self) {
-        if self.session.active().and_then(|d| d.path.clone()).is_some() {
-            match self.session.execute("file.save", &json!({})) {
-                Ok(_) => self.set_status("Saved"),
-                Err(e) => self.set_status(e.to_string()),
+        #[cfg(target_arch = "wasm32")]
+        {
+            if self.session.active().is_some() { self.web_save_request = Some(false); }
+            return;
+        }
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            if self.session.active().and_then(|d| d.path.clone()).is_some() {
+                match self.session.execute("file.save", &json!({})) {
+                    Ok(_) => self.set_status("Saved"),
+                    Err(e) => self.set_status(e.to_string()),
+                }
+            } else {
+                self.save_as_dialog("deckcraft");
             }
-        } else {
-            self.save_as_dialog("deckcraft");
         }
     }
 
