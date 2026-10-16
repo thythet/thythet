@@ -20,7 +20,7 @@ const LOADING_ID: &str = "deckcraft_loading";
 thread_local! {
     static CLOUD_OPEN_PENDING: RefCell<Vec<(String, String, String)>> = const { RefCell::new(Vec::new()) };
     static CLOUD_LIST_PENDING: RefCell<Vec<String>> = const { RefCell::new(Vec::new()) };
-    static CLOUD_NAME_PENDING: RefCell<Vec<(u64, String)>> = const { RefCell::new(Vec::new()) };
+    static CLOUD_NAME_PENDING: RefCell<Vec<(u64, String, bool)>> = const { RefCell::new(Vec::new()) };
     static CLOUD_EXPORT_PENDING: RefCell<Vec<(u64, String, String)>> = const { RefCell::new(Vec::new()) };
 }
 
@@ -54,7 +54,7 @@ fn install_cloud_open_receiver() {
                 if let Ok(uid) = val("uid").parse::<u64>() {
                     let name = val("name");
                     if !name.trim().is_empty() && name.chars().count() <= 100 {
-                        CLOUD_NAME_PENDING.with(|q| q.borrow_mut().push((uid, name)));
+                        CLOUD_NAME_PENDING.with(|q| q.borrow_mut().push((uid, name, val("force") == "1")));
                     }
                 }
             }
@@ -185,9 +185,9 @@ impl eframe::App for WebShell {
             }
         });
         CLOUD_NAME_PENDING.with(|q| {
-            for (uid, name) in std::mem::take(&mut *q.borrow_mut()) {
+            for (uid, name, force) in std::mem::take(&mut *q.borrow_mut()) {
                 if let Some(doc) = self.app.session.active_mut()
-                    && doc.uid == uid && doc.path.is_none() && doc.title.starts_with("Presentation")
+                    && doc.uid == uid && doc.path.is_none() && (force || doc.title.starts_with("Presentation"))
                 {
                     doc.title = name.clone();
                     let _ = self.app.run("file.properties", json!({"title":name}));
