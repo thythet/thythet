@@ -1187,8 +1187,8 @@ impl SmartGenerator {
                         self.input = smart_sample().to_string();
                     }
                     if ui.button("Repair Refs").clicked() {
-                        self.input = repair_smart_refs(&self.input);
-                        self.status = "Normalized Khmer digits, colons and verse-range punctuation.".into();
+                        self.input = expand_smart_refs(&self.input);
+                        self.status = "Expanded recognized book abbreviations and normalized Bible references.".into();
                     }
                     ui.add_enabled_ui(!self.running, |ui| {
                         if ui.button("Append").clicked() {
@@ -1341,6 +1341,20 @@ fn normalize_book_key(s: &str) -> String {
         .to_lowercase()
 }
 
+/// Canonical Bible1954 book names put their numbers at the end ("... ទី ១"),
+/// while service programs usually put the number first ("1សាំយ៉ូ...").
+/// Normalize both to the same internal key without changing saved Bible data.
+fn numbered_book_key(raw: &str) -> String {
+    let key = normalize_book_key(raw);
+    if let Some(digit) = key.chars().last().filter(|c| matches!(c, '1' | '2' | '3')) {
+        let base = key.strip_suffix(digit).unwrap_or(&key);
+        if !base.is_empty() && !base.chars().next().is_some_and(|c| c.is_ascii_digit()) {
+            return format!("{digit}{base}");
+        }
+    }
+    key
+}
+
 fn book_edit_distance(a: &str, b: &str) -> usize {
     // Damerau-Levenshtein (adjacent transpositions included), bounded to short book names.
     let a: Vec<char> = a.chars().collect();
@@ -1362,9 +1376,9 @@ fn book_edit_distance(a: &str, b: &str) -> usize {
 }
 
 fn smart_book_candidates(raw: &str) -> Vec<(&'static str, &'static str, usize)> {
-    let needle = normalize_book_key(raw);
+    let needle = numbered_book_key(raw);
     let mut matches: Vec<_> = bible_data::BOOKS.iter().filter_map(|(id,name,_)| {
-        let canon = normalize_book_key(name);
+        let canon = numbered_book_key(name);
         // Keep numbered books distinct: don't guess a missing 1/2/3 prefix.
         let prefix_a = needle.chars().next().filter(|c| c.is_ascii_digit());
         let prefix_b = canon.chars().next().filter(|c| c.is_ascii_digit());
@@ -1378,11 +1392,12 @@ fn smart_book_candidates(raw: &str) -> Vec<(&'static str, &'static str, usize)> 
 }
 
 fn resolve_smart_book(raw: &str) -> Option<(&'static str, &'static str)> {
-    let needle = normalize_book_key(raw);
-    // Common Khmer church spelling variants (Bible 1954 catalog uses អេភេសូ).
-    // Keep the canonical catalog name/data unchanged for generated content.
+    let needle = numbered_book_key(raw);
+    // Known spelling variants, matched before unique-prefix or fuzzy lookup.
+    // The resulting ID and book title always come from the original 66-book catalog.
     let alias = match needle.as_str() {
         "អេភេសូរ" | "អេភេស" => Some("EPH"),
+        "ទំនុកតំកើង" => Some("PSA"),
         _ => None,
     };
     if let Some(id) = alias {
@@ -1390,26 +1405,63 @@ fn resolve_smart_book(raw: &str) -> Option<(&'static str, &'static str)> {
             return Some((*id, *name));
         }
     }
+    // Exact full name, standard book ID, or alternative placement of 1/2/3.
     for (id, name, _) in bible_data::BOOKS {
-        let canon = normalize_book_key(name);
-        if needle.eq_ignore_ascii_case(id) || needle == canon {
+        if needle.eq_ignore_ascii_case(id) || needle == numbered_book_key(name) {
             return Some((*id, *name));
         }
-        if let Some(last) = canon.chars().last().filter(|c| matches!(c, '1' | '2' | '3')) {
-            let base = canon.trim_end_matches(last);
-            if needle == format!("{last}{base}") || needle == format!("{base}{last}") {
+    }
+    // Church shorthand: accept a sufficiently long, unambiguous beginning of a
+    // canonical book title. Keep the numeric prefix: 1 Samuel is NEVER 2 Samuel.
+    if needle.chars().filter(|c| !c.is_ascii_digit()).count() >= 4 {
+        let mut prefix_matches = bible_data::BOOKS.iter().filter(|(_, name, _)| {
+            numbered_book_key(name).starts_with(&needle)
+        });
+        if let Some((id, name, _)) = prefix_matches.next() {
+            if prefix_matches.next().is_none() {
                 return Some((*id, *name));
             }
+            // Multiple prefix matches mean the abbreviation is ambiguous.
+            return None;
         }
     }
-    // Auto-correct only a single clear nearest name. Ambiguous names require review.
+    // Fuzzy matching is deliberately conservative; ties are never auto-corrected.
     let candidates = smart_book_candidates(raw);
     if let Some((id, name, distance)) = candidates.first().copied() {
         if !candidates.iter().skip(1).any(|(_,_,other)| *other == distance) {
-            return Some((id,name));
+            return Some((id, name));
         }
     }
     None
+}
+
+/// Use the catalog title for display, moving "ទី ១/២/៣" to the front for
+/// church-program shorthand. Internal book IDs and verse content are unchanged.
+fn display_smart_book_name(id: &str, name: &str) -> String {
+    if let Some(first) = id.chars().next().filter(|c| matches!(c, '1' | '2' | '3')) {
+        let base = name.split_once("ទី").map_or(name, |(base, _)| base)
+            .trim_matches(|c: char| c.is_whitespace() || matches!(c, '_' | '\u{200b}' | '\u{200c}' | '\u{200d}'));
+        if !base.is_empty() {
+            return format!("{first}{base}");
+        }
+    }
+    name.to_owned()
+}
+
+/// Repair Refs now expands recognized abbreviations as well as Khmer digits and
+/// verse-range punctuation. Non-reference lines, including headings, are preserved.
+fn expand_smart_refs(input: &str) -> String {
+    input.split('\n').map(|original| {
+        let cleaned = repair_smart_refs(original);
+        let Some(reference) = parse_smart_bible_ref(&cleaned) else { return cleaned };
+        let book = display_smart_book_name(&reference.book_id, &reference.book_name);
+        let passage = if reference.verse_start == reference.verse_end {
+            reference.verse_start.to_string()
+        } else {
+            format!("{}-{}", reference.verse_start, reference.verse_end)
+        };
+        format!("{book}{}:{passage}", reference.chapter)
+    }).collect::<Vec<_>>().join("\n")
 }
 
 fn parse_smart_bible_ref(line: &str) -> Option<SmartBibleRef> {
@@ -1983,5 +2035,56 @@ fn mime_for(name: &str) -> &'static str {
         Some("pptx") => "application/vnd.openxmlformats-officedocument.presentationml.presentation",
         Some("deckcraft") => "application/zip",
         _ => "application/octet-stream",
+    }
+}
+
+#[cfg(test)]
+mod smart_bible_abbreviation_tests {
+    use super::*;
+
+    #[test]
+    fn khmer_book_shorthand_resolves_to_original_bible_catalog() {
+        for (input, id, chapter, first, last) in [
+            ("1សាំយ៉ូ7:5-12", "1SA", 7, 5, 12),
+            ("1សាំយ៉ូ7:3-6", "1SA", 7, 3, 6),
+            ("1សាំយ៉ូ7:7-11", "1SA", 7, 7, 11),
+            ("1សាំយ៉ូ7:12-17", "1SA", 7, 12, 17),
+            ("1សាំយ៉ូអែល7:5-12", "1SA", 7, 5, 12),
+            ("2សាំយ៉ូ7:5-12", "2SA", 7, 5, 12),
+            ("2ពង្សាវតា23:25-26", "2KI", 23, 25, 26),
+            ("1ពង្សាវតា7:5-12", "1KI", 7, 5, 12),
+            ("ទំនុក48:14", "PSA", 48, 14, 14),
+            ("ទំនុកតំកើង48:14", "PSA", 48, 14, 14),
+            ("ទំនុកដំកើង៤៨៖១៤", "PSA", 48, 14, 14),
+        ] {
+            let r = parse_smart_bible_ref(input).unwrap_or_else(|| panic!("Cannot read: {input}"));
+            assert_eq!((r.book_id.as_str(), r.chapter, r.verse_start, r.verse_end),
+                       (id, chapter, first, last), "{input}");
+        }
+    }
+
+    #[test]
+    fn abbreviated_book_must_be_unambiguous_and_keep_number() {
+        assert!(resolve_smart_book("ពង្សាវតា").is_none());
+        assert!(resolve_smart_book("សាំយ៉ូ").is_none());
+        assert!(resolve_smart_book("1ពង្សាវតា").is_some_and(|(id, _)| id == "1KI"));
+        assert!(resolve_smart_book("2ពង្សាវតា").is_some_and(|(id, _)| id == "2KI"));
+    }
+
+    #[test]
+    fn repair_expands_names_without_touching_service_headings() {
+        let text = "ព្រះបន្ទូលម៉ោង9:30\n1សាំយ៉ូ7:5-12\n2ពង្សាវតា23:25-26\nទំនុក48:14";
+        let fixed = expand_smart_refs(text);
+        assert!(fixed.starts_with("ព្រះបន្ទូលម៉ោង9:30\n"));
+        assert!(fixed.contains("1សាំយូអែល7:5-12"));
+        assert!(fixed.contains("2ពង្សាវតារក្សត្រ23:25-26"));
+        assert!(fixed.contains("ទំនុកដំកើង48:14"));
+        assert_eq!(expand_smart_refs(&fixed), fixed);
+    }
+
+    #[test]
+    fn smart_tokens_accept_abbreviations_in_program() {
+        let tokens = parse_smart_tokens("ព្រះបន្ទូលម៉ោង9:30\n1សាំយ៉ូ7:5-12\nទំនុក48:14").unwrap();
+        assert!(matches!(tokens.as_slice(), [SmartToken::Heading(_), SmartToken::Bible(_), SmartToken::Bible(_)]));
     }
 }
