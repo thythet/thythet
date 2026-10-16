@@ -419,7 +419,7 @@ fn khmer_pptx_export_sets_real_complex_script_typeface() {
             ..Default::default()
         },
     );
-    p.slides[0].shapes[0].text = Some(TextBody {
+    Arc::make_mut(&mut p.slides[0]).shapes[0].text = Some(TextBody {
         paragraphs: vec![Paragraph { runs: vec![run], ..Default::default() }],
         ..Default::default()
     });
@@ -443,7 +443,7 @@ fn khmer_pptx_export_sets_real_complex_script_typeface() {
 #[test]
 fn khmer_pptx_export_preserves_explicit_complex_script_family() {
     let mut p = defaults::new_presentation(None);
-    p.slides[0].shapes[0].text = Some(TextBody {
+    Arc::make_mut(&mut p.slides[0]).shapes[0].text = Some(TextBody {
         paragraphs: vec![Paragraph {
             runs: vec![Run::with("ខ្មែរ", RunProps {
                 font: Some("Arial".into()),
