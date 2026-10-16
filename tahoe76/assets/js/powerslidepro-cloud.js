@@ -114,7 +114,7 @@ const files=state.files.slice().sort((a,b)=>b.createdAt-a.createdAt);
 $("#pdc-files").innerHTML=files.length?files.map(f=>'<div class="pdc-file"><div class="pdc-file-info"><b>'+escapeText(f.name)+'</b><span class="pdc-muted">'+escapeText(f.cloudName)+" · "+escapeText(f.format.toUpperCase())+" · "+mb(f.size)+" · "+escapeText(date(f.createdAt))+'</span></div><div class="pdc-actions">'+["Open","Download","Rename","Remove"].map(a=>'<button data-cloud-op="'+a.toLowerCase()+'" data-cloud-id="'+escapeText(f.id)+'">'+a+'</button>').join("")+'</div></div>').join(""):'<div class="pdc-muted" style="padding:12px 0">No cloud presentations yet.</div>';
 }
 function close(){if(busy)return;$("#pdc-wrap")?.classList.remove("show");pending=null}
-function run(fn){if(busy)return;busy=true;render();Promise.resolve().then(fn).catch(e=>alertStatus(e.message||String(e))).finally(()=>{busy=false;render()})}
+function run(fn){if(busy)return;busy=true;Promise.resolve().then(fn).catch(e=>alertStatus(e.message||String(e))).finally(()=>{busy=false;render()})}
 async function openPanel(){ensureUI();$("#pdc-wrap").classList.add("show");await load()}
 async function storeProfile(){
 if(!uid())throw Error("Sign in with Google first.");
