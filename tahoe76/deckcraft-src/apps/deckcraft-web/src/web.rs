@@ -18,7 +18,10 @@ const CANVAS_ID: &str = "deckcraft_canvas";
 const LOADING_ID: &str = "deckcraft_loading";
 
 thread_local! {
-    static CLOUD_OPEN_PENDING: RefCell<Vec<(String, String)>> = const { RefCell::new(Vec::new()) };
+    static CLOUD_OPEN_PENDING: RefCell<Vec<(String, String, String)>> = const { RefCell::new(Vec::new()) };
+    static CLOUD_LIST_PENDING: RefCell<Vec<String>> = const { RefCell::new(Vec::new()) };
+    static CLOUD_NAME_PENDING: RefCell<Vec<(u64, String)>> = const { RefCell::new(Vec::new()) };
+    static CLOUD_EXPORT_PENDING: RefCell<Vec<(u64, String, String)>> = const { RefCell::new(Vec::new()) };
 }
 
 /// Receive only same-origin messages from Tahoe's parent app window.
@@ -33,30 +36,44 @@ fn install_cloud_open_receiver() {
         if source != wasm_bindgen::JsValue::from(parent) { return; }
         let payload = event.data();
         let val = |key: &str| js_sys::Reflect::get(&payload, &key.into()).ok().and_then(|v| v.as_string()).unwrap_or_default();
-        if val("type") != "tahoe-deckcraft-cloud-open" { return; }
-        let name = val("name");
-        let data = val("data");
-        if name.len() > 200 || data.len() > 60_000_000 || data.is_empty() { return; }
-        let ext = name.rsplit('.').next().unwrap_or("").to_ascii_lowercase();
-        if ext != "deckcraft" && ext != "pptx" { return; }
-        CLOUD_OPEN_PENDING.with(|q| q.borrow_mut().push((name, data)));
+        match val("type").as_str() {
+            "tahoe-deckcraft-cloud-open" => {
+                let (name, data, id) = (val("name"), val("data"), val("id"));
+                if name.len() > 200 || data.len() > 60_000_000 || data.is_empty() || id.len() > 90 { return; }
+                let ext = name.rsplit('.').next().unwrap_or("").to_ascii_lowercase();
+                if ext != "deckcraft" && ext != "pptx" { return; }
+                CLOUD_OPEN_PENDING.with(|q| q.borrow_mut().push((name, data, id)));
+            }
+            "tahoe-deckcraft-cloud-list" => {
+                let data = val("data");
+                if data.len() <= 2_000_000 {
+                    CLOUD_LIST_PENDING.with(|q| q.borrow_mut().push(data));
+                }
+            }
+            "tahoe-deckcraft-cloud-name" => {
+                if let Ok(uid) = val("uid").parse::<u64>() {
+                    let name = val("name");
+                    if !name.trim().is_empty() && name.chars().count() <= 100 {
+                        CLOUD_NAME_PENDING.with(|q| q.borrow_mut().push((uid, name)));
+                    }
+                }
+            }
+            "tahoe-deckcraft-cloud-export" => {
+                if let Ok(uid) = val("uid").parse::<u64>() {
+                    let name = val("name");
+                    let format = val("format");
+                    if matches!(format.as_str(), "pptx" | "deckcraft") && !name.trim().is_empty() && name.chars().count() <= 140 {
+                        CLOUD_EXPORT_PENDING.with(|q| q.borrow_mut().push((uid, name, format)));
+                    }
+                }
+            }
+            _ => {}
+        }
     });
     let _ = window.add_event_listener_with_callback("message", callback.as_ref().unchecked_ref());
     callback.forget();
 }
 
-fn post_parent_cloud(action: &str, name: &str, format: &str, data: Option<&str>) {
-    let Some(win) = web_sys::window() else { return };
-    let Ok(Some(parent)) = win.parent() else { return };
-    let payload = js_sys::Object::new();
-    for (key, val) in [("type", "tahoe-deckcraft-cloud"), ("action", action), ("name", name), ("format", format)] {
-        let _ = js_sys::Reflect::set(&payload, &key.into(), &val.into());
-    }
-    if let Some(data) = data {
-        let _ = js_sys::Reflect::set(&payload, &"data".into(), &data.into());
-    }
-    let _ = parent.post_message(&payload.into(), "*");
-}
 
 
 pub fn start() {
@@ -125,7 +142,8 @@ pub fn start() {
                     smart.font_family = if db.has_family(BIBLE_DEFAULT_FONT) { BIBLE_DEFAULT_FONT.to_owned() } else { default_khmer_family.clone() };
                     let mut bible = BibleGenerator::default();
                     bible.font_family = if db.has_family(BIBLE_DEFAULT_FONT) { BIBLE_DEFAULT_FONT.to_owned() } else { default_khmer_family.clone() };
-                    Ok(Box::new(WebShell { app, inbox, smart, bible, typography: TypographyPanel::default(), presenting: false }))
+                    Ok(Box::new(WebShell { app, inbox, smart, bible, typography: TypographyPanel::default(), presenting: false,
+                        cloud_seen_docs: std::collections::HashSet::new() }))
                 }),
             )
             .await;
@@ -156,18 +174,57 @@ struct WebShell {
     bible: BibleGenerator,
     typography: TypographyPanel,
     presenting: bool,
+    cloud_seen_docs: std::collections::HashSet<u64>,
 }
 
 impl eframe::App for WebShell {
     fn logic(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        CLOUD_LIST_PENDING.with(|q| {
+            if let Some(data) = std::mem::take(&mut *q.borrow_mut()).pop() {
+                ctx.data_mut(|d| d.insert_temp(egui::Id::new("tahoe-deckcraft-cloud-files"), data));
+            }
+        });
+        CLOUD_NAME_PENDING.with(|q| {
+            for (uid, name) in std::mem::take(&mut *q.borrow_mut()) {
+                if let Some(doc) = self.app.session.active_mut()
+                    && doc.uid == uid && doc.path.is_none() && doc.title.starts_with("Presentation")
+                {
+                    doc.title = name.clone();
+                    let _ = self.app.run("file.properties", json!({"title":name}));
+                }
+            }
+        });
         CLOUD_OPEN_PENDING.with(|queue| {
-            for (name, data) in std::mem::take(&mut *queue.borrow_mut()) {
+            for (name, data, file_id) in std::mem::take(&mut *queue.borrow_mut()) {
                 match self.app.run("file.openBytes", json!({"name":name, "data":data})) {
-                    Ok(_) => self.app.set_status("Cloud presentation opened"),
+                    Ok(_) => {
+                        if let Some(d) = self.app.session.active() {
+                            let uid = d.uid;
+                            self.cloud_seen_docs.insert(uid);
+                            post_parent_cloud_v93("opened", &file_id, "", uid, None);
+                        }
+                        self.app.close_backstage();
+                        self.app.set_status("Cloud presentation opened");
+                    }
                     Err(err) => self.app.set_status(&format!("Cloud open failed: {err}")),
                 }
             }
         });
+        CLOUD_EXPORT_PENDING.with(|queue| {
+            for (uid, name, format) in std::mem::take(&mut *queue.borrow_mut()) {
+                if !self.app.session.active().is_some_and(|d| d.uid == uid) { continue; }
+                match self.app.run("file.saveBytes", json!({"format":format})) {
+                    Ok(v) => if let Some(data) = v.get("data").and_then(serde_json::Value::as_str) {
+                        post_parent_cloud_v93("saveData", &name, &format, uid, Some(data));
+                    },
+                    Err(e) => {
+                        self.app.set_status(format!("Save failed: {e}"));
+                        post_parent_cloud_v93("saveError", &e.to_string(), &format, uid, None);
+                    }
+                }
+            }
+        });
+        ctx.request_repaint_after(std::time::Duration::from_millis(160));
         let dropped = ctx.input_mut(|i| std::mem::take(&mut i.raw.dropped_files));
         for f in dropped {
             // Capture the document and slide now. The bytes arrive later, after the user may
@@ -199,23 +256,30 @@ impl eframe::App for WebShell {
 
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         self.app.ui(ui);
-        let cloud_save = ui.ctx().data_mut(|d| d.remove_temp::<String>(egui::Id::new("tahoe-deckcraft-cloud-save")));
-        if let Some(format) = cloud_save {
-            if matches!(format.as_str(), "deckcraft" | "pptx") {
-                let name = self.app.session.active().map(|d| d.title().to_owned()).unwrap_or_else(|| "Presentation".to_string());
-                match self.app.run("file.saveBytes", json!({"format":format})) {
-                    Ok(v) => {
-                        if let Some(data) = v.get("data").and_then(serde_json::Value::as_str) {
-                            post_parent_cloud("save", &name, &format, Some(data));
-                            self.app.set_status("Choose a Cloudinary storage to upload");
-                        }
-                    }
-                    Err(err) => self.app.set_status(&format!("Cloud save failed: {err}")),
-                }
+        if let Some(save_as) = self.app.web_save_request.take() {
+            if let Some(d) = self.app.session.active() {
+                post_parent_cloud_v93(if save_as { "saveAsIntent" } else { "saveIntent" },
+                    &d.title(), "deckcraft", d.uid, None);
+            }
+        }
+        if let Some(d) = self.app.session.active() {
+            if self.cloud_seen_docs.insert(d.uid) && d.path.is_none()
+                && d.title.starts_with("Presentation")
+                && d.title["Presentation".len()..].chars().all(|c| c.is_ascii_digit())
+            {
+                post_parent_cloud_v93("nameRequest", &d.title(), "", d.uid, None);
             }
         }
         if ui.ctx().data_mut(|d| d.remove_temp::<bool>(egui::Id::new("tahoe-deckcraft-cloud-library"))).unwrap_or(false) {
-            post_parent_cloud("library", "", "", None);
+            post_parent_cloud_v93("library", "", "", 0, None);
+        }
+        if ui.ctx().data_mut(|d| d.remove_temp::<bool>(egui::Id::new("tahoe-deckcraft-cloud-refresh"))).unwrap_or(false) {
+            post_parent_cloud_v93("list", "", "", 0, None);
+        }
+        if let Some(action) = ui.ctx().data_mut(|d| d.remove_temp::<String>(egui::Id::new("tahoe-deckcraft-cloud-file-action"))) {
+            if let Some((kind, file_id)) = action.split_once(':') {
+                post_parent_cloud_v93(kind, file_id, "", 0, None);
+            }
         }
         self.sync_present_mode();
         if self.app.show.is_none() {
@@ -1849,6 +1913,25 @@ fn post_parent_window(command: &str) {
     let _ = js_sys::Reflect::set(&payload, &wasm_bindgen::JsValue::from_str("type"), &wasm_bindgen::JsValue::from_str("tahoe-app-command"));
     let _ = js_sys::Reflect::set(&payload, &wasm_bindgen::JsValue::from_str("app"), &wasm_bindgen::JsValue::from_str("deckcraft"));
     let _ = js_sys::Reflect::set(&payload, &wasm_bindgen::JsValue::from_str("command"), &wasm_bindgen::JsValue::from_str(command));
+    let _ = parent.post_message(&payload.into(), "*");
+}
+
+fn post_parent_cloud_v93(action: &str, name: &str, format: &str, uid: u64, data: Option<&str>) {
+    let Some(win) = web_sys::window() else { return };
+    let Ok(Some(parent)) = win.parent() else { return };
+    let payload = js_sys::Object::new();
+    for (key, val) in [
+        ("type", "tahoe-deckcraft-cloud"),
+        ("action", action),
+        ("name", name),
+        ("format", format),
+        ("uid", &uid.to_string()),
+    ] {
+        let _ = js_sys::Reflect::set(&payload, &key.into(), &val.into());
+    }
+    if let Some(data) = data {
+        let _ = js_sys::Reflect::set(&payload, &"data".into(), &data.into());
+    }
     let _ = parent.post_message(&payload.into(), "*");
 }
 
