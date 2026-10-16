@@ -115,7 +115,17 @@ $("#pdc-files").innerHTML=files.length?files.map(f=>'<div class="pdc-file"><div 
 }
 function close(){if(busy)return;$("#pdc-wrap")?.classList.remove("show");pending=null}
 function run(fn){if(busy)return;busy=true;Promise.resolve().then(fn).catch(e=>alertStatus(e.message||String(e))).finally(()=>{busy=false;render()})}
-async function openPanel(){ensureUI();$("#pdc-wrap").classList.add("show");await load()}
+async function openPanel(){
+  ensureUI();
+  if(!uid()){
+    owner="";state={storages:[],active:"",files:[]};pending=null;
+    render();$("#pdc-wrap").classList.add("show");
+    alertStatus("Sign in with Google before using personal Cloudinary storage.");
+    return;
+  }
+  $("#pdc-wrap").classList.add("show");
+  await load();
+}
 async function storeProfile(){
 if(!uid())throw Error("Sign in with Google first.");
 const cloudName=$("#pdc-cloud").value.trim(),uploadPreset=$("#pdc-preset").value.trim();
@@ -169,8 +179,23 @@ if(!confirm("Remove from your library? Cloudinary asset remains online."))return
 state.files=state.files.filter(x=>x.id!==id);await save();return;
 }
 if(action==="download"){
-const a=document.createElement("a");a.href=file.url;a.download=file.name;a.target="_blank";a.rel="noopener noreferrer";
-document.body.append(a);a.click();a.remove();alertStatus("Cloudinary file opened. If necessary, use the browser Save As command.");return;
+  // A real Blob download keeps the custom library filename; direct cross-origin
+  // anchor downloads can ignore HTML's download attribute.
+  try{
+    const response=await fetch(file.url,{mode:"cors"});
+    if(!response.ok)throw Error("HTTP "+response.status);
+    const blob=await response.blob();
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");a.href=url;a.download=file.name;
+    document.body.append(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),30000);
+    alertStatus("Downloading "+file.name);
+  }catch{
+    const a=document.createElement("a");a.href=file.url;a.target="_blank";a.rel="noopener noreferrer";
+    document.body.append(a);a.click();a.remove();
+    alertStatus("Cloudinary opened in a new tab. Use Save As if your browser cannot download it directly.");
+  }
+  return;
 }
 if(action==="open"){
 alertStatus("Downloading "+file.name+"…");
@@ -184,6 +209,12 @@ win.postMessage({type:"tahoe-deckcraft-cloud-open",name:file.name,data:btoa(raw)
 alertStatus("Opening "+file.name+" in PowerSlidePro…");
 }
 }
+window.TahoeAdmin?.on?.("profile",()=>{
+  if(owner&&owner!==uid()){
+    owner="";pending=null;state={storages:[],active:"",files:[]};
+    $("#pdc-wrap")?.classList.remove("show");
+  }
+});
 window.addEventListener("message",event=>{
 if(event.origin!==location.origin||event.source!==$("#deckCraftFrame")?.contentWindow)return;
 const msg=event.data;if(msg?.type!=="tahoe-deckcraft-cloud")return;
