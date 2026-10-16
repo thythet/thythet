@@ -9,6 +9,7 @@ const stem=v=>clean(String(v||"Presentation").replace(/\.(deckcraft|pptx)$/i,"")
 const esc=s=>String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const links=new Map();
 let draft=null, waiting=null, processing=false, requestNumber=0;
+let currentAccount=uid();
 function list(){
  const rows=uid()?(api()?.files()||[]):[],sts=uid()?(api()?.storages()||[]):[];
  send({type:"tahoe-deckcraft-cloud-list",
@@ -120,7 +121,7 @@ async function prepare(){
  }
  processing=true;render();
  $("#s93-status").textContent="Preparing presentation…";
- waiting={...draft,name,format,storageId,nonce:++requestNumber};
+ waiting={...draft,name,format,storageId,ownerUid:uid(),nonce:++requestNumber};
  send({type:"tahoe-deckcraft-cloud-export",uid:draft.uid,name,format});
 }
 function from64(data,type){
@@ -158,12 +159,15 @@ async function complete(msg){
   if(task.dest==="pc"){
    download(blob,filename);
   }else{
+   if(!task.ownerUid||uid()!==task.ownerUid)throw Error("The signed-in account changed. Please save again.");
    await ensure();
+   if(uid()!==task.ownerUid)throw Error("The signed-in account changed while preparing the upload.");
    if(blob.size>35*1024*1024)throw Error("Cloudinary uploads are limited to 35 MB here.");
    const storage=(api()?.storages()||[]).find(x=>x.id===task.storageId);
    if(!storage)throw Error("Storage profile was removed.");
    $("#s93-status").textContent="Uploading "+filename+"…";
    const resp=await sendUpload(blob,filename,storage);
+   if(uid()!==task.ownerUid)throw Error("Account changed during upload. File is not attached to a different user's library.");
    const files=api().files();
    const existing=!task.asCopy?files.find(x=>x.id===task.replaceId):null;
    const record={id:existing?.id||"pscloud_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,8),
@@ -214,6 +218,12 @@ window.addEventListener("message",e=>{
  }
 });
 window.TahoeAdmin?.on?.("profile",()=>{
- if(!uid()){links.clear();draft=null;waiting=null;processing=false;$("#tahoe-save93")?.classList.remove("show");list();}
+ const now=uid();
+ if(now!==currentAccount){
+   currentAccount=now;
+   links.clear();draft=null;waiting=null;processing=false;
+   $("#tahoe-save93")?.classList.remove("show");
+   list();
+ }
 });
 })();
