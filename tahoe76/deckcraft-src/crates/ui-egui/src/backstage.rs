@@ -837,8 +837,11 @@ fn cloud_files(ui: &mut Ui, bs: &mut Backstage, t: &Tokens) {
             ui.selectable_value(&mut bs.cloud_storage_filter, String::new(), "All storages");
             if let Some(sts) = storages {
                 for st in sts {
-                    if let Some(name) = st.get("cloudName").and_then(Value::as_str) {
-                        ui.selectable_value(&mut bs.cloud_storage_filter, name.to_string(), name);
+                    if let (Some(id), Some(name)) = (
+                        st.get("id").and_then(Value::as_str),
+                        st.get("cloudName").and_then(Value::as_str),
+                    ) {
+                        ui.selectable_value(&mut bs.cloud_storage_filter, id.to_string(), name);
                     }
                 }
             }
@@ -853,7 +856,9 @@ fn cloud_files(ui: &mut Ui, bs: &mut Backstage, t: &Tokens) {
         let id = f.get("id").and_then(Value::as_str).unwrap_or("");
         let name = f.get("name").and_then(Value::as_str).unwrap_or("");
         let cloud = f.get("cloudName").and_then(Value::as_str).unwrap_or("");
-        if id.is_empty() || name.is_empty() || (!bs.cloud_storage_filter.is_empty() && bs.cloud_storage_filter != cloud)
+        let storage_id = f.get("storageId").and_then(Value::as_str).unwrap_or("");
+        let modified = f.get("modified").and_then(Value::as_str).unwrap_or("");
+        if id.is_empty() || name.is_empty() || (!bs.cloud_storage_filter.is_empty() && bs.cloud_storage_filter != storage_id)
             || !name.to_lowercase().contains(&bs.query.trim().to_lowercase()) { continue; }
         shown += 1;
         let ext = f.get("format").and_then(Value::as_str).unwrap_or("deckcraft");
@@ -862,7 +867,7 @@ fn cloud_files(ui: &mut Ui, bs: &mut Backstage, t: &Tokens) {
             if ui.add(egui::Button::new(RichText::new(name).color(t.text)).frame(false).min_size(vec2(280.0, 30.0))).clicked() {
                 ui.ctx().data_mut(|d| d.insert_temp(egui::Id::new("tahoe-deckcraft-cloud-file-action"), format!("open:{id}")));
             }
-            dim(ui, &format!("{ext} · {} · {cloud}", format_bytes(bytes)));
+            dim(ui, &format!("{ext} · {} · {modified} · {cloud}", format_bytes(bytes)));
             for (label, action) in [("Open", "open"), ("Download", "download"), ("Rename", "rename")] {
                 if ui.small_button(label).clicked() {
                     ui.ctx().data_mut(|d| d.insert_temp(egui::Id::new("tahoe-deckcraft-cloud-file-action"), format!("{action}:{id}")));

@@ -12,8 +12,8 @@ let draft=null, waiting=null, processing=false, requestNumber=0;
 function list(){
  const rows=uid()?(api()?.files()||[]):[],sts=uid()?(api()?.storages()||[]):[];
  send({type:"tahoe-deckcraft-cloud-list",
-   data:JSON.stringify({files:rows.map(x=>({id:x.id,name:x.name,format:x.format,cloudName:x.cloudName,
-     size:x.size,updatedAt:x.updatedAt||x.createdAt})),
+   data:JSON.stringify({files:rows.map(x=>({id:x.id,name:x.name,format:x.format,cloudName:x.cloudName,storageId:x.storageId,
+     size:x.size,updatedAt:x.updatedAt||x.createdAt,modified:new Date(x.updatedAt||x.createdAt||Date.now()).toLocaleDateString()})),
      storages:sts.map(x=>({id:x.id,cloudName:x.cloudName}))})});
 }
 async function ensure(){if(!uid())throw Error("Sign in with Google to use Cloudinary.");await api()?.ensure();}
@@ -171,6 +171,11 @@ async function complete(msg){
     url:resp.secure_url,publicId:resp.public_id||"",size:resp.bytes||blob.size,
     createdAt:existing?.createdAt||Date.now(),updatedAt:Date.now()};
    // Do not change the indexed file until Cloudinary confirms a successful upload.
+   const returned=new URL(resp.secure_url);
+   if(returned.protocol!=="https:"||returned.hostname!=="res.cloudinary.com"
+       ||!returned.pathname.startsWith("/"+storage.cloudName+"/raw/upload/")){
+      throw Error("Cloudinary returned an unexpected file location.");
+   }
    if(existing)Object.assign(existing,record);else files.push(record);
    links.set(task.uid,record.id);
    await api().persist();list();
@@ -194,7 +199,16 @@ window.addEventListener("message",e=>{
  case "saveData":complete(m);break;
  case "saveError":if(waiting&&String(m.uid)===waiting.uid){waiting=null;error(m.name||"Export failed")};break;
  case "open":case "rename":case "remove":case "download":
-  if(uid())ensure().then(()=>api().fileAction(m.action,m.name)).then(list).catch(e=>api()?.status(e.message));
+  if(uid())ensure().then(()=>api().fileAction(m.action,m.name)).then(()=>{
+   if(m.action==="rename"){
+    const renamed=(api()?.files()||[]).find(x=>x.id===m.name);
+    if(renamed)for(const [documentId,fileId] of links)if(fileId===renamed.id){
+     send({type:"tahoe-deckcraft-cloud-name",uid:documentId,name:stem(renamed.name),force:"1"});
+    }
+   }
+   if(m.action==="remove")for(const [documentId,fileId] of links)if(fileId===m.name)links.delete(documentId);
+   list();
+  }).catch(e=>api()?.status(e.message));
   break;
  case "library":api()?.openPanel().then(list).catch(e=>api()?.status(e.message));break;
  }
