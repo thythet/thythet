@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>PowerSlidePro</title>
+  <script>
+    (() => {
+      const showError = (message) => {
+        const el = document.getElementById("deckcraft_loading");
+        if (!el) return;
+        el.style.pointerEvents = "auto";
+        el.style.padding = "24px";
+        el.style.textAlign = "center";
+        el.style.whiteSpace = "pre-wrap";
+        el.textContent = "PowerSlidePro startup error\n\n" + String(message);
+      };
+      window.addEventListener("error", (event) => {
+        showError(event.error?.stack || event.message || "Unknown JavaScript error");
+      });
+      window.addEventListener("unhandledrejection", (event) => {
+        const reason = event.reason;
+        showError(reason?.stack || reason?.message || reason || "Unhandled promise rejection");
+      });
+      window.setTimeout(() => {
+        const el = document.getElementById("deckcraft_loading");
+        if (el && el.isConnected && el.textContent.includes("Loading PowerSlidePro")) {
+          el.textContent = "PowerSlidePro is taking too long to start.\nThe renderer or WebAssembly startup may have failed.";
+        }
+      }, 20000);
+    })();
+  </script>
+  <link data-trunk rel="rust" data-bin="deckcraft-web" data-wasm-opt="0" data-weak-refs />
+  <link rel="icon" type="image/png" href="../../assets/powerslidepro-logo.png" />
+  <style>
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #262626; }
+    #deckcraft_canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+    #deckcraft_loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: #b8b8b8; font: 14px system-ui, sans-serif; pointer-events: none; }
+  </style>
+</head>
+<body>
+  <canvas id="deckcraft_canvas"></canvas>
+  <div id="deckcraft_loading">Loading PowerSlidePro&hellip;</div>
+</body>
+</html>
