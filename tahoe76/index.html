@@ -6444,6 +6444,7 @@ addEventListener("resize",()=>{pinDashboardLauncher();
  hideDesktopContextMenu();
 },{passive:true});
 </script>
+<script src="assets/js/powerslidepro-cloud.js?v=92cloud"></script>
 
 <script type="module">
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
@@ -6490,6 +6491,7 @@ const presencePath=()=>cleanPath("adminDashboard/presence");
 const wallpapersPath=()=>cleanPath("adminDashboard/wallpapers");
 const personalTahoePath=uid=>`${usersPath()}/${uid}/personal/tahoe`;
 const personalPowerSlidesPath=uid=>`${usersPath()}/${uid}/personal/powerslide/projects`;
+const personalDeckCloudPath=uid=>`${usersPath()}/${uid}/personal/powerslidepro/cloud`;
 const personalAllSongPath=uid=>`${usersPath()}/${uid}/personal/allsong`;
 const isOwner=user=>!!user&&!user.isAnonymous&&String(user.email||"").toLowerCase()===OWNER_EMAIL;
 
@@ -6637,6 +6639,27 @@ async function deleteOwnPowerSlide(id){
   const tomb={id,_deleted:true,updatedAt:Date.now()};await set(ref(db,`${personalPowerSlidesPath(user.uid)}/${id}`),tomb);return tomb
 }
 async function readOwnPowerSlides(){const user=auth.currentUser;if(!user)return[];const snap=await get(ref(db,personalPowerSlidesPath(user.uid)));return Object.values(snap.val()||{})}
+// Cloudinary has public unsigned uploads. Only this per-user file INDEX and
+// the user's two-field storage configurations are saved through Firebase.
+async function readOwnDeckCloud(){
+  const user=auth.currentUser;
+  if(!user||user.isAnonymous)throw new Error("Google sign-in required for Cloudinary storage.");
+  const snap=await get(ref(db,personalDeckCloudPath(user.uid)));
+  return snap.exists()?snap.val():null;
+}
+async function writeOwnDeckCloud(data){
+  const user=auth.currentUser;
+  if(!user||user.isAnonymous)throw new Error("Google sign-in required for Cloudinary storage.");
+  const item={
+    version:1,
+    active:String(data?.active||""),
+    storages:Array.isArray(data?.storages)?data.storages.slice(0,50):[],
+    files:Array.isArray(data?.files)?data.files.slice(-800):[],
+    updatedAt:Date.now(),writerUid:user.uid
+  };
+  await set(ref(db,personalDeckCloudPath(user.uid)),item);
+  return true;
+}
 async function writeOwnAllSongState(data){
   const user=auth.currentUser;if(!user)throw new Error("Sign in first.");
   const safe={favorites:Array.isArray(data?.favorites)?data.favorites.slice(0,2000):[],recent:Array.isArray(data?.recent)?data.recent.slice(0,200):[],view:String(data?.view||"all").slice(0,30),selected:String(data?.selected||"").slice(0,80),sidebar:Number(data?.sidebar)||292,sidebarOpen:data?.sidebarOpen!==false,cloudUpdated:Number(data?.cloudUpdated)||Date.now(),updatedAt:Date.now(),writerUid:user.uid};
@@ -6733,6 +6756,7 @@ window.TahoeFirebase={
   signOut:()=>firebaseSignOut(auth),
   writeGlobal,readGlobal,writeFiles,readFiles,writePublicConfig,
   writeOwnPreferences,readOwnPreferences,upsertOwnPowerSlide,deleteOwnPowerSlide,readOwnPowerSlides,writeOwnAllSongState,readOwnAllSongState,
+  readOwnDeckCloud,writeOwnDeckCloud,
   publishWallpaper,deleteWallpaper,
   updateUserAccess,updateOwnProfile,
   uploadAdminAsset,uploadFinderFile,deleteStoragePath,
