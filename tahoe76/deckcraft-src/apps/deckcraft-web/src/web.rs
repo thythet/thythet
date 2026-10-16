@@ -25,7 +25,7 @@ thread_local! {
 fn install_cloud_open_receiver() {
     let Some(window) = web_sys::window() else { return };
     let origin = window.location().origin().unwrap_or_default();
-    let callback = wasm_bindgen::closure::Closure::<dyn FnMut(web_sys::MessageEvent)>::new(move |event| {
+    let callback = wasm_bindgen::closure::Closure::<dyn FnMut(web_sys::MessageEvent)>::new(move |event: web_sys::MessageEvent| {
         if event.origin() != origin { return; }
         let Some(win) = web_sys::window() else { return };
         let Ok(Some(parent)) = win.parent() else { return };
