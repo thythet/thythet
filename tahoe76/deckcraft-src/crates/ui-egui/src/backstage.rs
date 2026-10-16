@@ -793,6 +793,13 @@ fn open_page(app: &mut SlideApp, ui: &mut Ui, bs: &mut Backstage) {
             heading(ui, "Presentations");
             let q = bs.query.clone();
             recent_list(app, ui, &q, usize::MAX);
+            #[cfg(target_arch = "wasm32")]
+            {
+                ui.add_space(18.0);
+                if ui.button("Open from Cloudinary").clicked() {
+                    ui.ctx().data_mut(|d| d.insert_temp(egui::Id::new("tahoe-deckcraft-cloud-library"), true));
+                }
+            }
         });
     });
 }
@@ -955,6 +962,27 @@ fn save_as(app: &mut SlideApp, ui: &mut Ui, bs: &mut Backstage, out: &mut Outcom
     ui.add_space(8.0);
     if let Some((_, _, detail)) = SAVE_TYPES.iter().find(|s| s.0 == bs.file_type) {
         dim(ui, detail);
+    }
+    #[cfg(target_arch = "wasm32")]
+    {
+        ui.add_space(19.0);
+        ui.separator();
+        ui.add_space(10.0);
+        ui.label(RichText::new("Cloudinary").font(theme::bold(15.0)).color(t.text));
+        dim(ui, "Save to your personal Cloudinary storage.");
+        ui.add_space(8.0);
+        ui.horizontal(|ui| {
+            let compatible = matches!(bs.file_type, "pptx" | "deckcraft");
+            if ui.add_enabled(compatible, egui::Button::new("Save to Cloudinary").min_size(vec2(148.0, 28.0))).clicked() {
+                ui.ctx().data_mut(|d| d.insert_temp(egui::Id::new("tahoe-deckcraft-cloud-save"), bs.file_type.to_string()));
+            }
+            if ui.button("My Cloud Files").clicked() {
+                ui.ctx().data_mut(|d| d.insert_temp(egui::Id::new("tahoe-deckcraft-cloud-library"), true));
+            }
+        });
+        if !matches!(bs.file_type, "pptx" | "deckcraft") {
+            dim(ui, "Cloud saving supports editable projects and PPTX.");
+        }
     }
 }
 
