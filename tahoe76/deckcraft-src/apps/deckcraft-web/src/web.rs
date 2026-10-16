@@ -1185,9 +1185,13 @@ impl SmartGenerator {
                 ui.horizontal(|ui| {
                     if ui.button("Sample").clicked() {
                         self.input = smart_sample().to_string();
+                        set_native_smart_input(&self.input);
                     }
                     if ui.button("Repair Refs").clicked() {
                         self.input = expand_smart_refs(&self.input);
+                        // The native Khmer textarea otherwise sends the old value back
+                        // on the next egui frame and silently undoes the repair.
+                        set_native_smart_input(&self.input);
                         self.status = "Expanded recognized book abbreviations and normalized Bible references.".into();
                     }
                     ui.add_enabled_ui(!self.running, |ui| {
@@ -1266,6 +1270,16 @@ impl SmartGenerator {
 fn remove_native_smart_input() {
     let Some(document) = web_sys::window().and_then(|w| w.document()) else { return };
     if let Some(node) = document.get_element_by_id("tahoe-smart-khmer-input") { node.remove(); }
+}
+/// Keep programmatic edits (Sample / Repair Refs) and the native Khmer input in sync.
+fn set_native_smart_input(text: &str) {
+    let area = web_sys::window()
+        .and_then(|w| w.document())
+        .and_then(|d| d.get_element_by_id("tahoe-smart-khmer-input"))
+        .and_then(|el| el.dyn_into::<web_sys::HtmlTextAreaElement>().ok());
+    if let Some(area) = area {
+        if area.value() != text { area.set_value(text); }
+    }
 }
 fn sync_native_smart_input(ctx: &egui::Context, rect: egui::Rect, text: &mut String) {
     let Some(window) = web_sys::window() else { return };
