@@ -26,9 +26,37 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: tahoe76/deckcraft-src
+      # Existing engine --lib tests depend on a binary fixture omitted from this
+      # repository checkout. Exercise the public engine commands as a standalone
+      # integration test so the font regression can actually run in CI.
       - name: Test Khmer font commands
         run: |
-          cargo test -p deckcraft-engine --lib selecting_a_khmer_font_sets_all_powerpoint_script_slots
-          cargo test -p deckcraft-engine --lib font_dialog_applies_character_formatting_in_one_undo
+          mkdir -p crates/engine/tests
+          cat > crates/engine/tests/tahoe_khmer_fonts.rs <<'RS'
+          use deckcraft_engine::Session;
+          use serde_json::json;
+
+          #[test]
+          fn khmer_font_commands_write_all_script_slots() {
+              let mut session = Session::with_new();
+              session.execute("shape.insert", &json!({
+                  "preset": "rect", "rect": [40.0, 40.0, 240.0, 80.0],
+                  "text": "ព្រះបន្ទូល"
+              })).unwrap();
+              for (command, family) in [
+                  ("format.font", "Khmer OS Muol Light"),
+                  ("format.fontDialog", "Khmer OS Battambang"),
+              ] {
+                  session.execute(command, &json!({"family": family})).unwrap();
+                  let doc = session.doc().unwrap();
+                  let shapes = doc.selected_shapes();
+                  let run = &shapes[0].text.as_ref().unwrap().paragraphs[0].runs[0].props;
+                  assert_eq!(run.font.as_deref(), Some(family));
+                  assert_eq!(run.font_ea.as_deref(), Some(family));
+                  assert_eq!(run.font_cs.as_deref(), Some(family));
+              }
+          }
+          RS
+          cargo test -p deckcraft-engine --test tahoe_khmer_fonts -- --nocapture
       - name: Test PPTX script font XML and editable text
         run: cargo test -p deckcraft-pptx --test roundtrip khmer_pptx_export -- --nocapture
