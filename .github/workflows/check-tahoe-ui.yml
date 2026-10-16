@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'tahoe76/index.html'
+      - 'tahoe76/assets/js/powerslidepro-cloud.js'
       - '.github/workflows/check-tahoe-ui.yml'
   workflow_dispatch:
 
@@ -59,6 +60,7 @@ jobs:
         run: |
           set -euo pipefail
           for file in /tmp/tahoe-scripts/*; do node --check "$file"; done
+          node --check tahoe76/assets/js/powerslidepro-cloud.js
 
       - name: Verify exactly 66 Bible book files
         run: |
