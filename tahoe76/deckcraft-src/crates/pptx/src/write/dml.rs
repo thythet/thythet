@@ -740,7 +740,21 @@ fn run_text(w: &mut W, x: &mut Exp, o: &mut Out, text: &str, props: &RunProps) {
             continue;
         }
         w.open0("a:r");
-        rpr(w, x, o, "a:rPr", props);
+        // Presentations saved before the Khmer fix may carry only a:latin.
+        // For a run containing Khmer, PowerPoint looks at a:cs instead and
+        // otherwise substitutes the theme font even though the ribbon shows
+        // the intended Latin family. Repair the exported run without changing
+        // the editable document model or overriding explicit script fonts.
+        let mut khmer_props = None;
+        if piece.chars().any(|c| ('\u{1780}'..='\u{17ff}').contains(&c))
+            && props.font.is_some() && (props.font_cs.is_none() || props.font_ea.is_none())
+        {
+            let mut corrected = props.clone();
+            if corrected.font_cs.is_none() { corrected.font_cs = corrected.font.clone(); }
+            if corrected.font_ea.is_none() { corrected.font_ea = corrected.font.clone(); }
+            khmer_props = Some(corrected);
+        }
+        rpr(w, x, o, "a:rPr", khmer_props.as_ref().unwrap_or(props));
         w.elt("a:t", piece);
         w.close("a:r");
     }

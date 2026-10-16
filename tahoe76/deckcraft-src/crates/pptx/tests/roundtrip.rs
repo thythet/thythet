@@ -405,6 +405,62 @@ fn rich_deck_writes_to_dir() {
     assert!(bytes.len() > 1000);
 }
 
+/// Verify the actual XML slots PowerPoint consumes, not just the toolbar font name.
+#[test]
+fn khmer_pptx_export_sets_real_complex_script_typeface() {
+    let mut p = defaults::new_presentation(None);
+    let run = Run::with(
+        "ព្រះបន្ទូល ទំនុកដំកើង ៤៨:១៤",
+        RunProps {
+            font: Some("Khmer OS Muol Light".into()),
+            size: Some(40.0),
+            bold: Some(true),
+            // Legacy saved presentation intentionally has no font_cs/font_ea.
+            ..Default::default()
+        },
+    );
+    p.slides[0].shapes[0].text = Some(TextBody {
+        paragraphs: vec![Paragraph { runs: vec![run], ..Default::default() }],
+        ..Default::default()
+    });
+    let bytes = deckcraft_pptx::export(&p).expect("Khmer PPTX export");
+    let mut zip = zip::ZipArchive::new(std::io::Cursor::new(&bytes)).expect("PPTX zip");
+    let xml = std::io::read_to_string(zip.by_name("ppt/slides/slide1.xml").expect("slide XML")).expect("read XML");
+    assert!(xml.contains("ព្រះបន្ទូល"), "Khmer text must remain editable text");
+    for script in ["latin", "ea", "cs"] {
+        assert!(xml.contains(&format!(r#"<a:{script} typeface="Khmer OS Muol Light""#)),
+            "missing correct {script} font field in exported run");
+    }
+    assert!(xml.contains(r#"sz="4000""#), "40pt character size");
+    assert!(xml.contains(r#"b="1""#), "bold character formatting");
+    let imported = deckcraft_pptx::import(&bytes).expect("round-trip import");
+    let saved = &imported.slides[0].shapes[0].text.as_ref().unwrap().paragraphs[0].runs[0].props;
+    assert_eq!(saved.font_cs.as_deref(), Some("Khmer OS Muol Light"));
+    assert_eq!(saved.font_ea.as_deref(), Some("Khmer OS Muol Light"));
+}
+
+/// Explicitly different complex-script fonts from imported documents must survive.
+#[test]
+fn khmer_pptx_export_preserves_explicit_complex_script_family() {
+    let mut p = defaults::new_presentation(None);
+    p.slides[0].shapes[0].text = Some(TextBody {
+        paragraphs: vec![Paragraph {
+            runs: vec![Run::with("ខ្មែរ", RunProps {
+                font: Some("Arial".into()),
+                font_cs: Some("Khmer OS Battambang".into()),
+                ..Default::default()
+            })],
+            ..Default::default()
+        }],
+        ..Default::default()
+    });
+    let bytes = deckcraft_pptx::export(&p).unwrap();
+    let mut zip = zip::ZipArchive::new(std::io::Cursor::new(bytes)).unwrap();
+    let xml = std::io::read_to_string(zip.by_name("ppt/slides/slide1.xml").unwrap()).unwrap();
+    assert!(xml.contains(r#"<a:latin typeface="Arial""#));
+    assert!(xml.contains(r#"<a:cs typeface="Khmer OS Battambang""#));
+}
+
 #[test]
 fn deck_level_round_trip() {
     let p = rich_deck();

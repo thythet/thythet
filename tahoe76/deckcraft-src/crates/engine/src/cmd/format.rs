@@ -303,7 +303,14 @@ fn subscript(s: &mut Session, p: &Value) -> Result<Value> {
 }
 fn font(s: &mut Session, p: &Value) -> Result<Value> {
     let f = str_param(p, "family").ok_or_else(|| bad("format.font", "missing `family`"))?.to_string();
-    format_run(s, &move |r| r.font = Some(f.clone()))
+    format_run(s, &move |r| {
+        // Khmer uses DrawingML's complex-script slot (a:cs), not just a:latin.
+        // User-selected font applies to all scripts while per-script imports stay
+        // untouched until the user explicitly changes the font.
+        r.font = Some(f.clone());
+        r.font_ea = Some(f.clone());
+        r.font_cs = Some(f.clone());
+    })
 }
 fn size(s: &mut Session, p: &Value) -> Result<Value> {
     let v = f64_param(p, "size").ok_or_else(|| bad("format.size", "missing `size`"))?.clamp(1.0, 4000.0);
@@ -443,6 +450,8 @@ impl FontEdits {
     fn write(&self, r: &mut RunProps) {
         if let Some(f) = &self.family {
             r.font = Some(f.clone());
+            r.font_ea = Some(f.clone());
+            r.font_cs = Some(f.clone());
         }
         if let Some(v) = self.size {
             r.size = Some(v);
@@ -1397,6 +1406,8 @@ mod tests {
         assert_eq!(s.doc().unwrap().history.undo.last().unwrap().label, "Font…");
         let r = props(&s);
         assert_eq!(r.font.as_deref(), Some("Liberation Serif"));
+        assert_eq!(r.font_ea.as_deref(), Some("Liberation Serif"));
+        assert_eq!(r.font_cs.as_deref(), Some("Liberation Serif"));
         assert_eq!(r.size, Some(28.0));
         assert_eq!(r.bold, Some(true));
         assert_eq!(r.italic, Some(false));
@@ -1411,6 +1422,21 @@ mod tests {
         assert!(r.font.is_none() && r.size.is_none() && r.bold.is_none() && r.underline.is_none() && r.fill.is_none());
         assert_eq!(r.strike, None);
         assert_eq!(r.caps, None);
+    }
+
+    #[test]
+    fn selecting_a_khmer_font_sets_all_powerpoint_script_slots() {
+        let mut s = shape();
+        s.execute("format.font", &json!({"family": "Khmer OS Muol Light"})).unwrap();
+        let r = props(&s);
+        assert_eq!(r.font.as_deref(), Some("Khmer OS Muol Light"));
+        assert_eq!(r.font_ea.as_deref(), Some("Khmer OS Muol Light"));
+        assert_eq!(r.font_cs.as_deref(), Some("Khmer OS Muol Light"));
+        s.execute("format.fontDialog", &json!({"family": "Khmer OS Battambang"})).unwrap();
+        let r = props(&s);
+        assert_eq!(r.font.as_deref(), Some("Khmer OS Battambang"));
+        assert_eq!(r.font_ea.as_deref(), Some("Khmer OS Battambang"));
+        assert_eq!(r.font_cs.as_deref(), Some("Khmer OS Battambang"));
     }
 
     #[test]

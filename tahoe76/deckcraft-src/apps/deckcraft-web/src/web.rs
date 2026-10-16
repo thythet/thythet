@@ -236,6 +236,9 @@ struct TypographyPanel {
     convert_numbers: bool, number_style: VerseNumberStyle,
     baseline: VerseBaseline,
     status: String,
+    // Custom title-bar drag state (egui Window itself has no standard title bar).
+    window_pos: Option<egui::Pos2>,
+    window_size: egui::Vec2,
 }
 impl Default for TypographyPanel {
     fn default() -> Self {
@@ -249,6 +252,7 @@ impl Default for TypographyPanel {
             set_anchor: false, anchor: "top".into(), set_baseline: false,
             convert_numbers: false, number_style: VerseNumberStyle::English,
             baseline: VerseBaseline::Normal, status: String::new(),
+            window_pos: None, window_size: egui::vec2(330.0, 520.0),
         }
     }
 }
@@ -305,6 +309,16 @@ fn format_section(ui: &mut egui::Ui, label: &str) {
     ui.label(egui::RichText::new(label).size(10.0).strong().color(FORMAT_MUTED));
 }
 
+// Keep all edges of the formatting window visible in the PowerSlidePro viewport.
+fn clamp_format_window(pos: egui::Pos2, viewport: egui::Rect, size: egui::Vec2) -> egui::Pos2 {
+    let max_x = (viewport.right() - size.x).max(viewport.left());
+    let max_y = (viewport.bottom() - size.y).max(viewport.top());
+    egui::pos2(
+        pos.x.clamp(viewport.left(), max_x),
+        pos.y.clamp(viewport.top(), max_y),
+    )
+}
+
 impl TypographyPanel {
     fn selected_count(&self) -> u8 {
         let style = self.set_bold || self.set_italic || self.set_underline;
@@ -330,11 +344,16 @@ impl TypographyPanel {
         if !self.open { return; }
         let mut apply_now = false;
         let mut close_now = false;
+        let mut header_drag = egui::Vec2::ZERO;
+        let viewport = ctx.content_rect();
+        let initial = self.window_pos.unwrap_or_else(|| viewport.center() - self.window_size * 0.5);
+        let position = clamp_format_window(initial, viewport, self.window_size);
+        self.window_pos = Some(position);
         // 330 CSS-pixel panel, 37px header, 10px body padding, and 45px footer.
-        egui::Window::new("Apply Formatting")
+        let shown = egui::Window::new("Apply Formatting")
             .id(egui::Id::new("tahoe-typography-apply"))
             .title_bar(false)
-            .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
+            .fixed_pos(position)
             .default_width(330.0)
             .min_width(330.0)
             .resizable(false)
@@ -352,7 +371,7 @@ impl TypographyPanel {
                 ui.spacing_mut().item_spacing = egui::vec2(0.0, 0.0);
                 ui.visuals_mut().override_text_color = Some(FORMAT_INK);
                 // Header is independent of the padded form, with a full-width rule.
-                ui.allocate_ui_with_layout(egui::vec2(330.0, 36.0),
+                let title = ui.allocate_ui_with_layout(egui::vec2(330.0, 36.0),
                     egui::Layout::left_to_right(egui::Align::Center), |ui| {
                         ui.add_space(11.0);
                         ui.label(egui::RichText::new("Apply Formatting").size(13.0).strong());
@@ -365,6 +384,14 @@ impl TypographyPanel {
                             }
                         });
                     });
+                // Capture drags from the title area, never the close button.
+                let drag_zone = egui::Rect::from_min_max(
+                    title.response.rect.min,
+                    egui::pos2(title.response.rect.right() - 38.0, title.response.rect.bottom()),
+                );
+                let drag = ui.interact(drag_zone, ui.id().with("format-title-drag"), egui::Sense::drag())
+                    .on_hover_cursor(egui::CursorIcon::Grab);
+                if drag.dragged() { header_drag += drag.drag_delta(); }
                 format_rule(ui, 330.0);
                 egui::Frame::NONE.inner_margin(egui::Margin::symmetric(10, 10)).show(ui, |ui| {
                     ui.set_width(310.0);
@@ -560,6 +587,13 @@ impl TypographyPanel {
                         egui::Label::new(egui::RichText::new(&self.status).size(10.0).color(FORMAT_MUTED)));
                 }
             });
+        if let Some(window) = shown {
+            self.window_size = window.response.rect.size();
+        }
+        if header_drag != egui::Vec2::ZERO {
+            self.window_pos = Some(clamp_format_window(position + header_drag, viewport, self.window_size));
+            ctx.request_repaint();
+        }
         if close_now { self.open = false; }
         if apply_now {
             self.status = match self.apply(app) {
