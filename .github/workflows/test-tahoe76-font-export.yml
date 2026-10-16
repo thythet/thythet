@@ -1,0 +1,34 @@
+name: Validate Tahoe76 Khmer PPTX Fonts
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tahoe76/deckcraft-src/crates/engine/src/cmd/format.rs'
+      - 'tahoe76/deckcraft-src/crates/pptx/src/write/dml.rs'
+      - 'tahoe76/deckcraft-src/crates/pptx/tests/roundtrip.rs'
+      - '.github/workflows/test-tahoe76-font-export.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  font-export-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: tahoe76/deckcraft-src
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: tahoe76/deckcraft-src
+      - name: Test Khmer font commands
+        run: |
+          cargo test -p deckcraft-engine --lib selecting_a_khmer_font_sets_all_powerpoint_script_slots
+          cargo test -p deckcraft-engine --lib font_dialog_applies_character_formatting_in_one_undo
+      - name: Test PPTX script font XML and editable text
+        run: cargo test -p deckcraft-pptx --test roundtrip khmer_pptx_export -- --nocapture
