@@ -10,6 +10,8 @@ on:
       - 'tahoe77/index.html'
       - 'tahoe77/assets/js/powerslidepro-cloud.js'
       - 'tahoe77/assets/js/powerslidepro-save-v93.js'
+      - 'tahoe77/assets/js/powerslidepro-present-v1.js'
+      - 'tahoe77/assets/powerslidepro-audience.html'
       - '.github/workflows/check-tahoe-ui.yml'
   workflow_dispatch:
 
@@ -68,6 +70,7 @@ jobs:
           node --check tahoe76/assets/js/powerslidepro-save-v93.js
           node --check tahoe77/assets/js/powerslidepro-cloud.js
           node --check tahoe77/assets/js/powerslidepro-save-v93.js
+          node --check tahoe77/assets/js/powerslidepro-present-v1.js
 
       - name: Verify exactly 66 Bible book files
         run: |

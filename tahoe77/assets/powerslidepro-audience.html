@@ -42,6 +42,9 @@ window.addEventListener('message',event=>{
        name:data.name||'Audience.deckcraft',data:data.data,index:String(data.index||0)});
      status.textContent='Loading slideshow…';
    }
+   if(data.type==='pspro-audience-error'){
+     status.textContent=data.message||'Could not export presentation.';
+   }
    if(data.type==='pspro-audience-state'){
      if(contentLoaded)toSlide({type:'tahoe-deckcraft-audience-state',
        index:String(data.index||0),blank:data.blank||''});
@@ -78,7 +81,7 @@ document.getElementById('fs-again').onclick=async()=>{
 document.getElementById('exit').onclick=()=>{notify('pspro-audience-control',{end:true});window.close()};
 window.addEventListener('beforeunload',()=>notify('pspro-audience-closed'));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.fullscreenElement){document.exitFullscreen().catch(()=>{})}});
-setTimeout(retry,900);
+// Wait for the audience WASM renderer to report readiness; avoid duplicate loads.
 })();
 </script>
 </body>
