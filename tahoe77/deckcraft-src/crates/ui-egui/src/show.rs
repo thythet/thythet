@@ -1934,7 +1934,7 @@ fn web_presenter_panel(
     // Keep the chosen filmstrip height between sessions; bound it on window resize.
     let strip_id = egui::Id::new("tahoe77-presenter-filmstrip-height");
     let max_strip = (full.height() * 0.46).max(90.0);
-    let mut strip_h = ctx.data(|d| d.get_persisted::<f32>(strip_id))
+    let mut strip_h = ctx.data_mut(|d| d.get_persisted::<f32>(strip_id))
         .unwrap_or(124.0).clamp(84.0, max_strip);
 
     egui::Area::new(egui::Id::new("tahoe77-web-presenter"))
