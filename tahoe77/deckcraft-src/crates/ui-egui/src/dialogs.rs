@@ -75,50 +75,152 @@ fn title(id: &str) -> &'static str {
     }
 }
 
+/// Desktop-style compact dimensions. Wide workflows keep enough room for all fields,
+/// while ordinary formatting dialogs shrink to the content instead of showing blank space.
+fn dialog_width(id: &str) -> f32 {
+    match id {
+        "themeColors" => 760.0,
+        "photoAlbum" | "chartData" | "smartart" | "customShow" => 630.0,
+        "font" => 498.0,
+        "paragraph" => 516.0,
+        "themeFonts" | "headerFooter" | "hyperlink" | "preferences"
+        | "setupShow" | "sizePosition" | "autocorrect" => 482.0,
+        "replaceFonts" | "find" | "tabs" | "slideSize" => 424.0,
+        _ => 400.0,
+    }
+}
+
+fn dialog_estimated_height(id: &str) -> f32 {
+    match id {
+        "themeColors" | "photoAlbum" | "chartData" | "smartart" => 530.0,
+        "font" | "paragraph" | "preferences" | "themeFonts" => 325.0,
+        "replaceFonts" => 245.0,
+        "find" | "tabs" | "hyperlink" | "sizePosition" => 280.0,
+        _ => 205.0,
+    }
+}
+
+/// Constrain a draggable popup to the visible PowerSlidePro canvas, even after resizing.
+fn clamp_dialog(pos: egui::Pos2, bounds: Rect, size: egui::Vec2) -> egui::Pos2 {
+    let max_x = (bounds.right() - size.x - 8.0).max(bounds.left() + 8.0);
+    let max_y = (bounds.bottom() - size.y - 8.0).max(bounds.top() + 8.0);
+    pos2(
+        pos.x.clamp(bounds.left() + 8.0, max_x),
+        pos.y.clamp(bounds.top() + 8.0, max_y),
+    )
+}
+
+/// One shared light, compact, draggable popup shell for all PowerSlidePro formatting,
+/// insert, settings, confirmation and other egui dialogs. The header is the drag handle;
+/// the close button remains independent and all existing form commands stay in body().
 pub fn show(app: &mut SlideApp, ctx: &egui::Context) {
     let Some(mut d) = app.dialog.take() else { return };
-    let mut open = true;
     let mut close = false;
-    let mut window = egui::Window::new(title(&d.id))
-        .id(egui::Id::new(("dialog", d.id.clone())))
-        .collapsible(false)
+    let mut dismiss = false;
+    let mut title_drag = egui::Vec2::ZERO;
+    let view = ctx.content_rect();
+    let width = dialog_width(&d.id).min((view.width() - 18.0).max(260.0));
+    let dialog_id = egui::Id::new(("tahoe77-dialog", d.id.clone()));
+    let pos_id = dialog_id.with("position");
+    let size_id = dialog_id.with("size");
+    let size = ctx.data(|data| data.get_temp::<egui::Vec2>(size_id))
+        .unwrap_or_else(|| vec2(width, dialog_estimated_height(&d.id).min(view.height() - 20.0)));
+    let initial = view.center() - size * 0.5;
+    let original = ctx.data(|data| data.get_temp::<egui::Pos2>(pos_id)).unwrap_or(initial);
+    let position = clamp_dialog(original, view, size);
+    let label = title(&d.id);
+
+    let shown = egui::Window::new(label)
+        .id(dialog_id)
+        .title_bar(false)
+        .fixed_pos(position)
+        .movable(false) // Only the gray header moves the popup, not text fields.
         .resizable(false)
-        .anchor(Align2::CENTER_CENTER, vec2(0.0, -40.0))
-        .open(&mut open);
-    // Two columns of colour rows plus Save must fit the first frame (Theme Colors), as must Save
-    // in Theme Fonts. A later resize clips the buttons (the window size sticks) and clicks miss them.
-    if d.id == "themeColors" {
-        window = window.default_size(vec2(760.0, 420.0)).min_width(720.0).min_height(420.0);
-    } else if d.id == "themeFonts" {
-        window = window.default_size(vec2(460.0, 320.0)).min_width(420.0).min_height(300.0);
-    }
-    window.show(ctx, |ui| {
-        ui.set_min_width(match d.id.as_str() {
-            "themeColors" => 700.0,
-            "themeFonts" => 400.0,
-            _ => 340.0,
+        .collapsible(false)
+        .default_width(width)
+        .frame(egui::Frame::NONE
+            .fill(Color32::WHITE)
+            .corner_radius(CornerRadius::same(11))
+            .stroke(Stroke::new(1.0, Color32::from_rgb(221, 225, 230)))
+            .shadow(egui::Shadow {
+                offset: [0, 12], blur: 32, spread: 0,
+                color: Color32::from_black_alpha(35),
+            }))
+        .show(ctx, |ui| {
+            ui.set_min_width(width);
+            ui.spacing_mut().item_spacing = vec2(6.0, 5.0);
+            ui.spacing_mut().interact_size.y = 26.0;
+            ui.visuals_mut().override_text_color = Some(Color32::from_rgb(44, 48, 55));
+            ui.visuals_mut().widgets.inactive.bg_fill = Color32::from_rgb(248, 249, 251);
+            ui.visuals_mut().widgets.inactive.bg_stroke =
+                Stroke::new(1.0, Color32::from_rgb(215, 220, 226));
+            ui.visuals_mut().widgets.hovered.bg_stroke =
+                Stroke::new(1.0, Color32::from_rgb(237, 119, 65));
+
+            let (bar, _) = ui.allocate_exact_size(vec2(width, 34.0), Sense::hover());
+            ui.painter().rect_filled(bar, 0.0, Color32::from_rgb(235, 236, 238));
+            ui.painter().text(bar.center(), Align2::CENTER_CENTER, label,
+                theme::font(13.0), Color32::from_rgb(48, 51, 57));
+            let drag_rect = Rect::from_min_max(bar.min, pos2(bar.right() - 38.0, bar.bottom()));
+            let drag = ui.interact(drag_rect, dialog_id.with("drag"), Sense::drag())
+                .on_hover_cursor(egui::CursorIcon::Grab);
+            if drag.dragged() {
+                title_drag = drag.drag_delta();
+            }
+            let close_rect = Rect::from_center_size(
+                pos2(bar.right() - 19.0, bar.center().y), vec2(28.0, 28.0));
+            if ui.put(close_rect,
+                egui::Button::new(egui::RichText::new("×").size(20.0)
+                    .color(Color32::from_rgb(106, 112, 120))).frame(false))
+                .on_hover_text("Close").clicked()
+            {
+                dismiss = true;
+            }
+            ui.painter().line_segment([bar.left_bottom(), bar.right_bottom()],
+                Stroke::new(1.0, Color32::from_rgb(223, 226, 231)));
+
+            egui::Frame::NONE.inner_margin(egui::Margin::symmetric(12, 10)).show(ui, |ui| {
+                ui.set_min_width((width - 24.0).max(220.0));
+                let max_height = (view.height() - 92.0).max(120.0);
+                egui::ScrollArea::vertical()
+                    .id_salt(dialog_id.with("scroll"))
+                    .auto_shrink([true, true])
+                    .max_height(max_height)
+                    .show(ui, |ui| {
+                        close = body(app, ui, &mut d);
+                    });
+            });
         });
-        if d.id == "themeColors" {
-            ui.set_min_height(360.0);
-        } else if d.id == "themeFonts" {
-            ui.set_min_height(280.0);
+
+    if let Some(response) = shown {
+        let bounds = response.response.rect.size();
+        ctx.data_mut(|data| {
+            data.insert_temp(size_id, bounds);
+            data.insert_temp(pos_id, clamp_dialog(position + title_drag, view, bounds));
+        });
+        if title_drag != egui::Vec2::ZERO {
+            ctx.request_repaint();
         }
-        close = body(app, ui, &mut d);
-    });
+    }
     let escape = ctx.input(|i| i.key_pressed(egui::Key::Escape));
-    if open && !close && !escape {
+    if !dismiss && !close && !escape {
         app.dialog = Some(d);
-    } else if !close && d.id == "preferences" {
-        // Esc or the window's close button: the same as Cancel.
-        restore_preferences(app, &d);
-    } else if app.dialog.is_none()
-        && let Some(ret) = d.params.get("returnParams").filter(|v| v.is_object()).cloned()
-    {
-        // Tabs… opened from Paragraph: closing it (OK, Cancel, Esc or the window) returns there.
-        let id = d.params.get("returnId").and_then(Value::as_str).unwrap_or("paragraph");
-        let mut back = Dialog::new(id);
-        back.params = ret;
-        app.dialog = Some(back);
+    } else {
+        ctx.data_mut(|data| {
+            data.remove::<egui::Pos2>(pos_id);
+            data.remove::<egui::Vec2>(size_id);
+        });
+        if !close && d.id == "preferences" {
+            restore_preferences(app, &d);
+        } else if app.dialog.is_none()
+            && let Some(ret) = d.params.get("returnParams").filter(|v| v.is_object()).cloned()
+        {
+            // Tabs… returns to Paragraph without losing its drafted formatting.
+            let id = d.params.get("returnId").and_then(Value::as_str).unwrap_or("paragraph");
+            let mut back = Dialog::new(id);
+            back.params = ret;
+            app.dialog = Some(back);
+        }
     }
 }
 
@@ -1631,7 +1733,7 @@ fn body(app: &mut SlideApp, ui: &mut Ui, d: &mut Dialog) -> bool {
             let mut to = d.get("to", "");
             egui::Grid::new("replace_fonts").num_columns(2).spacing(vec2(10.0, 8.0)).show(ui, |ui| {
                 ui.label("Replace:");
-                egui::ComboBox::from_id_salt("rf_from").width(240.0).selected_text(from.clone()).show_ui(ui, |ui| {
+                egui::ComboBox::from_id_salt("rf_from").width(210.0).selected_text(from.clone()).show_ui(ui, |ui| {
                     for f in &used {
                         ui.selectable_value(&mut from, f.clone(), f);
                     }
@@ -1639,9 +1741,9 @@ fn body(app: &mut SlideApp, ui: &mut Ui, d: &mut Dialog) -> bool {
                 ui.end_row();
                 ui.label("With:");
                 ui.vertical(|ui| {
-                    ui.add(egui::TextEdit::singleline(&mut to).desired_width(240.0).hint_text("Font name"));
+                    ui.add(egui::TextEdit::singleline(&mut to).desired_width(210.0).hint_text("Font name"));
                     let needle = to.trim().to_lowercase();
-                    egui::ScrollArea::vertical().max_height(140.0).id_salt("rf_list").show(ui, |ui| {
+                    egui::ScrollArea::vertical().max_height(112.0).id_salt("rf_list").show(ui, |ui| {
                         for f in
                             crate::ribbon::font_families(app).iter().filter(|f| needle.is_empty() || f.to_lowercase().contains(&needle)).take(200)
                         {
@@ -2724,7 +2826,7 @@ fn font_dialog(app: &mut SlideApp, ui: &mut Ui, d: &mut Dialog) -> bool {
     }
     ui.horizontal(|ui| {
         ui.add_sized(vec2(88.0, 20.0), egui::Label::new("Font"));
-        egui::ComboBox::from_id_salt("font_dialog_family").selected_text(if family.is_empty() { " " } else { family.as_str() }).width(300.0).show_ui(
+        egui::ComboBox::from_id_salt("font_dialog_family").selected_text(if family.is_empty() { " " } else { family.as_str() }).width(270.0).show_ui(
             ui,
             |ui| {
                 egui::ScrollArea::vertical().max_height(280.0).show(ui, |ui| {
