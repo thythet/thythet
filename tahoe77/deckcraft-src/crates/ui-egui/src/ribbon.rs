@@ -265,7 +265,7 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
                     // Coordinates are normalized so Tahoe can translate them to
                     // the actual iframe's CSS dimensions on Retina/HiDPI screens.
                     let x = (pos.x - rect.left()) / rect.width().max(1.0);
-                    let y = (pos.y - rect.top()) / ui.ctx().screen_rect().height().max(1.0);
+                    let y = (pos.y - rect.top()) / ui.ctx().content_rect().height().max(1.0);
                     ui.ctx().data_mut(|d| d.insert_temp(
                         egui::Id::new("tahoe-title-drag-message"),
                         (phase.to_owned(), x, y),
