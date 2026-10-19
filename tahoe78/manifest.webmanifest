@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "Tahoe",
-  "short_name": "Tahoe",
-  "description": "Tahoe desktop dashboard with thechat messenger, Bible 1954, AllSong, PowerSlide, and PowerSlidePro.",
+  "name": "Tahoe78",
+  "short_name": "Tahoe78",
+  "description": "Tahoe78 desktop with thechat, Bible, PowerSlide, PowerSlidePro and AllSong.",
   "start_url": "./?source=pwa",
   "scope": "./",
   "display": "standalone",
