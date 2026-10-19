@@ -22,6 +22,10 @@ thread_local! {
     static CLOUD_LIST_PENDING: RefCell<Vec<String>> = const { RefCell::new(Vec::new()) };
     static CLOUD_NAME_PENDING: RefCell<Vec<(u64, String, bool)>> = const { RefCell::new(Vec::new()) };
     static CLOUD_EXPORT_PENDING: RefCell<Vec<(u64, String, String)>> = const { RefCell::new(Vec::new()) };
+    // Same-origin Tahoe presenter <-> independent audience browser window.
+    static AUDIENCE_LOAD_PENDING: RefCell<Vec<(String, String, usize)>> = const { RefCell::new(Vec::new()) };
+    static AUDIENCE_REMOTE_PENDING: RefCell<Vec<(usize, String)>> = const { RefCell::new(Vec::new()) };
+    static AUDIENCE_EXPORT_PENDING: RefCell<bool> = const { RefCell::new(false) };
 }
 
 /// Receive only same-origin messages from Tahoe's parent app window.
@@ -65,6 +69,23 @@ fn install_cloud_open_receiver() {
                     if matches!(format.as_str(), "pptx" | "deckcraft") && !name.trim().is_empty() && name.chars().count() <= 140 {
                         CLOUD_EXPORT_PENDING.with(|q| q.borrow_mut().push((uid, name, format)));
                     }
+                }
+            }
+            "tahoe-deckcraft-audience-export" => {
+                AUDIENCE_EXPORT_PENDING.with(|p| *p.borrow_mut() = true);
+            }
+            "tahoe-deckcraft-audience-load" => {
+                let (name, data) = (val("name"), val("data"));
+                let index = val("index").parse::<usize>().unwrap_or(0);
+                if !name.is_empty() && name.len() <= 180 && data.len() <= 80_000_000 && !data.is_empty() {
+                    AUDIENCE_LOAD_PENDING.with(|q| q.borrow_mut().push((name, data, index)));
+                }
+            }
+            "tahoe-deckcraft-audience-state" | "tahoe-deckcraft-presenter-control" => {
+                let index = val("index").parse::<usize>().unwrap_or(0);
+                let blank = val("blank");
+                if index < 20_000 && matches!(blank.as_str(), "" | "black" | "white" | "end") {
+                    AUDIENCE_REMOTE_PENDING.with(|q| q.borrow_mut().push((index, blank)));
                 }
             }
             _ => {}
@@ -138,12 +159,18 @@ pub fn start() {
                     if q.contains("show") {
                         app.start_show(0, false);
                     }
+                    // The operator keeps Presenter View in the Tahoe editor;
+                    // the separate ?audience=1 renderer never opens presenter controls.
+                    app.ui.presenter_view = !q.contains("audience=1");
                     let mut smart = SmartGenerator::default();
                     smart.font_family = if db.has_family(BIBLE_DEFAULT_FONT) { BIBLE_DEFAULT_FONT.to_owned() } else { default_khmer_family.clone() };
                     let mut bible = BibleGenerator::default();
                     bible.font_family = if db.has_family(BIBLE_DEFAULT_FONT) { BIBLE_DEFAULT_FONT.to_owned() } else { default_khmer_family.clone() };
                     Ok(Box::new(WebShell { app, inbox, smart, bible, typography: TypographyPanel::default(), presenting: false,
-                        cloud_seen_docs: std::collections::HashSet::new() }))
+                        cloud_seen_docs: std::collections::HashSet::new(),
+                        audience_mode: q.contains("audience=1"),
+                        audience_ready_sent: false,
+                        last_show_state: String::new() }))
                 }),
             )
             .await;
@@ -175,10 +202,60 @@ struct WebShell {
     typography: TypographyPanel,
     presenting: bool,
     cloud_seen_docs: std::collections::HashSet<u64>,
+    audience_mode: bool,
+    audience_ready_sent: bool,
+    last_show_state: String,
 }
 
 impl eframe::App for WebShell {
     fn logic(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        if self.audience_mode && !self.audience_ready_sent {
+            post_parent_presentation("ready", "", 0, "");
+            self.audience_ready_sent = true;
+        }
+        AUDIENCE_LOAD_PENDING.with(|q| {
+            for (name, data, index) in std::mem::take(&mut *q.borrow_mut()) {
+                self.app.show = None;
+                self.app.ui.presenter_view = false;
+                match self.app.run("file.openBytes", json!({"name":name,"data":data})) {
+                    Ok(_) => {
+                        let from = self.app.session.active().map(|d| index.min(d.doc.slides.len().saturating_sub(1))).unwrap_or(0);
+                        self.app.close_backstage();
+                        self.app.start_show(from, false);
+                        post_parent_presentation("loaded", "", from, "");
+                    }
+                    Err(e) => post_parent_presentation("error", &e.to_string(), index, ""),
+                }
+            }
+        });
+        AUDIENCE_REMOTE_PENDING.with(|q| {
+            for (index, blank) in std::mem::take(&mut *q.borrow_mut()) {
+                if blank == "end" {
+                    self.app.show = None;
+                    continue;
+                }
+                let doc = self.app.session.active().map(|d| d.doc.clone());
+                if let (Some(show), Some(doc)) = (self.app.show.as_mut(), doc.as_ref()) {
+                    let now = ctx.input(|i| i.time);
+                    show.remote_goto(doc, index, now);
+                    show.remote_blank(&blank);
+                }
+            }
+        });
+        AUDIENCE_EXPORT_PENDING.with(|p| {
+            if std::mem::replace(&mut *p.borrow_mut(), false) {
+                if let Some(doc) = self.app.session.active() {
+                    let name = format!("{}.deckcraft", doc.title());
+                    let index = self.app.show.as_ref().map(|s| s.state.slide).unwrap_or(doc.selection.slide);
+                    match self.app.run("file.saveBytes", json!({"format":"deckcraft"})) {
+                        Ok(v) => if let Some(data) = v.get("data").and_then(serde_json::Value::as_str) {
+                            post_parent_presentation("data", data, index, &name);
+                        },
+                        Err(e) => post_parent_presentation("error", &e.to_string(), index, ""),
+                    }
+                }
+            }
+        });
         CLOUD_LIST_PENDING.with(|q| {
             if let Some(data) = std::mem::take(&mut *q.borrow_mut()).pop() {
                 ctx.data_mut(|d| d.insert_temp(egui::Id::new("tahoe-deckcraft-cloud-files"), data));
@@ -282,6 +359,7 @@ impl eframe::App for WebShell {
             }
         }
         self.sync_present_mode();
+        self.sync_present_state();
         if self.app.show.is_none() {
             let take = |key: egui::Id| ui.ctx().data_mut(|d| {
                 let clicked = d.get_temp::<bool>(key).unwrap_or(false);
@@ -311,6 +389,24 @@ impl eframe::App for WebShell {
 }
 
 impl WebShell {
+    fn sync_present_state(&mut self) {
+        let state = self.app.show.as_ref().map(|show| {
+            (show.state.slide, show.state.step, show.blank_name().unwrap_or(""), show.ended)
+        });
+        let serialized = if let Some((index, step, blank, ended)) = state {
+            format!("{index}:{step}:{blank}:{ended}")
+        } else {
+            "off".to_string()
+        };
+        if serialized == self.last_show_state { return; }
+        self.last_show_state = serialized;
+        if let Some((index, _, blank, ended)) = state {
+            post_parent_presentation("state", "", index, if ended {"end"} else {blank});
+        } else {
+            post_parent_presentation("end", "", 0, "");
+        }
+    }
+
     fn sync_present_mode(&mut self) {
         let active = self.app.show.is_some();
         if active == self.presenting {
@@ -1957,6 +2053,24 @@ fn post_parent_cloud_v93(action: &str, name: &str, format: &str, uid: u64, data:
     }
     if let Some(data) = data {
         let _ = js_sys::Reflect::set(&payload, &"data".into(), &data.into());
+    }
+    let _ = parent.post_message(&payload.into(), "*");
+}
+
+/// Send same-origin presentation events to Tahoe or the popup's audience host.
+fn post_parent_presentation(action: &str, data: &str, index: usize, name: &str) {
+    let Some(window) = web_sys::window() else { return };
+    let Ok(Some(parent)) = window.parent() else { return };
+    let payload = js_sys::Object::new();
+    for (key, value) in [
+        ("type", "tahoe-deckcraft-audience"),
+        ("action", action),
+        ("index", &index.to_string()),
+        ("name", name),
+        ("data", data),
+        ("blank", if matches!(action, "state") { name } else { "" }),
+    ] {
+        let _ = js_sys::Reflect::set(&payload, &key.into(), &value.into());
     }
     let _ = parent.post_message(&payload.into(), "*");
 }
