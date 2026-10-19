@@ -1473,7 +1473,8 @@ impl Show {
 const GOTO_HOLD: f64 = 3.0;
 const GOTO_DIGITS: usize = 4;
 const ZOOM_SCALE: f32 = 2.0;
-const GRID_CAP: usize = 48;
+// Lazy rendering keeps the scrollable grid responsive for large slide decks.
+const GRID_CAP: usize = 512;
 const TOOL_BAR_W: f32 = 520.0;
 const NOTES_DEFAULT: f32 = 18.0;
 const NOTES_MIN: f32 = 12.0;
@@ -1787,28 +1788,48 @@ fn presenter_thumb(
     selected: &mut Option<usize>,
     follow: bool,
 ) {
-    let tex = show.thumbs.iter().find(|(n, _)| *n == index).map(|(_, tex)| tex.clone())
-        .or_else(|| {
-            if *new_budget == 0 { ctx.request_repaint(); return None; }
-            *new_budget -= 1;
-            render_thumb(ctx, show, doc, index)
-        });
     let (slot, hit) = ui.allocate_exact_size(size, Sense::click());
-    ui.painter().rect_filled(slot, 3.0, Color32::from_rgb(246, 246, 246));
-    if let Some(tex) = tex {
-        // The slide must always retain its exact source aspect ratio.
-        let rect = fit(slot, doc);
-        ui.painter().image(tex.id(), rect, unit_uv(), Color32::WHITE);
+    // Don't render thumbnails that are outside the current scroll viewport.
+    // Large presentations can have hundreds of slides; render only on demand.
+    if ui.is_rect_visible(slot) {
+        ui.painter().rect_filled(slot, 3.0, Color32::from_rgb(246, 246, 246));
+        let existing = show.thumbs.iter().position(|(n, _)| *n == index);
+        let mut tex = existing.map(|i| show.thumbs[i].1.clone());
+        // Large All Slides previews are made from higher resolution source
+        // pixels to avoid blurry Khmer type when zooming in.
+        let need_hq = size.x > 375.0
+            && tex.as_ref().is_some_and(|t| t.size()[0] < 720);
+        if (tex.is_none() || need_hq) && *new_budget > 0 {
+            *new_budget -= 1;
+            if need_hq {
+                let w = 768.0_f64;
+                let h = (w * doc.slide_size.height / doc.slide_size.width.max(1.0)).round().max(1.0);
+                let img = deckcraft_render::render_slide(doc, index,
+                    &RenderOpts { scale: w / doc.slide_size.width.max(1.0),
+                        size: Some((w as u32, h as u32)), ..Default::default() });
+                let hi = crate::textures::upload(ctx, format!("show-grid-hq-{index}"),
+                    crate::textures::to_color_image(&img, false));
+                if let Some(i) = existing { show.thumbs[i].1 = hi.clone(); }
+                tex = Some(hi);
+            } else {
+                tex = render_thumb(ctx, show, doc, index);
+            }
+        } else if tex.is_none() || need_hq {
+            ctx.request_repaint();
+        }
+        if let Some(tex) = tex {
+            let rect = fit(slot, doc);
+            ui.painter().image(tex.id(), rect, unit_uv(), Color32::WHITE);
+        }
+        ui.painter().rect_stroke(
+            slot, 3.0,
+            Stroke::new(if index == current { 3.0 } else { 1.0 },
+                if index == current { Color32::from_rgb(237, 119, 65) } else { Color32::from_rgb(89, 94, 104) }),
+            egui::StrokeKind::Inside,
+        );
     }
-    let active = index == current;
-    ui.painter().rect_stroke(
-        slot, 3.0,
-        Stroke::new(if active { 3.0 } else { 1.0 },
-            if active { Color32::from_rgb(237, 119, 65) } else { Color32::from_rgb(89, 94, 104) }),
-        egui::StrokeKind::Inside,
-    );
     if hit.clicked() { *selected = Some(index); }
-    if active && follow { ui.scroll_to_rect(slot, Some(egui::Align::Center)); }
+    if index == current && follow { ui.scroll_to_rect(slot, Some(egui::Align::Center)); }
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -1899,7 +1920,7 @@ fn web_presenter_panel(
                             .color(MUTED).size(11.0));
                     });
                     ui.add_space(8.0);
-                    let thumb_w = 220.0 * grid_zoom;
+                    let thumb_w = (220.0 * grid_zoom).min((available - 12.0).max(90.0));
                     let aspect = slide_aspect(doc).max(0.15);
                     let thumb_h = (thumb_w / aspect).clamp(48.0, 420.0);
                     let columns = (((available - 10.0) / (thumb_w + 14.0)).floor() as usize).max(1);
