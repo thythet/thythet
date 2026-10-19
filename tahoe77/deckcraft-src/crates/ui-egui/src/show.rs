@@ -211,6 +211,27 @@ impl Show {
         }
     }
 
+    /// Accept a synchronized audience/presenter slide selection without restarting the show.
+    /// Transitions and media follow the same internal path as a manual slide jump.
+    #[cfg(target_arch = "wasm32")]
+    pub fn remote_goto(&mut self, doc: &Presentation, slide: usize, now: f64) {
+        if slide >= doc.slides.len() || (self.state.slide == slide && !self.ended) { return; }
+        self.grid = false;
+        self.blank = None;
+        self.ended = false;
+        let action = self.state.goto(doc, slide);
+        let _ = self.apply(action, doc, now);
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    pub fn remote_blank(&mut self, color: &str) {
+        self.blank = match color {
+            "black" => Some(Color32::BLACK),
+            "white" => Some(Color32::WHITE),
+            _ => None,
+        };
+    }
+
     /// Pen and laser are different pointers: turning one on puts the other away.
     fn set_pen(&mut self, on: bool) {
         self.pen = on;
@@ -533,13 +554,21 @@ pub fn ui(app: &mut SlideApp, ui: &mut Ui) {
         show.show_start = now;
         show.timer = PresenterTimer::start(now);
         show.last_move = now;
-        if !show.reading {
+        // Browser fullscreen belongs to the separate audience window, not the
+        // Tahoe editor iframe. Requesting it here causes presenter controls to
+        // overlap the audience slide and steals the user's primary monitor.
+        if !show.reading && !cfg!(target_arch = "wasm32") {
             ctx.send_viewport_cmd(egui::ViewportCommand::Fullscreen(true));
         }
         show.after_enter(&doc, now);
     }
     let mut keep = keyboard(&ctx, &mut show, &doc, now);
-    let (clicked, secondary, moved) = ctx.input(|i| (i.pointer.primary_clicked(), i.pointer.secondary_clicked(), i.pointer.delta().length() > 0.0));
+    let (mouse_click, mouse_secondary, moved) = ctx.input(|i| (i.pointer.primary_clicked(), i.pointer.secondary_clicked(), i.pointer.delta().length() > 0.0));
+    // Presenter controls handle their own pointer events. Do not also advance the
+    // underlying audience-stage state when the operator clicks Next or a thumbnail.
+    let web_presenter = cfg!(target_arch = "wasm32") && show.presenter && !show.reading;
+    let clicked = mouse_click && !web_presenter;
+    let secondary = mouse_secondary && !web_presenter;
     if moved {
         show.last_move = now;
     }
@@ -1032,15 +1061,19 @@ pub fn ui(app: &mut SlideApp, ui: &mut Ui) {
         );
         ctx.request_repaint_after(std::time::Duration::from_millis(100));
     }
-    // Presenter view in a second window.
+    // Desktop keeps its native separate viewport. The web app renders the
+    // Presenter View IN the Tahoe editor; audience slides use their own window.
     if keep && show.presenter && !show.reading {
+        #[cfg(target_arch = "wasm32")]
+        web_presenter_panel(&ctx, &mut show, &doc, now, &mut keep, full);
+        #[cfg(not(target_arch = "wasm32"))]
         presenter_window(&ctx, &mut show, &doc, now, &mut keep);
     }
     if keep {
         app.show = Some(show);
     } else {
         app.media.stop_owned(crate::media::Owner::Show);
-        if !show.reading {
+        if !show.reading && !cfg!(target_arch = "wasm32") {
             ctx.send_viewport_cmd(egui::ViewportCommand::Fullscreen(false));
         }
         if show.rehearse {
@@ -1721,6 +1754,171 @@ fn render_thumb(ctx: &egui::Context, show: &mut Show, doc: &Presentation, i: usi
     let tex = crate::textures::upload(ctx, format!("show-grid-{i}"), crate::textures::to_color_image(&img, false));
     show.thumbs.push((i, tex.clone()));
     Some(tex)
+}
+
+
+/// The web Presenter View replaces the entire presentation surface rather than
+/// opening an egui secondary viewport (which browsers paint on top of the show).
+/// The audience uses a separate browser window and an independent WASM renderer.
+#[cfg(target_arch = "wasm32")]
+fn web_presenter_panel(
+    ctx: &egui::Context,
+    show: &mut Show,
+    doc: &Presentation,
+    now: f64,
+    keep: &mut bool,
+    full: Rect,
+) {
+    const BG: Color32 = Color32::from_rgb(23, 24, 27);
+    const MUTED: Color32 = Color32::from_rgb(180, 185, 193);
+    let color_text = |text: &str, size: f32| egui::RichText::new(text).size(size).color(Color32::WHITE);
+    let active = show.state.slide;
+    let total = doc.slides.len();
+    let mut jump: Option<usize> = None;
+    ctx.request_repaint_after(std::time::Duration::from_millis(250));
+    egui::Area::new(egui::Id::new("tahoe77-web-presenter"))
+        .order(egui::Order::Foreground)
+        .fixed_pos(full.min)
+        .show(ctx, |ui| {
+            ui.set_width(full.width());
+            ui.set_min_height(full.height());
+            ui.painter().rect_filled(full, 0.0, BG);
+            ui.spacing_mut().item_spacing = vec2(7.0, 7.0);
+            egui::Frame::NONE.inner_margin(egui::Margin::symmetric(16, 14)).show(ui, |ui| {
+                let available = (full.width() - 32.0).max(100.0);
+                ui.set_width(available);
+                ui.horizontal(|ui| {
+                    ui.label(color_text("Presenter View", 16.0).strong());
+                    ui.add_space(9.0);
+                    ui.label(egui::RichText::new(format!("{} / {}", active + 1, total)).color(MUTED));
+                    ui.label(egui::RichText::new(format_elapsed(show.timer.elapsed(now))).color(MUTED));
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        if ui.button("End Show").clicked() { *keep = false; }
+                        if ui.button("Next ▶").clicked() { jump = show.state.peek_next(doc); }
+                        if ui.button("◀ Previous").clicked() {
+                            jump = active.checked_sub(1);
+                        }
+                    });
+                });
+                ui.horizontal(|ui| {
+                    if ui.button(if show.timer.paused() { "Resume" } else { "Pause" }).clicked() {
+                        show.timer.toggle(now);
+                    }
+                    if ui.button("Reset timer").clicked() { show.timer.reset(now); }
+                    if ui.button("Black").clicked() { toggle_blank(show, Color32::BLACK); }
+                    if ui.button("White").clicked() { toggle_blank(show, Color32::WHITE); }
+                    if ui.button(if show.grid { "Close Grid" } else { "All Slides ▦" }).clicked() {
+                        show.grid = !show.grid;
+                    }
+                });
+                ui.add_space(3.0);
+                let preview_w = ((available - 18.0) * 0.62).max(150.0);
+                let next_w = ((available - preview_w - 18.0)).max(100.0);
+                let aspect = slide_aspect(doc).max(0.15);
+                let preview_h = (preview_w / aspect).min((full.height() * 0.45).max(110.0));
+                ui.horizontal(|ui| {
+                    ui.vertical(|ui| {
+                        ui.label(egui::RichText::new("Current slide").color(MUTED).size(12.0));
+                        let rect = ui.allocate_exact_size(vec2(preview_w, preview_h), Sense::hover()).0;
+                        ui.painter().rect_filled(rect, 2.0, Color32::WHITE);
+                        let key = show.tex.as_ref().map(|(_, tex)| tex.clone());
+                        let texture = key.or_else(|| show.thumbs.iter().find(|(n, _)| *n == active).map(|(_, tex)| tex.clone()))
+                            .or_else(|| render_thumb(ctx, show, doc, active));
+                        if let Some(texture) = texture {
+                            ui.painter().image(texture.id(), rect, unit_uv(), Color32::WHITE);
+                        }
+                    });
+                    ui.add_space(12.0);
+                    ui.vertical(|ui| {
+                        ui.label(egui::RichText::new("Next slide").color(MUTED).size(12.0));
+                        let h = (next_w / aspect).min(preview_h);
+                        let rect = ui.allocate_exact_size(vec2(next_w, h), Sense::hover()).0;
+                        ui.painter().rect_filled(rect, 2.0, Color32::from_gray(45));
+                        if let Some(next) = show.state.peek_next(doc) {
+                            let texture = show.thumbs.iter().find(|(n, _)| *n == next).map(|(_, tex)| tex.clone())
+                                .or_else(|| render_thumb(ctx, show, doc, next));
+                            if let Some(tex) = texture {
+                                ui.painter().image(tex.id(), rect, unit_uv(), Color32::WHITE);
+                            }
+                        } else {
+                            ui.painter().text(rect.center(), Align2::CENTER_CENTER,
+                                "End of slide show", theme::font(12.0), MUTED);
+                        }
+                        ui.add_space(6.0);
+                        ui.label(egui::RichText::new("Notes").color(MUTED).size(12.0));
+                        let notes = doc.slides.get(active).map(|s| s.notes_text()).unwrap_or_default();
+                        egui::ScrollArea::vertical().max_height(95.0).show(ui, |ui| {
+                            ui.label(egui::RichText::new(if notes.is_empty() { "No notes." } else { &notes })
+                                .color(Color32::WHITE).size(15.0));
+                        });
+                    });
+                });
+                ui.separator();
+                ui.horizontal(|ui| {
+                    ui.label(color_text("Slide thumbnails", 13.0).strong());
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        if ui.button(if show.grid { "Close All Slides" } else { "▦ All Slides" }).clicked() {
+                            show.grid = !show.grid;
+                        }
+                    });
+                });
+                // Render a few new textures per frame; reuse the same textures in the
+                // filmstrip and the responsive grid to preserve Khmer glyph fidelity.
+                let mut new_rendered = 0usize;
+                let mut thumbnail = |ui: &mut Ui, index: usize, width: f32, height: f32| {
+                    let texture = show.thumbs.iter().find(|(n, _)| *n == index).map(|(_, tex)| tex.clone())
+                        .or_else(|| {
+                            if new_rendered >= 3 { ctx.request_repaint(); return None; }
+                            new_rendered += 1;
+                            render_thumb(ctx, show, doc, index)
+                        });
+                    let (rect, response) = ui.allocate_exact_size(vec2(width, height), Sense::click());
+                    ui.painter().rect_filled(rect, 2.0, Color32::from_gray(49));
+                    if let Some(tex) = texture {
+                        ui.painter().image(tex.id(), rect, unit_uv(), Color32::WHITE);
+                    }
+                    ui.painter().rect_stroke(rect, 2.0,
+                        Stroke::new(if index == active { 3.0 } else { 1.0 },
+                            if index == active { Color32::from_rgb(237, 119, 65) } else { Color32::from_gray(92) }),
+                        egui::StrokeKind::Inside);
+                    if response.clicked() { jump = Some(index); show.grid = false; }
+                };
+                if show.grid {
+                    let columns = ((available / 154.0).floor() as usize).clamp(2, 7);
+                    let grid_height = (full.height() - 130.0).max(100.0);
+                    egui::ScrollArea::vertical().id_salt("presenter-all-slides-grid")
+                        .max_height(grid_height).show(ui, |ui| {
+                        egui::Grid::new("presenter-grid-select").num_columns(columns).spacing(vec2(10.0, 13.0)).show(ui, |ui| {
+                            for i in 0..total.min(GRID_CAP) {
+                                ui.vertical(|ui| {
+                                    thumbnail(ui, i, 132.0, (132.0/aspect).clamp(50.0, 102.0));
+                                    ui.label(egui::RichText::new(format!("{}", i+1)).color(MUTED).size(11.0));
+                                });
+                                if (i+1)%columns==0 { ui.end_row(); }
+                            }
+                        });
+                    });
+                } else {
+                    egui::ScrollArea::horizontal().id_salt("presenter-filmstrip")
+                        .max_width(available).show(ui, |ui| {
+                        ui.horizontal(|ui| {
+                            for i in 0..total.min(GRID_CAP) {
+                                ui.vertical(|ui| {
+                                    thumbnail(ui, i, 126.0, (126.0/aspect).clamp(50.0, 94.0));
+                                    ui.label(egui::RichText::new(format!("{}", i+1))
+                                        .color(if i==active {Color32::from_rgb(237,119,65)} else {MUTED}).size(11.0));
+                                });
+                            }
+                        });
+                    });
+                }
+                ui.label(egui::RichText::new("Use the Audience Screen button to open the slides on another monitor.")
+                    .color(MUTED).size(11.0));
+            });
+        });
+    if let Some(i) = jump {
+        show.remote_goto(doc, i, now);
+    }
 }
 
 fn presenter_window(ctx: &egui::Context, show: &mut Show, doc: &Presentation, now: f64, keep: &mut bool) {
