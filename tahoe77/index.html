@@ -4792,7 +4792,8 @@ function arrangeDesktopIcons(mode="auto",sort="type"){
 }
 function resetDesktopIconLayout(){
  const bottomOrder=["finderLauncher","bibleNextLauncher","allSongNextLauncher","powerSlideNextLauncher","deckCraftLauncher","theChatLauncher","bibleLauncher","powerSlideLauncher"],mobile=innerWidth<=760,size=mobile?56:62,gap=mobile?8:10,left=mobile?14:14,bottom=mobile?14:22;
- bottomOrder.forEach((id,i)=>{const item=desktopLauncherItems(true).find(x=>x.id===id);if(!item)return;const el=item.el;setDesktopLauncherPoint(item,left+i*(size+gap),Math.max(4,innerHeight-el.offsetHeight-bottom),{persist:false,animate:true})});
+ const cols=mobile?Math.max(1,Math.floor((innerWidth-left*2+gap)/(size+gap))):bottomOrder.length;
+ bottomOrder.forEach((id,i)=>{const item=desktopLauncherItems(true).find(x=>x.id===id);if(!item)return;const el=item.el;const col=i%cols,row=Math.floor(i/cols);setDesktopLauncherPoint(item,left+col*(size+gap),Math.max(4,innerHeight-el.offsetHeight-bottom-row*(size+gap)),{persist:false,animate:true})});
  const dash=desktopLauncherItems(true).find(x=>x.id==="minimizedLauncher");if(dash)setDesktopLauncherPoint(dash,Math.max(4,innerWidth-(dash.el.offsetWidth||62)-(mobile?14:22)),mobile?14:22,{persist:false,animate:true});
  state.settings.desktopArrangeMode="default";state.settings.desktopArrangeSort="type";state.settings.desktopSnapToGrid=false;save();updateDesktopContextMenu();showToast("Desktop icon layout reset")
 }
@@ -4800,7 +4801,8 @@ function arrangeDesktopLaunchers(){
  // Preserve per-user icon positions. Only assign Tahoe defaults when a launcher has never been positioned.
  const mobile=innerWidth<=760,size=mobile?56:62,gap=mobile?8:10,left=mobile?14:14,bottom=mobile?14:22;
  const ids=["finderLauncher","bibleNextLauncher","allSongNextLauncher","powerSlideNextLauncher","deckCraftLauncher","theChatLauncher","bibleLauncher","powerSlideLauncher"];
- ids.forEach((id,i)=>{const item=desktopLauncherItems(true).find(x=>x.id===id);if(!item||state.settings?.[item.key])return;const el=item.el;setDesktopLauncherPoint(item,left+i*(size+gap),Math.max(4,innerHeight-el.offsetHeight-bottom),{persist:false,animate:false})});
+ const cols=mobile?Math.max(1,Math.floor((innerWidth-left*2+gap)/(size+gap))):ids.length;
+ ids.forEach((id,i)=>{const item=desktopLauncherItems(true).find(x=>x.id===id);if(!item||state.settings?.[item.key])return;const el=item.el;const col=i%cols,row=Math.floor(i/cols);setDesktopLauncherPoint(item,left+col*(size+gap),Math.max(4,innerHeight-el.offsetHeight-bottom-row*(size+gap)),{persist:false,animate:false})});
  if(!state.settings?.dashboardLauncherPos)pinDashboardLauncher()
 }
 function updateDesktopContextMenu(){const menu=$("#desktopContextMenu");if(!menu)return;menu.querySelector('[data-desktop-action="snap"]')?.classList.toggle("checked",!!state.settings.desktopSnapToGrid)}
