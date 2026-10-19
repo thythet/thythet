@@ -57,14 +57,19 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
     let (height, left, control_h) = title_geometry(app.integrated_titlebar);
     egui::Panel::top("title_bar").exact_size(height).frame(egui::Frame::NONE.fill(t.chrome)).show(ui, |ui| {
         let rect = ui.max_rect();
-        // Dragging the empty title bar moves the window.
-        let drag = ui.interact(rect, ui.id().with("titledrag"), Sense::click_and_drag());
-        if drag.drag_started() {
-            ui.ctx().send_viewport_cmd(egui::ViewportCommand::StartDrag);
-        }
-        if drag.double_clicked() {
-            let max = ui.input(|i| i.viewport().maximized.unwrap_or(false));
-            ui.ctx().send_viewport_cmd(egui::ViewportCommand::Maximized(!max));
+        // Native desktop can drag its viewport directly. Tahoe web embeds this
+        // egui canvas in an iframe, so its blank title-bar regions must instead
+        // send a safe drag event to the parent Tahoe desktop window.
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            let drag = ui.interact(rect, ui.id().with("titledrag"), Sense::click_and_drag());
+            if drag.drag_started() {
+                ui.ctx().send_viewport_cmd(egui::ViewportCommand::StartDrag);
+            }
+            if drag.double_clicked() {
+                let max = ui.input(|i| i.viewport().maximized.unwrap_or(false));
+                ui.ctx().send_viewport_cmd(egui::ViewportCommand::Maximized(!max));
+            }
         }
         // Keep the left toolbar strictly outside the audience/present actions region.
         // At narrow widths the title gets the remaining space, never overlays buttons.
@@ -110,8 +115,12 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
                 ui.ctx().data_mut(|d| d.insert_temp(egui::Id::new("tahoe-bible-quick"), true));
             }
         }
+        #[cfg(target_arch = "wasm32")]
+        let toolbar_end = child.next_widget_position().x;
         let title =
             app.session.active().map(|d| format!("{}{}", d.title(), if dirty { " — Edited" } else { "" })).unwrap_or_else(|| "PowerSlidePro".into());
+        #[cfg(target_arch = "wasm32")]
+        let mut title_zone: Option<Rect> = None;
         #[cfg(target_arch = "wasm32")]
         {
             let edit_id = egui::Id::new("tahoe-powerslidepro-title-edit");
@@ -126,6 +135,7 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
                 vec2(width, height - 3.0),
             );
             if width >= 86.0 {
+            title_zone = Some(title_rect);
             let mut editor = ui.new_child(egui::UiBuilder::new().max_rect(title_rect)
                 .layout(egui::Layout::left_to_right(egui::Align::Center)));
             let editing = editor.ctx().data(|d| d.get_temp::<bool>(edit_id)).unwrap_or(false);
@@ -218,6 +228,50 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
         .clicked()
         {
             let _ = app.run("view.dark", json!({}));
+        }
+        #[cfg(target_arch = "wasm32")]
+        {
+            // Only the unclaimed gaps are draggable. In particular, never place
+            // a drag hit target over traffic lights, QAT, Smart/Bible, filename
+            // editing, or the Present and search buttons.
+            let action_left = rect.right() - right_reserved - 3.0;
+            let zones = if let Some(title) = title_zone {
+                [(toolbar_end + 3.0, title.left() - 3.0),
+                 (title.right() + 3.0, action_left)]
+            } else {
+                [(toolbar_end + 3.0, action_left), (0.0, 0.0)]
+            };
+            for (n, (start, end)) in zones.into_iter().enumerate() {
+                if end - start < 10.0 { continue; }
+                let zone = Rect::from_min_max(
+                    pos2(start.max(rect.left()), rect.top()),
+                    pos2(end.min(rect.right()), rect.bottom()),
+                );
+                let drag = ui.interact(zone, ui.id().with(("tahoe-title-move", n)), Sense::drag());
+                if drag.hovered() || drag.dragged() {
+                    ui.ctx().set_cursor_icon(if drag.dragged() {
+                        egui::CursorIcon::Grabbing
+                    } else {
+                        egui::CursorIcon::Grab
+                    });
+                }
+                let phase = if drag.drag_started() { Some("start") }
+                    else if drag.drag_stopped() { Some("end") }
+                    else if drag.dragged() { Some("move") }
+                    else { None };
+                if let Some(phase) = phase
+                    && let Some(pos) = ui.input(|i| i.pointer.hover_pos())
+                {
+                    // Coordinates are normalized so Tahoe can translate them to
+                    // the actual iframe's CSS dimensions on Retina/HiDPI screens.
+                    let x = (pos.x - rect.left()) / rect.width().max(1.0);
+                    let y = (pos.y - rect.top()) / ui.ctx().screen_rect().height().max(1.0);
+                    ui.ctx().data_mut(|d| d.insert_temp(
+                        egui::Id::new("tahoe-title-drag-message"),
+                        (phase.to_owned(), x, y),
+                    ));
+                }
+            }
         }
     });
 }
