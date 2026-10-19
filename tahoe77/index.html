@@ -1156,24 +1156,25 @@ body.theme-dark .bible-reader-head,body.theme-navy .bible-reader-head{background
 #deckCraftLauncher img{width:38px;height:38px;object-fit:contain;border-radius:10px;pointer-events:none}
 #theChatLauncher{left:514px;bottom:max(22px,env(safe-area-inset-bottom));color:#087ac3}
 #theChatLauncher img{width:39px;height:39px;object-fit:contain;border-radius:11px;pointer-events:none}
-#theChatWindow{width:min(1240px,94vw);height:min(840px,90dvh);background:var(--glass-strong)}
-.thechat-tahoe-chrome{
- position:absolute;z-index:10;top:0;left:0;right:0;height:43px;display:flex;align-items:center;gap:13px;
- padding:0 14px;background:color-mix(in srgb,var(--glass-strong) 95%,transparent);
- border-bottom:1px solid var(--line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
- color:var(--text);font:12px var(--app-font),system-ui,sans-serif;touch-action:none;user-select:none
+/* Native chat22 shell: Tahoe positions the window, chat22 draws its own chrome. */
+#theChatWindow,
+body #theChatWindow{
+ width:min(1240px,94vw);height:min(840px,90dvh);
+ border:0!important;background:transparent!important;
+ backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+ border-radius:var(--desktop-app-radius,16px);box-shadow:var(--shadow);
 }
-.thechat-tahoe-chrome .traffic{display:flex;align-items:center;gap:9px;flex:none}
-.thechat-tahoe-title{display:flex;align-items:center;justify-content:center;gap:7px;flex:1;min-width:0;font-weight:650}
-.thechat-tahoe-title img{width:19px;height:19px;object-fit:contain;border-radius:5px}
-.thechat-tahoe-chrome button.thechat-extra{width:28px;height:28px;display:grid;place-items:center;border:0;border-radius:7px;color:var(--text);background:transparent;cursor:pointer;font-size:17px}
-.thechat-tahoe-chrome button.thechat-extra:hover{background:rgba(var(--accent-rgb),.12)}
-#theChatFrame{top:43px;height:calc(100% - 43px);background:#e8f6fb}
-#theChatWindow .desktop-app-drag-edge.top{display:none}
+#theChatFrame{
+ position:absolute!important;inset:0!important;
+ top:0!important;left:0!important;width:100%!important;height:100%!important;
+ background:transparent!important;border:0!important;
+ border-radius:inherit;
+}
+#theChatWindow .desktop-app-drag-edge{display:none!important}
 @media(max-width:760px){
  #theChatLauncher{left:14px;bottom:max(86px,calc(env(safe-area-inset-bottom) + 75px))}
- .thechat-tahoe-chrome{height:42px;padding:0 10px}
- #theChatFrame{top:42px;height:calc(100% - 42px)}
+ #theChatWindow{border-radius:0!important}
+ #theChatFrame{border-radius:0!important}
 }
 .desktop-app-window{
  position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:24;display:none;
@@ -3478,16 +3479,6 @@ body.theme-gray .desktop-context-menu{background:rgba(229,232,235,.9)}
 
 <!-- thechat runs from its existing /chat22/ application. No copy, no separate database. -->
 <section class="desktop-app-window thechat-desktop-window" id="theChatWindow" aria-label="thechat">
-  <header class="thechat-tahoe-chrome" data-app-drag>
-    <div class="traffic" aria-label="Window controls">
-      <button class="traffic-dot" type="button" id="theChatWinClose" aria-label="Close thechat" title="Close"></button>
-      <button class="traffic-dot" type="button" id="theChatWinMin" aria-label="Minimize thechat" title="Minimize"></button>
-      <button class="traffic-dot" type="button" id="theChatWinZoom" aria-label="Zoom thechat" title="Zoom"></button>
-    </div>
-    <span class="thechat-tahoe-title"><img src="../chat22/icons/icon-192.png" alt=""><span>thechat</span></span>
-    <button class="thechat-extra" type="button" id="theChatOpenStandalone" aria-label="Open thechat in a new tab" title="Open original chat app in a new tab"><i class="ri-external-link-line" aria-hidden="true"></i></button>
-    <button class="thechat-extra" type="button" id="theChatWinFullscreen" aria-label="Toggle fullscreen" title="Fullscreen"><i class="ri-fullscreen-line" aria-hidden="true"></i></button>
-  </header>
   <iframe id="theChatFrame" src="about:blank" data-src="../chat22/index.html" title="thechat messenger" loading="lazy" allow="microphone; camera; autoplay; clipboard-read; clipboard-write; fullscreen" allowfullscreen></iframe>
   <i class="desktop-app-drag-edge bottom" data-app-drag></i><i class="desktop-app-drag-edge left" data-app-drag></i><i class="desktop-app-drag-edge right" data-app-drag></i>
   <i class="desktop-app-resize n" data-app-resize="n"></i><i class="desktop-app-resize s" data-app-resize="s"></i><i class="desktop-app-resize w" data-app-resize="w"></i><i class="desktop-app-resize e" data-app-resize="e"></i>
@@ -4093,11 +4084,6 @@ function bindDesktopApps(){
  $("#bibleChromePrev").onclick=()=>bibleAction("prev");$("#bibleChromeNext").onclick=()=>bibleAction("next");$("#bibleChromeSearch").onclick=()=>bibleAction("search");$("#bibleChromeSettings").onclick=()=>bibleAction("settings");$("#bibleChromeFullscreen").onclick=()=>toggleDesktopFullscreen("bible");$("#bibleChromePicker").onclick=()=>bibleAction("picker");$("#bibleChromePower").onclick=()=>openDesktopApp("powerslide");
  $("#powerWinClose").onclick=()=>closeDesktopApp("powerslide");$("#powerWinMin").onclick=()=>closeDesktopApp("powerslide");$("#powerWinZoom").onclick=()=>zoomDesktopApp("powerslide");$("#powerChromeBible").onclick=()=>openDesktopApp("bible");$("#powerChromeLibrary").onclick=()=>powerAction("library");$("#powerChromeLibraryBtn").onclick=()=>powerAction("library");$("#powerChromeFullscreen").onclick=()=>toggleDesktopFullscreen("powerslide");
  $("#deckCraftClose").onclick=()=>closeDesktopApp("deckcraft");$("#deckCraftMin").onclick=()=>closeDesktopApp("deckcraft");$("#deckCraftZoom").onclick=()=>zoomDesktopApp("deckcraft");$("#deckCraftFullscreen").onclick=()=>toggleDesktopFullscreen("deckcraft");
- $("#theChatWinClose").onclick=()=>closeDesktopApp("thechat");
- $("#theChatWinMin").onclick=()=>closeDesktopApp("thechat");
- $("#theChatWinZoom").onclick=()=>zoomDesktopApp("thechat");
- $("#theChatWinFullscreen").onclick=()=>toggleDesktopFullscreen("thechat");
- $("#theChatOpenStandalone").onclick=()=>window.open(new URL("../chat22/index.html",location.href).href,"_blank","noopener");
  window.addEventListener("message",async e=>{
    const d=e.data;if(!d)return;
    if(d.type==="tahoe-powerslide-finder"){if(e.source!==$("#powerSlideFrame")?.contentWindow)return;const reply=payload=>e.source?.postMessage({type:"tahoe-powerslide-finder-result",requestId:d.requestId,...payload},"*");try{if(d.action==="list")reply({ok:true,...await powerslideFinderList()});else if(d.action==="upsert")reply({ok:true,result:await powerslideFinderUpsert(d.project||{})});else if(d.action==="delete"){await powerslideFinderDelete(d.projectId);reply({ok:true})}else if(d.action==="open-folder"){openPowerslideProjectsFinder();reply({ok:true})}else reply({ok:false,error:"Unknown Finder action"})}catch(err){reply({ok:false,error:err?.message||"Finder operation failed"})}return}
@@ -6530,6 +6516,7 @@ addEventListener("resize",()=>{pinDashboardLauncher();
 <script src="assets/js/powerslidepro-save-v93.js?v=77compact-dialogs"></script>
 <script src="assets/js/powerslidepro-present-v1.js?v=77presenterhq"></script>
 <script src="assets/js/powerslidepro-live-v1.js?v=77liveedit1"></script>
+<script src="assets/js/thechat-native-shell-v1.js?v=77-native-chat1"></script>
 
 <script type="module">
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
