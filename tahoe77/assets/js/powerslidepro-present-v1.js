@@ -105,6 +105,10 @@ window.addEventListener("message",e=>{
   if(!showing)return;
   deliver({type:"tahoe-deckcraft-presenter-control",
     index:String(d.index||0),blank:d.end?"end":(d.blank||"")});
+ }else if(d.type==="pspro-audience-loaded"){
+  // The renderer is ready; replay the latest operator slide after any slow
+  // WASM/font startup so slides changed during loading are not lost.
+  sendState();
  }else if(d.type==="pspro-audience-closed"){
   audience=null;refreshButton();
  }

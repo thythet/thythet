@@ -61,7 +61,8 @@ window.addEventListener('message',event=>{
      case 'loaded':
        status.textContent='Presentation ready.';
        display.style.display='none';
-       iframe.focus();break;
+       iframe.focus();
+       notify('pspro-audience-loaded');break;
      case 'error':
        status.textContent='Could not open slides: '+(data.data||'Please retry.');break;
      case 'state':
