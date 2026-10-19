@@ -161,6 +161,10 @@ pub struct Backstage {
     /// Open tab: browse the Tahoe Cloudinary file index in the editor itself.
     pub cloud_view: bool,
     pub cloud_storage_filter: String,
+    /// 0 = all presentations, 1 = Cloudinary, 2 = files opened on this device.
+    pub recent_source: u8,
+    /// Request the user's cloud index once whenever the File/Home view opens.
+    pub cloud_list_requested: bool,
     /// Info: property drafts while a field is being edited.
     props: Vec<String>,
     pub print_scope: PrintScope,
@@ -189,6 +193,8 @@ impl Backstage {
             query: String::new(),
             cloud_view: false,
             cloud_storage_filter: String::new(),
+            recent_source: 0,
+            cloud_list_requested: false,
             props: vec![String::new(); PROPERTIES.len()],
             print_scope: PrintScope::All,
             print_range: String::new(),
@@ -209,6 +215,7 @@ impl Backstage {
     pub fn go(&mut self, page: Page) {
         if self.page != page {
             self.query.clear();
+            self.cloud_list_requested = false;
             self.preview_page = 0;
         }
         self.page = page;
@@ -582,64 +589,180 @@ pub fn split_path(path: &str) -> (String, String) {
     (name, folder)
 }
 
-/// Recent presentations whose name matches `query`, newest first, at most `limit`. Opening one is
-/// the user's explicit choice.
-fn recent_list(app: &mut SlideApp, ui: &mut Ui, query: &str, limit: usize) {
-    let t = Tokens::get(ui.ctx());
-    if app.ui.recent.is_empty() {
-        dim(ui, "Presentations you open show up here. Use Open to browse for one.");
-        return;
-    }
+/// One real saved presentation. Cloud files come from the authenticated Tahoe bridge;
+/// local paths come from the persisted Recent list. The file contents are not loaded here.
+struct PresentationRow {
+    id: String,
+    name: String,
+    detail: String,
+    source: &'static str,
+    format: String,
+    when: String,
+    stamp: u64,
+    local: bool,
+}
+
+/// Collect the actual files from both supported sources, sorted newest first.
+fn presentation_rows(app: &SlideApp, ctx: &egui::Context, query: &str, source: u8) -> Vec<PresentationRow> {
     let q = query.trim().to_lowercase();
-    let list: Vec<String> =
-        app.ui.recent.iter().filter(|p| q.is_empty() || split_path(p).0.to_lowercase().contains(&q)).take(limit).cloned().collect();
-    if list.is_empty() {
-        dim(ui, &format!("No recent presentations match “{}”.", query.trim()));
-        return;
-    }
-    let width = ui.available_width().min(CONTENT_W);
-    for path in list {
-        let missing = !app.recent_exists(&path);
-        let (name, folder) = split_path(&path);
-        let (rect, resp) = ui.allocate_exact_size(vec2(width, 44.0), Sense::click());
-        resp.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, true, &name));
-        let p = ui.painter();
-        if resp.hovered() {
-            p.rect_filled(rect, CornerRadius::same(3), t.hover);
-        }
-        let ink = if missing { t.text_dim } else { t.text };
-        // The row is as wide as the page's content, which a narrow window clips: keep the mark
-        // and the remove button inside the visible part of the row.
-        let visible_right = rect.right().min(ui.clip_rect().right() - 6.0);
-        {
-            let p = ui.painter();
-            icons::paint(p, Rect::from_center_size(pos2(rect.left() + 20.0, rect.center().y), vec2(22.0, 22.0)), Icon::Slide, ink, false);
-            p.text(pos2(rect.left() + 44.0, rect.center().y - 8.0), Align2::LEFT_CENTER, &name, theme::font(13.0), ink);
-            p.text(pos2(rect.left() + 44.0, rect.center().y + 9.0), Align2::LEFT_CENTER, &folder, theme::font(11.0), t.text_dim);
-            // A missing file says so before it is clicked (#172).
-            if missing {
-                p.text(pos2(visible_right - 82.0, rect.center().y), Align2::RIGHT_CENTER, "(missing)", theme::font(11.0), t.text_dim);
+    let mut rows = Vec::new();
+    #[cfg(target_arch = "wasm32")]
+    if source != 2 {
+        let raw = ctx.data(|d| d.get_temp::<String>(egui::Id::new("tahoe-deckcraft-cloud-files"))).unwrap_or_default();
+        let data: Value = serde_json::from_str(&raw).unwrap_or(Value::Null);
+        if let Some(files) = data.get("files").and_then(Value::as_array) {
+            for file in files {
+                let id = file.get("id").and_then(Value::as_str).unwrap_or("");
+                let name = file.get("name").and_then(Value::as_str).unwrap_or("");
+                if id.is_empty() || name.is_empty() || (!q.is_empty() && !name.to_lowercase().contains(&q)) { continue; }
+                let cloud = file.get("cloudName").and_then(Value::as_str).unwrap_or("");
+                let format = file.get("format").and_then(Value::as_str).unwrap_or("deckcraft").to_uppercase();
+                let when = file.get("modified").and_then(Value::as_str).unwrap_or("").to_owned();
+                let stamp = file.get("updatedAt").and_then(Value::as_u64).unwrap_or(0);
+                let size = file.get("size").and_then(Value::as_u64).unwrap_or(0);
+                rows.push(PresentationRow {
+                    id: id.to_owned(), name: name.to_owned(),
+                    detail: format!("{} · {}", cloud, format_bytes(size)),
+                    source: "Cloudinary", format, when, stamp, local: false,
+                });
             }
         }
-        let resp = if missing { resp.on_hover_text(format!("{path} — this file can't be found")) } else { resp.on_hover_text(&path) };
-        // Remove from the list: a real labelled widget on top of the row, with a code-drawn icon
-        // (a text glyph would need a font that has it).
-        let x = ui.allocate_rect(
-            Rect::from_min_max(pos2(visible_right - 32.0, rect.top() + 5.0), pos2(visible_right, rect.bottom() - 5.0)),
-            Sense::click(),
-        );
-        x.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "Remove from Recent"));
-        if x.hovered() {
-            ui.painter().rect_filled(x.rect, CornerRadius::same(3), t.hover);
-        }
-        icons::paint(ui.painter(), Rect::from_center_size(x.rect.center(), vec2(14.0, 14.0)), Icon::Close, t.text_dim, false);
-        if x.on_hover_text("Remove from Recent").clicked() {
-            app.forget_recent(&path);
-        }
-        if resp.clicked() {
-            app.open_path_in_background(&path);
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    let _ = ctx;
+    if source != 1 {
+        for path in &app.ui.recent {
+            let (name, folder) = split_path(path);
+            if !q.is_empty() && !name.to_lowercase().contains(&q) && !folder.to_lowercase().contains(&q) { continue; }
+            let format = name.rsplit_once('.').map(|(_, ext)| ext.to_uppercase()).unwrap_or_else(|| "FILE".to_string());
+            let stamp = app.ui.recent_opened_at.get(path).copied().unwrap_or(0);
+            rows.push(PresentationRow {
+                id: path.clone(), name, detail: folder, source: "This device",
+                format, when: if stamp > 0 { "Recently opened".into() } else { "Previously opened".into() },
+                stamp, local: true,
+            });
         }
     }
+    rows.sort_by(|a, b| b.stamp.cmp(&a.stamp).then_with(|| a.name.cmp(&b.name)));
+    rows
+}
+
+/// Professional, scrollable file table reused on Home and File > Open.
+/// Only explicit clicks open a presentation; cloud rename/delete stay in the existing library.
+fn recent_list(app: &mut SlideApp, ui: &mut Ui, bs: &mut Backstage, limit: usize) {
+    let t = Tokens::get(ui.ctx());
+    #[cfg(target_arch = "wasm32")]
+    if !bs.cloud_list_requested {
+        bs.cloud_list_requested = true;
+        ui.ctx().data_mut(|d| d.insert_temp(egui::Id::new("tahoe-deckcraft-cloud-refresh"), true));
+    }
+    let all = presentation_rows(app, ui.ctx(), &bs.query, 0);
+    let n_cloud = all.iter().filter(|entry| !entry.local).count();
+    let n_local = all.len() - n_cloud;
+    ui.horizontal(|ui| {
+        for (source, text) in [(0, format!("All ({})", all.len())),
+            (1, format!("Cloud ({n_cloud})")), (2, format!("Device ({n_local})"))] {
+            let selected = bs.recent_source == source;
+            let button = egui::Button::new(RichText::new(text).size(12.5)
+                .color(if selected { t.accent } else { t.text }))
+                .fill(if selected { t.selected } else { t.card })
+                .stroke(Stroke::new(1.0, if selected { t.accent } else { t.border }))
+                .corner_radius(8.0);
+            if ui.add(button).clicked() { bs.recent_source = source; }
+        }
+        #[cfg(target_arch = "wasm32")]
+        if ui.small_button("Refresh").on_hover_text("Reload my Cloudinary file index").clicked() {
+            ui.ctx().data_mut(|d| d.insert_temp(egui::Id::new("tahoe-deckcraft-cloud-refresh"), true));
+        }
+    });
+    ui.add_space(7.0);
+    let list: Vec<PresentationRow> = all.into_iter().filter(|e| match bs.recent_source {
+        1 => !e.local, 2 => e.local, _ => true,
+    }).take(limit).collect();
+    if list.is_empty() {
+        ui.add_space(14.0);
+        let message = if !bs.query.trim().is_empty() { "No presentations match your search." }
+            else if bs.recent_source == 1 { "No cloud presentations found. Sign in and refresh, or save a presentation to Cloudinary." }
+            else if bs.recent_source == 2 { "Files you open from this device will appear here." }
+            else { "No presentations yet. Open a file or save a presentation to Cloudinary to see it here." };
+        dim(ui, message);
+        return;
+    }
+    let width = ui.available_width().min(CONTENT_W).max(220.0);
+    let compact = width < 670.0;
+    let h = 54.0;
+    let (header, _) = ui.allocate_exact_size(vec2(width, 29.0), Sense::hover());
+    ui.painter().rect_filled(header, CornerRadius::same(5), t.card);
+    ui.painter().text(pos2(header.left() + 48.0, header.center().y),
+        Align2::LEFT_CENTER, "NAME", theme::font(11.0), t.text_dim);
+    if !compact {
+        ui.painter().text(pos2(header.left() + width * 0.57, header.center().y),
+            Align2::LEFT_CENTER, "MODIFIED", theme::font(11.0), t.text_dim);
+        ui.painter().text(pos2(header.left() + width * 0.73, header.center().y),
+            Align2::LEFT_CENTER, "LOCATION", theme::font(11.0), t.text_dim);
+    }
+    let scroll_h = ui.available_height().max(165.0);
+    egui::ScrollArea::vertical()
+        .id_salt("powerslidepro-unified-file-list")
+        .max_height(scroll_h)
+        .auto_shrink([false, false])
+        .show_rows(ui, h, list.len(), |ui, range| {
+            for idx in range {
+                let e = &list[idx];
+                let (rect, click) = ui.allocate_exact_size(vec2(width, h), Sense::click());
+                click.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, true, &e.name));
+                let missing = e.local && !app.recent_exists(&e.id);
+                let text_color = if missing { t.text_dim } else { t.text };
+                if click.hovered() { ui.painter().rect_filled(rect, CornerRadius::same(6), t.hover); }
+                if idx % 2 == 0 { ui.painter().rect_filled(rect, CornerRadius::same(5), t.card.gamma_multiply(0.30)); }
+                ui.painter().line_segment([rect.left_bottom(), rect.right_bottom()], Stroke::new(1.0, t.separator));
+                icons::paint(ui.painter(), Rect::from_center_size(pos2(rect.left() + 21.0, rect.center().y), vec2(25.0, 25.0)),
+                    Icon::Slide, if e.local { t.text_dim } else { t.accent }, false);
+                let name_right = if compact { rect.right() - 57.0 } else { rect.left() + width * 0.55 };
+                let text_clip = Rect::from_min_max(pos2(rect.left() + 44.0, rect.top()), pos2(name_right, rect.bottom()));
+                let painter = ui.painter().with_clip_rect(text_clip);
+                painter.text(pos2(rect.left() + 46.0, rect.center().y - 9.0),
+                    Align2::LEFT_CENTER, &e.name, theme::font(13.5), text_color);
+                painter.text(pos2(rect.left() + 46.0, rect.center().y + 11.0),
+                    Align2::LEFT_CENTER, if missing { "File not found" } else { &e.detail },
+                    theme::font(11.0), t.text_dim);
+                if !compact {
+                    ui.painter().text(pos2(rect.left() + width * 0.57, rect.center().y - 6.0),
+                        Align2::LEFT_CENTER, if e.when.is_empty() { "—" } else { &e.when },
+                        theme::font(12.0), t.text);
+                    ui.painter().text(pos2(rect.left() + width * 0.57, rect.center().y + 12.0),
+                        Align2::LEFT_CENTER, &e.format, theme::font(10.5), t.text_dim);
+                    let location_clip = Rect::from_min_max(
+                        pos2(rect.left() + width * 0.73, rect.top()),
+                        pos2(rect.right() - 41.0, rect.bottom()));
+                    ui.painter().with_clip_rect(location_clip).text(
+                        pos2(rect.left() + width * 0.73, rect.center().y),
+                        Align2::LEFT_CENTER, e.source, theme::font(12.0), t.text_dim);
+                }
+                if e.local {
+                    let dismiss = ui.allocate_rect(Rect::from_min_max(
+                        pos2(rect.right() - 35.0, rect.top() + 10.0),
+                        pos2(rect.right() - 5.0, rect.bottom() - 10.0)), Sense::click());
+                    dismiss.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "Remove from Recent"));
+                    if dismiss.hovered() {
+                        ui.painter().rect_filled(dismiss.rect, CornerRadius::same(5), t.selected);
+                    }
+                    icons::paint(ui.painter(), Rect::from_center_size(dismiss.rect.center(), vec2(14.0, 14.0)),
+                        Icon::Close, t.text_dim, false);
+                    if dismiss.on_hover_text("Remove from Recent (does not delete the file)").clicked() {
+                        app.forget_recent(&e.id);
+                    }
+                }
+                if click.on_hover_text(if e.local { e.id.clone() } else { format!("Open {} from Cloudinary", e.name) }).clicked() {
+                    if e.local {
+                        app.open_path_in_background(&e.id);
+                    } else {
+                        ui.ctx().data_mut(|d| d.insert_temp(
+                            egui::Id::new("tahoe-deckcraft-cloud-file-action"), format!("open:{}", e.id)));
+                    }
+                }
+            }
+        });
 }
 
 /// A large square command button (Print, Create PDF, Check for Issues…).
@@ -722,21 +845,13 @@ fn home(app: &mut SlideApp, ui: &mut Ui, bs: &mut Backstage, out: &mut Outcome) 
     template_tiles(app, ui, "", 3);
     ui.add_space(22.0);
     ui.horizontal(|ui| {
-        ui.label(RichText::new("Recent").font(theme::bold(16.0)).color(t.text));
+        ui.label(RichText::new("My Presentations").font(theme::bold(16.0)).color(t.text));
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
             search(ui, &mut bs.query, "Search for a file", 280.0);
         });
     });
     ui.add_space(6.0);
-    recent_list(app, ui, &bs.query.clone(), 8);
-    if app.ui.recent.len() > 8 {
-        ui.add_space(6.0);
-        ui.with_layout(egui::Layout::right_to_left(egui::Align::Min), |ui| {
-            if arrow_link(ui, "More presentations") {
-                out.page = Some(Page::Open);
-            }
-        });
-    }
+    recent_list(app, ui, bs, usize::MAX);
 }
 
 /// New: a blank presentation, then every theme and starter template, with a search box.
@@ -807,8 +922,7 @@ fn open_page(app: &mut SlideApp, ui: &mut Ui, bs: &mut Backstage) {
                 cloud_files(ui, bs, &t);
             } else {
                 heading(ui, "Presentations");
-                let q = bs.query.clone();
-                recent_list(app, ui, &q, usize::MAX);
+                recent_list(app, ui, bs, usize::MAX);
             }
         });
     });
