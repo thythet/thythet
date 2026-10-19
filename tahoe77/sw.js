@@ -1,4 +1,4 @@
-const SHELL='tahoe77-shell-v93-smartsave',RUNTIME='tahoe77-runtime-v93-smartsave';
+const SHELL='tahoe77-shell-v94-dialogs',RUNTIME='tahoe77-runtime-v94-dialogs';
 const CORE=['./','index.html','manifest.webmanifest','data/manifest.json','assets/icon-192.png','assets/icon-512.png','assets/powerslide-icon.svg','apps/bible/index.html','apps/powerslide/index.html','apps/powerslide-next/powerslide-next.css','apps/powerslide-next/powerslide-next.js','apps/bible-next/bible-next.css','apps/bible-next/bible-next.js','apps/bible-next/search-worker.js','apps/allsong-next/allsong-next.css','apps/allsong-next/allsong-next.js','data/songs/manifest.json','assets/powerslidepro-logo.png','apps/deckcraft-web/index.html'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(SHELL).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>(k.startsWith('tahoe77-shell-')||k.startsWith('tahoe77-runtime-')||k.startsWith('tahoe77-shared-bible-'))&&!([SHELL,RUNTIME,BIBLE_CACHE].includes(k))).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
