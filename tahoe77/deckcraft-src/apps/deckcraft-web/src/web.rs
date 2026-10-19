@@ -331,16 +331,42 @@ impl eframe::App for WebShell {
         });
         AUDIENCE_LOAD_PENDING.with(|q| {
             for (name, data, index) in std::mem::take(&mut *q.borrow_mut()) {
-                self.app.show = None;
-                self.app.ui.presenter_view = false;
-                match self.app.run("file.openBytes", json!({"name":name,"data":data})) {
-                    Ok(_) => {
-                        let from = self.app.session.active().map(|d| index.min(d.doc.slides.len().saturating_sub(1))).unwrap_or(0);
-                        self.app.close_backstage();
-                        self.app.start_show(from, false);
-                        post_parent_presentation("loaded", "", from, "");
+                if self.audience_mode && self.app.show.is_some() {
+                    // Live slide changes must NOT end or restart the audience show:
+                    // replace its in-memory model and invalidate only render caches.
+                    let updated = deckcraft_engine::cmd::base64_decode(&data)
+                        .ok_or_else(|| "Invalid audience document encoding".to_string())
+                        .and_then(|bytes| deckcraft_engine::cmd::file::open_presentation(&name, &bytes)
+                            .map_err(|e| e.to_string()));
+                    match updated {
+                        Ok(doc) if !doc.slides.is_empty() => {
+                            let model = std::sync::Arc::new(doc);
+                            if let Some(st) = self.app.session.active_mut() {
+                                st.doc = model.clone();
+                                st.revision = st.revision.saturating_add(1);
+                            }
+                            if let Some(show) = self.app.show.as_mut() {
+                                let now = ctx.input(|i| i.time);
+                                show.invalidate_live_edit(&model, now);
+                                show.remote_goto(&model, index.min(model.slides.len() - 1), now);
+                            }
+                            post_parent_presentation("loaded", "", index, "");
+                        }
+                        Ok(_) => post_parent_presentation("error", "Empty presentation", index, ""),
+                        Err(e) => post_parent_presentation("error", &e, index, ""),
                     }
-                    Err(e) => post_parent_presentation("error", &e.to_string(), index, ""),
+                } else {
+                    self.app.show = None;
+                    self.app.ui.presenter_view = false;
+                    match self.app.run("file.openBytes", json!({"name":name,"data":data})) {
+                        Ok(_) => {
+                            let from = self.app.session.active().map(|d| index.min(d.doc.slides.len().saturating_sub(1))).unwrap_or(0);
+                            self.app.close_backstage();
+                            self.app.start_show(from, false);
+                            post_parent_presentation("loaded", "", from, "");
+                        }
+                        Err(e) => post_parent_presentation("error", &e.to_string(), index, ""),
+                    }
                 }
             }
         });
