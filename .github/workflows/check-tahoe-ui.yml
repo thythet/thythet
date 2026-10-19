@@ -71,6 +71,14 @@ jobs:
           node --check tahoe77/assets/js/powerslidepro-cloud.js
           node --check tahoe77/assets/js/powerslidepro-save-v93.js
           node --check tahoe77/assets/js/powerslidepro-present-v1.js
+          node <<'NODE'
+          const fs = require('node:fs');
+          const vm = require('node:vm');
+          const html = fs.readFileSync('tahoe77/assets/powerslidepro-audience.html', 'utf8');
+          const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)];
+          if (scripts.length === 0) throw new Error('Audience page has no inline controller');
+          for (const match of scripts) new vm.Script(match[1], { filename: 'powerslidepro-audience.html' });
+          NODE
 
       - name: Verify exactly 66 Bible book files
         run: |
