@@ -1,0 +1,120 @@
+name: Build Tahoe78 DeckCraft Web
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tahoe78/deckcraft-src/**'
+      - '.github/workflows/build-tahoe78-deckcraft.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tahoe78-deckcraft-web
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust + WASM target
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install Trunk
+        uses: taiki-e/install-action@v2
+        with:
+          tool: trunk
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: tahoe78/deckcraft-src
+
+      - name: Install wasm-opt
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y binaryen python3-fonttools
+
+      - name: Build DeckCraft Web
+        run: |
+          set -euxo pipefail
+          rm -rf tahoe78/apps/deckcraft-web
+          mkdir -p tahoe78/apps/deckcraft-web
+          cd tahoe78/deckcraft-src/apps/deckcraft-web
+          trunk build --release
+          test -f ../../../apps/deckcraft-web/index.html
+          cd ../../..
+          /usr/bin/python3 - <<'PY'
+          from fontTools.ttLib import TTFont
+          from pathlib import Path
+          source = Path("../tahoe6/assets/fonts")
+          target = Path("apps/deckcraft-web/fonts")
+          target.mkdir(parents=True, exist_ok=True)
+          for src in sorted(source.glob("SFHelloKOKH-*.woff")):
+              font = TTFont(str(src))
+              font.flavor = None
+              dest = target / (src.stem + ".ttf")
+              font.save(str(dest))
+              cmap = TTFont(str(dest)).getBestCmap() or {}
+              khmer = sum(0x1780 <= cp <= 0x17FF for cp in cmap)
+              print(f"{src.name} -> {dest.name}; {len(cmap)} characters, {khmer} Khmer")
+              if src.stem == "SFHelloKOKH-Regular" and khmer < 20:
+                  raise RuntimeError("Khmer glyph coverage validation failed")
+          assert (target / "SFHelloKOKH-Regular.ttf").is_file(), "Regular Khmer font conversion missing"
+          PY
+          find apps/deckcraft-web -maxdepth 2 -type f -print
+
+      - name: Validate build
+        run: |
+          set -euxo pipefail
+          test "$(find tahoe78/data/books -maxdepth 1 -name '*.json' | wc -l)" -eq 66
+          test -f tahoe78/apps/deckcraft-web/index.html
+          find tahoe78/apps/deckcraft-web -maxdepth 1 -name '*.wasm' -print -quit | grep -q .
+          test -s tahoe78/apps/deckcraft-web/fonts/SFHelloKOKH-Regular.ttf
+
+      - name: Commit compiled DeckCraft Web
+        run: |
+          set -euxo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Compiled WASM and font files are binary: rebasing a build commit
+          # over another build's changed artifacts creates unresolvable conflicts.
+          # Preserve this build's outputs and place them on the latest main tip.
+          build_output="$(mktemp -d)"
+          cp -a tahoe78/apps/deckcraft-web "$build_output/deckcraft-web"
+          cp tahoe78/deckcraft-src/Cargo.lock "$build_output/Cargo.lock"
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            rm -rf tahoe78/apps/deckcraft-web
+            cp -a "$build_output/deckcraft-web" tahoe78/apps/deckcraft-web
+            cp "$build_output/Cargo.lock" tahoe78/deckcraft-src/Cargo.lock
+            git add -A tahoe78/apps/deckcraft-web tahoe78/deckcraft-src/Cargo.lock
+            git add -f tahoe78/apps/deckcraft-web
+            if git diff --cached --quiet; then
+              echo "Compiled outputs already current."
+              break
+            fi
+            git commit -m "Build DeckCraft Web for Tahoe78"
+            if git push origin HEAD:main; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+          done
+
+      - name: Upload compiled DeckCraft artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: deckcraft-web-tahoe78
+          path: |
+            tahoe78/apps/deckcraft-web
+            !tahoe78/apps/deckcraft-web/fonts/**
