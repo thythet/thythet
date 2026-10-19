@@ -1,4 +1,4 @@
-const SHELL='tahoe77-shell-v102-thechat',RUNTIME='tahoe77-runtime-v102-thechat';
+const SHELL='tahoe77-shell-v103-wasmtablefix',RUNTIME='tahoe77-runtime-v103-wasmtablefix';
 const CORE=['./','index.html','manifest.webmanifest','data/manifest.json','assets/icon-192.png','assets/icon-512.png','assets/powerslide-icon.svg','apps/bible/index.html','apps/powerslide/index.html','apps/powerslide-next/powerslide-next.css','apps/powerslide-next/powerslide-next.js','apps/bible-next/bible-next.css','apps/bible-next/bible-next.js','apps/bible-next/search-worker.js','apps/allsong-next/allsong-next.css','apps/allsong-next/allsong-next.js','data/songs/manifest.json','assets/powerslidepro-logo.png','apps/deckcraft-web/index.html','assets/powerslidepro-audience.html','assets/js/powerslidepro-present-v1.js','assets/js/powerslidepro-live-v1.js'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(SHELL).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>(k.startsWith('tahoe77-shell-')||k.startsWith('tahoe77-runtime-')||k.startsWith('tahoe77-shared-bible-')||(k.startsWith('tahoe77-powerslidepro-immutable-')&&k!==PSPRO_ASSETS))&&!([SHELL,RUNTIME,BIBLE_CACHE].includes(k))).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
@@ -9,7 +9,7 @@ async function cacheFirst(req){const c=await caches.open(RUNTIME),hit=await c.ma
 /* Compiled PowerSlidePro files have content-hashed names. Never re-download an
    unchanged ~39 MB WASM module just because the editor iframe reopened. Keep
    these assets across regular Tahoe shell releases, unlike the volatile runtime. */
-const PSPRO_ASSETS='tahoe77-powerslidepro-immutable-v2';
+const PSPRO_ASSETS='tahoe77-powerslidepro-immutable-v3';
 const psproPending=new Map();
 async function psproAsset(req){
   const cache=await caches.open(PSPRO_ASSETS), hit=await cache.match(req);
