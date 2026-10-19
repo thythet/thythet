@@ -1864,6 +1864,7 @@ fn web_presenter_panel(
                 });
                 // Render a few new textures per frame; reuse the same textures in the
                 // filmstrip and the responsive grid to preserve Khmer glyph fidelity.
+                let grid_visible = show.grid;
                 let mut new_rendered = 0usize;
                 let mut thumbnail = |ui: &mut Ui, index: usize, width: f32, height: f32| {
                     let texture = show.thumbs.iter().find(|(n, _)| *n == index).map(|(_, tex)| tex.clone())
@@ -1883,7 +1884,7 @@ fn web_presenter_panel(
                         egui::StrokeKind::Inside);
                     if response.clicked() { jump = Some(index); show.grid = false; }
                 };
-                if show.grid {
+                if grid_visible {
                     let columns = ((available / 154.0).floor() as usize).clamp(2, 7);
                     let grid_height = (full.height() - 130.0).max(100.0);
                     egui::ScrollArea::vertical().id_salt("presenter-all-slides-grid")
