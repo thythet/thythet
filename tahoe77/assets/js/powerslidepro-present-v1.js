@@ -47,7 +47,7 @@ function explain(message,offerLink=false){
  if(offerLink){
   hint.append(document.createElement("br"));
   const anchor=document.createElement("a");
-  anchor.href=new URL("assets/powerslidepro-audience.html?v=77presenterfix",location.href).href;
+  anchor.href=new URL("assets/powerslidepro-audience.html?v=77compactaudience",location.href).href;
   anchor.target="_blank";anchor.rel="opener";
   anchor.textContent="Open audience in a new tab";
   hint.append(anchor);
@@ -75,7 +75,7 @@ async function placeOnExternalScreen(w){
 function openAudience(){
  if(visible()){audience.focus();return}
  // Direct button click: do not delay window.open, or popup blockers will reject it.
- const url=new URL("assets/powerslidepro-audience.html?v=77presenterfix",location.href);
+ const url=new URL("assets/powerslidepro-audience.html?v=77compactaudience",location.href);
  try{
   audience=window.open(url.href,"powerslidepro-audience",
    "popup,width=1280,height=720,resizable=yes,scrollbars=yes");
