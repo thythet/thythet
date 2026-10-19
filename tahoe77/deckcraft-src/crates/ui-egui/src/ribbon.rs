@@ -66,9 +66,13 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
             let max = ui.input(|i| i.viewport().maximized.unwrap_or(false));
             ui.ctx().send_viewport_cmd(egui::ViewportCommand::Maximized(!max));
         }
+        // Keep the left toolbar strictly outside the audience/present actions region.
+        // At narrow widths the title gets the remaining space, never overlays buttons.
+        let right_reserved = if cfg!(target_arch = "wasm32") { 244.0 } else { 320.0 };
+        let toolbar_right = (rect.max.x - right_reserved - 8.0).max(rect.min.x + left + 20.0);
         let mut child = ui.new_child(
             egui::UiBuilder::new()
-                .max_rect(Rect::from_min_max(pos2(rect.min.x + left, rect.min.y), pos2((rect.min.x + 700.0).min(rect.max.x - 150.0), rect.max.y)))
+                .max_rect(Rect::from_min_max(pos2(rect.min.x + left, rect.min.y), pos2(toolbar_right, rect.max.y)))
                 .layout(egui::Layout::left_to_right(egui::Align::Center)),
         );
         child.spacing_mut().item_spacing.x = if cfg!(target_arch = "wasm32") { 6.0 } else { 3.0 };
@@ -76,17 +80,16 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
         let dirty = app.session.active().is_some_and(|d| d.is_dirty());
         if cfg!(target_arch = "wasm32") {
             // Single compact quick-access row. Tahoe owns window movement, resizing and visibility.
-            for (glyph, color, tooltip, action) in [
-                ("×", Color32::from_rgb(255, 95, 86), "Close PowerSlidePro", "close"),
-                ("−", Color32::from_rgb(255, 189, 46), "Hide PowerSlidePro", "minimize"),
-                ("+", Color32::from_rgb(40, 196, 78), "Zoom PowerSlidePro", "zoom"),
+            for (color, tooltip, action) in [
+                (Color32::from_rgb(255, 95, 86), "Close PowerSlidePro", "close"),
+                (Color32::from_rgb(255, 189, 46), "Hide PowerSlidePro", "minimize"),
+                (Color32::from_rgb(40, 196, 78), "Zoom PowerSlidePro", "zoom"),
             ] {
-                // Tahoe web traffic lights: compact 20px circles with legible 14px icons.
-                // Keep the existing commands, hit targets and hover titles unchanged.
-                let button = egui::Button::new(egui::RichText::new(glyph).size(14.0).strong().color(Color32::from_black_alpha(185)))
-                    .fill(color).corner_radius(10.0).min_size(vec2(20.0, 20.0))
-                    .stroke(Stroke::NONE).frame(true);
-                if child.add_sized(vec2(20.0, 20.0), button).on_hover_text(tooltip).clicked() {
+                // Match Tahoe Admin's flat traffic lights: clean 14px circles, no glyphs.
+                // The invisible 20px pointer target preserves touch and click usability.
+                let (circle, hit) = child.allocate_exact_size(vec2(20.0, 20.0), Sense::click());
+                child.painter().circle_filled(circle.center(), 7.0, color);
+                if hit.on_hover_text(tooltip).clicked() {
                     ui.ctx().data_mut(|d| d.insert_temp(egui::Id::new(("tahoe-deckcraft-window", action)), true));
                 }
             }
@@ -95,7 +98,7 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
         crate::qat::show(app, &mut child);
         if cfg!(target_arch = "wasm32") {
             child.separator();
-            let compact = rect.width() < 950.0;
+            let compact = rect.width() < 1150.0;
             if child.button(if compact { "✦" } else { "✦ Smart" })
                 .on_hover_text("Smart Generate · Bible program and sermon text (slide 0)").clicked()
             {
@@ -112,15 +115,25 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
         #[cfg(target_arch = "wasm32")]
         {
             let edit_id = egui::Id::new("tahoe-powerslidepro-title-edit");
-            let width = (rect.width() * 0.36).clamp(130.0, 390.0);
-            let title_rect = Rect::from_center_size(rect.center(), vec2(width, height - 3.0));
+            // The title occupies only the unclaimed span between the actual last
+            // quick action and the fixed right-hand actions. Never paint on Smart/Bible.
+            let title_left = child.next_widget_position().x + 8.0;
+            let title_right = rect.right() - 246.0;
+            let available = (title_right - title_left).max(0.0);
+            let width = available.min(390.0);
+            let title_rect = Rect::from_center_size(
+                pos2((title_left + title_right) * 0.5, rect.center().y),
+                vec2(width, height - 3.0),
+            );
+            if width >= 86.0 {
             let mut editor = ui.new_child(egui::UiBuilder::new().max_rect(title_rect)
                 .layout(egui::Layout::left_to_right(egui::Align::Center)));
             let editing = editor.ctx().data(|d| d.get_temp::<bool>(edit_id)).unwrap_or(false);
             if editing {
                 let mut draft = editor.ctx().data(|d| d.get_temp::<String>(edit_id.with("draft"))).unwrap_or_default();
-                let input = editor.add_sized([width - 58.0, control_h], egui::TextEdit::singleline(&mut draft)
-                    .id(edit_id.with("input")).desired_width(width - 58.0));
+                let field_width = (width - 58.0).max(28.0);
+                let input = editor.add_sized([field_width, control_h], egui::TextEdit::singleline(&mut draft)
+                    .id(edit_id.with("input")).desired_width(field_width));
                 let enter = input.has_focus() && editor.input(|i| i.key_pressed(egui::Key::Enter));
                 let ok = editor.small_button("✓").on_hover_text("Apply filename").clicked() || enter;
                 let cancel = editor.small_button("×").on_hover_text("Cancel rename").clicked()
@@ -140,9 +153,10 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
                     }
                 }
             } else if has_doc {
-                let button = egui::Button::new(RichText::new(&title).font(theme::font(13.0)).color(t.text))
-                    .frame(false).min_size(vec2(width, control_h));
-                if editor.add(button).on_hover_text("Click to rename presentation").clicked() {
+                let name = egui::Label::new(RichText::new(&title).font(theme::font(13.0)).color(t.text))
+                    .truncate().sense(Sense::click());
+                if editor.add_sized(vec2(width, control_h), name)
+                    .on_hover_text(format!("{}\nClick to rename", title)).clicked() {
                     let current = app.session.active().map(|d| d.title()).unwrap_or_default();
                     editor.ctx().data_mut(|d| {
                         d.insert_temp(edit_id, true);
@@ -150,7 +164,9 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
                     });
                 }
             } else {
-                editor.label(RichText::new(&title).font(theme::font(13.0)).color(t.text));
+                editor.add_sized(vec2(width, control_h),
+                    egui::Label::new(RichText::new(&title).font(theme::font(13.0)).color(t.text)).truncate());
+            }
             }
         }
         #[cfg(not(target_arch = "wasm32"))]
@@ -158,7 +174,7 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
         // Right side.
         let mut right = ui.new_child(
             egui::UiBuilder::new()
-                .max_rect(Rect::from_min_max(pos2(rect.max.x - 320.0, rect.min.y), pos2(rect.max.x - 10.0, rect.max.y)))
+                 .max_rect(Rect::from_min_max(pos2(rect.max.x - right_reserved, rect.min.y), pos2(rect.max.x - 10.0, rect.max.y)))
                 .layout(egui::Layout::right_to_left(egui::Align::Center)),
         );
         right.spacing_mut().item_spacing.x = 6.0;
