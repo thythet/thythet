@@ -1848,6 +1848,7 @@ fn presenter_preview(
     area: egui::Vec2,
     min_width: u32,
     empty: &str,
+    dimmed: bool,
 ) {
     let (slot, _) = ui.allocate_exact_size(area, Sense::hover());
     ui.painter().rect_filled(slot, 4.0, Color32::from_rgb(37, 39, 44));
@@ -1898,6 +1899,12 @@ fn presenter_preview(
         });
         if let Some(tex) = tex {
             ui.painter().image(tex.id(), slide_rect, unit_uv(), Color32::WHITE);
+            // Presenter-only treatment: emphasize the live slide without changing
+            // the original slide pixels, thumbnails, or the audience output.
+            if dimmed {
+                ui.painter().rect_filled(slide_rect, 0.0,
+                    Color32::from_rgba_unmultiplied(0, 0, 0, 58));
+            }
         }
     } else {
         ui.painter().text(slot.center(), Align2::CENTER_CENTER, empty,
@@ -2029,15 +2036,28 @@ fn web_presenter_panel(
                 });
                 ui.add_space(4.0);
                 let gap = 16.0;
-                let left_w = ((available - gap) * 0.64).max(95.0);
-                let right_w = (available - left_w - gap).max(80.0);
                 let aspect = slide_aspect(doc).max(0.15);
                 let max_h = (full.height() - strip_h - 205.0)
                     .max(100.0).min(full.height() * 0.64);
+                // Never reserve unused width to the right of the current slide.
+                // On a short/wide presenter monitor that spare space can hold both
+                // upcoming slides without reducing the current slide's size.
+                let left_budget = ((available - gap) * 0.64).max(95.0);
+                let left_w = left_budget.min(max_h * aspect).max(95.0);
+                let right_w = (available - left_w - gap).max(80.0);
                 let current_h = (left_w / aspect).min(max_h);
                 let current_w = (current_h * aspect).min(left_w);
-                let next_h = (right_w / aspect).min((max_h - 48.0).max(60.0) / 2.0);
-                let next_w = (next_h * aspect).min(right_w);
+                let next_horizontal = right_w >= 490.0;
+                let next_gap = 12.0;
+                let next_column_w = if next_horizontal {
+                    (right_w - next_gap) * 0.5
+                } else {
+                    right_w
+                };
+                let next_height_cap = if next_horizontal { max_h }
+                    else { ((max_h - 48.0) / 2.0).max(60.0) };
+                let next_h = (next_column_w / aspect).min(next_height_cap);
+                let next_w = (next_h * aspect).min(next_column_w);
                 let next_slide = show.state.peek_next(doc);
                 let second_slide = next_slide.and_then(|next| {
                     visible.iter().copied().find(|&i| i > next)
@@ -2052,19 +2072,39 @@ fn web_presenter_panel(
                         ui.set_width(left_w);
                         ui.label(egui::RichText::new("CURRENT SLIDE").color(MUTED).size(11.0));
                         presenter_preview(ctx, ui, show, doc, Some(active),
-                            vec2(current_w, current_h), 1600, "");
+                            vec2(current_w, current_h), 1600, "", false);
                     });
                     ui.add_space(gap);
-                    ui.vertical(|ui| {
-                        ui.set_width(right_w);
-                        ui.label(egui::RichText::new("NEXT SLIDE 1").color(MUTED).size(11.0));
-                        presenter_preview(ctx, ui, show, doc, next_slide,
-                            vec2(next_w, next_h), 960, "End of show");
-                        ui.add_space(5.0);
-                        ui.label(egui::RichText::new("NEXT SLIDE 2").color(MUTED).size(11.0));
-                        presenter_preview(ctx, ui, show, doc, second_slide,
-                            vec2(next_w, next_h), 960, "End of show");
-                    });
+                    if next_horizontal {
+                        // Side-by-side upcoming slides on wide windows.
+                        ui.horizontal(|ui| {
+                            ui.vertical(|ui| {
+                                ui.set_width(next_column_w);
+                                ui.label(egui::RichText::new("NEXT SLIDE 1").color(MUTED).size(11.0));
+                                presenter_preview(ctx, ui, show, doc, next_slide,
+                                    vec2(next_w, next_h), 960, "End of show", true);
+                            });
+                            ui.add_space(next_gap);
+                            ui.vertical(|ui| {
+                                ui.set_width(next_column_w);
+                                ui.label(egui::RichText::new("NEXT SLIDE 2").color(MUTED).size(11.0));
+                                presenter_preview(ctx, ui, show, doc, second_slide,
+                                    vec2(next_w, next_h), 960, "End of show", true);
+                            });
+                        });
+                    } else {
+                        // Narrow windows retain the original vertically stacked previews.
+                        ui.vertical(|ui| {
+                            ui.set_width(right_w);
+                            ui.label(egui::RichText::new("NEXT SLIDE 1").color(MUTED).size(11.0));
+                            presenter_preview(ctx, ui, show, doc, next_slide,
+                                vec2(next_w, next_h), 960, "End of show", true);
+                            ui.add_space(5.0);
+                            ui.label(egui::RichText::new("NEXT SLIDE 2").color(MUTED).size(11.0));
+                            presenter_preview(ctx, ui, show, doc, second_slide,
+                                vec2(next_w, next_h), 960, "End of show", true);
+                        });
+                    }
                 });
                 ui.add_space(4.0);
                 ui.label(egui::RichText::new("SPEAKER NOTES").color(MUTED).size(11.0));
