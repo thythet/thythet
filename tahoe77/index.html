@@ -6285,7 +6285,7 @@ function handlePwaLaunchShortcut(){
 }
 window.addEventListener("load",handlePwaLaunchShortcut,{once:true});
 
-if('serviceWorker' in navigator&&location.protocol!=='file:'){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=77liveeditor',{scope:'./',updateViaCache:'none'}).catch(()=>{}),{once:true})}
+if('serviceWorker' in navigator&&location.protocol!=='file:'){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=77thechat',{scope:'./',updateViaCache:'none'}).catch(()=>{}),{once:true})}
 
 /* Bind core controls before optional app modules: one failed module must never freeze Tahoe. */
 const tahoeSafeInit=(label,fn)=>{try{fn()}catch(e){console.error("[Tahoe startup] "+label,e);try{sessionStorage.setItem("tahoe.lastStartupError",label+": "+String(e?.message||e))}catch{}}};
