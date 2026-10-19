@@ -7,32 +7,35 @@
 <style>
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:#fff;font:14px/1.45 system-ui,sans-serif}
 #screen{position:fixed;inset:0;width:100%;height:100%;border:0;display:block;background:#000}
-#launch{position:fixed;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;background:#0e1014ee}
-#card{box-sizing:border-box;width:min(420px,calc(100% - 40px));padding:24px;border:1px solid #53565d;border-radius:14px;background:#202329;text-align:center;box-shadow:0 18px 55px #000a}
-#card h1{font-size:19px;margin:0 0 14px}
-#message{font-size:13px;min-height:40px;color:#d3d8df;margin:12px 0}
-.actions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
-button{background:#ed7741;border:1px solid #ed7741;border-radius:8px;padding:11px 15px;font:600 13px system-ui;color:#fff;cursor:pointer}
-button.secondary{background:#383c43;border-color:#59616b}
+#launch{position:fixed;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;background:rgba(12,13,18,.84);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+#card{box-sizing:border-box;width:min(768px,100%);padding:16px;border:1px solid rgba(255,255,255,.06);border-radius:16px;background:#202228;box-shadow:0 24px 80px rgba(0,0,0,.52);text-align:center}
+.actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+button{font:600 14px/1.25 system-ui,sans-serif;cursor:pointer;transition:background .16s,border-color .16s,transform .16s,box-shadow .16s}
+.actions button{min-width:0;min-height:56px;padding:15px 14px;display:flex;justify-content:center;align-items:center;gap:9px;border:1px solid transparent;border-radius:10px;background:#ed7748;color:#fff}
+.actions button.secondary{background:#414650;border-color:#414650}
+.actions button:hover{background:#f18356;box-shadow:0 5px 18px rgba(237,119,72,.16)}
+.actions button.secondary:hover{background:#535965;border-color:#535965;box-shadow:none}
+.actions button:active{transform:scale(.985)}
+.actions button svg,#retry svg{width:17px;height:17px;flex:none;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round}
 button:focus-visible{outline:2px solid #f7af80;outline-offset:3px}
+#retry{margin:9px auto 0;padding:7px 12px;min-height:30px;display:inline-flex;align-items:center;justify-content:center;gap:7px;border:0;border-radius:8px;background:transparent;color:#f2a588;font-size:13px;font-weight:600}
+#retry:hover{background:rgba(237,119,72,.10);color:#ffc2a9}
+#message{position:absolute!important;width:1px;height:1px;overflow:hidden;white-space:nowrap;clip-path:inset(50%);margin:-1px;border:0;padding:0}
 #display-actions{position:fixed;right:12px;bottom:10px;display:flex;gap:7px;z-index:6;opacity:.4;transition:opacity .15s}
 #display-actions:hover,#display-actions:focus-within{opacity:1}
-#display-actions button{font-size:11px;padding:7px 9px;background:#343842bb;border-color:#4b4e55}
-#retry{margin-top:12px;font-size:12px;color:#fbb89d;cursor:pointer;text-decoration:underline;background:transparent;border:0;padding:5px}
-#help{font-size:11px;color:#a4a9b3;margin-top:12px}
+#display-actions button{font-size:11px;padding:7px 9px;background:#343842bb;color:#fff;border:1px solid #4b4e55;border-radius:8px}
+@media(max-width:560px){#card{padding:12px;border-radius:14px}.actions{grid-template-columns:1fr;gap:8px}.actions button{min-height:54px}}
 </style>
 </head>
 <body>
 <iframe id="screen" title="Audience slides" allow="fullscreen" allowfullscreen src="../apps/deckcraft-web/index.html?blank&audience=1&v=77presenterfix"></iframe>
-<div id="launch"><section id="card">
-<h1>PowerSlidePro · Audience Screen</h1>
+<div id="launch"><section id="card" aria-label="Audience display options">
 <p id="message" role="status" aria-live="polite">Connecting to the presentation…</p>
 <div class="actions">
-<button id="fullscreen" type="button">Enter Full Screen</button>
-<button id="windowed" type="button" class="secondary">Continue Windowed</button>
+<button id="fullscreen" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M21 16v5h-5M3 16v5h5"/></svg><span>Enter Full Screen</span></button>
+<button id="windowed" type="button" class="secondary"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M9 21h6m-3-3v3"/></svg><span>Continue Windowed</span></button>
 </div>
-<button id="retry" type="button">Retry Connection</button>
-<p id="help">Move this window to your second monitor. The presenter controls stay on your main screen.</p>
+<button id="retry" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9a7 7 0 0 1 11.8-2L20 12M4 12l2.6 5a7 7 0 0 0 11.8-2"/></svg><span>Retry Connection</span></button>
 </section></div>
 <div id="display-actions">
 <button id="fs-again" type="button">Fullscreen</button>
