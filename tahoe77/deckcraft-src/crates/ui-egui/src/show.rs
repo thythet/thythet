@@ -1865,6 +1865,9 @@ fn web_presenter_panel(
                 // Render a few new textures per frame; reuse the same textures in the
                 // filmstrip and the responsive grid to preserve Khmer glyph fidelity.
                 let grid_visible = show.grid;
+                let follow_key = egui::Id::new("tahoe77-presenter-follow-active");
+                let follow_active = ctx.data(|d| d.get_temp::<usize>(follow_key)) != Some(active);
+                if follow_active { ctx.data_mut(|d| d.insert_temp(follow_key, active)); }
                 let mut new_rendered = 0usize;
                 let mut thumbnail = |ui: &mut Ui, index: usize, width: f32, height: f32| {
                     let texture = show.thumbs.iter().find(|(n, _)| *n == index).map(|(_, tex)| tex.clone())
@@ -1883,6 +1886,9 @@ fn web_presenter_panel(
                             if index == active { Color32::from_rgb(237, 119, 65) } else { Color32::from_gray(92) }),
                         egui::StrokeKind::Inside);
                     if response.clicked() { jump = Some(index); show.grid = false; }
+                    if index == active && follow_active && !grid_visible {
+                        ui.scroll_to_rect(rect, Some(egui::Align::Center));
+                    }
                 };
                 if grid_visible {
                     let columns = ((available / 154.0).floor() as usize).clamp(2, 7);
@@ -1891,6 +1897,7 @@ fn web_presenter_panel(
                         .max_height(grid_height).show(ui, |ui| {
                         egui::Grid::new("presenter-grid-select").num_columns(columns).spacing(vec2(10.0, 13.0)).show(ui, |ui| {
                             for i in 0..total.min(GRID_CAP) {
+                                if doc.slides.get(i).is_some_and(|slide| slide.hidden) { continue; }
                                 ui.vertical(|ui| {
                                     thumbnail(ui, i, 132.0, (132.0/aspect).clamp(50.0, 102.0));
                                     ui.label(egui::RichText::new(format!("{}", i+1)).color(MUTED).size(11.0));
@@ -1904,6 +1911,7 @@ fn web_presenter_panel(
                         .max_width(available).show(ui, |ui| {
                         ui.horizontal(|ui| {
                             for i in 0..total.min(GRID_CAP) {
+                                if doc.slides.get(i).is_some_and(|slide| slide.hidden) { continue; }
                                 ui.vertical(|ui| {
                                     thumbnail(ui, i, 126.0, (126.0/aspect).clamp(50.0, 94.0));
                                     ui.label(egui::RichText::new(format!("{}", i+1))
