@@ -660,7 +660,7 @@ fn recent_list(app: &mut SlideApp, ui: &mut Ui, bs: &mut Backstage, limit: usize
     let n_cloud = all.iter().filter(|entry| !entry.local).count();
     let n_local = all.len() - n_cloud;
     ui.horizontal(|ui| {
-        for (source, text) in [(0, format!("All ({})", all.len())),
+        for (source, text) in [(0, format!("Recent ({})", all.len())),
             (1, format!("Cloud ({n_cloud})")), (2, format!("Device ({n_local})"))] {
             let selected = bs.recent_source == source;
             let button = egui::Button::new(RichText::new(text).size(12.5)
