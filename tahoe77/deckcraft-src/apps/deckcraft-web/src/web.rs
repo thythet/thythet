@@ -972,11 +972,24 @@ impl BibleGenerator {
         egui::Window::new("Bible Generate · Khmer 1954")
             .id(egui::Id::new("deckcraft_bible_generator"))
             .open(&mut open)
-            .default_width(500.0)
-            .min_width(420.0)
+            .default_width(470.0)
+            .min_width(400.0)
+            .movable(true)
             .resizable(true)
             .collapsible(false)
+            .frame(egui::Frame::NONE
+                .fill(egui::Color32::WHITE)
+                .corner_radius(egui::CornerRadius::same(11))
+                .inner_margin(egui::Margin::symmetric(12, 10))
+                .stroke(egui::Stroke::new(1.0, egui::Color32::from_rgb(221, 225, 230)))
+                .shadow(egui::Shadow {
+                    offset: [0, 12], blur: 32, spread: 0,
+                    color: egui::Color32::from_black_alpha(35),
+                }))
             .show(ctx, |ui| {
+                ui.spacing_mut().item_spacing = egui::vec2(6.0, 5.0);
+                ui.spacing_mut().interact_size.y = 27.0;
+                ui.visuals_mut().override_text_color = Some(egui::Color32::from_rgb(44, 48, 55));
                 ui.label("Generate Bible slides directly into the current DeckCraft presentation.");
                 ui.add_space(6.0);
 
@@ -1306,11 +1319,24 @@ impl SmartGenerator {
         egui::Window::new("✦ Smart Generate")
             .id(egui::Id::new("deckcraft_smart_generator"))
             .open(&mut open)
-            .default_width(560.0)
-            .min_width(440.0)
+            .default_width(520.0)
+            .min_width(420.0)
+            .movable(true)
             .resizable(true)
             .collapsible(false)
+            .frame(egui::Frame::NONE
+                .fill(egui::Color32::WHITE)
+                .corner_radius(egui::CornerRadius::same(11))
+                .inner_margin(egui::Margin::symmetric(12, 10))
+                .stroke(egui::Stroke::new(1.0, egui::Color32::from_rgb(221, 225, 230)))
+                .shadow(egui::Shadow {
+                    offset: [0, 12], blur: 32, spread: 0,
+                    color: egui::Color32::from_black_alpha(35),
+                }))
             .show(ctx, |ui| {
+                ui.spacing_mut().item_spacing = egui::vec2(6.0, 5.0);
+                ui.spacing_mut().interact_size.y = 27.0;
+                ui.visuals_mut().override_text_color = Some(egui::Color32::from_rgb(44, 48, 55));
                 ui.strong("Slide 0 · Bible program input");
                 ui.small("Paste the whole program here. Slide 0 is the permanent hidden Smart Generate source; generated slides start at 1.");
                 ui.add_space(6.0);
@@ -1318,7 +1344,7 @@ impl SmartGenerator {
                 // line wrapping and cursor clusters correctly; egui's glyph-by-glyph
                 // TextEdit does not. Sync the text into the existing Smart Generate source.
                 let (input_rect, _) = ui.allocate_exact_size(
-                    egui::vec2(ui.available_width().max(260.0), 380.0),
+                    egui::vec2(ui.available_width().max(260.0), 300.0),
                     egui::Sense::hover(),
                 );
                 sync_native_smart_input(ctx, input_rect, &mut self.input);

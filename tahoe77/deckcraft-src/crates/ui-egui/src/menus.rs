@@ -100,12 +100,29 @@ pub fn palette(app: &mut SlideApp, ctx: &egui::Context) {
     let Some((mut query, mut sel)) = app.palette.take() else { return };
     let t = Tokens::get(ctx);
     let mut close = false;
+    let mut palette_open = true;
     let mut run: Option<String> = None;
-    egui::Window::new("command_palette")
-        .title_bar(false)
-        .anchor(egui::Align2::CENTER_TOP, egui::vec2(0.0, 90.0))
-        .fixed_size(egui::vec2(520.0, 380.0))
+    let view = ctx.content_rect();
+    egui::Window::new("Command Palette")
+        .id(egui::Id::new("tahoe77-command-palette"))
+        .open(&mut palette_open)
+        .collapsible(false)
+        .movable(true)
+        .resizable(false)
+        .default_pos(egui::pos2((view.center().x - 240.0).max(view.left() + 8.0), view.top() + 64.0))
+        .default_size(egui::vec2(480.0, 325.0))
+        .frame(egui::Frame::NONE
+            .fill(egui::Color32::WHITE)
+            .corner_radius(egui::CornerRadius::same(11))
+            .inner_margin(egui::Margin::symmetric(12, 10))
+            .stroke(egui::Stroke::new(1.0, egui::Color32::from_rgb(221, 225, 230)))
+            .shadow(egui::Shadow {
+                offset: [0, 12], blur: 32, spread: 0,
+                color: egui::Color32::from_black_alpha(35),
+            }))
         .show(ctx, |ui| {
+            ui.spacing_mut().item_spacing = egui::vec2(6.0, 5.0);
+            ui.visuals_mut().override_text_color = Some(egui::Color32::from_rgb(44, 48, 55));
             let r = ui.add(egui::TextEdit::singleline(&mut query).hint_text("Search commands…").desired_width(f32::INFINITY).font(theme::font(15.0)));
             r.request_focus();
             let q = query.to_lowercase();
@@ -130,7 +147,7 @@ pub fn palette(app: &mut SlideApp, ctx: &egui::Context) {
             if enter && let Some((id, ..)) = items.get(sel) {
                 run = Some(id.clone());
             }
-            egui::ScrollArea::vertical().max_height(320.0).show(ui, |ui| {
+            egui::ScrollArea::vertical().max_height(255.0).show(ui, |ui| {
                 for (k, (id, label, sc)) in items.iter().enumerate() {
                     let r = ui.horizontal(|ui| {
                         let resp = ui.selectable_label(k == sel, label);
@@ -147,6 +164,9 @@ pub fn palette(app: &mut SlideApp, ctx: &egui::Context) {
                 }
             });
         });
+    if !palette_open {
+        close = true;
+    }
     if let Some(id) = run {
         let _ = app.run(&id, json!({}));
         close = true;
