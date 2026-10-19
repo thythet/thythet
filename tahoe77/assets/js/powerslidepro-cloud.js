@@ -40,6 +40,33 @@ try{
 render();window.TahoePowerSlideCloud?.emitList?.();
 }
 function validURL(f){try{const u=new URL(f.url);return u.protocol==="https:"&&u.hostname==="res.cloudinary.com"&&u.pathname.startsWith("/"+f.cloudName+"/raw/upload/")}catch{return false}}
+
+function enablePanelDrag(panel,handle){
+ let drag=null,offsetX=0,offsetY=0;
+ handle.style.cursor="grab";
+ handle.style.touchAction="none";
+ handle.style.userSelect="none";
+ handle.addEventListener("pointerdown",event=>{
+   if(event.target.closest("button,input,select")||(event.pointerType==="mouse"&&event.button!==0))return;
+   const box=panel.getBoundingClientRect();
+   drag={x:event.clientX,y:event.clientY,left:box.left,right:box.right,top:box.top,bottom:box.bottom,
+     offsetX,offsetY,pointerId:event.pointerId};
+   handle.setPointerCapture(event.pointerId);
+   handle.style.cursor="grabbing";
+ });
+ handle.addEventListener("pointermove",event=>{
+   if(!drag||event.pointerId!==drag.pointerId)return;
+   const cap=(n,min,max)=>Math.min(Math.max(n,Math.min(min,max)),Math.max(min,max));
+   const deltaX=cap(event.clientX-drag.x,8-drag.left,innerWidth-8-drag.right);
+   const deltaY=cap(event.clientY-drag.y,8-drag.top,innerHeight-8-drag.bottom);
+   offsetX=drag.offsetX+deltaX;offsetY=drag.offsetY+deltaY;
+   panel.style.transform="translate("+offsetX+"px,"+offsetY+"px)";
+ });
+ const finish=()=>{drag=null;handle.style.cursor="grab";};
+ handle.addEventListener("pointerup",finish);
+ handle.addEventListener("pointercancel",finish);
+}
+
 function ensureUI(){
 if($("#pdc-wrap"))return;
 const style=document.createElement("style");
@@ -50,7 +77,7 @@ style.textContent=[
 "#pdc-dialog *{box-sizing:border-box}",
 "#pdc-dialog button,#pdc-dialog input,#pdc-dialog select{font:inherit}",
 "#pdc-dialog button{cursor:pointer}",
-".pdc-head{display:flex;align-items:center;gap:8px;padding:13px 16px;border-bottom:1px solid #e8eaee}",
+".pdc-head{display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:1px solid #dde1e6;background:#eceef0;cursor:grab;touch-action:none;user-select:none}",
 ".pdc-head strong{font-size:15px}.pdc-head button{margin-left:auto;border:0;background:transparent;font-size:23px;color:#82858b}",
 ".pdc-section{padding:13px 16px;border-bottom:1px solid #eceef1}",
 ".pdc-section h3{font-size:11px;letter-spacing:.04em;color:#767e88;margin:0 0 10px;text-transform:uppercase}",
@@ -89,6 +116,7 @@ host.innerHTML=[
 '<div class="pdc-muted">Rename and Remove update your library only, not the Cloudinary asset.</div><div id="pdc-files" style="margin-top:8px"></div></div>',
 '<div id="pdc-status" role="status" aria-live="polite" hidden></div></section>'
 ].join("");document.body.append(host);
+enablePanelDrag($("#pdc-dialog"),$(".pdc-head"));
 $("#pdc-x").onclick=close;
 host.addEventListener("click",e=>{if(e.target===host&&!busy)close()});
 $("#pdc-new").onclick=()=>{$("#pdc-select").value="";$("#pdc-cloud").value="";$("#pdc-preset").value="";$("#pdc-cloud").focus()};

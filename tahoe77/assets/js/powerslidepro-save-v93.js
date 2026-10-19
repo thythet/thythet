@@ -30,6 +30,33 @@ function nextName(){
  localStorage.setItem(key,String(index));
  return prefix+String(index).padStart(2,"0");
 }
+
+function enablePanelDrag(panel,handle){
+ let drag=null,offsetX=0,offsetY=0;
+ handle.style.cursor="grab";
+ handle.style.touchAction="none";
+ handle.style.userSelect="none";
+ handle.addEventListener("pointerdown",event=>{
+   if(event.target.closest("button,input,select")||(event.pointerType==="mouse"&&event.button!==0))return;
+   const box=panel.getBoundingClientRect();
+   drag={x:event.clientX,y:event.clientY,left:box.left,right:box.right,top:box.top,bottom:box.bottom,
+     offsetX,offsetY,pointerId:event.pointerId};
+   handle.setPointerCapture(event.pointerId);
+   handle.style.cursor="grabbing";
+ });
+ handle.addEventListener("pointermove",event=>{
+   if(!drag||event.pointerId!==drag.pointerId)return;
+   const cap=(n,min,max)=>Math.min(Math.max(n,Math.min(min,max)),Math.max(min,max));
+   const deltaX=cap(event.clientX-drag.x,8-drag.left,innerWidth-8-drag.right);
+   const deltaY=cap(event.clientY-drag.y,8-drag.top,innerHeight-8-drag.bottom);
+   offsetX=drag.offsetX+deltaX;offsetY=drag.offsetY+deltaY;
+   panel.style.transform="translate("+offsetX+"px,"+offsetY+"px)";
+ });
+ const finish=()=>{drag=null;handle.style.cursor="grab";};
+ handle.addEventListener("pointerup",finish);
+ handle.addEventListener("pointercancel",finish);
+}
+
 function init(){
  if($("#tahoe-save93"))return;
  const st=document.createElement("style");
@@ -38,7 +65,7 @@ function init(){
  "#tahoe-save93.show{display:flex}",
  "#tahoe-save93 .panel{background:white;color:#2b3038;max-height:90vh;overflow:auto;width:min(398px,100%);border:1px solid #dee1e6;border-radius:13px;box-shadow:0 20px 65px #0003;font:13px/1.4 Arial,sans-serif}",
  "#tahoe-save93 *{box-sizing:border-box}",
- "#tahoe-save93 h2{font-size:16px;margin:0;padding:15px 16px;border-bottom:1px solid #eef0f2}",
+ "#tahoe-save93 h2{font-size:14px;text-align:center;margin:0;padding:10px 16px;border-bottom:1px solid #dde1e6;background:#eceef0;cursor:grab;touch-action:none;user-select:none}",
  "#tahoe-save93 label{display:block;font-size:11px;font-weight:650;color:#777e88;margin:12px 16px}",
  "#tahoe-save93 input,#tahoe-save93 select{width:100%;border:1px solid #d7dbe0;border-radius:7px;padding:9px;background:#fbfcfd;color:#242a34;margin-top:4px;font:13px Arial,sans-serif}",
  "#tahoe-save93 .dest{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:5px 16px}",
@@ -68,6 +95,7 @@ function init(){
  '<div class="row"><button id="s93-cancel">Cancel</button><button id="s93-apply" class="primary">Save</button></div>',
  '</section>'
  ].join("");document.body.append(root);
+ enablePanelDrag(root.querySelector(".panel"),$("#s93-title"));
  root.querySelectorAll("[data-s93-dest]").forEach(b=>b.onclick=()=>{if(!processing&&draft){draft.dest=b.dataset.s93Dest;render()}});
  $("#s93-cancel").onclick=()=>{if(!processing){root.classList.remove("show");draft=null;waiting=null}};
  $("#s93-apply").onclick=()=>prepare().catch(e=>error(e.message));
