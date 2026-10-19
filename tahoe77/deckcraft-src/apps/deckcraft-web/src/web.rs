@@ -399,10 +399,14 @@ impl WebShell {
             "off".to_string()
         };
         if serialized == self.last_show_state { return; }
+        // Never report "End Show" from a newly opened audience window that
+        // has not loaded its first slide. Doing so instantly closes the real
+        // presenter session before the viewer has finished connecting.
+        let was_presenting = !self.last_show_state.is_empty() && self.last_show_state != "off";
         self.last_show_state = serialized;
         if let Some((index, _, blank, ended)) = state {
             post_parent_presentation("state", "", index, if ended {"end"} else {blank});
-        } else {
+        } else if was_presenting {
             post_parent_presentation("end", "", 0, "");
         }
     }
