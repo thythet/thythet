@@ -26,6 +26,11 @@ thread_local! {
     static AUDIENCE_LOAD_PENDING: RefCell<Vec<(String, String, usize)>> = const { RefCell::new(Vec::new()) };
     static AUDIENCE_REMOTE_PENDING: RefCell<Vec<(usize, String)>> = const { RefCell::new(Vec::new()) };
     static AUDIENCE_EXPORT_PENDING: RefCell<bool> = const { RefCell::new(false) };
+    static LIVE_LOAD_PENDING: RefCell<Vec<(String, String, usize)>> = const { RefCell::new(Vec::new()) };
+    static LIVE_UPDATE_PENDING: RefCell<Vec<(String, String, usize)>> = const { RefCell::new(Vec::new()) };
+    static LIVE_SNAPSHOT_PENDING: RefCell<bool> = const { RefCell::new(false) };
+    static LIVE_SAVE_PENDING: RefCell<bool> = const { RefCell::new(false) };
+    static LIVE_FLUSH_PENDING: RefCell<bool> = const { RefCell::new(false) };
 }
 
 /// Receive only same-origin messages from Tahoe's parent app window.
@@ -69,6 +74,27 @@ fn install_cloud_open_receiver() {
                     if matches!(format.as_str(), "pptx" | "deckcraft") && !name.trim().is_empty() && name.chars().count() <= 140 {
                         CLOUD_EXPORT_PENDING.with(|q| q.borrow_mut().push((uid, name, format)));
                     }
+                }
+            }
+            "tahoe-deckcraft-live-editor" => {
+                let action = val("action");
+                match action.as_str() {
+                    "snapshot" => LIVE_SNAPSHOT_PENDING.with(|p| *p.borrow_mut() = true),
+                    "save" => LIVE_SAVE_PENDING.with(|p| *p.borrow_mut() = true),
+                    "flushsave" => LIVE_FLUSH_PENDING.with(|p| *p.borrow_mut() = true),
+                    "load" | "update" => {
+                        let (name, data) = (val("name"), val("data"));
+                        let index = val("index").parse::<usize>().unwrap_or(0);
+                        if !name.is_empty() && name.len() <= 180 && !data.is_empty()
+                            && data.len() <= 80_000_000 && index < 20_000 {
+                            if action == "load" {
+                                LIVE_LOAD_PENDING.with(|q| q.borrow_mut().push((name, data, index)));
+                            } else {
+                                LIVE_UPDATE_PENDING.with(|q| q.borrow_mut().push((name, data, index)));
+                            }
+                        }
+                    }
+                    _ => {}
                 }
             }
             "tahoe-deckcraft-audience-export" => {
@@ -170,7 +196,12 @@ pub fn start() {
                         cloud_seen_docs: std::collections::HashSet::new(),
                         audience_mode: q.contains("audience=1"),
                         audience_ready_sent: false,
-                        last_show_state: String::new() }))
+                        last_show_state: String::new(),
+                        live_mode: q.contains("liveeditor=1"),
+                        live_ready_sent: false,
+                        live_loaded: false,
+                        live_revision: 0,
+                        live_send_due: 0.0 }))
                 }),
             )
             .await;
@@ -205,6 +236,11 @@ struct WebShell {
     audience_mode: bool,
     audience_ready_sent: bool,
     last_show_state: String,
+    live_mode: bool,
+    live_ready_sent: bool,
+    live_loaded: bool,
+    live_revision: u64,
+    live_send_due: f64,
 }
 
 impl eframe::App for WebShell {
@@ -213,6 +249,86 @@ impl eframe::App for WebShell {
             post_parent_presentation("ready", "", 0, "");
             self.audience_ready_sent = true;
         }
+        if self.live_mode && !self.live_ready_sent {
+            post_parent_live("ready", "", "", 0);
+            self.live_ready_sent = true;
+        }
+        LIVE_LOAD_PENDING.with(|q| {
+            for (name, data, index) in std::mem::take(&mut *q.borrow_mut()) {
+                if !self.live_mode { continue; }
+                match self.app.run("file.openBytes", json!({"name":name,"data":data})) {
+                    Ok(_) => {
+                        let from = self.app.session.active().map(|d| index.min(d.doc.slides.len().saturating_sub(1))).unwrap_or(0);
+                        let _ = self.app.run("slide.go", json!({"index": from}));
+                        self.app.close_backstage();
+                        self.live_loaded = true;
+                        self.live_revision = self.app.session.active().map(|d| d.revision).unwrap_or(0);
+                        self.live_send_due = 0.0;
+                        post_parent_live("loaded", "", "", from);
+                    }
+                    Err(e) => post_parent_live("error", &e.to_string(), "", index),
+                }
+            }
+        });
+        LIVE_UPDATE_PENDING.with(|q| {
+            for (name, data, _) in std::mem::take(&mut *q.borrow_mut()) {
+                if self.live_mode || self.app.session.active().is_none() { continue; }
+                let result = deckcraft_engine::cmd::base64_decode(&data)
+                    .ok_or_else(|| "Invalid live-editor document encoding".to_owned())
+                    .and_then(|bytes| deckcraft_engine::cmd::file::open_presentation(&name, &bytes)
+                        .map_err(|e| e.to_string()));
+                match result {
+                    Ok(doc) if !doc.slides.is_empty() => {
+                        // Swap only the active document: preserve its UID, save destination,
+                        // presenter timer/slide and existing Cloudinary data.
+                        let (index, doc_arc) = {
+                            let st = self.app.session.active_mut().expect("checked active");
+                            st.doc = std::sync::Arc::new(doc);
+                            st.revision = st.revision.saturating_add(1);
+                            st.title = name.trim_end_matches(".deckcraft").to_string();
+                            st.selection.slide = st.selection.slide.min(st.doc.slides.len() - 1);
+                            (self.app.show.as_ref().map(|s| s.state.slide).unwrap_or(st.selection.slide), st.doc.clone())
+                        };
+                        if let Some(show) = self.app.show.as_mut() {
+                            show.invalidate_live_edit(&doc_arc, ctx.input(|i| i.time));
+                        }
+                        // Audience gets the updated *editable* model and keeps its slide.
+                        post_parent_presentation("data", &data, index, &name);
+                        post_parent_live("applied", "", "", index);
+                    }
+                    Ok(_) => post_parent_live("error", "The edited document has no slides.", "", 0),
+                    Err(e) => post_parent_live("error", &e, "", 0),
+                }
+            }
+        });
+        LIVE_SNAPSHOT_PENDING.with(|p| {
+            if std::mem::replace(&mut *p.borrow_mut(), false) {
+                if !self.live_mode {
+                    if let Some(st) = self.app.session.active() {
+                        let name = format!("{}.deckcraft", st.title());
+                        let index = self.app.show.as_ref().map(|s| s.state.slide).unwrap_or(st.selection.slide);
+                        match self.app.run("file.saveBytes", json!({"format":"deckcraft"})) {
+                            Ok(v) => if let Some(data) = v.get("data").and_then(serde_json::Value::as_str) {
+                                post_parent_live("snapshot", data, &name, index);
+                            },
+                            Err(e) => post_parent_live("error", &e.to_string(), "", 0),
+                        }
+                    }
+                }
+            }
+        });
+        LIVE_FLUSH_PENDING.with(|p| {
+            if std::mem::replace(&mut *p.borrow_mut(), false) && self.live_mode && self.live_loaded {
+                self.send_live_edit("save");
+            }
+        });
+        LIVE_SAVE_PENDING.with(|p| {
+            if std::mem::replace(&mut *p.borrow_mut(), false) && !self.live_mode {
+                if let Some(st) = self.app.session.active() {
+                    post_parent_cloud_v93("saveIntent", &st.title(), "deckcraft", st.uid, None);
+                }
+            }
+        });
         AUDIENCE_LOAD_PENDING.with(|q| {
             for (name, data, index) in std::mem::take(&mut *q.borrow_mut()) {
                 self.app.show = None;
@@ -334,7 +450,9 @@ impl eframe::App for WebShell {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         self.app.ui(ui);
         if let Some(save_as) = self.app.web_save_request.take() {
-            if let Some(d) = self.app.session.active() {
+            if self.live_mode {
+                self.send_live_edit("save");
+            } else if let Some(d) = self.app.session.active() {
                 post_parent_cloud_v93(if save_as { "saveAsIntent" } else { "saveIntent" },
                     &d.title(), "deckcraft", d.uid, None);
             }
@@ -360,6 +478,30 @@ impl eframe::App for WebShell {
         }
         self.sync_present_mode();
         self.sync_present_state();
+        if let Some((phase, x, y)) = ui.ctx().data_mut(|d|
+            d.remove_temp::<(String, f32, f32)>(egui::Id::new("tahoe-title-drag-message"))) {
+            post_parent_title_drag(&phase, x, y);
+        }
+        if ui.ctx().data_mut(|d| d.remove_temp::<bool>(
+            egui::Id::new("tahoe-deckcraft-live-edit"))).unwrap_or(false) {
+            if !self.live_mode && !self.audience_mode && self.app.show.is_some() {
+                post_parent_window("live-edit");
+            }
+        }
+        if self.live_mode && self.live_loaded {
+            // Throttle file serialization until 450ms after the last editor
+            // revision, even when rapidly typing Khmer or moving objects.
+            let revision = self.app.session.active().map(|d| d.revision).unwrap_or(0);
+            let now = js_sys::Date::now();
+            if revision != self.live_revision {
+                self.live_revision = revision;
+                self.live_send_due = now + 450.0;
+            }
+            if self.live_send_due > 0.0 && now >= self.live_send_due {
+                self.live_send_due = 0.0;
+                self.send_live_edit("change");
+            }
+        }
         if self.app.show.is_none() {
             let take = |key: egui::Id| ui.ctx().data_mut(|d| {
                 let clicked = d.get_temp::<bool>(key).unwrap_or(false);
@@ -389,6 +531,19 @@ impl eframe::App for WebShell {
 }
 
 impl WebShell {
+    fn send_live_edit(&mut self, action: &str) {
+        if let Some(st) = self.app.session.active() {
+            let name = format!("{}.deckcraft", st.title());
+            let index = st.selection.slide;
+            match self.app.run("file.saveBytes", json!({"format":"deckcraft"})) {
+                Ok(v) => if let Some(data) = v.get("data").and_then(serde_json::Value::as_str) {
+                    post_parent_live(action, data, &name, index);
+                },
+                Err(e) => post_parent_live("error", &e.to_string(), "", index),
+            }
+        }
+    }
+
     fn sync_present_state(&mut self) {
         let state = self.app.show.as_ref().map(|show| {
             (show.state.slide, show.state.step, show.blank_name().unwrap_or(""), show.ended)
@@ -2039,6 +2194,33 @@ fn post_parent_window(command: &str) {
     let _ = js_sys::Reflect::set(&payload, &wasm_bindgen::JsValue::from_str("type"), &wasm_bindgen::JsValue::from_str("tahoe-app-command"));
     let _ = js_sys::Reflect::set(&payload, &wasm_bindgen::JsValue::from_str("app"), &wasm_bindgen::JsValue::from_str("deckcraft"));
     let _ = js_sys::Reflect::set(&payload, &wasm_bindgen::JsValue::from_str("command"), &wasm_bindgen::JsValue::from_str(command));
+    let _ = parent.post_message(&payload.into(), "*");
+}
+
+fn post_parent_live(action: &str, data: &str, name: &str, index: usize) {
+    let Some(win) = web_sys::window() else { return };
+    let Ok(Some(parent)) = win.parent() else { return };
+    let payload = js_sys::Object::new();
+    for (key, value) in [
+        ("type", "tahoe-deckcraft-live-editor"),
+        ("action", action),
+        ("data", data),
+        ("name", name),
+        ("index", &index.to_string()),
+    ] {
+        let _ = js_sys::Reflect::set(&payload, &key.into(), &value.into());
+    }
+    let _ = parent.post_message(&payload.into(), "*");
+}
+
+fn post_parent_title_drag(phase: &str, x: f32, y: f32) {
+    let Some(win) = web_sys::window() else { return };
+    let Ok(Some(parent)) = win.parent() else { return };
+    let payload = js_sys::Object::new();
+    let _ = js_sys::Reflect::set(&payload, &"type".into(), &"tahoe-deckcraft-title-drag".into());
+    let _ = js_sys::Reflect::set(&payload, &"phase".into(), &phase.into());
+    let _ = js_sys::Reflect::set(&payload, &"x".into(), &js_sys::Number::from(x as f64));
+    let _ = js_sys::Reflect::set(&payload, &"y".into(), &js_sys::Number::from(y as f64));
     let _ = parent.post_message(&payload.into(), "*");
 }
 
