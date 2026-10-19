@@ -5,84 +5,146 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PowerSlidePro — Audience Screen</title>
 <style>
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:#fff;font:14px system-ui,sans-serif}
-#screen{width:100%;height:100%;border:0;display:block;background:#000}
-#launch{position:fixed;z-index:5;inset:0;display:flex;align-items:center;justify-content:center;background:#111d}
-#card{max-width:370px;margin:20px;padding:24px;border:1px solid #474747;border-radius:13px;background:#222;text-align:center;box-shadow:0 20px 60px #000a}
-#card h1{font-size:18px;margin:0 0 12px}#message{font-size:12px;color:#ccd0d5;margin:12px 0}
-button{background:#ed7741;border:0;border-radius:8px;padding:11px 17px;font:600 14px system-ui;color:#fff;cursor:pointer}
-#actions{position:fixed;right:10px;bottom:10px;display:flex;gap:8px;z-index:6;opacity:0;transition:opacity .15s}
-#actions:hover,#actions:focus-within{opacity:1}#actions button{font-size:11px;padding:6px 9px;background:#3339}
-@media(pointer:coarse){#actions{opacity:.8}}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:#fff;font:14px/1.45 system-ui,sans-serif}
+#screen{position:fixed;inset:0;width:100%;height:100%;border:0;display:block;background:#000}
+#launch{position:fixed;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;background:#0e1014ee}
+#card{box-sizing:border-box;width:min(420px,calc(100% - 40px));padding:24px;border:1px solid #53565d;border-radius:14px;background:#202329;text-align:center;box-shadow:0 18px 55px #000a}
+#card h1{font-size:19px;margin:0 0 14px}
+#message{font-size:13px;min-height:40px;color:#d3d8df;margin:12px 0}
+.actions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+button{background:#ed7741;border:1px solid #ed7741;border-radius:8px;padding:11px 15px;font:600 13px system-ui;color:#fff;cursor:pointer}
+button.secondary{background:#383c43;border-color:#59616b}
+button:focus-visible{outline:2px solid #f7af80;outline-offset:3px}
+#display-actions{position:fixed;right:12px;bottom:10px;display:flex;gap:7px;z-index:6;opacity:.4;transition:opacity .15s}
+#display-actions:hover,#display-actions:focus-within{opacity:1}
+#display-actions button{font-size:11px;padding:7px 9px;background:#343842bb;border-color:#4b4e55}
+#retry{margin-top:12px;font-size:12px;color:#fbb89d;cursor:pointer;text-decoration:underline;background:transparent;border:0;padding:5px}
+#help{font-size:11px;color:#a4a9b3;margin-top:12px}
 </style>
 </head>
 <body>
-<iframe id="screen" title="Audience slides" allow="fullscreen" allowfullscreen src="../apps/deckcraft-web/index.html?blank&audience=1&v=77dualmonitor"></iframe>
-<div id="launch"><section id="card"><h1>PowerSlidePro · Audience Screen</h1><p id="message">Preparing the audience presentation…</p><button id="fullscreen" type="button">Enter Full Screen</button></section></div>
-<div id="actions"><button id="fs-again" type="button">Fullscreen</button><button id="exit" type="button">End Show</button></div>
+<iframe id="screen" title="Audience slides" allow="fullscreen" allowfullscreen src="../apps/deckcraft-web/index.html?blank&audience=1&v=77presenterfix"></iframe>
+<div id="launch"><section id="card">
+<h1>PowerSlidePro · Audience Screen</h1>
+<p id="message" role="status" aria-live="polite">Connecting to the presentation…</p>
+<div class="actions">
+<button id="fullscreen" type="button">Enter Full Screen</button>
+<button id="windowed" type="button" class="secondary">Continue Windowed</button>
+</div>
+<button id="retry" type="button">Retry Connection</button>
+<p id="help">Move this window to your second monitor. The presenter controls stay on your main screen.</p>
+</section></div>
+<div id="display-actions">
+<button id="fs-again" type="button">Fullscreen</button>
+<button id="move-screen" type="button">Move to Second Screen</button>
+<button id="exit" type="button">End Show</button>
+</div>
 <script>
 (()=>{
 'use strict';
 const origin=location.origin, iframe=document.getElementById('screen');
-const status=document.getElementById('message');
-const display=document.getElementById('launch');
-const notify=(type,info={})=>{
- try{if(window.opener&&!window.opener.closed)window.opener.postMessage({type,...info},origin)}catch{}
+const status=document.getElementById('message'),display=document.getElementById('launch');
+const notify=(type,extra={})=>{
+ try{if(window.opener&&!window.opener.closed)window.opener.postMessage({type,...extra},origin)}catch{}
 };
-let contentLoaded=false,latest=null;
-function toSlide(data){iframe.contentWindow?.postMessage(data,origin)}
-function retry(){notify('pspro-audience-ready')}
+let loaded=false,requested=false,latest=null,latestState=null;
+const toSlide=data=>iframe.contentWindow?.postMessage(data,origin);
+const signalReady=()=>notify('pspro-audience-ready');
+function statusUpdate(message){status.textContent=message}
+function requestDocument(){
+ signalReady();
+ requested=true;
+ statusUpdate(loaded?'Requesting current presentation…':'Waiting for PowerSlidePro renderer…');
+}
 window.addEventListener('message',event=>{
  if(event.origin!==origin)return;
  const data=event.data||{};
  if(event.source===window.opener){
    if(data.type==='pspro-audience-data'){
      latest=data;
-     if(contentLoaded)toSlide({type:'tahoe-deckcraft-audience-load',
-       name:data.name||'Audience.deckcraft',data:data.data,index:String(data.index||0)});
-     status.textContent='Loading slideshow…';
+     if(loaded){
+       statusUpdate('Opening the audience presentation…');
+       toSlide({type:'tahoe-deckcraft-audience-load',
+        name:data.name||'Audience.deckcraft',data:data.data,index:String(data.index||0)});
+     }
+   }else if(data.type==='pspro-audience-error'){
+     statusUpdate('Presentation export failed: '+(data.message||'Unknown error')+'. Click Retry Connection.');
+   }else if(data.type==='pspro-audience-state'){
+     latestState={type:'tahoe-deckcraft-audience-state',index:String(data.index||0),blank:data.blank||''};
+     if(loaded)toSlide(latestState);
+   }else if(data.type==='pspro-audience-end'){
+     window.close();
    }
-   if(data.type==='pspro-audience-error'){
-     status.textContent=data.message||'Could not export presentation.';
-   }
-   if(data.type==='pspro-audience-state'){
-     if(contentLoaded)toSlide({type:'tahoe-deckcraft-audience-state',
-       index:String(data.index||0),blank:data.blank||''});
-   }
-   if(data.type==='pspro-audience-end')window.close();
  }else if(event.source===iframe.contentWindow&&data.type==='tahoe-deckcraft-audience'){
    switch(data.action){
      case 'ready':
-       contentLoaded=true;
-       if(latest)toSlide({type:'tahoe-deckcraft-audience-load',
-         name:latest.name,data:latest.data,index:String(latest.index||0)});
-       retry();
+       loaded=true;
+       if(latest){
+         statusUpdate('Loading slides…');
+         toSlide({type:'tahoe-deckcraft-audience-load',
+           name:latest.name||'Audience.deckcraft',data:latest.data,index:String(latest.index||0)});
+       }else requestDocument();
        break;
      case 'loaded':
-       status.textContent='Presentation ready.';
-       display.style.display='none';
-       iframe.focus();
-       notify('pspro-audience-loaded');break;
+       loaded=true;
+       statusUpdate('Slides ready. Enter fullscreen or continue windowed.');
+       if(latestState)toSlide(latestState);
+       notify('pspro-audience-loaded');
+       // Keep setup visible until a user clicks Fullscreen or Windowed.
+       break;
      case 'error':
-       status.textContent='Could not open slides: '+(data.data||'Please retry.');break;
+       statusUpdate('Unable to load slides: '+(data.data||'Unknown error')+'. Click Retry Connection.');
+       break;
      case 'state':
-       notify('pspro-audience-control',{index:data.index,blank:data.blank||''});break;
+       notify('pspro-audience-control',{index:data.index,blank:data.blank||''});
+       break;
      case 'end':
-       notify('pspro-audience-control',{end:true});break;
+       notify('pspro-audience-control',{end:true});
+       break;
    }
  }
 });
-document.getElementById('fullscreen').onclick=async()=>{
- try{await document.documentElement.requestFullscreen({navigationUI:'hide'})}
- catch(e){status.textContent='Fullscreen was blocked; maximize or move this window, then try again.'}
+async function enterFullscreen(){
+ try{
+  await document.documentElement.requestFullscreen({navigationUI:'hide'});
+  display.style.display='none';iframe.focus();
+ }catch(e){
+  statusUpdate('Fullscreen blocked. Move/maximize this window or select Continue Windowed.');
+  display.style.display='flex';
+ }
+}
+document.getElementById('fullscreen').onclick=enterFullscreen;
+document.getElementById('windowed').onclick=()=>{
+ display.style.display='none';iframe.focus();
 };
-document.getElementById('fs-again').onclick=async()=>{
- try{await document.documentElement.requestFullscreen({navigationUI:'hide'})}catch{}
+document.getElementById('fs-again').onclick=enterFullscreen;
+document.getElementById('retry').onclick=requestDocument;
+document.getElementById('exit').onclick=()=>{
+ notify('pspro-audience-control',{end:true});window.close();
 };
-document.getElementById('exit').onclick=()=>{notify('pspro-audience-control',{end:true});window.close()};
+document.getElementById('move-screen').onclick=async()=>{
+ try{
+  if(typeof window.getScreenDetails!=='function'){
+   statusUpdate('Your browser does not support automatic screen placement. Drag the window manually.');
+   display.style.display='flex';return;
+  }
+  const details=await window.getScreenDetails();
+  const second=details.screens?.find(screen=>!screen.isPrimary);
+  if(!second){statusUpdate('No extended second monitor detected. Check Windows display settings.');display.style.display='flex';return}
+  window.moveTo(second.availLeft??second.left,second.availTop??second.top);
+  window.resizeTo(second.availWidth??second.width,second.availHeight??second.height);
+ }catch(error){
+  statusUpdate('Automatic placement requires browser permission. Move the window to screen 2 manually.');
+  display.style.display='flex';
+ }
+};
 window.addEventListener('beforeunload',()=>notify('pspro-audience-closed'));
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.fullscreenElement){document.exitFullscreen().catch(()=>{})}});
-// Wait for the audience WASM renderer to report readiness; avoid duplicate loads.
+setTimeout(()=>{
+ if(!requested){requestDocument();}
+},600);
+setTimeout(()=>{
+ if(!latest&&!loaded)statusUpdate('Still waiting for the PowerSlidePro renderer. If this persists, click Retry Connection.');
+},18000);
 })();
 </script>
 </body>
