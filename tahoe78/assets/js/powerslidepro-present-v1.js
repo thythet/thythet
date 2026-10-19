@@ -1,4 +1,4 @@
-/* PowerSlidePro v1 dual-screen bridge — isolated to Tahoe77. No Firebase changes. */
+/* PowerSlidePro v1 dual-screen bridge — isolated to Tahoe78. No Firebase changes. */
 (()=>{
 "use strict";
 const $=s=>document.querySelector(s), origin=location.origin;
@@ -133,7 +133,7 @@ window.addEventListener("message",e=>{
  if(d.type==="pspro-audience-ready"&&e.source!==audience){
   try{
    const page=new URL(e.source.location.href);
-   if(page.origin===origin&&page.pathname.endsWith("/tahoe77/assets/powerslidepro-audience.html")){
+   if(page.origin===origin&&page.pathname.endsWith("/tahoe78/assets/powerslidepro-audience.html")){
     audience=e.source;refreshButton();clearHint();
    }
   }catch(_){}
