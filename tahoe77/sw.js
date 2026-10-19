@@ -1,7 +1,7 @@
-const SHELL='tahoe77-shell-v99-nextslides',RUNTIME='tahoe77-runtime-v99-nextslides';
+const SHELL='tahoe77-shell-v100-faststart',RUNTIME='tahoe77-runtime-v100-faststart';
 const CORE=['./','index.html','manifest.webmanifest','data/manifest.json','assets/icon-192.png','assets/icon-512.png','assets/powerslide-icon.svg','apps/bible/index.html','apps/powerslide/index.html','apps/powerslide-next/powerslide-next.css','apps/powerslide-next/powerslide-next.js','apps/bible-next/bible-next.css','apps/bible-next/bible-next.js','apps/bible-next/search-worker.js','apps/allsong-next/allsong-next.css','apps/allsong-next/allsong-next.js','data/songs/manifest.json','assets/powerslidepro-logo.png','apps/deckcraft-web/index.html','assets/powerslidepro-audience.html','assets/js/powerslidepro-present-v1.js'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(SHELL).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
-self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>(k.startsWith('tahoe77-shell-')||k.startsWith('tahoe77-runtime-')||k.startsWith('tahoe77-shared-bible-'))&&!([SHELL,RUNTIME,BIBLE_CACHE].includes(k))).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
+self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>(k.startsWith('tahoe77-shell-')||k.startsWith('tahoe77-runtime-')||k.startsWith('tahoe77-shared-bible-')||(k.startsWith('tahoe77-powerslidepro-immutable-')&&k!==PSPRO_ASSETS))&&!([SHELL,RUNTIME,BIBLE_CACHE].includes(k))).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 async function stale(req){const c=await caches.open(RUNTIME),hit=await c.match(req);const net=fetch(req).then(r=>{if(r.ok)c.put(req,r.clone());return r}).catch(()=>null);return hit||await net||Response.error()}
 async function cacheFirstBible(req){const c=await caches.open(BIBLE_CACHE),hit=await c.match(req);if(hit)return hit;const r=await fetch(req);if(r.ok)c.put(req,r.clone());return r}
 async function cacheFirst(req){const c=await caches.open(RUNTIME),hit=await c.match(req);if(hit)return hit;const r=await fetch(req);if(r.ok)c.put(req,r.clone());return r}
@@ -9,7 +9,7 @@ async function cacheFirst(req){const c=await caches.open(RUNTIME),hit=await c.ma
 /* Compiled PowerSlidePro files have content-hashed names. Never re-download an
    unchanged ~39 MB WASM module just because the editor iframe reopened. Keep
    these assets across regular Tahoe shell releases, unlike the volatile runtime. */
-const PSPRO_ASSETS='tahoe77-powerslidepro-immutable-v1';
+const PSPRO_ASSETS='tahoe77-powerslidepro-immutable-v2';
 const psproPending=new Map();
 async function psproAsset(req){
   const cache=await caches.open(PSPRO_ASSETS), hit=await cache.match(req);
