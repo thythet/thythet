@@ -1929,7 +1929,7 @@ fn web_presenter_panel(
 
                 ui.horizontal(|ui| {
                     if presenter_button(ui, "◀ Previous", false).clicked() {
-                        jump = show.state.peek_prev(doc);
+                        jump = visible.iter().rev().find(|&&i| i < active).copied();
                     }
                     if presenter_button(ui, "Next ▶", false).clicked() {
                         jump = show.state.peek_next(doc);
@@ -1958,6 +1958,7 @@ fn web_presenter_panel(
                 let current_w = (current_h * aspect).min(left_w);
                 let next_h = (right_w / aspect).min(max_h * 0.62);
                 let next_w = (next_h * aspect).min(right_w);
+                let next_slide = show.state.peek_next(doc);
                 ui.horizontal(|ui| {
                     ui.vertical(|ui| {
                         ui.label(egui::RichText::new("CURRENT SLIDE").color(MUTED).size(11.0));
@@ -1966,7 +1967,7 @@ fn web_presenter_panel(
                     ui.add_space(gap);
                     ui.vertical(|ui| {
                         ui.label(egui::RichText::new("NEXT SLIDE").color(MUTED).size(11.0));
-                        presenter_preview(ctx, ui, show, doc, show.state.peek_next(doc), vec2(next_w, next_h), "End of show");
+                        presenter_preview(ctx, ui, show, doc, next_slide, vec2(next_w, next_h), "End of show");
                         ui.add_space(6.0);
                         ui.label(egui::RichText::new("SPEAKER NOTES").color(MUTED).size(11.0));
                         let notes = doc.slides.get(active).map(|s| s.notes_text()).unwrap_or_default();
