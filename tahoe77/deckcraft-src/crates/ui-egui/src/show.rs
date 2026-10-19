@@ -217,6 +217,22 @@ impl Show {
         }
     }
 
+    /// A live-edit update swaps document pixels without restarting slide timing,
+    /// projector sync, or the user's current/next slide selections.
+    #[cfg(target_arch = "wasm32")]
+    pub fn invalidate_live_edit(&mut self, doc: &Presentation, now: f64) {
+        self.tex = None;
+        self.next_tex = None;
+        self.prefetch = None;
+        self.timeline = None;
+        self.trans = None;
+        self.thumbs.clear();
+        self.presenter_previews.clear();
+        if !doc.slides.is_empty() && self.state.slide >= doc.slides.len() {
+            self.remote_goto(doc, doc.slides.len() - 1, now);
+        }
+    }
+
     /// Accept a synchronized audience/presenter slide selection without restarting the show.
     /// Transitions and media follow the same internal path as a manual slide jump.
     #[cfg(target_arch = "wasm32")]
@@ -1848,7 +1864,7 @@ fn presenter_preview(
     area: egui::Vec2,
     min_width: u32,
     empty: &str,
-    dimmed: bool,
+    opacity: f32,
 ) {
     let (slot, _) = ui.allocate_exact_size(area, Sense::hover());
     ui.painter().rect_filled(slot, 4.0, Color32::from_rgb(37, 39, 44));
@@ -1901,9 +1917,11 @@ fn presenter_preview(
             ui.painter().image(tex.id(), slide_rect, unit_uv(), Color32::WHITE);
             // Presenter-only treatment: emphasize the live slide without changing
             // the original slide pixels, thumbnails, or the audience output.
-            if dimmed {
+            if opacity < 1.0 {
+                // Preserve real slide data: darken only the presenter preview.
+                let shade = ((1.0 - opacity.clamp(0.0, 1.0)) * 255.0).round() as u8;
                 ui.painter().rect_filled(slide_rect, 0.0,
-                    Color32::from_rgba_unmultiplied(0, 0, 0, 58));
+                    Color32::from_rgba_unmultiplied(0, 0, 0, shade));
             }
         }
     } else {
@@ -1968,6 +1986,12 @@ fn web_presenter_panel(
                     }
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                         if presenter_button(ui, "End Show", false).clicked() { *keep = false; }
+                        if presenter_button(ui, "✎ Edit Live", false)
+                            .on_hover_text("Open a second editable PowerSlidePro window without stopping the audience show")
+                            .clicked()
+                        {
+                            ctx.data_mut(|d| d.insert_temp(egui::Id::new("tahoe-deckcraft-live-edit"), true));
+                        }
                         if presenter_button(ui, if full_grid { "Back to Presenter" } else { "All Slides ▦" }, full_grid).clicked() {
                             show.grid = !show.grid;
                         }
@@ -2067,14 +2091,16 @@ fn web_presenter_panel(
                 show.presenter_previews.retain(|(i, _, _)| {
                     *i == active || Some(*i) == next_slide || Some(*i) == second_slide
                 });
-                ui.horizontal(|ui| {
+                ui.horizontal_top(|ui| {
+                    // Align all slide labels and previews at the top of the row.
+                    // Ordinary horizontal layout centers the shorter next-slide previews.
                     // Use one deliberate gap, not extra default widget spacing.
                     ui.spacing_mut().item_spacing.x = gap;
                     ui.vertical(|ui| {
                         ui.set_width(left_w);
                         ui.label(egui::RichText::new("CURRENT SLIDE").color(MUTED).size(11.0));
                         presenter_preview(ctx, ui, show, doc, Some(active),
-                            vec2(current_w, current_h), 1600, "", false);
+                            vec2(current_w, current_h), 1600, "", 1.0);
                     });
                     if next_horizontal {
                         // Side-by-side upcoming slides on wide windows.
@@ -2084,13 +2110,13 @@ fn web_presenter_panel(
                                 ui.set_width(next_column_w);
                                 ui.label(egui::RichText::new("NEXT SLIDE 1").color(MUTED).size(11.0));
                                 presenter_preview(ctx, ui, show, doc, next_slide,
-                                    vec2(next_w, next_h), 960, "End of show", true);
+                                    vec2(next_w, next_h), 960, "End of show", 0.90);
                             });
                             ui.vertical(|ui| {
                                 ui.set_width(next_column_w);
                                 ui.label(egui::RichText::new("NEXT SLIDE 2").color(MUTED).size(11.0));
                                 presenter_preview(ctx, ui, show, doc, second_slide,
-                                    vec2(next_w, next_h), 960, "End of show", true);
+                                    vec2(next_w, next_h), 960, "End of show", 0.60);
                             });
                         });
                     } else {
@@ -2099,11 +2125,11 @@ fn web_presenter_panel(
                             ui.set_width(right_w);
                             ui.label(egui::RichText::new("NEXT SLIDE 1").color(MUTED).size(11.0));
                             presenter_preview(ctx, ui, show, doc, next_slide,
-                                vec2(next_w, next_h), 960, "End of show", true);
+                                vec2(next_w, next_h), 960, "End of show", 0.90);
                             ui.add_space(5.0);
                             ui.label(egui::RichText::new("NEXT SLIDE 2").color(MUTED).size(11.0));
                             presenter_preview(ctx, ui, show, doc, second_slide,
-                                vec2(next_w, next_h), 960, "End of show", true);
+                                vec2(next_w, next_h), 960, "End of show", 0.60);
                         });
                     }
                 });
