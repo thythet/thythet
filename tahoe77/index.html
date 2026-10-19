@@ -4003,6 +4003,28 @@ function zoomDesktopApp(id){
  if(el.dataset.zoomed==="1"){el.dataset.zoomed="0";restoreDesktopAppState(id)}
  else{saveDesktopAppState(id);el.dataset.zoomed="1";Object.assign(el.style,{left:"1vw",top:"1vh",transform:"none",width:"98vw",height:"98dvh"})}
 }
+let deckcraftTitleDrag=null;
+function handlePowerSlideProTitleDrag(e){
+ if(e.origin!==location.origin||e.source!==$("#deckCraftFrame")?.contentWindow)return;
+ const d=e.data||{},el=$("#deckCraftWindow"),frame=$("#deckCraftFrame");
+ if(!el||!frame||innerWidth<=760||!el.classList.contains("open"))return;
+ if(!["start","move","end"].includes(d.phase)||!Number.isFinite(d.x)||!Number.isFinite(d.y))return;
+ const fr=frame.getBoundingClientRect(),rect=el.getBoundingClientRect();
+ const cursorX=fr.left+d.x*fr.width,cursorY=fr.top+d.y*fr.height;
+ if(d.phase==="start"){
+  Object.assign(el.style,{left:rect.left+"px",top:rect.top+"px",width:rect.width+"px",height:rect.height+"px",transform:"none"});
+  deckcraftTitleDrag={dx:cursorX-rect.left,dy:cursorY-rect.top};
+  el.classList.add("dragging");focusTahoeWindow(el);
+ }else if(deckcraftTitleDrag){
+  if(d.phase==="move"){
+   const x=clamp(cursorX-deckcraftTitleDrag.dx,0,Math.max(0,innerWidth-rect.width));
+   const y=clamp(cursorY-deckcraftTitleDrag.dy,0,Math.max(0,innerHeight-rect.height));
+   el.style.left=x+"px";el.style.top=y+"px";
+  }else{
+   deckcraftTitleDrag=null;el.classList.remove("dragging");saveDesktopAppState("deckcraft");
+  }
+ }
+}
 function bindDesktopAppWindow(id){
  const c=desktopApps[id],el=$(c.window);if(!el)return;let drag=null,resize=null;
  const pixel=()=>{const r=el.getBoundingClientRect();Object.assign(el.style,{left:r.left+"px",top:r.top+"px",width:r.width+"px",height:r.height+"px",transform:"none"});return r};
@@ -4034,6 +4056,7 @@ function bindDesktopApps(){
    if(d.type==="tahoe-powerslide-finder"){if(e.source!==$("#powerSlideFrame")?.contentWindow)return;const reply=payload=>e.source?.postMessage({type:"tahoe-powerslide-finder-result",requestId:d.requestId,...payload},"*");try{if(d.action==="list")reply({ok:true,...await powerslideFinderList()});else if(d.action==="upsert")reply({ok:true,result:await powerslideFinderUpsert(d.project||{})});else if(d.action==="delete"){await powerslideFinderDelete(d.projectId);reply({ok:true})}else if(d.action==="open-folder"){openPowerslideProjectsFinder();reply({ok:true})}else reply({ok:false,error:"Unknown Finder action"})}catch(err){reply({ok:false,error:err?.message||"Finder operation failed"})}return}
    if(d.type==="tahoe-bible-state"){const t=$("#bibleChromeTitle"),sub=$("#bibleChromeSub");if(t&&d.title)t.textContent=d.title;if(sub&&d.subtitle)sub.textContent=d.subtitle;return}
    if(d.type==="tahoe-powerslide-state"){const t=$("#powerChromeTitle"),sub=$("#powerChromeSub");if(t&&d.title)t.textContent=d.title;if(sub&&d.subtitle)sub.textContent=d.subtitle;return}
+   if(d.type==="tahoe-deckcraft-title-drag"){handlePowerSlideProTitleDrag(e);return}
    if(d.type==="tahoe-deckcraft-present"){if(e.source!==$("#deckCraftFrame")?.contentWindow||e.origin!==location.origin)return;const el=$("#deckCraftWindow");if(!el)return;
       // Tahoe77 keeps Presenter View inside the app window. Only the separate
       // audience browser window goes fullscreen; never stretch or cover the editor.
@@ -4042,6 +4065,7 @@ function bindDesktopApps(){
       focusTahoeWindow(el);updateFullscreenUI();return}
    if(d.type!=="tahoe-app-command")return;
    const id=d.app;if(!desktopApps[id])return;
+   if(d.command==="live-edit"&&id==="deckcraft"){window.TahoePowerSlideLive?.open?.();return}
    if(d.command==="close"||d.command==="minimize")closeDesktopApp(id);
    else if(d.command==="zoom")zoomDesktopApp(id);
    else if(d.command==="fullscreen")toggleDesktopFullscreen(id);
@@ -6452,6 +6476,7 @@ addEventListener("resize",()=>{pinDashboardLauncher();
 <script src="assets/js/powerslidepro-cloud.js?v=77compact-dialogs"></script>
 <script src="assets/js/powerslidepro-save-v93.js?v=77compact-dialogs"></script>
 <script src="assets/js/powerslidepro-present-v1.js?v=77presenterhq"></script>
+<script src="assets/js/powerslidepro-live-v1.js?v=77liveedit1"></script>
 
 <script type="module">
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
