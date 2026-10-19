@@ -31,6 +31,7 @@ thread_local! {
     static LIVE_SNAPSHOT_PENDING: RefCell<bool> = const { RefCell::new(false) };
     static LIVE_SAVE_PENDING: RefCell<bool> = const { RefCell::new(false) };
     static LIVE_FLUSH_PENDING: RefCell<bool> = const { RefCell::new(false) };
+    static LIVE_FORCE_PENDING: RefCell<bool> = const { RefCell::new(false) };
 }
 
 /// Receive only same-origin messages from Tahoe's parent app window.
@@ -82,6 +83,7 @@ fn install_cloud_open_receiver() {
                     "snapshot" => LIVE_SNAPSHOT_PENDING.with(|p| *p.borrow_mut() = true),
                     "save" => LIVE_SAVE_PENDING.with(|p| *p.borrow_mut() = true),
                     "flushsave" => LIVE_FLUSH_PENDING.with(|p| *p.borrow_mut() = true),
+                    "flush" => LIVE_FORCE_PENDING.with(|p| *p.borrow_mut() = true),
                     "load" | "update" => {
                         let (name, data) = (val("name"), val("data"));
                         let index = val("index").parse::<usize>().unwrap_or(0);
@@ -317,8 +319,15 @@ impl eframe::App for WebShell {
                 }
             }
         });
+        LIVE_FORCE_PENDING.with(|p| {
+            if std::mem::replace(&mut *p.borrow_mut(), false) && self.live_mode && self.live_loaded {
+                self.live_send_due = 0.0;
+                self.send_live_edit("change");
+            }
+        });
         LIVE_FLUSH_PENDING.with(|p| {
             if std::mem::replace(&mut *p.borrow_mut(), false) && self.live_mode && self.live_loaded {
+                self.live_send_due = 0.0;
                 self.send_live_edit("save");
             }
         });
