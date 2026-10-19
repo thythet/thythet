@@ -1,0 +1,62 @@
+name: Export Tahoe77 Test ZIP
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/export-tahoe77-zip.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout latest Tahoe77 source
+        uses: actions/checkout@v4
+
+      - name: Bundle Tahoe77 and required thechat sibling
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os, zipfile, hashlib
+          from pathlib import Path
+
+          package = Path("tahoe77-full-test.zip")
+          dirs = [Path("tahoe77"), Path("chat22")]
+          for root in dirs:
+              if not root.is_dir():
+                  raise SystemExit(f"Required directory missing: {root}")
+          count = 0
+          with zipfile.ZipFile(package, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=6, allowZip64=True) as zf:
+              for root in dirs:
+                  for path in sorted(root.rglob("*")):
+                      if path.is_file():
+                          zf.write(path, arcname=path.as_posix())
+                          count += 1
+              zf.writestr("README-TAHOE77-TEST.txt",
+                  "Tahoe77 complete testing package (GitHub main).\n"
+                  "Includes tahoe77/ and its required sibling chat22/.\n"
+                  "Serve from the folder containing both subfolders:\n"
+                  "  python3 -m http.server 8000\n"
+                  "Then open http://localhost:8000/tahoe77/ in a browser.\n"
+                  "Google sign-in and notifications may require HTTPS and/or valid authorized domains.\n"
+                  "Do not open Tahoe77 by double-clicking index.html (file://).\n")
+          with zipfile.ZipFile(package) as zf:
+              bad = zf.testzip()
+              if bad:
+                  raise SystemExit(f"Archive CRC check failed: {bad}")
+          h = hashlib.sha256(package.read_bytes()).hexdigest()
+          print(f"Exported {count} files | {package.stat().st_size / 1024 / 1024:.2f} MiB | SHA256 {h}")
+          PY
+
+      - name: Upload test ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: tahoe77-full-test
+          path: tahoe77-full-test.zip
+          compression-level: 0
+          retention-days: 7
+          if-no-files-found: error
