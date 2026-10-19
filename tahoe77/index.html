@@ -1154,6 +1154,27 @@ body.theme-dark .bible-reader-head,body.theme-navy .bible-reader-head{background
 #powerSlideLauncher{left:162px;bottom:max(22px,env(safe-area-inset-bottom));color:#7759d9}
 #deckCraftLauncher{left:442px;bottom:max(22px,env(safe-area-inset-bottom));color:#20242b}
 #deckCraftLauncher img{width:38px;height:38px;object-fit:contain;border-radius:10px;pointer-events:none}
+#theChatLauncher{left:514px;bottom:max(22px,env(safe-area-inset-bottom));color:#087ac3}
+#theChatLauncher img{width:39px;height:39px;object-fit:contain;border-radius:11px;pointer-events:none}
+#theChatWindow{width:min(1240px,94vw);height:min(840px,90dvh);background:var(--glass-strong)}
+.thechat-tahoe-chrome{
+ position:absolute;z-index:10;top:0;left:0;right:0;height:43px;display:flex;align-items:center;gap:13px;
+ padding:0 14px;background:color-mix(in srgb,var(--glass-strong) 95%,transparent);
+ border-bottom:1px solid var(--line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+ color:var(--text);font:12px var(--app-font),system-ui,sans-serif;touch-action:none;user-select:none
+}
+.thechat-tahoe-chrome .traffic{display:flex;align-items:center;gap:9px;flex:none}
+.thechat-tahoe-title{display:flex;align-items:center;justify-content:center;gap:7px;flex:1;min-width:0;font-weight:650}
+.thechat-tahoe-title img{width:19px;height:19px;object-fit:contain;border-radius:5px}
+.thechat-tahoe-chrome button.thechat-extra{width:28px;height:28px;display:grid;place-items:center;border:0;border-radius:7px;color:var(--text);background:transparent;cursor:pointer;font-size:17px}
+.thechat-tahoe-chrome button.thechat-extra:hover{background:rgba(var(--accent-rgb),.12)}
+#theChatFrame{top:43px;height:calc(100% - 43px);background:#e8f6fb}
+#theChatWindow .desktop-app-drag-edge.top{display:none}
+@media(max-width:760px){
+ #theChatLauncher{left:14px;bottom:max(86px,calc(env(safe-area-inset-bottom) + 75px))}
+ .thechat-tahoe-chrome{height:42px;padding:0 10px}
+ #theChatFrame{top:42px;height:calc(100% - 42px)}
+}
 .desktop-app-window{
  position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:24;display:none;
  width:min(1220px,93vw);height:min(820px,89dvh);min-width:720px;min-height:500px;
@@ -3292,6 +3313,7 @@ body.theme-gray .desktop-context-menu{background:rgba(229,232,235,.9)}
 <button class="desktop-app-launcher" id="powerSlideNextLauncher" aria-label="Open PowerSlide Next" title="PowerSlide Next"><i class="ri-slideshow-4-fill"></i></button>
 <button class="desktop-app-launcher" id="allSongNextLauncher" aria-label="Open AllSong" title="AllSong"><i class="ri-music-2-fill"></i></button>
 <button class="desktop-app-launcher" id="deckCraftLauncher" aria-label="Open PowerSlidePro" title="PowerSlidePro"><img src="assets/powerslidepro-logo.png" alt=""></button>
+<button class="desktop-app-launcher" id="theChatLauncher" aria-label="Open thechat" title="thechat"><img src="../chat22/icons/icon-192.png" alt=""></button>
 <div class="desktop-context-menu" id="desktopContextMenu" role="menu" aria-label="Desktop arrangement">
   <div class="desktop-menu-title">Desktop Icons</div>
   <button type="button" data-desktop-action="auto"><i class="ri-layout-grid-fill"></i><span>Auto Arrange</span><span class="desktop-check"></span></button>
@@ -3453,6 +3475,24 @@ body.theme-gray .desktop-context-menu{background:rgba(229,232,235,.9)}
 <div id="accessGate"><div class="gateCard"><img alt="" class="gateLogo" src="../../assets/icon-192.png"/><h2>សូមចូលគណនី</h2><p>ការប្រើប្រាស់ដោយមិនចូលគណនីត្រូវបានបិទដោយ Admin។ សូមចូលដោយ Google ដើម្បីបន្ត។</p><button class="primary" id="gateGoogle">ចូលដោយ Google</button></div></div>
 </div>
 <button class="desktop-app-launcher" id="bibleNextLauncher" aria-label="Open Bible 2" title="Bible 2"><i class="ri-book-2-fill"></i></button>
+
+<!-- thechat runs from its existing /chat22/ application. No copy, no separate database. -->
+<section class="desktop-app-window thechat-desktop-window" id="theChatWindow" aria-label="thechat">
+  <header class="thechat-tahoe-chrome" data-app-drag>
+    <div class="traffic" aria-label="Window controls">
+      <button class="traffic-dot" type="button" id="theChatWinClose" aria-label="Close thechat" title="Close"></button>
+      <button class="traffic-dot" type="button" id="theChatWinMin" aria-label="Minimize thechat" title="Minimize"></button>
+      <button class="traffic-dot" type="button" id="theChatWinZoom" aria-label="Zoom thechat" title="Zoom"></button>
+    </div>
+    <span class="thechat-tahoe-title"><img src="../chat22/icons/icon-192.png" alt=""><span>thechat</span></span>
+    <button class="thechat-extra" type="button" id="theChatOpenStandalone" aria-label="Open thechat in a new tab" title="Open original chat app in a new tab"><i class="ri-external-link-line" aria-hidden="true"></i></button>
+    <button class="thechat-extra" type="button" id="theChatWinFullscreen" aria-label="Toggle fullscreen" title="Fullscreen"><i class="ri-fullscreen-line" aria-hidden="true"></i></button>
+  </header>
+  <iframe id="theChatFrame" src="about:blank" data-src="../chat22/index.html" title="thechat messenger" loading="lazy" allow="microphone; camera; autoplay; clipboard-read; clipboard-write; fullscreen" allowfullscreen></iframe>
+  <i class="desktop-app-drag-edge bottom" data-app-drag></i><i class="desktop-app-drag-edge left" data-app-drag></i><i class="desktop-app-drag-edge right" data-app-drag></i>
+  <i class="desktop-app-resize n" data-app-resize="n"></i><i class="desktop-app-resize s" data-app-resize="s"></i><i class="desktop-app-resize w" data-app-resize="w"></i><i class="desktop-app-resize e" data-app-resize="e"></i>
+  <i class="desktop-app-resize nw" data-app-resize="nw"></i><i class="desktop-app-resize ne" data-app-resize="ne"></i><i class="desktop-app-resize sw" data-app-resize="sw"></i><i class="desktop-app-resize se" data-app-resize="se"></i>
+</section>
 
 <section class="desktop-app-window deckcraft-desktop-window" id="deckCraftWindow" aria-label="PowerSlidePro">
   <!-- Tahoe compatibility controls (hidden): window actions are now in PowerSlidePro's native quick toolbar. -->
@@ -3954,7 +3994,8 @@ function openPowerslideProjectsFinder(){if(isProReadOnly()){desktopAppAction("po
 const desktopApps={
  bible:{window:"#bibleWindow",frame:"#bibleFrame",launcher:"#bibleLauncher",toolbar:"#openBibleBtn",stateKey:"bibleWindowState",launcherKey:"bibleLauncherPos",title:"Bible 1954"},
  powerslide:{window:"#powerSlideWindow",frame:"#powerSlideFrame",launcher:"#powerSlideLauncher",toolbar:"#openPowerSlideBtn",stateKey:"powerSlideWindowState",launcherKey:"powerSlideLauncherPos",title:"PowerSlide"},
- deckcraft:{window:"#deckCraftWindow",frame:"#deckCraftFrame",launcher:"#deckCraftLauncher",stateKey:"deckCraftWindowState",launcherKey:"deckCraftLauncherPos",title:"PowerSlidePro"}
+ deckcraft:{window:"#deckCraftWindow",frame:"#deckCraftFrame",launcher:"#deckCraftLauncher",stateKey:"deckCraftWindowState",launcherKey:"deckCraftLauncherPos",title:"PowerSlidePro"},
+ thechat:{window:"#theChatWindow",frame:"#theChatFrame",launcher:"#theChatLauncher",stateKey:"theChatWindowState",launcherKey:"theChatLauncherPos",title:"thechat"}
 };
 function themeBridgePayload(){
  return {
@@ -3979,7 +4020,7 @@ function ensureDesktopAppLoaded(id){const c=desktopApps[id],f=$(c?.frame);if(!f)
 function sendDesktopAppTheme(id){const c=desktopApps[id],f=$(c?.frame);if(f?.contentWindow&&f.src!=="about:blank")try{f.contentWindow.postMessage(themeBridgePayload(),"*")}catch{}}
 function syncAllAppThemes(){Object.keys(desktopApps).forEach(sendDesktopAppTheme)}
 function desktopAppAction(id,action,value){const c=desktopApps[id],f=$(c?.frame);if(!f?.contentWindow)return;f.contentWindow.postMessage({type:id==="bible"?"tahoe-bible-action":id==="powerslide"?"tahoe-powerslide-action":"tahoe-deckcraft-action",action,value},"*")}
-function updateFullscreenUI(){Object.entries(desktopApps).forEach(([id,c])=>{const el=$(c.window),active=document.fullscreenElement===el||el?.classList.contains("app-fullscreen-fallback");if(id==="bible"){el?.classList.toggle("fullscreen-reading",active);const i=$("#bibleChromeFullscreen i");if(i)i.className=active?"ri-fullscreen-exit-line":"ri-fullscreen-line";desktopAppAction("bible","fullscreen-reader",active)}else if(id==="powerslide"){el?.classList.toggle("fullscreen-workspace",active);const i=$("#powerChromeFullscreen i");if(i)i.className=active?"ri-fullscreen-exit-line":"ri-fullscreen-line";desktopAppAction("powerslide","fullscreen-workspace",active)}else if(id==="deckcraft"){const i=$("#deckCraftFullscreen i");if(i)i.className=active?"ri-fullscreen-exit-line":"ri-fullscreen-line"}})}
+function updateFullscreenUI(){Object.entries(desktopApps).forEach(([id,c])=>{const el=$(c.window),active=document.fullscreenElement===el||el?.classList.contains("app-fullscreen-fallback");if(id==="bible"){el?.classList.toggle("fullscreen-reading",active);const i=$("#bibleChromeFullscreen i");if(i)i.className=active?"ri-fullscreen-exit-line":"ri-fullscreen-line";desktopAppAction("bible","fullscreen-reader",active)}else if(id==="powerslide"){el?.classList.toggle("fullscreen-workspace",active);const i=$("#powerChromeFullscreen i");if(i)i.className=active?"ri-fullscreen-exit-line":"ri-fullscreen-line";desktopAppAction("powerslide","fullscreen-workspace",active)}else if(id==="deckcraft"){const i=$("#deckCraftFullscreen i");if(i)i.className=active?"ri-fullscreen-exit-line":"ri-fullscreen-line"}else if(id==="thechat"){const i=$("#theChatWinFullscreen i");if(i)i.className=active?"ri-fullscreen-exit-line":"ri-fullscreen-line"}})}
 async function toggleDesktopFullscreen(id){const c=desktopApps[id],el=$(c?.window);if(!el)return;try{if(document.fullscreenElement===el){await document.exitFullscreen();return}if(document.fullscreenElement)await document.exitFullscreen();if(el.requestFullscreen){await el.requestFullscreen({navigationUI:"hide"});return}}catch{}el.classList.toggle("app-fullscreen-fallback");updateFullscreenUI()}
 document.addEventListener("fullscreenchange",updateFullscreenUI);
 function restoreDesktopAppState(id){
@@ -3997,7 +4038,7 @@ function openDesktopApp(id){
  // Loading an iframe while its Tahoe window is display:none can leave PowerSlidePro at 0×0 and stuck during renderer startup.
  requestAnimationFrame(()=>{ensureDesktopAppLoaded(id);setTimeout(()=>sendDesktopAppTheme(id),0)})
 }
-function closeDesktopApp(id){const c=desktopApps[id],el=$(c?.window);el?.classList.remove("open");$(c?.launcher)?.classList.remove("active");if(id==="deckcraft")el?.classList.remove("deckcraft-present-mode","app-fullscreen-fallback")}
+function closeDesktopApp(id){const c=desktopApps[id],el=$(c?.window);el?.classList.remove("open");$(c?.launcher)?.classList.remove("active");if(id==="deckcraft")el?.classList.remove("deckcraft-present-mode","app-fullscreen-fallback");if(id==="thechat")el?.classList.remove("app-fullscreen-fallback")}
 function zoomDesktopApp(id){
  const c=desktopApps[id],el=$(c.window);if(!el)return;
  if(el.dataset.zoomed==="1"){el.dataset.zoomed="0";restoreDesktopAppState(id)}
@@ -4044,6 +4085,7 @@ function bindDesktopApps(){
  bindFloatingControl($("#bibleLauncher"),"bibleLauncherPos",()=>openDesktopApp("bible"),{left:92,bottom:22});
  bindFloatingControl($("#powerSlideLauncher"),"powerSlideLauncherPos",()=>openDesktopApp("powerslide"),{left:162,bottom:22});
  bindFloatingControl($("#deckCraftLauncher"),"deckCraftLauncherPos",()=>openDesktopApp("deckcraft"),{left:442,bottom:22});
+ bindFloatingControl($("#theChatLauncher"),"theChatLauncherPos",()=>openDesktopApp("thechat"),{left:514,bottom:22});
  $("#openBibleBtn").onclick=()=>openDesktopApp("bible");$("#openPowerSlideBtn").onclick=()=>openDesktopApp("powerslide");
  Object.keys(desktopApps).forEach(bindDesktopAppWindow);
  const bibleAction=a=>desktopAppAction("bible",a),powerAction=a=>desktopAppAction("powerslide",a);
@@ -4051,6 +4093,11 @@ function bindDesktopApps(){
  $("#bibleChromePrev").onclick=()=>bibleAction("prev");$("#bibleChromeNext").onclick=()=>bibleAction("next");$("#bibleChromeSearch").onclick=()=>bibleAction("search");$("#bibleChromeSettings").onclick=()=>bibleAction("settings");$("#bibleChromeFullscreen").onclick=()=>toggleDesktopFullscreen("bible");$("#bibleChromePicker").onclick=()=>bibleAction("picker");$("#bibleChromePower").onclick=()=>openDesktopApp("powerslide");
  $("#powerWinClose").onclick=()=>closeDesktopApp("powerslide");$("#powerWinMin").onclick=()=>closeDesktopApp("powerslide");$("#powerWinZoom").onclick=()=>zoomDesktopApp("powerslide");$("#powerChromeBible").onclick=()=>openDesktopApp("bible");$("#powerChromeLibrary").onclick=()=>powerAction("library");$("#powerChromeLibraryBtn").onclick=()=>powerAction("library");$("#powerChromeFullscreen").onclick=()=>toggleDesktopFullscreen("powerslide");
  $("#deckCraftClose").onclick=()=>closeDesktopApp("deckcraft");$("#deckCraftMin").onclick=()=>closeDesktopApp("deckcraft");$("#deckCraftZoom").onclick=()=>zoomDesktopApp("deckcraft");$("#deckCraftFullscreen").onclick=()=>toggleDesktopFullscreen("deckcraft");
+ $("#theChatWinClose").onclick=()=>closeDesktopApp("thechat");
+ $("#theChatWinMin").onclick=()=>closeDesktopApp("thechat");
+ $("#theChatWinZoom").onclick=()=>zoomDesktopApp("thechat");
+ $("#theChatWinFullscreen").onclick=()=>toggleDesktopFullscreen("thechat");
+ $("#theChatOpenStandalone").onclick=()=>window.open(new URL("../chat22/index.html",location.href).href,"_blank","noopener");
  window.addEventListener("message",async e=>{
    const d=e.data;if(!d)return;
    if(d.type==="tahoe-powerslide-finder"){if(e.source!==$("#powerSlideFrame")?.contentWindow)return;const reply=payload=>e.source?.postMessage({type:"tahoe-powerslide-finder-result",requestId:d.requestId,...payload},"*");try{if(d.action==="list")reply({ok:true,...await powerslideFinderList()});else if(d.action==="upsert")reply({ok:true,result:await powerslideFinderUpsert(d.project||{})});else if(d.action==="delete"){await powerslideFinderDelete(d.projectId);reply({ok:true})}else if(d.action==="open-folder"){openPowerslideProjectsFinder();reply({ok:true})}else reply({ok:false,error:"Unknown Finder action"})}catch(err){reply({ok:false,error:err?.message||"Finder operation failed"})}return}
@@ -4156,7 +4203,7 @@ dashboardResponsiveObserver.observe(win);
 addEventListener("resize",updateDashboardResponsiveState,{passive:true});
 requestAnimationFrame(updateDashboardResponsiveState);
 let tahoeFront="dashboard",tahoeZ=40;
-function allTahoeWindows(){return [win,$("#finderWindow"),$("#bibleWindow"),$("#powerSlideWindow")].filter(Boolean)}
+function allTahoeWindows(){return [win,$("#finderWindow"),$("#bibleWindow"),$("#powerSlideWindow"),$("#deckCraftWindow"),$("#theChatWindow")].filter(Boolean)}
 function focusTahoeWindow(target){
  tahoeZ++;
  allTahoeWindows().forEach(w=>{if(w!==target)w.style.zIndex="24"});
@@ -4549,30 +4596,30 @@ function applyProReadOnly(){
 
 function updateShellAccess(){
  const p=state.profile||{},owner=isOwnerAdmin(),logged=!!p.authenticated&&!p.anonymous,a=firebaseRuntime.currentAccess||{},blocked=!!a.blocked&&!owner,pro=!!a.pro&&!owner;
- const gate=$("#authGate"),portal=$("#userPortal"),finderLauncher=$("#finderLauncher"),bibleLauncher=$("#bibleLauncher"),bibleNextLauncher=$("#bibleNextLauncher"),powerLauncher=$("#powerSlideLauncher"),powerNextLauncher=$("#powerSlideNextLauncher"),allSongLauncher=$("#allSongNextLauncher"),deckCraftLauncher=$("#deckCraftLauncher");
+ const gate=$("#authGate"),portal=$("#userPortal"),finderLauncher=$("#finderLauncher"),bibleLauncher=$("#bibleLauncher"),bibleNextLauncher=$("#bibleNextLauncher"),powerLauncher=$("#powerSlideLauncher"),powerNextLauncher=$("#powerSlideNextLauncher"),allSongLauncher=$("#allSongNextLauncher"),deckCraftLauncher=$("#deckCraftLauncher"),theChatLauncher=$("#theChatLauncher");
  gate?.classList.toggle("hidden",logged);
  if(blocked){
    portal?.classList.remove("show");win.style.visibility="hidden";
-   [finderLauncher,bibleLauncher,bibleNextLauncher,powerLauncher,powerNextLauncher,allSongLauncher,deckCraftLauncher].forEach(x=>{if(x)x.style.display="none"});return
+   [finderLauncher,bibleLauncher,bibleNextLauncher,powerLauncher,powerNextLauncher,allSongLauncher,deckCraftLauncher,theChatLauncher].forEach(x=>{if(x)x.style.display="none"});return
  }
  if(owner){
    portal?.classList.remove("show");win.style.visibility="";
-   [finderLauncher,bibleLauncher,bibleNextLauncher,powerLauncher,powerNextLauncher,allSongLauncher,deckCraftLauncher].forEach(x=>{if(x)x.style.display=""});
+   [finderLauncher,bibleLauncher,bibleNextLauncher,powerLauncher,powerNextLauncher,allSongLauncher,deckCraftLauncher,theChatLauncher].forEach(x=>{if(x)x.style.display=""});
    win.classList.remove("pro-readonly");applyProReadOnly();return
  }
  if(logged&&pro){
    portal?.classList.remove("show");win.style.visibility="";
    if(finderLauncher)finderLauncher.style.display="";
-   if(bibleLauncher)bibleLauncher.style.display="";if(bibleNextLauncher)bibleNextLauncher.style.display="";if(powerLauncher)powerLauncher.style.display="";if(powerNextLauncher)powerNextLauncher.style.display="";if(allSongLauncher)allSongLauncher.style.display="";if(deckCraftLauncher)deckCraftLauncher.style.display="";
+   if(bibleLauncher)bibleLauncher.style.display="";if(bibleNextLauncher)bibleNextLauncher.style.display="";if(powerLauncher)powerLauncher.style.display="";if(powerNextLauncher)powerNextLauncher.style.display="";if(allSongLauncher)allSongLauncher.style.display="";if(deckCraftLauncher)deckCraftLauncher.style.display="";if(theChatLauncher)theChatLauncher.style.display="";
    applyProReadOnly();return
  }
  if(logged){
    win.classList.remove("pro-readonly");win.style.visibility="hidden";
-   [finderLauncher,bibleLauncher,bibleNextLauncher,powerLauncher,powerNextLauncher,allSongLauncher,deckCraftLauncher].forEach(x=>{if(x)x.style.display="none"});
+   [finderLauncher,bibleLauncher,bibleNextLauncher,powerLauncher,powerNextLauncher,allSongLauncher,deckCraftLauncher,theChatLauncher].forEach(x=>{if(x)x.style.display="none"});
    portal?.classList.add("show");renderUserPortal();return
  }
  portal?.classList.remove("show");win.classList.remove("pro-readonly");win.style.visibility="hidden";
- [finderLauncher,bibleLauncher,bibleNextLauncher,powerLauncher,powerNextLauncher,allSongLauncher,deckCraftLauncher].forEach(x=>{if(x)x.style.display="none"})
+ [finderLauncher,bibleLauncher,bibleNextLauncher,powerLauncher,powerNextLauncher,allSongLauncher,deckCraftLauncher,theChatLauncher].forEach(x=>{if(x)x.style.display="none"})
 }
 function renderUserPortal(){const p=state.profile||{},a=firebaseRuntime.currentAccess||{},mods=a.modules||{dashboard:true,finder:false},av=portalAvatarHTML(p),name=p.displayName||"User",email=p.email||"";["#userPortalTopAvatar","#userPortalAvatar"].forEach(sel=>{const el=$(sel);if(el)el.innerHTML=av});$("#userPortalTopName").textContent=name;$("#userPortalTopEmail").textContent=email;$("#userPortalName").textContent=name;$("#userPortalEmail").textContent=email;$("#userPortalAccess").innerHTML=`<span class="user-chip">${esc(a.role||"viewer")}</span>${a.pro?'<span class="user-chip pro">PRO</span>':""}`;const m=$("#userPortalModules");if(!m)return;m.innerHTML=`<article class="user-module"><i class="ri-user-3-line"></i><h3>My Dashboard</h3><p>Your account, role, access level, and profile status.</p></article>`+`<article class="user-module ${mods.finder?"":"locked"}"><i class="${mods.finder?"ri-folder-3-line":"ri-lock-line"}"></i><h3>File Finder</h3><p>${mods.finder?"View files shared by the administrator. Read-only access.":"The administrator has not enabled File Finder for this account."}</p>${mods.finder?'<button class="ff-btn primary" id="userOpenFinder">Open Files</button>':""}</article>`;$("#userOpenFinder")?.addEventListener("click",()=>{portal.classList.remove("show");openFinderWindow();$("#finderWindow").classList.add("user-readonly")})}
 function applyProfile(){
@@ -4701,6 +4748,7 @@ const DESKTOP_LAUNCHER_META=[
  {id:"allSongNextLauncher",key:"allSongNextLauncherPos",name:"AllSong",type:"content"},
  {id:"powerSlideNextLauncher",key:"powerSlideNextLauncherPos",name:"PowerSlide",type:"presentation"},
  {id:"deckCraftLauncher",key:"deckCraftLauncherPos",name:"PowerSlidePro",type:"presentation"},
+ {id:"theChatLauncher",key:"theChatLauncherPos",name:"thechat",type:"content"},
  {id:"bibleLauncher",key:"bibleLauncherPos",name:"Bible Legacy",type:"legacy"},
  {id:"powerSlideLauncher",key:"powerSlideLauncherPos",name:"PowerSlide Legacy",type:"legacy"},
  {id:"minimizedLauncher",key:"dashboardLauncherPos",name:"Dashboard",type:"system"}
@@ -4743,7 +4791,7 @@ function arrangeDesktopIcons(mode="auto",sort="type"){
  state.settings.desktopArrangeMode=mode;state.settings.desktopArrangeSort=sort;save();showToast(mode==="auto"?"Desktop icons arranged":`Icons arranged ${mode}`)
 }
 function resetDesktopIconLayout(){
- const bottomOrder=["finderLauncher","bibleNextLauncher","allSongNextLauncher","powerSlideNextLauncher","deckCraftLauncher","bibleLauncher","powerSlideLauncher"],mobile=innerWidth<=760,size=mobile?56:62,gap=mobile?8:10,left=mobile?14:14,bottom=mobile?14:22;
+ const bottomOrder=["finderLauncher","bibleNextLauncher","allSongNextLauncher","powerSlideNextLauncher","deckCraftLauncher","theChatLauncher","bibleLauncher","powerSlideLauncher"],mobile=innerWidth<=760,size=mobile?56:62,gap=mobile?8:10,left=mobile?14:14,bottom=mobile?14:22;
  bottomOrder.forEach((id,i)=>{const item=desktopLauncherItems(true).find(x=>x.id===id);if(!item)return;const el=item.el;setDesktopLauncherPoint(item,left+i*(size+gap),Math.max(4,innerHeight-el.offsetHeight-bottom),{persist:false,animate:true})});
  const dash=desktopLauncherItems(true).find(x=>x.id==="minimizedLauncher");if(dash)setDesktopLauncherPoint(dash,Math.max(4,innerWidth-(dash.el.offsetWidth||62)-(mobile?14:22)),mobile?14:22,{persist:false,animate:true});
  state.settings.desktopArrangeMode="default";state.settings.desktopArrangeSort="type";state.settings.desktopSnapToGrid=false;save();updateDesktopContextMenu();showToast("Desktop icon layout reset")
@@ -4751,7 +4799,7 @@ function resetDesktopIconLayout(){
 function arrangeDesktopLaunchers(){
  // Preserve per-user icon positions. Only assign Tahoe defaults when a launcher has never been positioned.
  const mobile=innerWidth<=760,size=mobile?56:62,gap=mobile?8:10,left=mobile?14:14,bottom=mobile?14:22;
- const ids=["finderLauncher","bibleNextLauncher","allSongNextLauncher","powerSlideNextLauncher","deckCraftLauncher","bibleLauncher","powerSlideLauncher"];
+ const ids=["finderLauncher","bibleNextLauncher","allSongNextLauncher","powerSlideNextLauncher","deckCraftLauncher","theChatLauncher","bibleLauncher","powerSlideLauncher"];
  ids.forEach((id,i)=>{const item=desktopLauncherItems(true).find(x=>x.id===id);if(!item||state.settings?.[item.key])return;const el=item.el;setDesktopLauncherPoint(item,left+i*(size+gap),Math.max(4,innerHeight-el.offsetHeight-bottom),{persist:false,animate:false})});
  if(!state.settings?.dashboardLauncherPos)pinDashboardLauncher()
 }
@@ -4908,7 +4956,7 @@ function firebasePathURL(){
  return `${db}/${path}.json${auth}`;
 }
 function globalSettingsPayload(){
- const localOnly=new Set(["fastMode","finderLauncherPos","bibleLauncherPos","powerSlideLauncherPos","bibleNextLauncherPos","powerSlideNextLauncherPos","allSongNextLauncherPos","deckCraftLauncherPos","dashboardLauncherPos","desktopSnapToGrid","desktopArrangeMode","desktopArrangeSort","bibleWindowState","powerSlideWindowState","deckCraftWindowState","preZoomSize","preZoomDim","preZoomPos","iconEditorTarget","bibleLast"]);
+ const localOnly=new Set(["fastMode","finderLauncherPos","bibleLauncherPos","powerSlideLauncherPos","bibleNextLauncherPos","powerSlideNextLauncherPos","allSongNextLauncherPos","deckCraftLauncherPos","theChatLauncherPos","dashboardLauncherPos","desktopSnapToGrid","desktopArrangeMode","desktopArrangeSort","bibleWindowState","powerSlideWindowState","deckCraftWindowState","theChatWindowState","preZoomSize","preZoomDim","preZoomPos","iconEditorTarget","bibleLast"]);
  return Object.fromEntries(Object.entries(state.settings||{}).filter(([k])=>!localOnly.has(k)));
 }
 function globalConfigPayload(){
@@ -4958,6 +5006,7 @@ function mergeGlobalConfig(g){
      powerSlideNextLauncherPos:state.settings?.powerSlideNextLauncherPos,
      allSongNextLauncherPos:state.settings?.allSongNextLauncherPos,
      deckCraftLauncherPos:state.settings?.deckCraftLauncherPos,
+     theChatLauncherPos:state.settings?.theChatLauncherPos,
      dashboardLauncherPos:state.settings?.dashboardLauncherPos,
      desktopSnapToGrid:state.settings?.desktopSnapToGrid,
      desktopArrangeMode:state.settings?.desktopArrangeMode,
@@ -4965,6 +5014,7 @@ function mergeGlobalConfig(g){
      bibleWindowState:state.settings?.bibleWindowState,
      powerSlideWindowState:state.settings?.powerSlideWindowState,
      deckCraftWindowState:state.settings?.deckCraftWindowState,
+     theChatWindowState:state.settings?.theChatWindowState,
      preZoomSize:state.settings?.preZoomSize,preZoomDim:state.settings?.preZoomDim,preZoomPos:state.settings?.preZoomPos,
      iconEditorTarget:state.settings?.iconEditorTarget
    };
@@ -6230,6 +6280,7 @@ function handlePwaLaunchShortcut(){
  else if(target==="powerslide")requestAnimationFrame(()=>setTimeout(()=>window.TahoePowerSlideNext?.open?.(),520));
  else if(target==="allsong")requestAnimationFrame(()=>setTimeout(()=>window.TahoeAllSong?.open?.(),560));
  else if(target==="deckcraft")requestAnimationFrame(()=>setTimeout(()=>openDesktopApp("deckcraft"),500));
+ else if(target==="thechat")requestAnimationFrame(()=>setTimeout(()=>openDesktopApp("thechat"),480));
  else if(target==="powerslide-legacy")requestAnimationFrame(()=>setTimeout(()=>openDesktopApp("powerslide"),450));
 }
 window.addEventListener("load",handlePwaLaunchShortcut,{once:true});
@@ -6250,7 +6301,7 @@ tahoeSafeInit("finder controls",()=>ffBind());
 tahoeSafeInit("desktop apps",()=>bindDesktopApps());
 tahoeSafeInit("finder rendering",()=>{syncFinderTahoeStyle();ffRender()});
 tahoeSafeInit("finder window restore",()=>{if(ff.window&&innerWidth>760){const fw=$("#finderWindow");Object.assign(fw.style,ff.window);syncFinderTahoeStyle()}});
-tahoeSafeInit("app windows restore",()=>{for(const id of ["bible","powerslide","deckcraft"])tahoeSafeInit("restore "+id,()=>restoreDesktopAppState(id));arrangeDesktopLaunchers();bindDesktopContextMenu()});
+tahoeSafeInit("app windows restore",()=>{for(const id of ["bible","powerslide","deckcraft","thechat"])tahoeSafeInit("restore "+id,()=>restoreDesktopAppState(id));arrangeDesktopLaunchers();bindDesktopContextMenu()});
 focusTahoeWindow(win);
 win.addEventListener("pointerdown",()=>focusTahoeWindow(win),{capture:true});
 $("#finderWindow").addEventListener("pointerdown",()=>focusTahoeWindow($("#finderWindow")),{capture:true});
