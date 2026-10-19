@@ -75,7 +75,7 @@ html.tahoe-recovery .toolbar::before{display:none!important}
   --fade-pos-2:50%;--fade-pos-3:100%;--fade-pos-4:100%;
   --shadow:0 35px 95px rgba(21,49,75,.28);
   --ease:cubic-bezier(.2,.8,.2,1);
-  --app-font:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Noto Sans Khmer","Kantumruy Pro","Segoe UI",sans-serif;
+  --app-font:"Inter","Noto Sans Khmer","Kantumruy Pro",sans-serif;
   --khmer-font:"Noto Sans Khmer","Kantumruy Pro","Khmer OS System",sans-serif;
   --body-font-weight:400;
   --title-font-weight:700;
@@ -3145,6 +3145,16 @@ body.theme-dark .wall-admin-post,body.theme-navy .wall-admin-post{border-color:r
 @media(max-width:760px){.wall-admin-post{grid-template-columns:1fr}.wall-admin-post .editor-control{grid-template-columns:1fr}.wallpaper-library-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .window.dash-narrow .wall-admin-post{grid-template-columns:1fr!important}.window.dash-narrow .wall-admin-post .editor-control{grid-template-columns:1fr!important}
 
+
+/* Keep Tahoe78's selected flower wallpaper even in low-power Fast Mode. */
+.wallpaper-layer{background-image:url("assets/wallpaper-default.png");background-size:cover;background-position:center}
+html.fast-mode body.theme-light .wallpaper-layer,
+html.fast-mode body.theme-dark .wallpaper-layer,
+html.fast-mode body.theme-gray .wallpaper-layer,
+html.fast-mode body.theme-navy .wallpaper-layer{
+ background:url("assets/wallpaper-default.png") center / cover no-repeat!important;
+ opacity:1!important;filter:none!important
+}
 </style>
 <link id="psnKhmerFontLibrary" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Bayon&family=Content:wght@400;700&family=Dangrek&family=Freehand&family=Hanuman:wght@400;700&family=Kantumruy+Pro:wght@400;600;700&family=Khmer&family=Koulen&family=Metal&family=Moul&family=Moulpali&family=Noto+Sans+Khmer:wght@400;600;700&family=Noto+Serif+Khmer:wght@400;600;700&family=Odor+Mean+Chey&family=Preahvihear&family=Siemreap&family=Taprom&display=swap">
 
@@ -4204,13 +4214,13 @@ window.addEventListener("error",e=>{
 window.addEventListener("unhandledrejection",e=>console.error("[Tahoe promise]",e.reason||e));
 
 const backBtn=$("#backBtn"),forwardBtn=$("#forwardBtn"),toolbarTitle=$("#toolbarTitle");
-const storeKey="tahoeAdminPro.v72";
+const storeKey="tahoe78AdminPro.v72";
 function readJSONStorage(key){
  try{return JSON.parse(localStorage.getItem(key)||"{}")||{}}catch{return {}}
 }
 function mapCount(v){return v&&typeof v==="object"?Object.keys(v).length:0}
 function loadTahoeSavedState(){
- const keys=["tahoeAdminPro.v72","tahoeAdminPro.v71","tahoeAdminPro.v70","tahoeAdminPro.v69","tahoeAdminPro.v68","tahoeAdminPro.v67","tahoeAdminPro.v66","tahoeAdminPro.v65","tahoeAdminPro.v64","tahoeAdminPro.v63","tahoeAdminPro.v62","tahoeAdminPro.v61","tahoeAdminPro.v60","tahoeAdminPro.v59","tahoeAdminPro.v58","tahoeAdminPro.v57","tahoeAdminPro.v56","tahoeAdminPro.v55","tahoeAdminPro.v54","tahoeAdminPro.v53","tahoeAdminPro.v52","tahoeAdminPro.v51","tahoeAdminPro.v50","tahoeAdminPro.v49","tahoeAdminPro.v48","tahoeAdminPro.v47","tahoeAdminPro.v46","tahoeAdminPro.v45","tahoeAdminPro.v44","tahoeAdminPro.v43","tahoeAdminPro.v42","tahoeAdminPro.v41","tahoeAdminPro.v40","tahoeAdminPro.v39","tahoeAdminPro.v38","tahoeAdminPro.v37","tahoeAdminPro.v36","tahoeAdminPro.v35","tahoeAdminPro.v34","tahoeAdminPro.v33","tahoeAdminPro.v32","tahoeAdminPro.v31","tahoeAdminPro.v30","tahoeAdminPro.v29","tahoeAdminPro.v28","tahoeAdminPro.v27","tahoeAdminPro.v26","tahoeAdminPro.v25","tahoeAdminPro.v24"];
+ const keys=["tahoe78AdminPro.v72","tahoeAdminPro.v72","tahoeAdminPro.v71","tahoeAdminPro.v70","tahoeAdminPro.v69","tahoeAdminPro.v68","tahoeAdminPro.v67","tahoeAdminPro.v66","tahoeAdminPro.v65","tahoeAdminPro.v64","tahoeAdminPro.v63","tahoeAdminPro.v62","tahoeAdminPro.v61","tahoeAdminPro.v60","tahoeAdminPro.v59","tahoeAdminPro.v58","tahoeAdminPro.v57","tahoeAdminPro.v56","tahoeAdminPro.v55","tahoeAdminPro.v54","tahoeAdminPro.v53","tahoeAdminPro.v52","tahoeAdminPro.v51","tahoeAdminPro.v50","tahoeAdminPro.v49","tahoeAdminPro.v48","tahoeAdminPro.v47","tahoeAdminPro.v46","tahoeAdminPro.v45","tahoeAdminPro.v44","tahoeAdminPro.v43","tahoeAdminPro.v42","tahoeAdminPro.v41","tahoeAdminPro.v40","tahoeAdminPro.v39","tahoeAdminPro.v38","tahoeAdminPro.v37","tahoeAdminPro.v36","tahoeAdminPro.v35","tahoeAdminPro.v34","tahoeAdminPro.v33","tahoeAdminPro.v32","tahoeAdminPro.v31","tahoeAdminPro.v30","tahoeAdminPro.v29","tahoeAdminPro.v28","tahoeAdminPro.v27","tahoeAdminPro.v26","tahoeAdminPro.v25","tahoeAdminPro.v24"];
  let base={};
  for(const k of keys){const v=readJSONStorage(k);if(Object.keys(v).length){base=structuredClone(v);break}}
  const maps=["sidebarIcons","pageIcons","actionIcons","inlineIcons","customText"];
@@ -4259,6 +4269,17 @@ const state={
   dim:saved.dim||null,
   settings:saved.settings||{}
 };
+// Tahoe78-only enforced appearance, leaving other apps' design settings alone.
+const TAHOE78_FLOWER_URL=new URL("assets/wallpaper-default.png",document.baseURI).href;
+function enforceTahoe78Appearance(){
+ const w=state.wallpaper||{};
+ const expected={src:TAHOE78_FLOWER_URL,fit:"cover",position:"center",opacity:100,presetGradient:""};
+ let changed=w.src!==expected.src||w.fit!==expected.fit||w.position!==expected.position||w.opacity!==100||w.presetGradient!=="";
+ if(changed)state.wallpaper=expected;
+ if(state.settings.fontPreset!=="inter"){state.settings.fontPreset="inter";changed=true}
+ return changed;
+}
+enforceTahoe78Appearance();
 let backend=JSON.parse(localStorage.getItem("tahoeAdminBackend")||'{"firebase":{},"cloudinary":{}}');
 const FIREBASE_DEFAULTS={
   apiKey:"AIzaSyCkph0lcF4gNRhtcXosBjTYVbXgNBZF0CE",
@@ -4413,6 +4434,8 @@ window.TahoeAdmin={
 };
 function emit(type,detail){bus.dispatchEvent(new CustomEvent(type,{detail}))}
 function save(){
+ const forced=enforceTahoe78Appearance();
+ if(forced){applyWallpaper();applyFontSystem()}
  localStorage.setItem(storeKey,JSON.stringify(state));cacheTouch();
  if(isProReadOnly()){saveProPreferences();queueProPreferencesSync()}
  if(isOwnerAdmin()&&firebaseRuntime.ready&&firebaseRuntime.hydrated)queueGlobalSync();
@@ -4499,10 +4522,11 @@ const PRO_PREF_ADMIN_SETTING_KEYS=new Set(["appTitle","faviconURL","accountSubti
 const PRO_PREF_SYSTEM_KEYS=["sidebar","radius","appWindowRadius","size","density","compact","smooth","blur","reduceTransparency","accent","topBlur","topOpacity","topBarHeight","topFadeDepth","searchBlur","fade1","fade2","fade3","fade4","fade5","fadePos2","fadePos3","fadePos4","pos","dim"];
 function proPrefsKey(){
  const uid=state.profile?.uid||firebaseRuntime.user?.uid||"default";
- return `tahoe.pro.prefs.v2.${uid}`
+ return `tahoe78.pro.prefs.v2.${uid}`
 }
-function legacyProPrefsKey(){const uid=state.profile?.uid||firebaseRuntime.user?.uid||"default";return `tahoe.pro.prefs.v1.${uid}`}
+function legacyProPrefsKey(){const uid=state.profile?.uid||firebaseRuntime.user?.uid||"default";return `tahoe78.pro.prefs.v1.${uid}`}
 function proPreferencesPayload(){
+ enforceTahoe78Appearance();
  const settings=Object.fromEntries(Object.entries(state.settings||{}).filter(([k])=>!PRO_PREF_ADMIN_SETTING_KEYS.has(k)));
  const system={};PRO_PREF_SYSTEM_KEYS.forEach(k=>system[k]=state[k]);
  return {version:2,updatedAt:Date.now(),writerUid:firebaseRuntime.user?.uid||state.profile?.uid||"",system,settings,wallpaper:structuredClone(state.wallpaper||{})}
@@ -4527,6 +4551,7 @@ function applyProPreferencesPayload(p,{renderUI=true}={}){
  if(p.system&&typeof p.system==="object")PRO_PREF_SYSTEM_KEYS.forEach(k=>{if(p.system[k]!==undefined)state[k]=structuredClone(p.system[k])});
  if(p.settings&&typeof p.settings==="object")Object.entries(p.settings).forEach(([k,v])=>{if(!PRO_PREF_ADMIN_SETTING_KEYS.has(k))state.settings[k]=structuredClone(v)});
  if(p.wallpaper&&typeof p.wallpaper==="object")state.wallpaper=structuredClone(p.wallpaper);
+ enforceTahoe78Appearance();
  try{localStorage.setItem(proPrefsKey(),JSON.stringify(p))}catch{}
  try{localStorage.setItem(storeKey,JSON.stringify(state))}catch{}
  applyState();applyAllDesktopLauncherPositions();updateDesktopContextMenu();
@@ -4924,6 +4949,7 @@ function normalizeImageURL(raw=""){
  return "";
 }
 function applyWallpaper(){
+ enforceTahoe78Appearance();
  const w=state.wallpaper||{};
  const layer=$("#wallpaperLayer");if(!layer)return;
  const src=normalizeImageURL(w.src||"");
@@ -4948,6 +4974,7 @@ function globalSettingsPayload(){
  return Object.fromEntries(Object.entries(state.settings||{}).filter(([k])=>!localOnly.has(k)));
 }
 function globalConfigPayload(){
+ enforceTahoe78Appearance();
  return {
    version:76,updatedAt:Date.now(),writerUid:firebaseRuntime.user?.uid||"",
    system:{
@@ -5011,6 +5038,7 @@ function mergeGlobalConfig(g){
    Object.entries(keepLocal).forEach(([k,v])=>{if(v!==undefined)state.settings[k]=v});
  }
  if(isProReadOnly())restoreProPreferences();
+ enforceTahoe78Appearance();
  localStorage.setItem(storeKey,JSON.stringify(state));
  applyLoginAppTitle(state.settings.appTitle||"Tahoe");
  applySiteFavicon(state.settings.faviconURL||"");
@@ -6123,6 +6151,7 @@ function applyRemoteFontLink(id,href){
  if(href){if(link.href!==href)link.href=href;link.media="all"}else link.removeAttribute("href")
 }
 function applyFontSystem(){
+ enforceTahoe78Appearance();
  const key=FONT_PRESETS[state.settings.fontPreset]?state.settings.fontPreset:"system";
  const cfg=FONT_PRESETS[key];
  const khKey=KHMER_FONT_PRESETS[state.settings.khmerFontPreset]?state.settings.khmerFontPreset:"auto";
@@ -6160,6 +6189,7 @@ function applyAppearanceTheme(){
 appearanceMedia.addEventListener?.("change",()=>{if((state.settings.appearanceMode||"light")==="auto")applyState()});
 
 function applyState(){
+ enforceTahoe78Appearance();
  applyAppearanceTheme();applyFontSystem();applyPerformanceMode();
  document.documentElement.style.setProperty("--sidebar",state.sidebar+"px");
  document.documentElement.style.setProperty("--window-radius",state.radius+"px");
@@ -6273,7 +6303,7 @@ function handlePwaLaunchShortcut(){
 }
 window.addEventListener("load",handlePwaLaunchShortcut,{once:true});
 
-if('serviceWorker' in navigator&&location.protocol!=='file:'){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=78initial',{scope:'./',updateViaCache:'none'}).catch(()=>{}),{once:true})}
+if('serviceWorker' in navigator&&location.protocol!=='file:'){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=78interflower1',{scope:'./',updateViaCache:'none'}).catch(()=>{}),{once:true})}
 
 /* Bind core controls before optional app modules: one failed module must never freeze Tahoe. */
 const tahoeSafeInit=(label,fn)=>{try{fn()}catch(e){console.error("[Tahoe startup] "+label,e);try{sessionStorage.setItem("tahoe.lastStartupError",label+": "+String(e?.message||e))}catch{}}};
