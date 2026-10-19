@@ -38,6 +38,10 @@ pub struct Show {
     pub zoom_arm: bool,
     zoom: Option<Zoom>,
     thumbs: Vec<(usize, TextureHandle)>,
+    /// Dedicated sharp presenter previews, separate from low-resolution grid thumbnails.
+    /// Keep at most the current and two upcoming slides in this cache.
+    #[cfg(target_arch = "wasm32")]
+    presenter_previews: Vec<(usize, (u32, u32), TextureHandle)>,
     pen: bool,
     /// A dot that follows the pointer and leaves no ink (`Cmd/Ctrl+L`).
     laser: bool,
@@ -190,6 +194,8 @@ impl Show {
             zoom_arm: false,
             zoom: None,
             thumbs: vec![],
+            #[cfg(target_arch = "wasm32")]
+            presenter_previews: vec![],
             pen: false,
             laser: false,
             strokes: vec![],
@@ -1833,17 +1839,66 @@ fn presenter_thumb(
 }
 
 #[cfg(target_arch = "wasm32")]
-fn presenter_preview(ctx: &egui::Context, ui: &mut Ui, show: &mut Show, doc: &Presentation,
-                     index: Option<usize>, area: egui::Vec2, empty: &str) {
+fn presenter_preview(
+    ctx: &egui::Context,
+    ui: &mut Ui,
+    show: &mut Show,
+    doc: &Presentation,
+    index: Option<usize>,
+    area: egui::Vec2,
+    min_width: u32,
+    empty: &str,
+) {
     let (slot, _) = ui.allocate_exact_size(area, Sense::hover());
     ui.painter().rect_filled(slot, 4.0, Color32::from_rgb(37, 39, 44));
     let slide_rect = fit(slot, doc);
     if let Some(index) = index {
-        // A cached thumbnail is always in the same aspect ratio as the original
-        // canvas; unlike the old code, it is not scaled to a distorted rectangle.
-        let tex = show.thumbs.iter().find(|(n, _)| *n == index).map(|(_, t)| t.clone())
-            .or_else(|| render_thumb(ctx, show, doc, index));
-        if let Some(tex) = tex { ui.painter().image(tex.id(), slide_rect, unit_uv(), Color32::WHITE); }
+        // Render at display/DPI resolution instead of upscaling the 320px filmstrip
+        // bitmap. Khmer glyphs otherwise lose their edges on the presenter monitor.
+        let ppp = ctx.pixels_per_point().clamp(1.0, 3.0);
+        let wanted_width = ((slide_rect.width() * ppp * 1.5).ceil() as u32)
+            .max(min_width).min(2400);
+        let wanted_height = ((wanted_width as f64 * doc.slide_size.height
+            / doc.slide_size.width.max(1.0)).round() as u32).max(1);
+        let target = crate::textures::fit_size((wanted_width, wanted_height),
+            crate::textures::max_side(ctx));
+
+        // The live current-slide texture contains animation steps and can be used
+        // directly if it already has sufficient physical pixels.
+        let live = show.tex.as_ref().and_then(|(key, tex)| {
+            (key.slide == index
+                && tex.size()[0] >= target.0 as usize
+                && tex.size()[1] >= target.1 as usize)
+                .then(|| tex.clone())
+        });
+        if live.is_none() {
+            let existing = show.presenter_previews.iter().position(|(i, _, _)| *i == index);
+            let upgrade = existing.is_none_or(|pos| {
+                let old = show.presenter_previews[pos].1;
+                old.0 < target.0 || old.1 < target.1
+            });
+            if upgrade {
+                let img = deckcraft_render::render_slide(doc, index, &RenderOpts {
+                    scale: target.0 as f64 / doc.slide_size.width.max(1.0),
+                    size: Some(target),
+                    ..Default::default()
+                });
+                let tex = crate::textures::upload(ctx, format!("presenter-hq-{index}"),
+                    crate::textures::to_color_image(&img, false));
+                if let Some(pos) = existing {
+                    show.presenter_previews[pos] = (index, target, tex);
+                } else {
+                    show.presenter_previews.push((index, target, tex));
+                }
+            }
+        }
+        let tex = live.or_else(|| {
+            show.presenter_previews.iter().find(|(i, _, _)| *i == index)
+                .map(|(_, _, tex)| tex.clone())
+        });
+        if let Some(tex) = tex {
+            ui.painter().image(tex.id(), slide_rect, unit_uv(), Color32::WHITE);
+        }
     } else {
         ui.painter().text(slot.center(), Align2::CENTER_CENTER, empty,
                           theme::font(13.0), Color32::from_rgb(189, 193, 202));
@@ -1876,6 +1931,11 @@ fn web_presenter_panel(
     let follow_id = egui::Id::new("tahoe77-presenter-follow-active");
     let follow = ctx.data(|d| d.get_temp::<usize>(follow_id)) != Some(active);
     if follow { ctx.data_mut(|d| d.insert_temp(follow_id, active)); }
+    // Keep the chosen filmstrip height between sessions; bound it on window resize.
+    let strip_id = egui::Id::new("tahoe77-presenter-filmstrip-height");
+    let max_strip = (full.height() * 0.46).max(90.0);
+    let mut strip_h = ctx.data(|d| d.get_persisted::<f32>(strip_id))
+        .unwrap_or(124.0).clamp(84.0, max_strip);
 
     egui::Area::new(egui::Id::new("tahoe77-web-presenter"))
         .order(egui::Order::Foreground)
@@ -1968,47 +2028,87 @@ fn web_presenter_panel(
                     }
                 });
                 ui.add_space(4.0);
-                let gap = 15.0;
-                let left_w = ((available - gap) * 0.62).max(95.0);
+                let gap = 16.0;
+                let left_w = ((available - gap) * 0.64).max(95.0);
                 let right_w = (available - left_w - gap).max(80.0);
                 let aspect = slide_aspect(doc).max(0.15);
-                // Allocate every preview at its original slide ratio. Height is
-                // limited by available vertical space; widths shrink together.
-                let max_h = (full.height() * 0.45).max(90.0);
+                let max_h = (full.height() - strip_h - 205.0)
+                    .max(100.0).min(full.height() * 0.64);
                 let current_h = (left_w / aspect).min(max_h);
                 let current_w = (current_h * aspect).min(left_w);
-                let next_h = (right_w / aspect).min(max_h * 0.62);
+                let next_h = (right_w / aspect).min((max_h - 48.0).max(60.0) / 2.0);
                 let next_w = (next_h * aspect).min(right_w);
                 let next_slide = show.state.peek_next(doc);
+                let second_slide = next_slide.and_then(|next| {
+                    visible.iter().copied().find(|&i| i > next)
+                });
+                // A dedicated 3-texture cache prevents the grid's 320px images
+                // from being stretched into large previews.
+                show.presenter_previews.retain(|(i, _, _)| {
+                    *i == active || Some(*i) == next_slide || Some(*i) == second_slide
+                });
                 ui.horizontal(|ui| {
                     ui.vertical(|ui| {
+                        ui.set_width(left_w);
                         ui.label(egui::RichText::new("CURRENT SLIDE").color(MUTED).size(11.0));
-                        presenter_preview(ctx, ui, show, doc, Some(active), vec2(current_w, current_h), "");
+                        presenter_preview(ctx, ui, show, doc, Some(active),
+                            vec2(current_w, current_h), 1600, "");
                     });
                     ui.add_space(gap);
                     ui.vertical(|ui| {
-                        ui.label(egui::RichText::new("NEXT SLIDE").color(MUTED).size(11.0));
-                        presenter_preview(ctx, ui, show, doc, next_slide, vec2(next_w, next_h), "End of show");
-                        ui.add_space(6.0);
-                        ui.label(egui::RichText::new("SPEAKER NOTES").color(MUTED).size(11.0));
-                        let notes = doc.slides.get(active).map(|s| s.notes_text()).unwrap_or_default();
-                        egui::ScrollArea::vertical().id_salt("tahoe77-presenter-notes")
-                            .max_height((max_h - next_h).max(50.0)).show(ui, |ui| {
-                                ui.label(egui::RichText::new(if notes.is_empty() { "No notes." } else { &notes })
-                                    .color(Color32::WHITE).size(14.0));
-                            });
+                        ui.set_width(right_w);
+                        ui.label(egui::RichText::new("NEXT SLIDE 1").color(MUTED).size(11.0));
+                        presenter_preview(ctx, ui, show, doc, next_slide,
+                            vec2(next_w, next_h), 960, "End of show");
+                        ui.add_space(5.0);
+                        ui.label(egui::RichText::new("NEXT SLIDE 2").color(MUTED).size(11.0));
+                        presenter_preview(ctx, ui, show, doc, second_slide,
+                            vec2(next_w, next_h), 960, "End of show");
                     });
                 });
-                ui.add_space(5.0);
-                ui.separator();
+                ui.add_space(4.0);
+                ui.label(egui::RichText::new("SPEAKER NOTES").color(MUTED).size(11.0));
+                let notes = doc.slides.get(active).map(|s| s.notes_text()).unwrap_or_default();
+                egui::ScrollArea::vertical().id_salt("tahoe77-presenter-notes")
+                    .max_height((full.height() - max_h - strip_h - 176.0).clamp(32.0, 95.0))
+                    .show(ui, |ui| {
+                        ui.label(egui::RichText::new(if notes.is_empty() { "No notes." } else { &notes })
+                            .color(Color32::WHITE).size(14.0));
+                    });
+
+                // Dragging upward increases the height of the filmstrip.
+                let (grip, drag) = ui.allocate_exact_size(vec2(available, 15.0), Sense::drag());
+                let center = grip.center();
+                ui.painter().line_segment(
+                    [pos2(grip.left(), center.y), pos2(grip.right(), center.y)],
+                    Stroke::new(1.0, Color32::from_rgb(72, 76, 84)));
+                ui.painter().rect_filled(
+                    Rect::from_center_size(center, vec2(68.0, 5.0)), 3.0,
+                    if drag.hovered() || drag.dragged() {
+                        Color32::from_rgb(164, 176, 197)
+                    } else {
+                        Color32::from_rgb(102, 110, 124)
+                    });
+                if drag.hovered() || drag.dragged() {
+                    ctx.set_cursor_icon(egui::CursorIcon::ResizeVertical);
+                }
+                if drag.dragged() {
+                    let dy = ctx.input(|i| i.pointer.delta().y);
+                    if dy.is_finite() && dy != 0.0 {
+                        strip_h = (strip_h - dy).clamp(84.0, max_strip);
+                        ctx.data_mut(|d| d.insert_persisted(strip_id, strip_h));
+                    }
+                }
                 ui.horizontal(|ui| {
                     ui.label(egui::RichText::new("SLIDE THUMBNAILS").color(Color32::WHITE).size(12.0).strong());
+                    ui.label(egui::RichText::new("↕ Drag divider to resize").color(MUTED).size(11.0));
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                         if presenter_button(ui, "▦ All Slides", false).clicked() { show.grid = true; }
                     });
                 });
-                let thumb_w = 130.0_f32;
-                let thumb_h = (thumb_w / aspect).clamp(50.0, 100.0);
+                let thumb_h = (strip_h - 29.0).max(50.0);
+                let thumb_w = (thumb_h * aspect).min(560.0);
+                let thumb_h = thumb_w / aspect;
                 let mut new_budget = 3usize;
                 egui::ScrollArea::horizontal()
                     .id_salt("tahoe77-presenter-filmstrip")
@@ -2025,9 +2125,6 @@ fn web_presenter_panel(
                             }
                         });
                     });
-                ui.add_space(2.0);
-                ui.label(egui::RichText::new("Mouse wheel browses thumbnails. Only a click, arrow key, or Next/Previous changes slides.")
-                    .color(MUTED).size(11.0));
             });
         });
     if grid_zoom != zoom { ctx.data_mut(|d| d.insert_temp(zoom_id, grid_zoom)); }
