@@ -2068,23 +2068,24 @@ fn web_presenter_panel(
                     *i == active || Some(*i) == next_slide || Some(*i) == second_slide
                 });
                 ui.horizontal(|ui| {
+                    // Use one deliberate gap, not extra default widget spacing.
+                    ui.spacing_mut().item_spacing.x = gap;
                     ui.vertical(|ui| {
                         ui.set_width(left_w);
                         ui.label(egui::RichText::new("CURRENT SLIDE").color(MUTED).size(11.0));
                         presenter_preview(ctx, ui, show, doc, Some(active),
                             vec2(current_w, current_h), 1600, "", false);
                     });
-                    ui.add_space(gap);
                     if next_horizontal {
                         // Side-by-side upcoming slides on wide windows.
                         ui.horizontal(|ui| {
+                            ui.spacing_mut().item_spacing.x = next_gap;
                             ui.vertical(|ui| {
                                 ui.set_width(next_column_w);
                                 ui.label(egui::RichText::new("NEXT SLIDE 1").color(MUTED).size(11.0));
                                 presenter_preview(ctx, ui, show, doc, next_slide,
                                     vec2(next_w, next_h), 960, "End of show", true);
                             });
-                            ui.add_space(next_gap);
                             ui.vertical(|ui| {
                                 ui.set_width(next_column_w);
                                 ui.label(egui::RichText::new("NEXT SLIDE 2").color(MUTED).size(11.0));
