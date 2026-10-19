@@ -258,6 +258,8 @@ pub struct UiState {
     pub zoom: Option<f32>,
     pub sorter_zoom: f32,
     pub recent: Vec<String>,
+    /// Last time a local presentation was opened or saved, for mixed Recent sorting.
+    pub recent_opened_at: HashMap<String, u64>,
     pub presenter_view: bool,
     pub ui_scale: f32,
     /// Format Shape pane: tab (`fill`, `effects`, `size`, `picture`, `text`).
@@ -296,6 +298,7 @@ impl Default for UiState {
             zoom: None,
             sorter_zoom: 1.0,
             recent: vec![],
+            recent_opened_at: HashMap::new(),
             presenter_view: true,
             ui_scale: 1.0,
             format_tab: "fill".into(),
@@ -348,12 +351,13 @@ impl UiState {
         self.recent.retain(|p| !p.is_empty() && p.len() <= 4096 && !p.contains('\0'));
         self.recent.dedup();
         self.recent.truncate(RECENT_MAX);
+        self.recent_opened_at.retain(|path, _| self.recent.contains(path));
         self
     }
 }
 
 /// How many recent files File › Open and Home list.
-pub const RECENT_MAX: usize = 12;
+pub const RECENT_MAX: usize = 200;
 
 /// UI-only commands (id, label, shortcut, params).
 pub const UI_COMMANDS: &[(&str, &str, Option<&str>, &str)] = &[
@@ -648,6 +652,7 @@ impl SlideApp {
     /// Drop a path from the Recent list (its file is gone or the user asked for it).
     pub fn forget_recent(&mut self, path: &str) {
         self.ui.recent.retain(|p| p != path);
+        self.ui.recent_opened_at.remove(path);
         self.recent_checked.remove(path);
     }
 
@@ -1193,7 +1198,12 @@ impl SlideApp {
         self.recent_checked.remove(path);
         self.ui.recent.retain(|p| p != path);
         self.ui.recent.insert(0, path.to_string());
+        let touched = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|elapsed| elapsed.as_millis() as u64).unwrap_or(0);
+        self.ui.recent_opened_at.insert(path.to_string(), touched);
         self.ui.recent.truncate(RECENT_MAX);
+        self.ui.recent_opened_at.retain(|p, _| self.ui.recent.contains(p));
         self.ui.view = ViewMode::Normal;
     }
 
@@ -1274,8 +1284,7 @@ impl SlideApp {
                     match self.session.execute("file.saveAs", &json!({"path": path})) {
                         Ok(_) => {
                             self.set_status(format!("Saved {path}"));
-                            self.ui.recent.retain(|p| *p != path);
-                            self.ui.recent.insert(0, path);
+                            self.note_recent(&path);
                         }
                         Err(e) => self.set_status(e.to_string()),
                     }
