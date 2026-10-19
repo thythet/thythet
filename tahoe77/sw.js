@@ -16,7 +16,7 @@ async function psproAsset(req){
   if(hit)return hit;
   let pending=psproPending.get(req.url);
   if(!pending){
-    pending=fetch(req).then(response=>{
+    pending=fetch(req,{cache:'reload'}).then(response=>{
       if(response.ok){
         cache.put(req,response.clone()).then(async()=>{
           const keys=await cache.keys();
