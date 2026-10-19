@@ -47,7 +47,7 @@
       "body::before,body::after,#wallpaperLayer{display:none!important}",
       "#window,#window[data-size]{position:fixed!important;left:0!important;top:0!important;transform:none!important;",
       "width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;",
-      "min-width:0!important;min-height:0!important;border-radius:inherit!important;box-shadow:none!important}",
+      "min-width:0!important;min-height:0!important;border-radius:var(--window-radius,16px)!important;box-shadow:none!important}",
       "#window.minimized{visibility:visible!important;opacity:1!important;scale:1!important;pointer-events:auto!important}",
       "#minimizedLauncher{display:none!important}",
       ".resize-handle{display:none!important}",
