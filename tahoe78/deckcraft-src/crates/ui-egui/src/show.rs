@@ -599,6 +599,13 @@ pub fn ui(app: &mut SlideApp, ui: &mut Ui) {
     let avail = if show.reading { Rect::from_min_max(full.min, pos2(full.max.x, full.max.y - 34.0)) } else { full };
     let srect = fit(avail, &doc);
     let pointer = ctx.input(|i| i.pointer.interact_pos());
+    // Browser audience stage: outside real slide tools and media, each half
+    // navigates one slide. Presenter controls and reading view are untouched.
+    let audience_half_click = clicked && cfg!(target_arch = "wasm32")
+        && !show.presenter && !show.reading && !show.grid && !show.ended
+        && !show.pen && !show.laser && !show.zoom_arm && show.zoom.is_none()
+        && show.blank.is_none() && !show.reading_bar_hit(&ctx)
+        && !pointer_on_media_bar(&ctx, ui, &doc, &show);
     show.expire_goto(now);
     // The clock of the triggered animations runs before anything reacts to the pointer.
     show.tick_triggers(&doc, now);
@@ -625,7 +632,15 @@ pub fn ui(app: &mut SlideApp, ui: &mut Ui) {
             LinkJump::Show(a) => actions.push(a),
             LinkJump::Open(url) => ctx.open_url(egui::OpenUrl::new_tab(url)),
             LinkJump::Exit => keep = false,
-            LinkJump::None => {}
+            LinkJump::None => {
+                // Plain text is not a hyperlink; let its slide half navigate.
+                if audience_half_click
+                    && let Some(p) = pointer
+                    && let Some(target) = audience_half_target(&show, &doc, p, full)
+                {
+                    actions.push(show.state.goto(&doc, target));
+                }
+            }
         }
     } else if show.grid && clicked {
         let aspect = slide_aspect(&doc);
@@ -653,6 +668,12 @@ pub fn ui(app: &mut SlideApp, ui: &mut Ui) {
             keep = false;
         } else if show.blank.is_some() {
             show.blank = None;
+        } else if audience_half_click {
+            if let Some(p) = pointer
+                && let Some(target) = audience_half_target(&show, &doc, p, full)
+            {
+                actions.push(show.state.goto(&doc, target));
+            }
         } else {
             // A shape with an action or a triggered animation, or the background.
             let none = Under::default();
@@ -998,6 +1019,24 @@ pub fn ui(app: &mut SlideApp, ui: &mut Ui) {
             Color32::WHITE,
         );
     }
+    // In the browser audience window, keep the low-opacity toolbar visible
+    // while hovered, then hide it two seconds after the pointer leaves.
+    // Hovering its bottom-left screen area reveals it again.
+    let audience_toolbar = cfg!(target_arch = "wasm32") && !show.presenter && !show.reading;
+    let toolbar_visible = if audience_toolbar {
+        let bar = tool_bar_rect(full).expand2(vec2(12.0, 12.0));
+        let hovered = ctx.input(|i| i.pointer.hover_pos()).is_some_and(|p| bar.contains(p));
+        let id = egui::Id::new("tahoe78-audience-toolbar-until");
+        let until = ctx.data_mut(|d| {
+            let previous = d.get_temp::<f64>(id);
+            let deadline = if hovered { now + 2.0 } else { previous.unwrap_or(now + 2.0) };
+            if hovered || previous.is_none() { d.insert_temp(id, deadline); }
+            deadline
+        });
+        hovered || now < until || show.zoom_arm
+    } else {
+        now - show.last_move < 2.5 || show.zoom_arm
+    };
     // Reading view bar / on-screen controls.
     if show.reading {
         let bar = Rect::from_min_max(pos2(full.min.x, full.max.y - 34.0), full.max);
@@ -1027,9 +1066,10 @@ pub fn ui(app: &mut SlideApp, ui: &mut Ui) {
             let a = show.state.prev(&doc);
             show.apply(a, &doc, now);
         }
-    } else if !web_presenter && !show.grid && (now - show.last_move < 2.5 || show.zoom_arm) {
+    } else if !web_presenter && !show.grid && toolbar_visible {
         let bar = tool_bar_rect(full);
-        painter.rect_filled(bar, CornerRadius::same(17), Color32::from_black_alpha(140));
+        painter.rect_filled(bar, CornerRadius::same(17),
+            Color32::from_black_alpha(if audience_toolbar { 80 } else { 140 }));
         let mut child =
             ui.new_child(egui::UiBuilder::new().max_rect(bar.shrink2(vec2(10.0, 4.0))).layout(egui::Layout::left_to_right(egui::Align::Center)));
         let b = |ui: &mut Ui, s: &str| ui.add(egui::Button::new(egui::RichText::new(s).color(Color32::WHITE).size(15.0)).frame(false));
@@ -1624,6 +1664,15 @@ fn toggle_blank(show: &mut Show, color: Color32) {
     show.blank = if show.blank == Some(color) { None } else { Some(color) };
 }
 
+/// One visible slide per half-click. Never jump to hidden slides or past the ends.
+fn audience_half_target(show: &Show, doc: &Presentation, pointer: egui::Pos2, stage: Rect) -> Option<usize> {
+    if pointer.x < stage.center().x {
+        (0..show.state.slide).rev().find(|&i| !doc.slides[i].hidden)
+    } else {
+        show.state.peek_next(doc)
+    }
+}
+
 fn tool_bar_rect(full: Rect) -> Rect {
     let w = TOOL_BAR_W.min((full.width() - 32.0).max(32.0));
     Rect::from_min_size(pos2(full.min.x + 16.0, full.max.y - 50.0), vec2(w, 34.0))
@@ -1865,8 +1914,10 @@ fn presenter_preview(
     min_width: u32,
     empty: &str,
     opacity: f32,
-) {
-    let (slot, _) = ui.allocate_exact_size(area, Sense::hover());
+    clickable: bool,
+) -> egui::Response {
+    let (slot, response) = ui.allocate_exact_size(area,
+        if clickable { Sense::click() } else { Sense::hover() });
     ui.painter().rect_filled(slot, 4.0, Color32::from_rgb(37, 39, 44));
     let slide_rect = fit(slot, doc);
     if let Some(index) = index {
@@ -1928,6 +1979,24 @@ fn presenter_preview(
         ui.painter().text(slot.center(), Align2::CENTER_CENTER, empty,
                           theme::font(13.0), Color32::from_rgb(189, 193, 202));
     }
+    if clickable && response.hovered() {
+        if let Some(p) = ctx.input(|i| i.pointer.hover_pos()) {
+            let left = p.x < slot.center().x;
+            let shade = if left {
+                Rect::from_min_max(slot.min, pos2(slot.center().x, slot.max.y))
+            } else {
+                Rect::from_min_max(pos2(slot.center().x, slot.min.y), slot.max)
+            };
+            ui.painter().rect_filled(shade, 4.0, Color32::from_black_alpha(24));
+            let arrow_x = if left { slide_rect.left() + 25.0 }
+                          else { slide_rect.right() - 25.0 };
+            ui.painter().text(pos2(arrow_x, slide_rect.center().y), Align2::CENTER_CENTER,
+                if left { "◀" } else { "▶" }, theme::font(24.0),
+                Color32::from_white_alpha(215));
+        }
+        ctx.set_cursor_icon(egui::CursorIcon::PointingHand);
+    }
+    response
 }
 
 /// Tahoe77 browser Presenter View: controls only in this editor, with a separate
@@ -2078,8 +2147,8 @@ fn web_presenter_panel(
                 } else {
                     right_w
                 };
-                let next_height_cap = if next_horizontal { max_h }
-                    else { ((max_h - 48.0) / 2.0).max(60.0) };
+                let next_height_cap = if next_horizontal { (max_h - 85.0).max(60.0) }
+                    else { ((max_h - 132.0) / 2.0).max(42.0) };
                 let next_h = (next_column_w / aspect).min(next_height_cap);
                 let next_w = (next_h * aspect).min(next_column_w);
                 let next_slide = show.state.peek_next(doc);
@@ -2099,10 +2168,19 @@ fn web_presenter_panel(
                     ui.vertical(|ui| {
                         ui.set_width(left_w);
                         ui.label(egui::RichText::new("CURRENT SLIDE").color(MUTED).size(11.0));
-                        presenter_preview(ctx, ui, show, doc, Some(active),
-                            vec2(current_w, current_h), 1600, "", 1.0);
+                        let hit = presenter_preview(ctx, ui, show, doc, Some(active),
+                            vec2(current_w, current_h), 1600, "", 1.0, true);
+                        if hit.clicked() {
+                            jump = if hit.interact_pointer_pos().is_some_and(|p| p.x < hit.rect.center().x) {
+                                visible.iter().rev().find(|&&i| i < active).copied()
+                            } else {
+                                next_slide
+                            };
+                        }
                     });
-                    if next_horizontal {
+                    ui.vertical(|ui| {
+                        ui.set_width(right_w);
+                        if next_horizontal {
                         // Side-by-side upcoming slides on wide windows.
                         ui.horizontal(|ui| {
                             ui.spacing_mut().item_spacing.x = next_gap;
@@ -2110,13 +2188,13 @@ fn web_presenter_panel(
                                 ui.set_width(next_column_w);
                                 ui.label(egui::RichText::new("NEXT SLIDE 1").color(MUTED).size(11.0));
                                 presenter_preview(ctx, ui, show, doc, next_slide,
-                                    vec2(next_w, next_h), 960, "End of show", 0.90);
+                                    vec2(next_w, next_h), 960, "End of show", 0.90, false);
                             });
                             ui.vertical(|ui| {
                                 ui.set_width(next_column_w);
                                 ui.label(egui::RichText::new("NEXT SLIDE 2").color(MUTED).size(11.0));
                                 presenter_preview(ctx, ui, show, doc, second_slide,
-                                    vec2(next_w, next_h), 960, "End of show", 0.60);
+                                    vec2(next_w, next_h), 960, "End of show", 0.60, false);
                             });
                         });
                     } else {
@@ -2125,13 +2203,42 @@ fn web_presenter_panel(
                             ui.set_width(right_w);
                             ui.label(egui::RichText::new("NEXT SLIDE 1").color(MUTED).size(11.0));
                             presenter_preview(ctx, ui, show, doc, next_slide,
-                                vec2(next_w, next_h), 960, "End of show", 0.90);
+                                vec2(next_w, next_h), 960, "End of show", 0.90, false);
                             ui.add_space(5.0);
                             ui.label(egui::RichText::new("NEXT SLIDE 2").color(MUTED).size(11.0));
                             presenter_preview(ctx, ui, show, doc, second_slide,
-                                vec2(next_w, next_h), 960, "End of show", 0.60);
+                                vec2(next_w, next_h), 960, "End of show", 0.60, false);
                         });
-                    }
+                        }
+                        // Large navigation controls stay below the upcoming slide previews.
+                        let previous = visible.iter().rev().find(|&&i| i < active).copied();
+                        let nav_gap = 14.0;
+                        let nav_w = ((right_w - nav_gap) * 0.5).clamp(32.0, 104.0);
+                        let nav_h = if full.height() < 500.0 { 46.0 } else { 66.0 };
+                        ui.add_space(9.0);
+                        ui.horizontal(|ui| {
+                            ui.spacing_mut().item_spacing.x = nav_gap;
+                            ui.add_space(((right_w - nav_gap - nav_w * 2.0) * 0.5).max(0.0));
+                            if ui.add_enabled(previous.is_some(),
+                                egui::Button::new(egui::RichText::new("◀").size(32.0).color(Color32::WHITE))
+                                    .min_size(vec2(nav_w, nav_h))
+                                    .fill(Color32::from_rgb(40, 43, 50))
+                                    .stroke(Stroke::new(1.5, Color32::from_rgb(112, 119, 133))))
+                                .on_hover_text("Previous slide").clicked()
+                            {
+                                jump = previous;
+                            }
+                            if ui.add_enabled(next_slide.is_some(),
+                                egui::Button::new(egui::RichText::new("▶").size(32.0).color(Color32::WHITE))
+                                    .min_size(vec2(nav_w, nav_h))
+                                    .fill(Color32::from_rgb(40, 43, 50))
+                                    .stroke(Stroke::new(1.5, Color32::from_rgb(112, 119, 133))))
+                                .on_hover_text("Next slide").clicked()
+                            {
+                                jump = next_slide;
+                            }
+                        });
+                    });
                 });
                 ui.add_space(4.0);
                 ui.label(egui::RichText::new("SPEAKER NOTES").color(MUTED).size(11.0));
