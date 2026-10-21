@@ -43,3 +43,20 @@ pretends an absent installer is available.
 
 All project changes live under Tahoe79 or in its dedicated CI workflow.
 Tahoe78 and earlier versions and user cloud data remain unchanged.
+
+## Branding and installer verification (v0.1.1)
+
+- The official blue P icon is converted from the supplied artwork into
+  Windows `build/icon.ico`, macOS `build/icon.icns` and `build/icon.png`.
+- App metadata and About menu read **Built and Prepared by Thet**.
+- Release uploads include `SHA256SUMS.txt` for independently verifying the
+  exact installers downloaded from GitHub.
+- Windows installer scan and Authenticode reporting run in GitHub Actions.
+  If Microsoft Defender is unavailable, logs explicitly say it was **not scanned**.
+- To sign a Windows build legitimately, configure repository Actions secrets
+  `POWERSLIDEPRO_WIN_CSC_LINK` (PFX file or signing provider URL) and
+  `POWERSLIDEPRO_WIN_CSC_KEY_PASSWORD` (the matching credential).
+  A certificate issued to the verified publisher is required. No credentials
+  are stored in the repository; absence retains an unsigned beta.
+- Signing alone cannot guarantee removal of Microsoft SmartScreen prompts;
+  verified publisher identity and app reputation are managed by Windows.

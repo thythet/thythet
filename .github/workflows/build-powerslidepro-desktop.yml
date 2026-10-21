@@ -11,6 +11,7 @@ on:
       - 'tahoe79/assets/fonts/**'
       - 'tahoe79/data/books/**'
       - 'tahoe79/assets/js/powerslidepro-present-v1.js'
+      - 'tahoe79/assets/js/powerslidepro-downloads.js'
       - 'tahoe79/assets/powerslidepro-audience.html'
 
 permissions:
@@ -31,11 +32,19 @@ jobs:
             tahoe79/assets/fonts
             tahoe79/data/books
             tahoe79/assets/js/powerslidepro-present-v1.js
+            tahoe79/assets/js/powerslidepro-downloads.js
             tahoe79/assets/powerslidepro-audience.html
             tahoe79/assets/powerslidepro-logo.png
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Validate Tahoe79 Software Library JavaScript
+        run: node --check tahoe79/assets/js/powerslidepro-downloads.js
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Pillow for application icons
+        run: python -m pip install Pillow==11.3.0
       - name: Verify editor and bundle all offline files
         working-directory: tahoe79/powerslidepro-desktop
         run: npm run check
@@ -80,7 +89,33 @@ jobs:
         working-directory: powerslidepro-desktop
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+          WIN_CSC_LINK: ${{ secrets.POWERSLIDEPRO_WIN_CSC_LINK }}
+          WIN_CSC_KEY_PASSWORD: ${{ secrets.POWERSLIDEPRO_WIN_CSC_KEY_PASSWORD }}
         run: npm run dist:${{ matrix.target }}
+      - name: Windows Defender scan and signing status
+        if: matrix.target == 'win'
+        shell: pwsh
+        env:
+          SIGNING_CONFIGURED: ${{ secrets.POWERSLIDEPRO_WIN_CSC_LINK != '' }}
+        run: |
+          $file = Get-ChildItem 'powerslidepro-desktop/dist/*.exe' | Select-Object -First 1
+          if (-not $file) { throw 'No Windows installer found' }
+          $sig = Get-AuthenticodeSignature -FilePath $file.FullName
+          Write-Host "Authenticode status: $($sig.Status)"
+          if ($env:SIGNING_CONFIGURED -eq 'true' -and $sig.Status -ne 'Valid') {
+            throw 'Signing was configured, but the signature is invalid'
+          }
+          if ($sig.Status -ne 'Valid') {
+            Write-Warning 'Unsigned beta: Windows SmartScreen may still warn users.'
+          }
+          $defender = Get-MpComputerStatus -ErrorAction SilentlyContinue
+          if (-not $defender -or -not $defender.AntivirusEnabled) {
+            Write-Warning 'Defender not available on this runner; no antivirus scan was performed.'
+          } else {
+            Start-MpScan -ScanType CustomScan -ScanPath $file.FullName -ErrorAction Stop
+            if (-not (Test-Path $file.FullName)) { throw 'Defender quarantined the installer' }
+            Write-Host 'Defender custom scan completed.'
+          }
       - uses: actions/upload-artifact@v4
         with:
           name: powerslidepro-desktop-${{ matrix.target }}
@@ -108,10 +143,16 @@ jobs:
           test "$(find release-assets -maxdepth 1 -name '*.exe' | wc -l)" -ge 1
           test "$(find release-assets -maxdepth 1 -name '*mac*x64.dmg' | wc -l)" -ge 1
           test "$(find release-assets -maxdepth 1 -name '*mac*arm64.dmg' | wc -l)" -ge 1
+      - name: Generate SHA-256 installer checksums
+        shell: bash
+        run: |
+          cd release-assets
+          sha256sum PowerSlidePro-*.exe PowerSlidePro-*.dmg > SHA256SUMS.txt
+          test -s SHA256SUMS.txt
       - uses: softprops/action-gh-release@v2
         with:
-          tag_name: powerslidepro-desktop-v0.1.0
-          name: PowerSlidePro Desktop v0.1.0 (unsigned beta)
+          tag_name: powerslidepro-desktop-v0.1.1
+          name: PowerSlidePro Desktop v0.1.1 (unsigned beta)
           prerelease: true
           generate_release_notes: false
           body: |
@@ -119,7 +160,10 @@ jobs:
             Includes Smart Bible Generate, 66 Bible books, Khmer OS fonts,
             editing, local save, PPTX export and Presenter/Audience screens.
             
-            Unsigned beta: Mac packages are not notarized.
+            Installers are unsigned by default. Windows SmartScreen and
+            macOS Gatekeeper may warn on first install. Verified code signing
+            is optional through GitHub Actions secrets.
+            SHA256SUMS.txt allows users to verify installer integrity.
             Hands-on dual-screen testing is still recommended.
           files: release-assets/*
           fail_on_unmatched_files: true

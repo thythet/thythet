@@ -1,13 +1,13 @@
 {
   "name": "powerslidepro-desktop",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
-  "description": "Offline PowerSlidePro editor using the Tahoe79 WebAssembly engine",
+  "description": "PowerSlidePro offline presentation software — Built and Prepared by Thet",
   "main": "main.cjs",
   "license": "UNLICENSED",
   "scripts": {
     "stage": "node scripts/stage.cjs",
-    "check": "node --check main.cjs && node --check preload.cjs && node --check scripts/stage.cjs && node scripts/stage.cjs",
+    "check": "node --check main.cjs && node --check preload.cjs && node --check scripts/stage.cjs && python3 scripts/make_icons.py && node scripts/stage.cjs",
     "dist:win": "electron-builder --win nsis --x64 --publish never",
     "dist:mac": "electron-builder --mac dmg --x64 --arm64 --publish never"
   },
@@ -19,10 +19,27 @@
     "appId": "com.thythet.powerslidepro",
     "productName": "PowerSlidePro",
     "asar": true,
-    "directories": {"output": "dist"},
-    "files": ["main.cjs", "preload.cjs", "payload/**/*", "package.json"],
-    "win": {"target": "nsis"},
-    "mac": {"target": "dmg", "category": "public.app-category.productivity", "identity": null},
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.cjs",
+      "preload.cjs",
+      "payload/**/*",
+      "package.json",
+      "build/icon.png"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico",
+      "legalTrademarks": "PowerSlidePro — Thet"
+    },
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.productivity",
+      "identity": null,
+      "icon": "build/icon.icns"
+    },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
@@ -30,5 +47,6 @@
       "createStartMenuShortcut": true
     },
     "artifactName": "PowerSlidePro-${version}-${os}-${arch}.${ext}"
-  }
+  },
+  "author": "Thet"
 }

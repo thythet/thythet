@@ -1,5 +1,5 @@
 'use strict';
-const { app, BrowserWindow, dialog, ipcMain, session } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain, session, Menu } = require('electron');
 const fs = require('node:fs');
 const http = require('node:http');
 const path = require('node:path');
@@ -23,6 +23,35 @@ let server;
 let origin;
 let mainWindow;
 const savedPaths = new Map();
+const APP_ICON = path.join(__dirname, 'build', 'icon.png');
+function aboutPowerSlidePro() {
+  const parent = BrowserWindow.getFocusedWindow() || mainWindow;
+  void dialog.showMessageBox(parent || undefined, {
+    type: 'info', title: 'About PowerSlidePro',
+    message: 'PowerSlidePro Desktop',
+    detail: 'Version 0.1.1\nBuilt and Prepared by Thet\n\nOffline Bible presentations, Khmer typography and slideshow editing.',
+    buttons: ['OK'], icon: nativeIcon()
+  });
+}
+function nativeIcon() {
+  try { return require('electron').nativeImage.createFromPath(APP_ICON); }
+  catch (_) { return undefined; }
+}
+function installMenu() {
+  const menu = [
+    { label: 'File', submenu: [{ role: 'quit', label: 'Exit PowerSlidePro' }] },
+    { label: 'View', submenu: [{ role: 'reload' }, { role: 'togglefullscreen' }] },
+    { label: 'Help', submenu: [{ label: 'About PowerSlidePro', click: aboutPowerSlidePro }] }
+  ];
+  if (process.platform === 'darwin') {
+    menu.unshift({label: 'PowerSlidePro', submenu: [
+      { label: 'About PowerSlidePro', click: aboutPowerSlidePro },
+      { type: 'separator' }, { role: 'hide' }, { role: 'hideOthers' },
+      { type: 'separator' }, { role: 'quit' }
+    ]});
+  }
+  Menu.setApplicationMenu(Menu.buildFromTemplate(menu));
+}
 
 function allowedPath(relative) {
   return ALLOWED.some((p) => p.endsWith('/') ? relative.startsWith(p) : relative === p);
@@ -63,6 +92,7 @@ function createMainWindow() {
   mainWindow = new BrowserWindow({
     title: 'PowerSlidePro', width: 1380, height: 860, minWidth: 860, minHeight: 560,
     backgroundColor: '#24262a', show: false,
+    icon: APP_ICON,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       sandbox: true, contextIsolation: true, nodeIntegration: false,
@@ -146,6 +176,7 @@ app.whenReady().then(async () => {
       mainWindow.isMaximized() ? mainWindow.unmaximize() : mainWindow.maximize();
     else if (command === 'fullscreen') mainWindow.setFullScreen(!mainWindow.isFullScreen());
   });
+  installMenu();
   createMainWindow();
   app.on('activate', () => { if (!BrowserWindow.getAllWindows().length) createMainWindow(); });
 });
