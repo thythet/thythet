@@ -3271,6 +3271,59 @@ body #postsWindow::before,body #postsWindow::after{content:none!important;backgr
 body #postsWindow #postsFrame{background:none!important;background-color:transparent!important;
   background-image:none!important;opacity:1!important}
 
+/* Tahoe79 PrayInfo Pro: original app framed in an independent Tahoe window. */
+#prayInfoLauncher{left:660px;bottom:max(22px,env(safe-area-inset-bottom));color:#237fca}
+#prayInfoLauncher i{font-size:30px;pointer-events:none}
+#prayInfoWindow,body #prayInfoWindow{
+ width:min(1100px,94vw);height:min(825px,91dvh);min-width:720px;min-height:500px;
+ border:1px solid rgba(255,255,255,.36)!important;
+ border-radius:var(--desktop-app-radius,14px);
+ background:rgba(11,21,37,.93)!important;
+ box-shadow:0 22px 75px rgba(0,0,0,.26),0 3px 16px rgba(0,0,0,.12);
+ backdrop-filter:none!important;-webkit-backdrop-filter:none!important
+}
+#prayInfoWindow .prayinfo-window-bar{
+ position:absolute;top:0;left:0;right:0;z-index:17;height:42px;
+ padding:0 13px;display:flex;align-items:center;gap:10px;
+ background:rgba(24,34,50,.90);color:#f4f8ff;border-bottom:1px solid rgba(255,255,255,.10);
+ backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);
+ font:600 12px Inter,system-ui,-apple-system,sans-serif;user-select:none;cursor:grab;touch-action:none
+}
+#prayInfoWindow .prayinfo-window-bar:active{cursor:grabbing}
+#prayInfoWindow .prayinfo-window-dots{display:flex;align-items:center;gap:8px;flex:none}
+#prayInfoWindow .prayinfo-dot{
+ display:grid;place-items:center;width:12px;height:12px;min-width:12px;padding:0;
+ border-radius:50%;border:1px solid rgba(0,0,0,.12);cursor:pointer;
+ font:700 8px/1 Inter,system-ui,sans-serif;color:#173124
+}
+#prayInfoWindow .prayinfo-dot i{display:none;font-size:8px}
+#prayInfoWindow .prayinfo-window-dots:hover .prayinfo-dot i,
+#prayInfoWindow .prayinfo-dot:focus-visible i{display:block}
+#prayInfoWindow .prayinfo-dot.close{background:#ff6059}
+#prayInfoWindow .prayinfo-dot.minimize{background:#febc2e}
+#prayInfoWindow .prayinfo-dot.zoom{background:#28c941}
+#prayInfoWindow .prayinfo-window-title{flex:1;min-width:0;text-align:center;pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#prayInfoWindow .prayinfo-window-title i{margin-right:6px;font-size:15px;vertical-align:middle;color:#b9dcff}
+#prayInfoWindow .prayinfo-window-open{
+ display:grid;place-items:center;flex:none;width:28px;height:27px;border-radius:8px;
+ color:#c7d7ed;font-size:16px;text-decoration:none
+}
+#prayInfoWindow .prayinfo-window-open:hover,#prayInfoWindow .prayinfo-window-open:focus-visible{background:rgba(255,255,255,.12);color:#fff}
+#prayInfoWindow #prayInfoFrame{
+ position:absolute!important;inset:auto!important;top:42px!important;left:0!important;right:0!important;bottom:0!important;
+ width:100%!important;height:calc(100% - 42px)!important;border:0!important;
+ border-radius:0!important;display:block;background:#0a1220!important
+}
+@media(max-width:760px){
+ #prayInfoLauncher{left:146px;bottom:max(86px,calc(env(safe-area-inset-bottom) + 75px))}
+ #prayInfoWindow,body #prayInfoWindow{
+  min-width:0!important;min-height:0!important;width:100vw!important;height:100dvh!important;
+  left:0!important;top:0!important;transform:none!important;border:0!important;border-radius:0!important
+ }
+ #prayInfoWindow .prayinfo-window-bar{height:calc(42px + env(safe-area-inset-top));padding-top:env(safe-area-inset-top)}
+ #prayInfoWindow #prayInfoFrame{top:calc(42px + env(safe-area-inset-top))!important;height:calc(100% - 42px - env(safe-area-inset-top))!important}
+}
+
 </style>
 </head>
 <body>
@@ -3387,6 +3440,7 @@ body #postsWindow #postsFrame{background:none!important;background-color:transpa
 <button class="desktop-app-launcher" id="deckCraftLauncher" aria-label="Open PowerSlidePro" title="PowerSlidePro"><img src="assets/powerslidepro-logo.png" alt=""></button>
 <button class="desktop-app-launcher" id="theChatLauncher" aria-label="Open thechat" title="thechat"><img src="../chat22/icons/icon-192.png" alt=""></button>
 <button class="desktop-app-launcher" id="postsLauncher" aria-label="Open Posts" title="Posts"><img src="../posts/assets/site-icon.svg" alt=""></button>
+<button class="desktop-app-launcher" id="prayInfoLauncher" aria-label="Open PrayInfo Pro" title="PrayInfo Pro"><i class="ri-hand-heart-line" aria-hidden="true"></i></button>
 <div class="desktop-context-menu" id="desktopContextMenu" role="menu" aria-label="Desktop arrangement">
   <div class="desktop-menu-title">Desktop Icons</div>
   <button type="button" data-desktop-action="auto"><i class="ri-layout-grid-fill"></i><span>Auto Arrange</span><span class="desktop-check"></span></button>
@@ -3562,6 +3616,26 @@ body #postsWindow #postsFrame{background:none!important;background-color:transpa
   <a class="posts-window-open" href="../posts/" target="_blank" rel="noopener noreferrer" aria-label="Open Posts in new tab" title="Open original Posts site"><i class="ri-external-link-line"></i></a>
  </header>
  <iframe id="postsFrame" src="about:blank" data-src="../posts/index.html" title="Posts" loading="lazy" allowtransparency="true" allow="autoplay; clipboard-read; clipboard-write; fullscreen" allowfullscreen></iframe>
+ <i class="desktop-app-drag-edge bottom" data-app-drag></i><i class="desktop-app-drag-edge left" data-app-drag></i><i class="desktop-app-drag-edge right" data-app-drag></i>
+ <i class="desktop-app-resize n" data-app-resize="n"></i><i class="desktop-app-resize s" data-app-resize="s"></i>
+ <i class="desktop-app-resize w" data-app-resize="w"></i><i class="desktop-app-resize e" data-app-resize="e"></i>
+ <i class="desktop-app-resize nw" data-app-resize="nw"></i><i class="desktop-app-resize ne" data-app-resize="ne"></i>
+ <i class="desktop-app-resize sw" data-app-resize="sw"></i><i class="desktop-app-resize se" data-app-resize="se"></i>
+</section>
+
+
+<!-- Tahoe79 embeds the original PrayInfo Pro from /prayinfo3/. No app code or cloud data copied. -->
+<section class="desktop-app-window prayinfo-desktop-window" id="prayInfoWindow" aria-label="PrayInfo Pro">
+ <header class="prayinfo-window-bar" data-app-drag>
+  <span class="prayinfo-window-dots" aria-label="PrayInfo window controls">
+   <button type="button" class="prayinfo-dot close" id="prayInfoWinClose" aria-label="Close PrayInfo" title="Close"><i class="ri-close-line" aria-hidden="true"></i></button>
+   <button type="button" class="prayinfo-dot minimize" id="prayInfoWinMin" aria-label="Minimize PrayInfo" title="Minimize"><i class="ri-subtract-line" aria-hidden="true"></i></button>
+   <button type="button" class="prayinfo-dot zoom" id="prayInfoWinZoom" aria-label="Zoom PrayInfo" title="Zoom"><i class="ri-fullscreen-line" aria-hidden="true"></i></button>
+  </span>
+  <span class="prayinfo-window-title"><i class="ri-hand-heart-line" aria-hidden="true"></i>PrayInfo Pro</span>
+  <a class="prayinfo-window-open" href="../prayinfo3/" target="_blank" rel="noopener noreferrer" title="Open PrayInfo Pro standalone" aria-label="Open PrayInfo in new tab"><i class="ri-external-link-line" aria-hidden="true"></i></a>
+ </header>
+ <iframe id="prayInfoFrame" src="about:blank" data-src="../prayinfo3/index.html" title="PrayInfo Pro" loading="lazy" allow="clipboard-read;clipboard-write;fullscreen" allowfullscreen></iframe>
  <i class="desktop-app-drag-edge bottom" data-app-drag></i><i class="desktop-app-drag-edge left" data-app-drag></i><i class="desktop-app-drag-edge right" data-app-drag></i>
  <i class="desktop-app-resize n" data-app-resize="n"></i><i class="desktop-app-resize s" data-app-resize="s"></i>
  <i class="desktop-app-resize w" data-app-resize="w"></i><i class="desktop-app-resize e" data-app-resize="e"></i>
@@ -4079,7 +4153,8 @@ const desktopApps={
  powerslide:{window:"#powerSlideWindow",frame:"#powerSlideFrame",launcher:"#powerSlideLauncher",toolbar:"#openPowerSlideBtn",stateKey:"powerSlideWindowState",launcherKey:"powerSlideLauncherPos",title:"PowerSlide"},
  deckcraft:{window:"#deckCraftWindow",frame:"#deckCraftFrame",launcher:"#deckCraftLauncher",stateKey:"deckCraftWindowState",launcherKey:"deckCraftLauncherPos",title:"PowerSlidePro"},
  thechat:{window:"#theChatWindow",frame:"#theChatFrame",launcher:"#theChatLauncher",stateKey:"theChatWindowState",launcherKey:"theChatLauncherPos",title:"thechat"},
- posts:{window:"#postsWindow",frame:"#postsFrame",launcher:"#postsLauncher",stateKey:"postsWindowState",launcherKey:"postsLauncherPos",title:"Posts"}
+ posts:{window:"#postsWindow",frame:"#postsFrame",launcher:"#postsLauncher",stateKey:"postsWindowState",launcherKey:"postsLauncherPos",title:"Posts"},
+ prayinfo:{window:"#prayInfoWindow",frame:"#prayInfoFrame",launcher:"#prayInfoLauncher",stateKey:"prayInfoWindowState",launcherKey:"prayInfoLauncherPos",title:"PrayInfo Pro"}
 };
 function themeBridgePayload(){
  return {
@@ -4101,9 +4176,9 @@ function themeBridgePayload(){
  }
 }
 function ensureDesktopAppLoaded(id){const c=desktopApps[id],f=$(c?.frame);if(!f)return;const src=f.dataset.src;if(src&&(!f.src||f.src==="about:blank")){f.src=src;f.dataset.loading="1"}}
-function sendDesktopAppTheme(id){if(id==="posts")return;const c=desktopApps[id],f=$(c?.frame);if(f?.contentWindow&&f.src!=="about:blank")try{f.contentWindow.postMessage(themeBridgePayload(),"*")}catch{}}
+function sendDesktopAppTheme(id){if(id==="posts"||id==="prayinfo")return;const c=desktopApps[id],f=$(c?.frame);if(f?.contentWindow&&f.src!=="about:blank")try{f.contentWindow.postMessage(themeBridgePayload(),"*")}catch{}}
 function syncAllAppThemes(){Object.keys(desktopApps).forEach(sendDesktopAppTheme)}
-function desktopAppAction(id,action,value){if(id==="posts")return;const c=desktopApps[id],f=$(c?.frame);if(!f?.contentWindow)return;f.contentWindow.postMessage({type:id==="bible"?"tahoe-bible-action":id==="powerslide"?"tahoe-powerslide-action":"tahoe-deckcraft-action",action,value},"*")}
+function desktopAppAction(id,action,value){if(id==="posts"||id==="prayinfo")return;const c=desktopApps[id],f=$(c?.frame);if(!f?.contentWindow)return;f.contentWindow.postMessage({type:id==="bible"?"tahoe-bible-action":id==="powerslide"?"tahoe-powerslide-action":"tahoe-deckcraft-action",action,value},"*")}
 function updateFullscreenUI(){Object.entries(desktopApps).forEach(([id,c])=>{const el=$(c.window),active=document.fullscreenElement===el||el?.classList.contains("app-fullscreen-fallback");if(id==="bible"){el?.classList.toggle("fullscreen-reading",active);const i=$("#bibleChromeFullscreen i");if(i)i.className=active?"ri-fullscreen-exit-line":"ri-fullscreen-line";desktopAppAction("bible","fullscreen-reader",active)}else if(id==="powerslide"){el?.classList.toggle("fullscreen-workspace",active);const i=$("#powerChromeFullscreen i");if(i)i.className=active?"ri-fullscreen-exit-line":"ri-fullscreen-line";desktopAppAction("powerslide","fullscreen-workspace",active)}else if(id==="deckcraft"){const i=$("#deckCraftFullscreen i");if(i)i.className=active?"ri-fullscreen-exit-line":"ri-fullscreen-line"}else if(id==="thechat"){const i=$("#theChatWinFullscreen i");if(i)i.className=active?"ri-fullscreen-exit-line":"ri-fullscreen-line"}})}
 async function toggleDesktopFullscreen(id){const c=desktopApps[id],el=$(c?.window);if(!el)return;try{if(document.fullscreenElement===el){await document.exitFullscreen();return}if(document.fullscreenElement)await document.exitFullscreen();if(el.requestFullscreen){await el.requestFullscreen({navigationUI:"hide"});return}}catch{}el.classList.toggle("app-fullscreen-fallback");updateFullscreenUI()}
 document.addEventListener("fullscreenchange",updateFullscreenUI);
@@ -4135,7 +4210,7 @@ function openDesktopApp(id){
  // Loading an iframe while its Tahoe window is display:none can leave PowerSlidePro at 0×0 and stuck during renderer startup.
  requestAnimationFrame(()=>{ensureDesktopAppLoaded(id);setTimeout(()=>sendDesktopAppTheme(id),0)})
 }
-function closeDesktopApp(id){const c=desktopApps[id],el=$(c?.window);el?.classList.remove("open");$(c?.launcher)?.classList.remove("active");if(id==="deckcraft")el?.classList.remove("deckcraft-present-mode","app-fullscreen-fallback");if(id==="thechat"||id==="posts")el?.classList.remove("app-fullscreen-fallback")}
+function closeDesktopApp(id){const c=desktopApps[id],el=$(c?.window);el?.classList.remove("open");$(c?.launcher)?.classList.remove("active");if(id==="deckcraft")el?.classList.remove("deckcraft-present-mode","app-fullscreen-fallback");if(id==="thechat"||id==="posts"||id==="prayinfo")el?.classList.remove("app-fullscreen-fallback")}
 function zoomDesktopApp(id){
  const c=desktopApps[id],el=$(c.window);if(!el)return;
  if(el.dataset.zoomed==="1"){el.dataset.zoomed="0";restoreDesktopAppState(id)}
@@ -4184,6 +4259,10 @@ function bindDesktopApps(){
  bindFloatingControl($("#deckCraftLauncher"),"deckCraftLauncherPos",()=>openDesktopApp("deckcraft"),{left:442,bottom:22});
  bindFloatingControl($("#theChatLauncher"),"theChatLauncherPos",()=>openDesktopApp("thechat"),{left:514,bottom:22});
  bindFloatingControl($("#postsLauncher"),"postsLauncherPos",()=>openDesktopApp("posts"),{left:588,bottom:22});
+ bindFloatingControl($("#prayInfoLauncher"),"prayInfoLauncherPos",()=>openDesktopApp("prayinfo"),{left:660,bottom:22});
+ $("#prayInfoWinClose").onclick=()=>closeDesktopApp("prayinfo");
+ $("#prayInfoWinMin").onclick=()=>closeDesktopApp("prayinfo");
+ $("#prayInfoWinZoom").onclick=()=>zoomDesktopApp("prayinfo");
  $("#postsWinClose").onclick=()=>closeDesktopApp("posts");
  $("#postsWinMin").onclick=()=>closeDesktopApp("posts");
  $("#postsWinZoom").onclick=()=>zoomDesktopApp("posts");
@@ -4299,7 +4378,7 @@ dashboardResponsiveObserver.observe(win);
 addEventListener("resize",updateDashboardResponsiveState,{passive:true});
 requestAnimationFrame(updateDashboardResponsiveState);
 let tahoeFront="dashboard",tahoeZ=40;
-function allTahoeWindows(){return [win,$("#finderWindow"),$("#bibleWindow"),$("#powerSlideWindow"),$("#deckCraftWindow"),$("#theChatWindow"),$("#postsWindow")].filter(Boolean)}
+function allTahoeWindows(){return [win,$("#finderWindow"),$("#bibleWindow"),$("#powerSlideWindow"),$("#deckCraftWindow"),$("#theChatWindow"),$("#postsWindow"),$("#prayInfoWindow")].filter(Boolean)}
 function focusTahoeWindow(target){
  tahoeZ++;
  allTahoeWindows().forEach(w=>{if(w!==target)w.style.zIndex="24"});
@@ -4707,30 +4786,30 @@ function applyProReadOnly(){
 
 function updateShellAccess(){
  const p=state.profile||{},owner=isOwnerAdmin(),logged=!!p.authenticated&&!p.anonymous,a=firebaseRuntime.currentAccess||{},blocked=!!a.blocked&&!owner,pro=!!a.pro&&!owner;
- const gate=$("#authGate"),portal=$("#userPortal"),finderLauncher=$("#finderLauncher"),bibleLauncher=$("#bibleLauncher"),bibleNextLauncher=$("#bibleNextLauncher"),powerLauncher=$("#powerSlideLauncher"),powerNextLauncher=$("#powerSlideNextLauncher"),allSongLauncher=$("#allSongNextLauncher"),deckCraftLauncher=$("#deckCraftLauncher"),theChatLauncher=$("#theChatLauncher"),postsLauncher=$("#postsLauncher");
+ const gate=$("#authGate"),portal=$("#userPortal"),finderLauncher=$("#finderLauncher"),bibleLauncher=$("#bibleLauncher"),bibleNextLauncher=$("#bibleNextLauncher"),powerLauncher=$("#powerSlideLauncher"),powerNextLauncher=$("#powerSlideNextLauncher"),allSongLauncher=$("#allSongNextLauncher"),deckCraftLauncher=$("#deckCraftLauncher"),theChatLauncher=$("#theChatLauncher"),postsLauncher=$("#postsLauncher"),prayInfoLauncher=$("#prayInfoLauncher");
  gate?.classList.toggle("hidden",logged);
  if(blocked){
    portal?.classList.remove("show");win.style.visibility="hidden";
-   [finderLauncher,bibleLauncher,bibleNextLauncher,powerLauncher,powerNextLauncher,allSongLauncher,deckCraftLauncher,theChatLauncher,postsLauncher].forEach(x=>{if(x)x.style.display="none"});return
+   [finderLauncher,bibleLauncher,bibleNextLauncher,powerLauncher,powerNextLauncher,allSongLauncher,deckCraftLauncher,theChatLauncher,postsLauncher,prayInfoLauncher].forEach(x=>{if(x)x.style.display="none"});return
  }
  if(owner){
    portal?.classList.remove("show");win.style.visibility="";
-   [finderLauncher,bibleLauncher,bibleNextLauncher,powerLauncher,powerNextLauncher,allSongLauncher,deckCraftLauncher,theChatLauncher,postsLauncher].forEach(x=>{if(x)x.style.display=""});
+   [finderLauncher,bibleLauncher,bibleNextLauncher,powerLauncher,powerNextLauncher,allSongLauncher,deckCraftLauncher,theChatLauncher,postsLauncher,prayInfoLauncher].forEach(x=>{if(x)x.style.display=""});
    win.classList.remove("pro-readonly");applyProReadOnly();return
  }
  if(logged&&pro){
    portal?.classList.remove("show");win.style.visibility="";
    if(finderLauncher)finderLauncher.style.display="";
-   if(bibleLauncher)bibleLauncher.style.display="";if(bibleNextLauncher)bibleNextLauncher.style.display="";if(powerLauncher)powerLauncher.style.display="";if(powerNextLauncher)powerNextLauncher.style.display="";if(allSongLauncher)allSongLauncher.style.display="";if(deckCraftLauncher)deckCraftLauncher.style.display="";if(theChatLauncher)theChatLauncher.style.display="";if(postsLauncher)postsLauncher.style.display="";
+   if(bibleLauncher)bibleLauncher.style.display="";if(bibleNextLauncher)bibleNextLauncher.style.display="";if(powerLauncher)powerLauncher.style.display="";if(powerNextLauncher)powerNextLauncher.style.display="";if(allSongLauncher)allSongLauncher.style.display="";if(deckCraftLauncher)deckCraftLauncher.style.display="";if(theChatLauncher)theChatLauncher.style.display="";if(postsLauncher)postsLauncher.style.display="";if(prayInfoLauncher)prayInfoLauncher.style.display="";
    applyProReadOnly();return
  }
  if(logged){
    win.classList.remove("pro-readonly");win.style.visibility="hidden";
-   [finderLauncher,bibleLauncher,bibleNextLauncher,powerLauncher,powerNextLauncher,allSongLauncher,deckCraftLauncher,theChatLauncher,postsLauncher].forEach(x=>{if(x)x.style.display="none"});
+   [finderLauncher,bibleLauncher,bibleNextLauncher,powerLauncher,powerNextLauncher,allSongLauncher,deckCraftLauncher,theChatLauncher,postsLauncher,prayInfoLauncher].forEach(x=>{if(x)x.style.display="none"});
    portal?.classList.add("show");renderUserPortal();return
  }
  portal?.classList.remove("show");win.classList.remove("pro-readonly");win.style.visibility="hidden";
- [finderLauncher,bibleLauncher,bibleNextLauncher,powerLauncher,powerNextLauncher,allSongLauncher,deckCraftLauncher,theChatLauncher,postsLauncher].forEach(x=>{if(x)x.style.display="none"})
+ [finderLauncher,bibleLauncher,bibleNextLauncher,powerLauncher,powerNextLauncher,allSongLauncher,deckCraftLauncher,theChatLauncher,postsLauncher,prayInfoLauncher].forEach(x=>{if(x)x.style.display="none"})
 }
 function renderUserPortal(){const p=state.profile||{},a=firebaseRuntime.currentAccess||{},mods=a.modules||{dashboard:true,finder:false},av=portalAvatarHTML(p),name=p.displayName||"User",email=p.email||"";["#userPortalTopAvatar","#userPortalAvatar"].forEach(sel=>{const el=$(sel);if(el)el.innerHTML=av});$("#userPortalTopName").textContent=name;$("#userPortalTopEmail").textContent=email;$("#userPortalName").textContent=name;$("#userPortalEmail").textContent=email;$("#userPortalAccess").innerHTML=`<span class="user-chip">${esc(a.role||"viewer")}</span>${a.pro?'<span class="user-chip pro">PRO</span>':""}`;const m=$("#userPortalModules");if(!m)return;m.innerHTML=`<article class="user-module"><i class="ri-user-3-line"></i><h3>My Dashboard</h3><p>Your account, role, access level, and profile status.</p></article>`+`<article class="user-module ${mods.finder?"":"locked"}"><i class="${mods.finder?"ri-folder-3-line":"ri-lock-line"}"></i><h3>File Finder</h3><p>${mods.finder?"View files shared by the administrator. Read-only access.":"The administrator has not enabled File Finder for this account."}</p>${mods.finder?'<button class="ff-btn primary" id="userOpenFinder">Open Files</button>':""}</article>`;$("#userOpenFinder")?.addEventListener("click",()=>{portal.classList.remove("show");openFinderWindow();$("#finderWindow").classList.add("user-readonly")})}
 function applyProfile(){
@@ -4861,6 +4940,7 @@ const DESKTOP_LAUNCHER_META=[
  {id:"deckCraftLauncher",key:"deckCraftLauncherPos",name:"PowerSlidePro",type:"presentation"},
  {id:"theChatLauncher",key:"theChatLauncherPos",name:"thechat",type:"content"},
  {id:"postsLauncher",key:"postsLauncherPos",name:"Posts",type:"content"},
+ {id:"prayInfoLauncher",key:"prayInfoLauncherPos",name:"PrayInfo",type:"content"},
  {id:"bibleLauncher",key:"bibleLauncherPos",name:"Bible Legacy",type:"legacy"},
  {id:"powerSlideLauncher",key:"powerSlideLauncherPos",name:"PowerSlide Legacy",type:"legacy"},
  {id:"minimizedLauncher",key:"dashboardLauncherPos",name:"Dashboard",type:"system"}
@@ -6404,7 +6484,7 @@ function handlePwaLaunchShortcut(){
 }
 window.addEventListener("load",handlePwaLaunchShortcut,{once:true});
 
-if('serviceWorker' in navigator&&location.protocol!=='file:'){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=79posts3',{scope:'./',updateViaCache:'none'}).catch(()=>{}),{once:true})}
+if('serviceWorker' in navigator&&location.protocol!=='file:'){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=79prayinfo1',{scope:'./',updateViaCache:'none'}).catch(()=>{}),{once:true})}
 
 /* Bind core controls before optional app modules: one failed module must never freeze Tahoe. */
 const tahoeSafeInit=(label,fn)=>{try{fn()}catch(e){console.error("[Tahoe startup] "+label,e);try{sessionStorage.setItem("tahoe.lastStartupError",label+": "+String(e?.message||e))}catch{}}};
