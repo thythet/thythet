@@ -3672,7 +3672,7 @@ body #postsWindow #postsFrame{background:none!important;background-color:transpa
 </section>
 
 
-<!-- Tahoe79 embeds the original PrayInfo Pro from /prayinfo3/. No app code or cloud data copied. -->
+<!-- Tahoe79 embeds the original PrayInfo Pro from /prayinfo2/. No app code or cloud data copied. -->
 <section class="desktop-app-window prayinfo-desktop-window" id="prayInfoWindow" aria-label="PrayInfo Pro">
  <header class="prayinfo-window-bar" data-app-drag>
   <span class="prayinfo-window-dots" aria-label="PrayInfo window controls">
@@ -3681,9 +3681,9 @@ body #postsWindow #postsFrame{background:none!important;background-color:transpa
    <button type="button" class="prayinfo-dot zoom" id="prayInfoWinZoom" aria-label="Zoom PrayInfo" title="Zoom"><i class="ri-fullscreen-line" aria-hidden="true"></i></button>
   </span>
   <span class="prayinfo-window-title"><i class="ri-hand-heart-line" aria-hidden="true"></i>PrayInfo Pro</span>
-  <a class="prayinfo-window-open" href="../prayinfo3/" target="_blank" rel="noopener noreferrer" title="Open PrayInfo Pro standalone" aria-label="Open PrayInfo in new tab"><i class="ri-external-link-line" aria-hidden="true"></i></a>
+  <a class="prayinfo-window-open" href="../prayinfo2/" target="_blank" rel="noopener noreferrer" title="Open PrayInfo Pro standalone" aria-label="Open PrayInfo in new tab"><i class="ri-external-link-line" aria-hidden="true"></i></a>
  </header>
- <iframe id="prayInfoFrame" src="about:blank" data-src="../prayinfo3/index.html" title="PrayInfo Pro" loading="lazy" allow="clipboard-read;clipboard-write;fullscreen" allowfullscreen></iframe>
+ <iframe id="prayInfoFrame" src="about:blank" data-src="../prayinfo2/index.html" title="PrayInfo Pro" loading="lazy" allow="clipboard-read;clipboard-write;fullscreen" allowfullscreen></iframe>
  <i class="desktop-app-drag-edge bottom" data-app-drag></i><i class="desktop-app-drag-edge left" data-app-drag></i><i class="desktop-app-drag-edge right" data-app-drag></i>
  <i class="desktop-app-resize n" data-app-resize="n"></i><i class="desktop-app-resize s" data-app-resize="s"></i>
  <i class="desktop-app-resize w" data-app-resize="w"></i><i class="desktop-app-resize e" data-app-resize="e"></i>
@@ -6558,7 +6558,7 @@ function handlePwaLaunchShortcut(){
 }
 window.addEventListener("load",handlePwaLaunchShortcut,{once:true});
 
-if('serviceWorker' in navigator&&location.protocol!=='file:'){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=79listen1',{scope:'./',updateViaCache:'none'}).catch(()=>{}),{once:true})}
+if('serviceWorker' in navigator&&location.protocol!=='file:'){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=79prayinfo2switch1',{scope:'./',updateViaCache:'none'}).catch(()=>{}),{once:true})}
 
 /* Bind core controls before optional app modules: one failed module must never freeze Tahoe. */
 const tahoeSafeInit=(label,fn)=>{try{fn()}catch(e){console.error("[Tahoe startup] "+label,e);try{sessionStorage.setItem("tahoe.lastStartupError",label+": "+String(e?.message||e))}catch{}}};
