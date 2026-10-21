@@ -3211,11 +3211,11 @@ body.theme-gray .desktop-context-menu{background:rgba(229,232,235,.9)}
 @media(max-width:760px){.desktop-context-menu{min-width:220px;max-width:calc(100vw - 20px)}}
 
 
-/* Tahoe79 Posts desktop: compact matte native Tahoe shell, without wide wallpaper. */
+/* Tahoe79 Posts desktop: feed-width glass shell with truly transparent side areas. */
 #postsLauncher{left:588px;bottom:max(22px,env(safe-area-inset-bottom));color:#087dc9}
 #postsLauncher img{width:39px;height:39px;object-fit:contain;border-radius:10px;pointer-events:none}
 #postsWindow,body #postsWindow{
- width:min(410px,94vw);height:min(800px,91dvh);min-width:360px;min-height:470px;
+ width:min(412px,94vw);height:min(800px,91dvh);min-width:360px;min-height:470px;
  border:1px solid rgba(255,255,255,.22)!important;border-radius:var(--desktop-app-radius,14px);
  background:transparent!important;background-color:transparent!important;background-image:none!important;
  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
@@ -3246,9 +3246,9 @@ body.theme-gray .desktop-context-menu{background:rgba(229,232,235,.9)}
 #postsWindow .posts-window-open{display:grid;place-items:center;width:28px;height:27px;flex:none;
  border-radius:8px;text-decoration:none;color:#bccfe6;font-size:16px;cursor:pointer}
 #postsWindow .posts-window-open:hover,#postsWindow .posts-window-open:focus-visible{background:rgba(255,255,255,.11);color:#fff}
-#postsWindow #postsFrame{inset:auto!important;top:43px!important;left:0!important;right:0!important;bottom:0!important;
- width:100%!important;height:calc(100% - 43px)!important;
- background:transparent!important;background-color:transparent!important;box-shadow:none!important;
+#postsWindow #postsFrame{inset:auto!important;top:43px!important;left:50%!important;right:auto!important;bottom:0!important;
+ width:min(100%,410px)!important;max-width:100%!important;transform:translateX(-50%)!important;height:calc(100% - 43px)!important;
+ background:none!important;background-color:transparent!important;background-image:none!important;box-shadow:none!important;
  border:0!important;display:block;border-radius:0}
 @media(max-width:760px){
  #postsLauncher{left:76px;bottom:max(86px,calc(env(safe-area-inset-bottom) + 75px))}
@@ -3256,6 +3256,20 @@ body.theme-gray .desktop-context-menu{background:rgba(229,232,235,.9)}
  #postsWindow .posts-window-bar{padding-top:env(safe-area-inset-top);height:calc(43px + env(safe-area-inset-top))}
  #postsWindow #postsFrame{top:calc(43px + env(safe-area-inset-top))!important;height:calc(100% - 43px - env(safe-area-inset-top))!important}
 }
+
+/* Explicitly defeat fast-mode, theme, and iframe default backplates for Posts only. */
+html body #postsWindow.desktop-app-window,
+html.fast-mode body #postsWindow.desktop-app-window,
+body.theme-light #postsWindow,
+body.theme-dark #postsWindow,
+body.theme-navy #postsWindow,
+body.theme-gray #postsWindow{
+  background:none!important;background-color:transparent!important;background-image:none!important;
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+}
+body #postsWindow::before,body #postsWindow::after{content:none!important;background:none!important}
+body #postsWindow #postsFrame{background:none!important;background-color:transparent!important;
+  background-image:none!important;opacity:1!important}
 
 </style>
 </head>
@@ -4094,12 +4108,25 @@ function updateFullscreenUI(){Object.entries(desktopApps).forEach(([id,c])=>{con
 async function toggleDesktopFullscreen(id){const c=desktopApps[id],el=$(c?.window);if(!el)return;try{if(document.fullscreenElement===el){await document.exitFullscreen();return}if(document.fullscreenElement)await document.exitFullscreen();if(el.requestFullscreen){await el.requestFullscreen({navigationUI:"hide"});return}}catch{}el.classList.toggle("app-fullscreen-fallback");updateFullscreenUI()}
 document.addEventListener("fullscreenchange",updateFullscreenUI);
 function restoreDesktopAppState(id){
- const c=desktopApps[id],el=$(c.window),st=state.settings?.[c.stateKey];if(!el||!st||innerWidth<=760)return;
+ const c=desktopApps[id],el=$(c.window);let st=state.settings?.[c.stateKey];if(!el||!st||innerWidth<=760)return;
+ if(id==="posts"&&st.postsFeedFitV3!==true){
+   // Migrate the old 560-720px saved Posts width once. Do not reset later user resizes.
+   const newWidth=Math.min(412,Math.max(360,innerWidth-24));
+   const previousWidth=Number.parseFloat(st.width)||newWidth;
+   const oldX=Number.parseFloat(st.left),oldY=Number.parseFloat(st.top);
+   const x=Number.isFinite(oldX)?oldX+(previousWidth-newWidth)/2:(innerWidth-newWidth)/2;
+   const top=Number.isFinite(oldY)?oldY:Math.max(8,(innerHeight-780)/2);
+   const y=Math.max(8,Math.min(top,Math.max(8,innerHeight-475)));
+   const height=Math.max(470,Math.min(Number.parseFloat(st.height)||780,Math.max(470,innerHeight-y-8)));
+   st={...st,left:Math.round(Math.max(0,Math.min(x,innerWidth-newWidth)))+"px",top:Math.round(y)+"px",
+       width:newWidth+"px",height:Math.round(height)+"px",transform:"none",postsFeedFitV3:true};
+   state.settings[c.stateKey]=st;save();
+ }
  ["left","top","width","height","transform"].forEach(k=>{if(st[k]!=null)el.style[k]=st[k]})
 }
 function saveDesktopAppState(id){
  const c=desktopApps[id],el=$(c.window);if(!el||innerWidth<=760)return;const r=el.getBoundingClientRect();
- state.settings[c.stateKey]={left:Math.round(r.left)+"px",top:Math.round(r.top)+"px",width:Math.round(r.width)+"px",height:Math.round(r.height)+"px",transform:"none"};save()
+ state.settings[c.stateKey]={left:Math.round(r.left)+"px",top:Math.round(r.top)+"px",width:Math.round(r.width)+"px",height:Math.round(r.height)+"px",transform:"none",...(id==="posts"?{postsFeedFitV3:true}:{})};save()
 }
 function openDesktopApp(id){
  const c=desktopApps[id];if(!c)return;if(!canUseDesktopApps())return showToast("Pro access required");
@@ -6377,7 +6404,7 @@ function handlePwaLaunchShortcut(){
 }
 window.addEventListener("load",handlePwaLaunchShortcut,{once:true});
 
-if('serviceWorker' in navigator&&location.protocol!=='file:'){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=79posts2',{scope:'./',updateViaCache:'none'}).catch(()=>{}),{once:true})}
+if('serviceWorker' in navigator&&location.protocol!=='file:'){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=79posts3',{scope:'./',updateViaCache:'none'}).catch(()=>{}),{once:true})}
 
 /* Bind core controls before optional app modules: one failed module must never freeze Tahoe. */
 const tahoeSafeInit=(label,fn)=>{try{fn()}catch(e){console.error("[Tahoe startup] "+label,e);try{sessionStorage.setItem("tahoe.lastStartupError",label+": "+String(e?.message||e))}catch{}}};
@@ -6989,7 +7016,7 @@ onAuthStateChanged(auth,async user=>{
 <script src="apps/powerslide-next/powerslide-next.js?v=76"></script>
 <script src="apps/bible-next/bible-next.js?v=76"></script>
 <script src="apps/allsong-next/allsong-next.js?v=76"></script>
-<script defer src="assets/js/posts-embed-v1.js?v=79posts2"></script>
+<script defer src="assets/js/posts-embed-v1.js?v=79posts3"></script>
 
 <div class="blocked-screen" id="blockedScreen">
   <div class="blocked-card">

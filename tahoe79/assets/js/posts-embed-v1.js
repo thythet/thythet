@@ -1,33 +1,54 @@
-/* Tahoe79-only Posts feed adapter. Does not modify the original /posts/ files or data. */
+/* Tahoe79: isolate Posts embedded feed from its standalone page canvas.
+   Original /posts/ files, Firebase, Cloudinary, authentication and post UI are unchanged. */
 (()=>{
-  "use strict";
-  const frame=document.getElementById("postsFrame");
-  if(!frame)return;
-  const STYLE_ID="tahoe79-posts-embed";
-  const styles=[
-    /* Show the Tahoe wallpaper behind the iframe instead of the Posts page backdrop. */
-    "html,html:root,body,body.dark-mode{background:transparent!important;background-color:transparent!important;background-image:none!important;}",
-    "html,body{min-height:100%!important;}",
-    "body{margin:0!important;overflow-x:hidden!important;}",
-    "body::before,body::after{background:transparent!important;background-image:none!important;box-shadow:none!important;}",
-    /* The normal Posts layout is a 390px feed plus 10px padding per side (410px).
-       Preserve the feed's look instead of stretching photos or individual cards. */
-    ".app{width:min(100%,calc(var(--card-width) + 20px))!important;margin:0 auto!important;background:transparent!important;background-image:none!important;}",
-    "@media (min-width:720px){.app{padding-top:12px!important;}}"
-  ].join("\n");
-  function apply(){
-    try{
-      const doc=frame.contentDocument;
-      if(!doc?.head||!doc.body||doc.location.origin!==location.origin)return;
-      let style=doc.getElementById(STYLE_ID);
-      if(!style){style=doc.createElement("style");style.id=STYLE_ID;doc.head.appendChild(style);}
-      style.textContent=styles;
-      /* The iframe, its document canvas and Tahoe window all have transparent backgrounds. */
-      doc.documentElement.style.setProperty("background-color","transparent","important");
-      doc.body.style.setProperty("background-color","transparent","important");
-      frame.style.setProperty("background-color","transparent","important");
-    }catch(e){console.warn("[Tahoe79 Posts] Embedded styling unavailable",e);}
-  }
-  frame.addEventListener("load",apply);
-  if(frame.contentDocument?.readyState==="complete")apply();
+"use strict";
+const frame=document.getElementById("postsFrame");
+if(!frame)return;
+const STYLE_ID="tahoe79-posts-embed";
+const styles=[
+ "html,html:root,body,body.dark-mode{background:none!important;background-color:transparent!important;background-image:none!important;}",
+ "html,body{min-height:100%!important;}",
+ "body{margin:0!important;overflow-x:hidden!important;}",
+ "html::before,html::after,body::before,body::after{background:none!important;background-image:none!important;box-shadow:none!important;}",
+ /* Exact original Posts width on mobile/embedded frames: 390px card + 20px padding. */
+ ":root{--card-width:390px!important;}",
+ "main.app{display:block!important;box-sizing:border-box!important;width:min(100%,410px)!important;max-width:100%!important;",
+ "margin-left:auto!important;margin-right:auto!important;background:none!important;background-color:transparent!important;background-image:none!important;}",
+ /* Preserve the original post backgrounds; do not alter .post, media, nav or overlay surfaces. */
+ "@media(min-width:720px){main.app{padding-top:12px!important;}}"
+].join("\n");
+function clearCanvas(el){
+ if(!el)return;
+ const css=el.style;
+ if(css.getPropertyValue("background-color")!=="transparent" || css.getPropertyPriority("background-color")!=="important")
+   css.setProperty("background-color","transparent","important");
+ if(css.getPropertyValue("background-image")!=="none" || css.getPropertyPriority("background-image")!=="important")
+   css.setProperty("background-image","none","important");
+}
+let observer=null;
+function apply(){
+ try{
+   const doc=frame.contentDocument;
+   if(!doc?.head||!doc.body||doc.location.origin!==location.origin)return;
+   if(observer){observer.disconnect();observer=null}
+   let stylesheet=doc.getElementById(STYLE_ID);
+   if(!stylesheet){stylesheet=doc.createElement("style");stylesheet.id=STYLE_ID;doc.head.appendChild(stylesheet);}
+   if(stylesheet.textContent!==styles)stylesheet.textContent=styles;
+   clearCanvas(doc.documentElement);
+   clearCanvas(doc.body);
+   clearCanvas(frame);
+   // Posts can toggle theme classes and inline styles; keep only the canvas clear.
+   // Avoid observing subtree or reacting to individual posts, images and scroll events.
+   observer=new MutationObserver(()=>{
+     clearCanvas(doc.documentElement);
+     clearCanvas(doc.body);
+   });
+   observer.observe(doc.documentElement,{attributes:true,attributeFilter:["style","class"]});
+   observer.observe(doc.body,{attributes:true,attributeFilter:["style","class"]});
+ }catch(error){
+   console.warn("[Tahoe79 Posts] Transparent iframe unavailable",error);
+ }
+}
+frame.addEventListener("load",apply);
+if(frame.contentDocument?.readyState==="complete")apply();
 })();
