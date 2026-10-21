@@ -17,17 +17,9 @@ permissions:
   contents: read
 
 jobs:
-  package:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: windows-latest
-            target: win
-          - os: macos-latest
-            target: mac
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 45
+  stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -44,14 +36,48 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Install build dependencies
-        working-directory: tahoe79/powerslidepro-desktop
-        run: npm install --no-audit --no-fund
-      - name: Check JavaScript and verify offline bundle
+      - name: Verify editor and bundle all offline files
         working-directory: tahoe79/powerslidepro-desktop
         run: npm run check
+      - uses: actions/upload-artifact@v4
+        with:
+          name: powerslidepro-staged-source
+          path: tahoe79/powerslidepro-desktop/
+          if-no-files-found: error
+          retention-days: 2
+
+  package:
+    needs: stage
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: win
+          - os: macos-latest
+            target: mac
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    steps:
+      # Staging on Linux avoids Windows Git checkout errors from unrelated
+      # legacy tracked filenames in the full Tahoe repository.
+      - uses: actions/download-artifact@v4
+        with:
+          name: powerslidepro-staged-source
+          path: powerslidepro-desktop
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check application JavaScript
+        working-directory: powerslidepro-desktop
+        run: |
+          node --check main.cjs
+          node --check preload.cjs
+      - name: Install build dependencies
+        working-directory: powerslidepro-desktop
+        run: npm install --no-audit --no-fund
       - name: Build installer
-        working-directory: tahoe79/powerslidepro-desktop
+        working-directory: powerslidepro-desktop
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
         run: npm run dist:${{ matrix.target }}
@@ -59,8 +85,8 @@ jobs:
         with:
           name: powerslidepro-desktop-${{ matrix.target }}
           path: |
-            tahoe79/powerslidepro-desktop/dist/*.exe
-            tahoe79/powerslidepro-desktop/dist/*.dmg
+            powerslidepro-desktop/dist/*.exe
+            powerslidepro-desktop/dist/*.dmg
           if-no-files-found: error
           retention-days: 30
 
@@ -76,7 +102,7 @@ jobs:
           pattern: powerslidepro-desktop-*
           merge-multiple: true
           path: release-assets
-      - name: Check all three installers exist
+      - name: Verify Windows and both Mac architectures
         shell: bash
         run: |
           test "$(find release-assets -maxdepth 1 -name '*.exe' | wc -l)" -ge 1
@@ -89,13 +115,12 @@ jobs:
           prerelease: true
           generate_release_notes: false
           body: |
-            Offline PowerSlidePro for Windows and macOS (Intel / Apple Silicon).
-            Bundled: Smart Bible Generate, 66 Bible books, Khmer OS fonts,
-            slide editing, local save and Presenter/Audience screens.
-
-            Beta installers are unsigned and Apple DMGs are not notarized.
-            Hands-on editing, font fidelity, PPTX and dual-screen testing is
-            recommended before real-world worship presentations.
+            Offline PowerSlidePro Windows 10/11 and macOS (Intel / Apple Silicon).
+            Includes Smart Bible Generate, 66 Bible books, Khmer OS fonts,
+            editing, local save, PPTX export and Presenter/Audience screens.
+            
+            Unsigned beta: Mac packages are not notarized.
+            Hands-on dual-screen testing is still recommended.
           files: release-assets/*
           fail_on_unmatched_files: true
           overwrite_files: true
