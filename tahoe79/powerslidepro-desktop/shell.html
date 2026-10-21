@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; connect-src 'self' blob:; frame-src 'self';">
+<title>PowerSlidePro Desktop</title>
+<style>
+html,body{margin:0;height:100%;overflow:hidden;background:#24262a;color:#fff;font:13px system-ui}
+#deckCraftWindow{position:absolute;inset:0;overflow:hidden}
+#deckCraftFrame{position:absolute;inset:0;border:0;width:100%;height:100%;display:block;background:#24262a}
+#toast{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);padding:10px 16px;border-radius:9px;background:#252c37e8;color:#fff;box-shadow:0 10px 30px #0005;opacity:0;pointer-events:none;transition:opacity .2s;z-index:100}
+#toast.visible{opacity:1}
+</style>
+</head>
+<body>
+<div id="deckCraftWindow">
+  <iframe id="deckCraftFrame" src="apps/deckcraft-web/index.html?blank&desktop=1"
+    title="PowerSlidePro editor" allow="clipboard-read;clipboard-write;fullscreen"></iframe>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+<script src="assets/js/powerslidepro-present-v1.js"></script>
+<script>
+(()=>{
+'use strict';
+const iframe=document.getElementById('deckCraftFrame');
+const origin=location.origin;
+const host=window.PowerSlideDesktop;
+let savingAs=false,toastTimer;
+function toast(text){
+ const el=document.getElementById('toast');el.textContent=text;
+ el.classList.add('visible');clearTimeout(toastTimer);
+ toastTimer=setTimeout(()=>el.classList.remove('visible'),3600);
+}
+function send(type,other){
+ iframe.contentWindow?.postMessage(Object.assign({type},other||{}),origin);
+}
+function safeName(name){
+ return (String(name||'Presentation').replace(/[\\/:*?"<>|]/g,'_').trim().slice(0,90)||'Presentation')+'.deckcraft';
+}
+window.addEventListener('message',async e=>{
+ if(e.origin!==origin||e.source!==iframe.contentWindow)return;
+ const data=e.data||{};
+ if(data.type==='tahoe-deckcraft-present'){
+   window.dispatchEvent(new CustomEvent('powerslidepro-present',{detail:{active:!!data.active}}));
+ }else if(data.type==='tahoe-app-command'){
+   if(data.app==='deckcraft'){
+     if(data.command==='live-edit')toast('Live Edit is currently available in Tahoe online.');
+     else host?.windowAction(data.command);
+   }
+ }else if(data.type==='tahoe-deckcraft-cloud'){
+   if(data.action==='saveIntent'||data.action==='saveAsIntent'){
+     savingAs=data.action==='saveAsIntent';
+     send('tahoe-deckcraft-cloud-export',{
+       uid:String(data.uid),name:safeName(data.name),format:'deckcraft'
+     });
+   }else if(data.action==='saveData'){
+     if(!host?.save){toast('Desktop file saving is unavailable.');return;}
+     const result=await host.save({uid:String(data.uid),name:data.name,
+       data:data.data,saveAs:savingAs});
+     savingAs=false;
+     if(result?.saved)toast('Saved to computer');
+     else if(result?.error)toast('Save failed: '+result.error);
+   }else if(data.action==='saveError'){toast('Save failed: '+(data.name||'Unknown error'));}
+   else if(data.action==='library'||data.action==='list')
+     toast('Offline mode: use File → Open for local presentations.');
+   else if(data.action==='nameRequest'){
+     // Cloud naming is intentionally disabled; local documents stay user controlled.
+   }
+ }
+});
+})();
+</script>
+</body>
+</html>
