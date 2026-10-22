@@ -66,6 +66,27 @@ const origin=location.origin;
 const host=window.PowerSlideDesktop;
 let savingAs=false,toastTimer;
 
+let fontCatalogDue=false;
+async function sendInstalledFontCatalog(){
+ if(!host?.listPCFonts)return;
+ try{
+   const families=await host.listPCFonts();
+   send('tahoe-font-catalog',{families:Array.isArray(families)?families:[]});
+ }catch(error){console.warn('Font catalog unavailable',error);}
+}
+async function loadPCFont(family){
+ if(!host?.readPCFont||typeof family!=='string'||family.length>160)return;
+ try{
+   const result=await host.readPCFont(family);
+   if(!result?.bytes||!result.name)return;
+   const text=atob(result.bytes),bytes=new Uint8Array(text.length);
+   for(let i=0;i<text.length;i++)bytes[i]=text.charCodeAt(i);
+   iframe.contentWindow?.postMessage({type:'tahoe-font-data',source:'desktop',name:result.name,bytes},
+     origin,[bytes.buffer]);
+ }catch(error){console.warn('Font cannot be loaded:',family,error);}
+}
+
+
 const updateBadge=document.getElementById('pspro-update-badge');
 const updatePanel=document.getElementById('pspro-update-panel');
 const updateDetail=document.getElementById('pspro-update-detail');
@@ -170,7 +191,16 @@ function safeName(name){
 window.addEventListener('message',async e=>{
  if(e.origin!==origin||e.source!==iframe.contentWindow)return;
  const data=e.data||{};
- if(data.type==='tahoe-deckcraft-present'){
+ if(data.type==='tahoe-font-ready'){
+   void sendInstalledFontCatalog();
+   return;
+ }else if(data.type==='tahoe-font-need'){
+   void loadPCFont(data.family);
+   return;
+ }else if(data.type==='tahoe-font-rescan'){
+   void sendInstalledFontCatalog();
+   return;
+ }else if(data.type==='tahoe-deckcraft-present'){
    window.dispatchEvent(new CustomEvent('powerslidepro-present',{detail:{active:!!data.active}}));
  }else if(data.type==='tahoe-app-command'){
    if(data.app==='deckcraft'){

@@ -5,6 +5,8 @@ const fs = require('node:fs');
 const http = require('node:http');
 const path = require('node:path');
 const { URL } = require('node:url');
+const {createInstalledFontCatalog}=require('./pc-fonts.cjs');
+const installedFonts=createInstalledFontCatalog();
 
 const DATA_DIR = app.isPackaged
   ? path.join(process.resourcesPath, 'app.asar', 'payload')
@@ -220,6 +222,14 @@ if (ownsInstance) app.whenReady().then(async () => {
   });
   // Load a user-associated file through the existing PowerSlidePro editor.
   // The renderer never supplies a filesystem path; it only asks for a queued file.
+  ipcMain.handle('pspro:list-pc-fonts', event => {
+    if (!mainWindow || event.sender!==mainWindow.webContents)return [];
+    return installedFonts.scan();
+  });
+  ipcMain.handle('pspro:read-pc-font', async (event, family) => {
+    if (!mainWindow || event.sender!==mainWindow.webContents)return null;
+    return installedFonts.read(family);
+  });
   ipcMain.handle('pspro:next-open-file', async (event) => {
     if (!mainWindow || event.sender !== mainWindow.webContents) return { error: 'Invalid window' };
     if (!openQueue.length) return null;

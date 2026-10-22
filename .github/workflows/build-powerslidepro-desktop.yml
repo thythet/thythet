@@ -51,7 +51,7 @@ jobs:
           node - <<'JS'
           const assert = require('node:assert/strict');
           const conf = require('./package.json');
-          assert.equal(conf.version, '0.1.3');
+          assert.equal(conf.version, '0.1.4');
           assert.equal(conf.build.nsis.perMachine, true);
           const assoc = conf.build.win.fileAssociations.find(x => x.ext === 'deckcraft');
           assert.equal(assoc.icon, 'deckcraft.ico');
@@ -96,6 +96,8 @@ jobs:
           node --check preload.cjs
           node --check scripts/stage.cjs
           node --check updater.cjs
+          node --check pc-fonts.cjs
+          node --test tests/pc-fonts.test.cjs
           node --test tests/updater.test.cjs
       - name: Install build dependencies
         working-directory: powerslidepro-desktop
@@ -178,7 +180,7 @@ jobs:
         run: |
           test "$(find release-assets -maxdepth 1 -name '*.exe' | wc -l)" -ge 1
           test -s release-assets/latest.yml
-          grep -q 'version: 0.1.3' release-assets/latest.yml
+          grep -q 'version: 0.1.4' release-assets/latest.yml
           grep -q 'sha512:' release-assets/latest.yml
           test "$(find release-assets -maxdepth 1 -name '*mac*x64.dmg' | wc -l)" -ge 1
           test "$(find release-assets -maxdepth 1 -name '*mac*arm64.dmg' | wc -l)" -ge 1
@@ -190,8 +192,8 @@ jobs:
           test -s SHA256SUMS.txt
       - uses: softprops/action-gh-release@v2
         with:
-          tag_name: powerslidepro-desktop-v0.1.3
-          name: PowerSlidePro Desktop v0.1.3 (unsigned beta)
+          tag_name: powerslidepro-desktop-v0.1.4
+          name: PowerSlidePro Desktop v0.1.4 (unsigned beta)
           prerelease: true
           generate_release_notes: false
           body: |
@@ -206,6 +208,9 @@ jobs:
             Release metadata and SHA-512 installer verification. Windows UAC
             administrator approval may be required. Offline editing still works.
             macOS: updates remain manual until the app is code-signed.
+            Windows: automatically catalog installed fonts, show them below the
+            existing bundled fonts and load requested font files on demand.
+            Tahoe79 web adds an offline IndexedDB TTF/OTF Font Manager.
             
             Installers are unsigned by default. Windows SmartScreen and
             macOS Gatekeeper may warn on first install. Verified code signing

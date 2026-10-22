@@ -89,6 +89,8 @@ jobs:
           test -s tahoe79/apps/deckcraft-web/song-library/songs.json
           test -s tahoe79/apps/deckcraft-web/song-library/allsong2.json
           test -s tahoe79/apps/deckcraft-web/song-library/allsong3.json
+          test -s tahoe79/apps/deckcraft-web/font-manager.js
+          node --check tahoe79/apps/deckcraft-web/font-manager.js
 
       - name: Commit compiled DeckCraft Web
         run: |

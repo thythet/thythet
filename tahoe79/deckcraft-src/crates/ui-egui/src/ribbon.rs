@@ -643,15 +643,31 @@ fn slides_group(app: &mut SlideApp, ui: &mut Ui) {
 }
 
 pub fn font_families(app: &SlideApp) -> Vec<String> {
-    let mut v = vec![];
-    if let Some(m) = app.session.active().and_then(|d| d.doc.masters.first()) {
-        v.push(m.theme.fonts.major.latin.clone());
-        v.push(m.theme.fonts.minor.latin.clone());
+    let mut names=Vec::new();
+    if let Some(m)=app.session.active().and_then(|d|d.doc.masters.first()) {
+        names.push(m.theme.fonts.major.latin.clone());
+        names.push(m.theme.fonts.minor.latin.clone());
     }
-    v.extend(deckcraft_fonts::FontDb::global().families());
-    v.dedup();
-    v
+    let (bundled, imported, pc)=deckcraft_fonts::FontDb::global().grouped_families();
+    for name in bundled.into_iter().chain(imported).chain(pc) {
+        if !names.iter().any(|x| x.eq_ignore_ascii_case(&name)){names.push(name);}
+    }
+    names
 }
+/// Call an optional browser-host font bridge. Never required by native editor.
+#[cfg(target_arch="wasm32")]
+fn font_host_action(action:&str, arg:Option<&str>) {
+    use js_sys::{Function,Reflect};
+    use wasm_bindgen::{JsCast,JsValue};
+    let global=js_sys::global();
+    if let Ok(value)=Reflect::get(&global,&JsValue::from_str(action)) {
+        if let Ok(f)=value.dyn_into::<Function>() {
+            let _=f.call1(&JsValue::NULL,&JsValue::from_str(arg.unwrap_or("")));
+        }
+    }
+}
+#[cfg(not(target_arch="wasm32"))]
+fn font_host_action(_action:&str,_arg:Option<&str>){}
 
 fn font_group(app: &mut SlideApp, ui: &mut Ui, st: &Value) {
     let en = enabled(app, "format.bold");
@@ -664,26 +680,53 @@ fn font_group(app: &mut SlideApp, ui: &mut Ui, st: &Value) {
                 let fams = font_families(app);
                 let theme_fonts: Vec<String> = fams.iter().take(2).cloned().collect();
                 dropdown(ui, "font", &font, 150.0, en, |ui| {
-                    for (k, f) in fams.iter().enumerate() {
-                        let label = if k == 0 && theme_fonts.len() == 2 {
-                            format!("{f} (Headings)")
-                        } else if k == 1 && theme_fonts.len() == 2 {
-                            format!("{f} (Body)")
-                        } else {
-                            f.clone()
-                        };
-                        if ui.button(egui::RichText::new(label)).clicked() {
-                            run(app, "format.font", json!({"family": f}));
+                    let (bundled, imported, pc)=deckcraft_fonts::FontDb::global().grouped_families();
+                    if !theme_fonts.is_empty() {
+                        ui.label("PRESENTATION THEME");
+                        for (i, name) in theme_fonts.iter().enumerate() {
+                            let label=if i==0 {format!("{name} (Headings)")}else{format!("{name} (Body)")};
+                            if ui.button(label).clicked() {
+                                font_host_action("tahoeFontRequest",Some(name));
+                                run(app,"format.font",json!({"family":name}));
+                                ui.close();
+                            }
+                        }
+                        ui.separator();
+                    }
+                    ui.label("BUNDLED FONTS");
+                    for name in bundled {
+                        if ui.button(&name).clicked(){
+                            run(app,"format.font",json!({"family":name}));
                             ui.close();
                         }
-                        if k == 1 {
-                            ui.separator();
+                    }
+                    if !imported.is_empty(){
+                        ui.separator();ui.label("MY FONTS");
+                        for name in imported {
+                            if ui.button(&name).clicked(){
+                                run(app,"format.font",json!({"family":name}));
+                                ui.close();
+                            }
                         }
                     }
                     ui.separator();
-                    // Fonts installed while PowerSlidePro runs (e.g. into ~/.local/share/fonts).
-                    if ui.button("Rescan Installed Fonts").clicked() {
-                        run(app, "font.rescan", json!({}));
+                    ui.label("INSTALLED PC FONTS");
+                    if pc.is_empty(){ui.small("No system font catalog (web browser)");}
+                    for name in pc {
+                        if ui.button(&name).clicked(){
+                            font_host_action("tahoeFontRequest",Some(&name));
+                            run(app,"format.font",json!({"family":name}));
+                            ui.close();
+                        }
+                    }
+                    ui.separator();
+                    if ui.button("Rescan Installed Fonts").clicked(){
+                        run(app,"font.rescan",json!({}));
+                        font_host_action("tahoeFontRescan",None);
+                        ui.close();
+                    }
+                    if ui.button("Font Manager…  (TTF / OTF)").clicked(){
+                        font_host_action("tahoeFontManager",None);
                         ui.close();
                     }
                 });

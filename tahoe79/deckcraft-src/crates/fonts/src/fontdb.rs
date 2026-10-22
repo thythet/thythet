@@ -300,6 +300,10 @@ struct CatalogEntry {
 /// Process-wide font database.
 pub struct FontDb {
     faces: RwLock<Vec<Arc<FontFace>>>,
+    /// Installed PC font names supplied by the trusted desktop host (WASM).
+    desktop_families: RwLock<Vec<String>>,
+    /// User imported fonts stored in this web app’s IndexedDB library.
+    imported_families: RwLock<Vec<String>>,
     outlines: Mutex<HashMap<(u32, u32), Arc<BezPath>>>,
     #[cfg(not(target_arch = "wasm32"))]
     catalog: RwLock<Vec<CatalogEntry>>,
@@ -787,6 +791,8 @@ impl FontDb {
         }
         Self {
             faces: RwLock::new(faces),
+            desktop_families: RwLock::new(Vec::new()),
+            imported_families: RwLock::new(Vec::new()),
             outlines: Mutex::new(HashMap::new()),
             #[cfg(not(target_arch = "wasm32"))]
             catalog: RwLock::new(Vec::new()),
@@ -832,11 +838,61 @@ impl FontDb {
         self.catalog.read().unwrap_or_else(|e| e.into_inner())
     }
 
+    /// Names that the desktop host has cataloged. Not available to normal web
+    /// pages, which cannot enumerate a computer's font folders.
+    pub fn set_desktop_families(&self, names: Vec<String>) {
+        let loaded = self.read_faces();
+        let mut out = Vec::new();
+        for name in names {
+            let name = name.trim();
+            if name.is_empty() || name.len()>160 || out.iter().any(|s: &String| s.eq_ignore_ascii_case(name))
+               || loaded.iter().any(|f| f.family.eq_ignore_ascii_case(name)) {continue;}
+            out.push(name.to_owned());
+        }
+        out.sort_by_key(|s|s.to_lowercase());
+        *self.desktop_families.write().unwrap_or_else(|e|e.into_inner())=out;
+    }
+    pub fn mark_imported(&self, family: &str) {
+        let family=family.trim();
+        if family.is_empty() {return;}
+        let mut imported=self.imported_families.write().unwrap_or_else(|e|e.into_inner());
+        if !imported.iter().any(|s|s.eq_ignore_ascii_case(family)){imported.push(family.to_owned());}
+    }
+    /// Bundled fonts first, browser-imported fonts next, installed desktop
+    /// fonts last. Every displayed name is unique ignoring case.
+    pub fn grouped_families(&self) -> (Vec<String>,Vec<String>,Vec<String>) {
+        let imported=self.imported_families.read().unwrap_or_else(|e|e.into_inner()).clone();
+        let native=self.desktop_families.read().unwrap_or_else(|e|e.into_inner()).clone();
+        let mut regular=Vec::new();
+        let mut mine=Vec::new();
+        let mut local=Vec::new();
+        let mut seen=std::collections::HashSet::new();
+        for f in self.read_faces().iter(){
+            let name=&f.family;
+            if !seen.insert(name.to_lowercase()){continue;}
+            if imported.iter().any(|x|x.eq_ignore_ascii_case(name)){mine.push(name.clone());}
+            else if native.iter().any(|x|x.eq_ignore_ascii_case(name)){local.push(name.clone());}
+            else {regular.push(name.clone());}
+        }
+        for name in native {
+            if seen.insert(name.to_lowercase()){local.push(name);}
+        }
+        regular.sort_by_key(|s|s.to_lowercase());
+        mine.sort_by_key(|s|s.to_lowercase());
+        local.sort_by_key(|s|s.to_lowercase());
+        (regular,mine,local)
+    }
     /// Family names available (loaded plus cataloged system fonts), sorted and deduplicated.
     pub fn families(&self) -> Vec<String> {
+        #[cfg(target_arch="wasm32")]
+        {
+            let (bundled,imported,pc)=self.grouped_families();
+            return bundled.into_iter().chain(imported).chain(pc).collect();
+        }
         let mut v: Vec<String> = self.read_faces().iter().map(|f| f.family.clone()).collect();
         #[cfg(not(target_arch = "wasm32"))]
         v.extend(self.read_catalog().iter().map(|c| c.family.clone()));
+        v.extend(self.desktop_families.read().unwrap_or_else(|e|e.into_inner()).iter().cloned());
         v.sort_by_key(|a| a.to_lowercase());
         v.dedup_by(|a, b| a.eq_ignore_ascii_case(b));
         v

@@ -133,6 +133,87 @@ fn install_cloud_open_receiver() {
 
 
 
+
+// Font events use the same-origin window protocol. Browser imports are supplied
+// by the in-app IndexedDB Font Manager; desktop bytes come from Electron's
+// read-only OS-font registry catalog, never a caller-provided file path.
+
+fn request_selected_desktop_font(family:&str){
+    if let Some(window)=web_sys::window(){
+        if let Ok(v)=js_sys::Reflect::get(window.as_ref(),&"tahoeFontRequest".into()){
+            if let Ok(f)=v.dyn_into::<js_sys::Function>(){
+                let _=f.call1(&wasm_bindgen::JsValue::NULL,&family.into());
+            }
+        }
+    }
+}
+
+fn install_tahoe_font_receiver() {
+    let Some(win)=web_sys::window() else{return};
+    let origin=win.location().origin().unwrap_or_default();
+    let callback=wasm_bindgen::closure::Closure::<dyn FnMut(web_sys::MessageEvent)>::new(
+        move |event:web_sys::MessageEvent|{
+            if event.origin()!=origin{return;}
+            let Some(win)=web_sys::window() else{return};
+            let kind=js_sys::Reflect::get(&event.data(),&"type".into())
+                .ok().and_then(|x|x.as_string()).unwrap_or_default();
+            let source=event.source().map(wasm_bindgen::JsValue::from);
+            let same_window=source==Some(wasm_bindgen::JsValue::from(win.clone()));
+            let from_parent=win.parent().ok().flatten().is_some_and(|parent|
+                source==Some(wasm_bindgen::JsValue::from(parent)));
+            if !same_window&&!from_parent{return;}
+            let data=event.data();
+            let db=deckcraft_fonts::FontDb::global();
+            match kind.as_str(){
+                "tahoe-font-catalog" if from_parent=>{
+                    let raw=js_sys::Reflect::get(&data,&"families".into()).unwrap_or_default();
+                    if !js_sys::Array::is_array(&raw){return;}
+                    let values=js_sys::Array::from(&raw);
+                    if values.length()>4000{return;}
+                    let families=values.iter().filter_map(|x|x.as_string()).collect();
+                    db.set_desktop_families(families);
+                }
+                "tahoe-font-data"=>{
+                    if !(same_window||from_parent){return;}
+                    let name=js_sys::Reflect::get(&data,&"name".into())
+                        .ok().and_then(|x|x.as_string()).unwrap_or_default();
+                    if name.len()>250{return;}
+                    let raw=js_sys::Reflect::get(&data,&"bytes".into()).unwrap_or_default();
+                    if !raw.is_instance_of::<js_sys::Uint8Array>(){return;}
+                    let bytes=js_sys::Uint8Array::new(&raw);
+                    if bytes.length()<100||bytes.length()>45*1024*1024{return;}
+                    let before=db.families();
+                    if db.add_font(bytes.to_vec())==0{return;}
+                    let after=db.families();
+                    let imported=js_sys::Reflect::get(&data,&"source".into()).ok()
+                        .and_then(|x|x.as_string()).as_deref()==Some("imported");
+                    if imported {
+                        for family in after {
+                            if !before.iter().any(|x|x.eq_ignore_ascii_case(&family)){
+                                db.mark_imported(&family);
+                            }
+                        }
+                    }
+                }
+                _=>{}
+            }
+        });
+    let _=win.add_event_listener_with_callback("message",callback.as_ref().unchecked_ref());
+    callback.forget();
+}
+fn announce_tahoe_font_ready(){
+    let Some(win)=web_sys::window() else{return};
+    let origin=win.location().origin().unwrap_or_default();
+    let data=js_sys::Object::new();
+    let _=js_sys::Reflect::set(&data,&"type".into(),&"tahoe-font-ready".into());
+    let _=win.post_message(&data,&origin);
+    if let Ok(Some(parent))=win.parent(){
+        if wasm_bindgen::JsValue::from(parent.clone())!=wasm_bindgen::JsValue::from(win){
+            let _=parent.post_message(&data,&origin);
+        }
+    }
+}
+
 pub fn start() {
     eframe::WebLogger::init(log::LevelFilter::Info).ok();
     wasm_bindgen_futures::spawn_local(async {
@@ -159,6 +240,7 @@ pub fn start() {
             .unwrap_or_else(|| "SONYHEAD5".to_owned());
 
         install_cloud_open_receiver();
+        install_tahoe_font_receiver();
         // Tahoe web build uses eframe's native Glow/WebGL2 renderer.
         // This avoids the wgpu/WebGPU initialization path, which can stall inside embedded app windows.
         let mut options = eframe::WebOptions::default();
@@ -220,6 +302,7 @@ pub fn start() {
         // Load the optional Khmer OS pack only after the editor has mounted.
         // The first paint must never wait for 40 font network requests.
         if result.is_ok() {
+            announce_tahoe_font_ready();
             wasm_bindgen_futures::spawn_local(async { load_remaining_tahoe_fonts().await; });
         }
         if let Some(el) = document.get_element_by_id(LOADING_ID) {
@@ -996,7 +1079,9 @@ impl TypographyPanel {
                             egui::ComboBox::from_id_salt("tahoe-apply-font")
                                 .selected_text(&self.font).width(156.0).show_ui(ui, |ui| {
                                     for family in deckcraft_fonts::FontDb::global().families() {
-                                        ui.selectable_value(&mut self.font, family.clone(), family);
+                                        if ui.selectable_value(&mut self.font, family.clone(), &family).clicked() {
+                                            request_selected_desktop_font(&family);
+                                        }
                                     }
                                 });
                         });
