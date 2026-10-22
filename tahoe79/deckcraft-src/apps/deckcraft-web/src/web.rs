@@ -577,7 +577,6 @@ impl eframe::App for WebShell {
             self.bible.ui(ui.ctx(), &mut self.app);
             self.song_tools.poll_menu(ui.ctx(), &mut self.app);
             self.song.ui(ui.ctx(), &mut self.app);
-            self.song_tools.ui(ui.ctx(), &mut self.app);
             self.typography.ui(ui.ctx(), &mut self.app);
         }
     }
@@ -633,6 +632,50 @@ impl WebShell {
 
 
 #[derive(Clone, Copy, PartialEq, Eq)]
+enum FormatTab { TextBible, Song }
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum SongTarget { Title, Lyrics, Verse, Chorus, Bridge, SelectedText }
+impl SongTarget {
+    fn label(self) -> &'static str {
+        match self {
+            Self::Title => "Song title",
+            Self::Lyrics => "Song lyrics",
+            Self::Verse => "Verse only",
+            Self::Chorus => "Chorus only",
+            Self::Bridge => "Bridge only",
+            Self::SelectedText => "Highlighted text only",
+        }
+    }
+    fn section(self) -> Option<&'static str> {
+        match self {
+            Self::Verse => Some("Verse"),
+            Self::Chorus => Some("Chorus"),
+            Self::Bridge => Some("Bridge"),
+            _ => None,
+        }
+    }
+}
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum SongReach { Current, All, SelectedSlides }
+impl SongReach {
+    fn label(self) -> &'static str {
+        match self {
+            Self::Current => "Current song",
+            Self::All => "All songs",
+            Self::SelectedSlides => "Selected song slides",
+        }
+    }
+}
+#[derive(Clone)]
+struct FormatValues {
+    font: String, font_size: f32, line_spacing: f32,
+    set_font: bool, set_size: bool, set_spacing: bool,
+    set_bold: bool, bold: bool, set_italic: bool, italic: bool,
+    set_underline: bool, underline: bool, set_color: bool, color: String,
+    set_align: bool, align: String, set_anchor: bool, anchor: String,
+    set_baseline: bool, baseline: VerseBaseline,
+}
+#[derive(Clone, Copy, PartialEq, Eq)]
 enum ApplyScope {
     All, Box, Selection, Headings, Verses, Content, CurrentSlide, SelectedSlides, VerseNumbers,
 }
@@ -660,6 +703,11 @@ impl VerseBaseline {
 }
 struct TypographyPanel {
     open: bool,
+    tab: FormatTab,
+    saved_regular: Option<FormatValues>,
+    saved_song: Option<FormatValues>,
+    song_target: SongTarget,
+    song_reach: SongReach,
     scope: ApplyScope,
     font: String,
     font_size: f32,
@@ -684,7 +732,10 @@ struct TypographyPanel {
 impl Default for TypographyPanel {
     fn default() -> Self {
         Self {
-            open: false, scope: ApplyScope::VerseNumbers,
+            open: false, tab: FormatTab::TextBible,
+            saved_regular: None, saved_song: None,
+            song_target: SongTarget::Lyrics, song_reach: SongReach::All,
+            scope: ApplyScope::VerseNumbers,
             font: "Khmer OS Muol Light".to_owned(), font_size: 40.0, line_spacing: 1.15,
             set_font: true, set_size: true, set_spacing: false,
             set_bold: true, bold: true, set_italic: true, italic: false,
@@ -761,12 +812,50 @@ fn clamp_format_window(pos: egui::Pos2, viewport: egui::Rect, size: egui::Vec2) 
 }
 
 impl TypographyPanel {
+    fn values(&self) -> FormatValues {
+        FormatValues {
+            font:self.font.clone(),font_size:self.font_size,line_spacing:self.line_spacing,
+            set_font:self.set_font,set_size:self.set_size,set_spacing:self.set_spacing,
+            set_bold:self.set_bold,bold:self.bold,set_italic:self.set_italic,italic:self.italic,
+            set_underline:self.set_underline,underline:self.underline,set_color:self.set_color,color:self.color.clone(),
+            set_align:self.set_align,align:self.align.clone(),set_anchor:self.set_anchor,anchor:self.anchor.clone(),
+            set_baseline:self.set_baseline,baseline:self.baseline,
+        }
+    }
+    fn restore(&mut self,v:FormatValues) {
+        self.font=v.font;self.font_size=v.font_size;self.line_spacing=v.line_spacing;
+        self.set_font=v.set_font;self.set_size=v.set_size;self.set_spacing=v.set_spacing;
+        self.set_bold=v.set_bold;self.bold=v.bold;self.set_italic=v.set_italic;self.italic=v.italic;
+        self.set_underline=v.set_underline;self.underline=v.underline;self.set_color=v.set_color;self.color=v.color;
+        self.set_align=v.set_align;self.align=v.align;self.set_anchor=v.set_anchor;self.anchor=v.anchor;
+        self.set_baseline=v.set_baseline;self.baseline=v.baseline;
+    }
+    fn switch_tab(&mut self,to:FormatTab) {
+        if self.tab==to {return;}
+        let old=self.values();
+        match self.tab {FormatTab::TextBible=>self.saved_regular=Some(old),FormatTab::Song=>self.saved_song=Some(old)}
+        let next=match to {
+            FormatTab::TextBible=>self.saved_regular.clone(),
+            FormatTab::Song=>self.saved_song.clone(),
+        };
+        if let Some(v)=next {self.restore(v);}
+        else if to==FormatTab::Song {
+            self.font=BIBLE_DEFAULT_FONT.into();self.font_size=40.0;self.line_spacing=1.3;
+            self.set_font=true;self.set_size=true;self.set_spacing=false;
+            self.set_bold=false;self.bold=false;self.set_italic=false;self.italic=false;
+            self.set_underline=false;self.underline=false;self.set_color=false;self.color="#ffffff".into();
+            self.set_align=false;self.align="center".into();self.set_anchor=false;self.anchor="top".into();
+            self.set_baseline=false;self.baseline=VerseBaseline::Normal;
+        }
+        self.tab=to;
+        self.status.clear();
+    }
     fn selected_count(&self) -> u8 {
         let style = self.set_bold || self.set_italic || self.set_underline;
         let mut count = self.set_font as u8 + self.set_size as u8 + style as u8
             + self.set_color as u8 + self.set_spacing as u8 + self.set_align as u8
             + self.set_anchor as u8;
-        if self.scope == ApplyScope::VerseNumbers {
+        if self.tab==FormatTab::TextBible && self.scope == ApplyScope::VerseNumbers {
             count += self.set_baseline as u8 + self.convert_numbers as u8;
         } else {
             count += self.set_baseline as u8;
@@ -781,7 +870,14 @@ impl TypographyPanel {
             if clicked { d.insert_temp(key, false); }
             clicked
         });
-        if ribbon_open { self.open = true; }
+        let song_open=ctx.data_mut(|d|{
+            let id=egui::Id::new("tahoe-format-song-open");
+            let value=d.get_temp::<bool>(id).unwrap_or(false);
+            if value {d.insert_temp(id,false);}
+            value
+        });
+        if ribbon_open { self.switch_tab(FormatTab::TextBible);self.open=true; }
+        if song_open { self.switch_tab(FormatTab::Song);self.open=true; }
         if !self.open { return; }
         let mut apply_now = false;
         let mut close_now = false;
@@ -843,8 +939,37 @@ impl TypographyPanel {
                     ui.visuals_mut().widgets.hovered.bg_stroke = egui::Stroke::new(1.0, FORMAT_ORANGE);
                     ui.visuals_mut().widgets.active.bg_stroke = egui::Stroke::new(1.0, FORMAT_ORANGE);
 
+                    // Additional tab uses the exact same compact formatting controls.
+                    ui.horizontal(|ui|{
+                        ui.spacing_mut().item_spacing.x=4.0;
+                        if format_segment(ui,"Apply Formatting",150.0,self.tab==FormatTab::TextBible,true,false) {
+                            self.switch_tab(FormatTab::TextBible);
+                        }
+                        if format_segment(ui,"Song Formatting",150.0,self.tab==FormatTab::Song,true,false) {
+                            self.switch_tab(FormatTab::Song);
+                        }
+                    });
+                    ui.add_space(9.0);
                     format_section(ui, "APPLY TO");
                     ui.add_space(5.0);
+                    if self.tab==FormatTab::Song {
+                        egui::ComboBox::from_id_salt("tahoe-song-apply-target")
+                            .selected_text(self.song_target.label()).width(310.0)
+                            .show_ui(ui,|ui|{
+                                for t in [SongTarget::Title,SongTarget::Lyrics,SongTarget::Verse,
+                                    SongTarget::Chorus,SongTarget::Bridge,SongTarget::SelectedText] {
+                                    ui.selectable_value(&mut self.song_target,t,t.label());
+                                }
+                            });
+                        ui.add_space(5.0);
+                        egui::ComboBox::from_id_salt("tahoe-song-apply-reach")
+                            .selected_text(self.song_reach.label()).width(310.0)
+                            .show_ui(ui,|ui|{
+                                for reach in [SongReach::Current,SongReach::All,SongReach::SelectedSlides]{
+                                    ui.selectable_value(&mut self.song_reach,reach,reach.label());
+                                }
+                            });
+                    } else {
                     egui::ComboBox::from_id_salt("tahoe-format-scope")
                         .selected_text(self.scope.label())
                         .width(310.0)
@@ -855,6 +980,7 @@ impl TypographyPanel {
                                 ui.selectable_value(&mut self.scope, scope, scope.label());
                             }
                         });
+                    }
                     ui.add_space(11.0);
                     ui.horizontal(|ui| {
                         ui.spacing_mut().item_spacing.x = 4.0;
@@ -910,7 +1036,7 @@ impl TypographyPanel {
                         });
                         self.color = format!("#{:02x}{:02x}{:02x}", color.r(), color.g(), color.b());
                     });
-                    if self.scope == ApplyScope::VerseNumbers {
+                    if self.tab==FormatTab::TextBible && self.scope == ApplyScope::VerseNumbers {
                         ui.add_space(10.0);
                         format_rule(ui, 310.0);
                         ui.add_space(9.0);
@@ -987,7 +1113,7 @@ impl TypographyPanel {
                                         });
                                 });
                             });
-                            if self.scope != ApplyScope::VerseNumbers {
+                            if self.tab==FormatTab::Song || self.scope != ApplyScope::VerseNumbers {
                                 ui.horizontal(|ui| {
                                     format_tick(ui, &mut self.set_baseline, "Change text baseline");
                                     format_label(ui, "Position", 57.0);
@@ -1059,7 +1185,7 @@ impl TypographyPanel {
         if self.set_color { app.run("format.color",json!({"color":self.color.trim()}))?; }
         if self.set_align { app.run("format.align",json!({"align":self.align}))?; }
         if self.set_anchor { app.run("format.anchor",json!({"anchor":self.anchor}))?; }
-        if self.set_baseline && self.scope != ApplyScope::VerseNumbers {
+        if self.set_baseline && (self.tab==FormatTab::Song || self.scope != ApplyScope::VerseNumbers) {
             match self.baseline {
                 VerseBaseline::Normal => {
                     app.run("format.superscript",json!({"on":false}))?;
@@ -1071,7 +1197,130 @@ impl TypographyPanel {
         }
         Ok(())
     }
+    // Song tab reuses precisely the same checked formatting commands as the
+    // regular Apply Formatting panel, but limits targets to PowerSlidePro songs.
+    fn apply_song(&self,app:&mut SlideApp)->Result<usize,String> {
+        let state=app.session.active().ok_or_else(||"No active presentation.".to_string())?;
+        let current=state.selection.slide;
+        let selected_slide_ids=state.selection.slides.clone();
+        let selected_text=state.selection.text.clone();
+        if self.set_color &&
+            (self.color.len()!=7 || !self.color.starts_with('#') || !self.color[1..].chars().all(|c|c.is_ascii_hexdigit())) {
+            return Err("Color must be hexadecimal, for example #112233.".into());
+        }
+        if self.song_target==SongTarget::SelectedText {
+            if !state.doc.slides.get(current).is_some_and(|s|s.name.starts_with("Song · ")||
+                s.name.starts_with("Song Part · ")) {
+                return Err("Select lyrics or title on a Song slide first.".into());
+            }
+            if !selected_text.as_ref().is_some_and(|t|t.is_range()&&!t.notes) {
+                return Err("Highlight text inside a Song slide first.".into());
+            }
+            self.apply_to_selected(app)?;
+            return Ok(1);
+        }
+        // A range holds original Unicode *character* offsets in the stored
+        // lyric body. Convert to (paragraph, character) immediately before
+        // calling text.select so Khmer combining marks stay intact.
+        let mut targets:Vec<(usize,deckcraft_engine::model::ShapeId,Option<(usize,usize)>,usize)> = Vec::new();
+        for (index,slide) in state.doc.slides.iter().enumerate() {
+            let source=slide.name.starts_with("Song · ");
+            let part=slide.name.starts_with("Song Part · ");
+            if !source&&!part {continue;}
+            if self.song_reach==SongReach::Current&&index!=current {continue;}
+            if self.song_reach==SongReach::SelectedSlides&&!selected_slide_ids.contains(&slide.id) {continue;}
+            if self.song_target==SongTarget::Title {
+                if let Some(shape)=slide.shapes.first().filter(|s|s.text.is_some()) {
+                    targets.push((index,shape.id,None,0));
+                }
+            } else if self.song_target==SongTarget::Lyrics {
+                if let Some(shape)=slide.shapes.get(1).filter(|s|s.text.is_some()) {
+                    targets.push((index,shape.id,None,1));
+                }
+            } else if let Some(section)=self.song_target.section() {
+                if source {
+                    if let (Some(shape),Some(meta))=(slide.shapes.get(1),
+                        song_v2::read_song_note(app,index,song_v2::SOURCE_TAG)) {
+                        if meta["lyrics"].as_str()==shape.text.as_ref().map(text_body_plain).as_deref() {
+                            for mark in meta["sections"].as_array().into_iter().flatten() {
+                                if mark["type"].as_str()!=Some(section) {continue;}
+                                if let (Some(start),Some(end))=(mark["start"].as_u64(),mark["end"].as_u64()) {
+                                    if end>start {targets.push((index,shape.id,Some((start as usize,end as usize)),1));}
+                                }
+                            }
+                        }
+                    }
+                } else if song_v2::read_song_note(app,index,song_v2::PART_TAG)
+                    .and_then(|meta|meta["section"].as_str().map(str::to_owned))
+                    .as_deref()==Some(section) {
+                    if let Some(shape)=slide.shapes.get(1).filter(|s|s.text.is_some()){
+                        targets.push((index,shape.id,None,1));
+                    }
+                }
+            }
+        }
+        if targets.is_empty() {
+            return Err("No matching Song text. Choose a Song slide or mark Verse/Chorus/Bridge first.".into());
+        }
+        let mut count=0;
+        for (index,id,range,slot) in targets {
+            app.run("slide.go",json!({"index":index}))?;
+            if let Some((start,end))=range {
+                let body=app.session.active()
+                    .and_then(|st|st.doc.slides.get(index))
+                    .and_then(|sl|sl.shape(id))
+                    .and_then(|sh|sh.text.as_ref())
+                    .ok_or_else(||"Song lyrics are unavailable.".to_string())?;
+                let len:usize=body.paragraphs.iter().map(|p|p.text().chars().count()).sum::<usize>()
+                    +body.paragraphs.len().saturating_sub(1);
+                if end>len {return Err("Song section has changed. Re-mark it before formatting.".into());}
+                let start_pos=song_position(body,start);
+                let end_pos=song_position(body,end);
+                app.run("text.edit",json!({"id":id}))?;
+                app.run("text.select",json!({
+                    "anchor":[start_pos.0,start_pos.1],
+                    "caret":[end_pos.0,end_pos.1]
+                }))?;
+                self.apply_to_selected(app)?;
+                app.run("text.exit",json!({}))?;
+            }else {
+                app.run("selection.select",json!({"ids":[id]}))?;
+                self.apply_to_selected(app)?;
+            }
+            // Keep the source's saved style metadata updated for future splits.
+            let key=if let Some(section)=self.song_target.section() {
+                format!("section_formats.{section}")
+            }else if slot==0 {"title_format".into()}else{"lyrics_format".into()};
+            song_v2::merge_song_format(app,index,&key,&self.format_patch())?;
+            count+=1;
+        }
+        app.run("slide.go",json!({"index":current}))?;
+        // Restore object selection only; do not create a bogus text selection.
+        if let Some(state)=app.session.active(){
+            let ids=state.doc.slides.get(current).map(|s|s.shapes.iter().map(|x|x.id).collect::<Vec<_>>()).unwrap_or_default();
+            let prior_shapes:Vec<_>=state.selection.shapes.iter().copied().filter(|id|ids.contains(id)).collect();
+            if !prior_shapes.is_empty(){let _=app.run("selection.select",json!({"ids":prior_shapes}));}
+        }
+        Ok(count)
+    }
+    fn format_patch(&self)->serde_json::Value {
+        let mut patch=json!({});
+        if self.set_font {patch["font"]=json!(self.font.trim());}
+        if self.set_size {patch["size"]=json!(self.font_size);}
+        if self.set_spacing {patch["line_spacing"]=json!(self.line_spacing);}
+        if self.set_bold {patch["bold"]=json!(self.bold);}
+        if self.set_italic {patch["italic"]=json!(self.italic);}
+        if self.set_underline {patch["underline"]=json!(self.underline);}
+        if self.set_color {patch["color"]=json!(self.color.trim());}
+        if self.set_align {patch["align"]=json!(self.align);}
+        if self.set_anchor {patch["anchor"]=json!(self.anchor);}
+        if self.set_baseline {patch["baseline"]=json!(match self.baseline {
+            VerseBaseline::Normal=>"normal",VerseBaseline::Super=>"super",VerseBaseline::Sub=>"sub",
+        });}
+        patch
+    }
     fn apply(&self, app: &mut SlideApp) -> Result<usize, String> {
+        if self.tab==FormatTab::Song { return self.apply_song(app); }
         let Some(state) = app.session.active() else { return Err("No active presentation.".into()) };
         let current = state.selection.slide;
         if self.set_color && (self.color.len()!=7 || !self.color.starts_with('#') || !self.color[1..].chars().all(|c|c.is_ascii_hexdigit())) {
@@ -1172,6 +1421,17 @@ impl TypographyPanel {
     }
 }
 
+// Absolute Unicode-character offset (line separators count as one character)
+// to a PowerSlidePro text selection position.
+fn song_position(body:&deckcraft_engine::model::text::TextBody, mut index:usize)->(usize,usize) {
+    for (para,p) in body.paragraphs.iter().enumerate() {
+        let length=p.text().chars().count();
+        if index<=length {return (para,index);}
+        index=index.saturating_sub(length+1);
+    }
+    let last=body.paragraphs.len().saturating_sub(1);
+    (last,body.paragraphs.last().map_or(0,|p|p.text().chars().count()))
+}
 
 
 #[derive(Clone)]

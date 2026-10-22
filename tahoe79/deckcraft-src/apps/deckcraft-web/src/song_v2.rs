@@ -2,8 +2,8 @@
 use super::{apply_generated_style, text_body_plain, SlideApp, BIBLE_DEFAULT_FONT};
 use serde_json::{json, Value};
 
-const SOURCE_TAG: &str = "TAHOE79_SONG_SOURCE_V2\n";
-const PART_TAG: &str = "TAHOE79_SONG_PART_V2\n";
+pub(super) const SOURCE_TAG: &str = "TAHOE79_SONG_SOURCE_V2\n";
+pub(super) const PART_TAG: &str = "TAHOE79_SONG_PART_V2\n";
 
 #[derive(Clone)]
 struct SongStyle {
@@ -40,7 +40,7 @@ impl SongStyle {
 fn note_data(s: &str, tag: &str) -> Option<Value> {
     serde_json::from_str(s.strip_prefix(tag)?).ok()
 }
-fn get_note(app: &SlideApp, index: usize, tag: &str) -> Option<Value> {
+pub(super) fn read_song_note(app: &SlideApp, index: usize, tag: &str) -> Option<Value> {
     let st = app.session.active()?;
     let slide = st.doc.slides.get(index)?;
     note_data(&text_body_plain(&slide.notes), tag)
@@ -49,6 +49,55 @@ fn save_note(app: &mut SlideApp, index: usize, tag: &str, data: &Value) -> Resul
     app.run("slide.notes", json!({"index":index,"text": format!("{tag}{data}")}))?;
     Ok(())
 }
+
+// Merge only checked properties into a source or split slide's saved
+// formatting. Saved notes survive cloud/export and allow future splitting.
+pub(super) fn merge_song_format(app:&mut SlideApp,index:usize,key:&str,patch:&Value)->Result<(),String>{
+    let tag=if read_song_note(app,index,SOURCE_TAG).is_some(){SOURCE_TAG}
+        else if read_song_note(app,index,PART_TAG).is_some(){PART_TAG}
+        else {return Ok(());};
+    let Some(mut data)=read_song_note(app,index,tag) else {return Ok(());};
+    let mut item=if let Some(section)=key.strip_prefix("section_formats.") {
+        data["section_formats"][section].clone()
+    }else{data[key].clone()};
+    if !item.is_object(){item=json!({});}
+    if let Some(properties)=patch.as_object(){
+        for (name,value) in properties {item[name]=value.clone();}
+    }
+    if let Some(section)=key.strip_prefix("section_formats.") {
+        if !data["section_formats"].is_object(){data["section_formats"]=json!({});}
+        data["section_formats"][section]=item;
+    }else{data[key]=item;}
+    save_note(app,index,tag,&data)
+}
+fn apply_saved_style(app:&mut SlideApp,patch:&Value)->Result<(),String> {
+    if let Some(font)=patch["font"].as_str() {
+        if !font.trim().is_empty() && deckcraft_fonts::FontDb::global().has_family(font) {
+            app.run("format.font",json!({"family":font}))?;
+        }
+    }
+    if let Some(size)=patch["size"].as_f64(){app.run("format.size",json!({"size":size}))?;}
+    if let Some(spacing)=patch["line_spacing"].as_f64(){app.run("format.lineSpacing",json!({"lines":spacing}))?;}
+    for (field,command) in [("bold","format.bold"),("italic","format.italic"),("underline","format.underline")]{
+        if let Some(on)=patch[field].as_bool(){app.run(command,json!({"on":on}))?;}
+    }
+    if let Some(color)=patch["color"].as_str(){app.run("format.color",json!({"color":color}))?;}
+    if let Some(align)=patch["align"].as_str(){app.run("format.align",json!({"align":align}))?;}
+    if let Some(anchor)=patch["anchor"].as_str(){app.run("format.anchor",json!({"anchor":anchor}))?;}
+    if let Some(baseline)=patch["baseline"].as_str(){
+        match baseline {
+            "normal"=>{
+                app.run("format.superscript",json!({"on":false}))?;
+                app.run("format.subscript",json!({"on":false}))?;
+            }
+            "super"=>{app.run("format.superscript",json!({"on":true}))?;}
+            "sub"=>{app.run("format.subscript",json!({"on":true}))?;}
+            _=>{}
+        }
+    }
+    Ok(())
+}
+
 fn source_id(app: &SlideApp, i: usize) -> Option<String> {
     app.session.active()?.doc.slides.get(i).map(|slide| format!("{:?}",slide.id))
 }
@@ -72,13 +121,18 @@ fn insert_styled(app: &mut SlideApp, at: usize, name: &str, title: &str,
     lyrics: &str, s: &SongStyle, notes: &str) -> Result<(), String> {
     app.run("slide.new", json!({"layout":"blank","at":at}))?;
     app.run("slide.rename", json!({"name":name}))?;
+    let data=notes.strip_prefix(SOURCE_TAG).or_else(||notes.strip_prefix(PART_TAG))
+        .and_then(|s|serde_json::from_str::<Value>(s).ok()).unwrap_or(Value::Null);
     app.run("insert.textBox",json!({"rect":[18.0,12.0,924.0,78.0],"text":title}))?;
     apply_generated_style(app, &s.font, s.title_size, true)?;
     apply_alignment(app,s)?;
+    apply_saved_style(app,&data["title_format"])?;
     app.run("format.autofit",json!({"mode":"shrink"}))?;
     app.run("insert.textBox",json!({"rect":[28.0,96.0,904.0,421.0],"text":lyrics}))?;
     apply_generated_style(app,&s.font,s.lyrics_size,false)?;
     apply_alignment(app,s)?;
+    apply_saved_style(app,&data["lyrics_format"])?;
+    apply_saved_style(app,&data["section_format"])?;
     app.run("format.autofit",json!({"mode":"shrink"}))?;
     let index=app.session.active().map(|d|d.selection.slide).unwrap_or(at);
     app.run("slide.notes",json!({"index":index,"text":notes}))?;
@@ -98,14 +152,10 @@ pub(super) fn insert_song(app: &mut SlideApp, number: usize, title: &str,
 }
 
 pub(super) struct SongTools {
-    pub(super) format_open: bool,
-    style: SongStyle,
-    target: usize,
-    scope: usize,
     status: String,
 }
 impl Default for SongTools {
-    fn default()->Self { Self {format_open:false,style:SongStyle::default(),target:1,scope:0,status:String::new()} }
+    fn default()->Self { Self {status:String::new()} }
 }
 impl SongTools {
     pub(super) fn poll_menu(&mut self,ctx:&egui::Context,app:&mut SlideApp) {
@@ -116,11 +166,7 @@ impl SongTools {
             clicked
         });
         if take("tahoe-song-format") {
-            let i=app.session.active().map(|d|d.selection.slide).unwrap_or(0);
-            if let Some(v)=get_note(app,i,SOURCE_TAG).or_else(||get_note(app,i,PART_TAG)) {
-                self.style=SongStyle::read(&v["style"]);
-            }
-            self.format_open=true;
+            ctx.data_mut(|d|d.insert_temp(egui::Id::new("tahoe-format-song-open"),true));
         }
         if take("tahoe-song-split") {
             match self.split(app) {
@@ -142,115 +188,6 @@ impl SongTools {
             }
         }
     }
-    pub(super) fn ui(&mut self,ctx:&egui::Context,app:&mut SlideApp) {
-        if !self.format_open {return;}
-        let mut open=self.format_open;
-        egui::Window::new("Song Formatting")
-            .id(egui::Id::new("tahoe79_song_formatting"))
-            .open(&mut open).default_width(330.0).min_width(285.0)
-            .movable(true).resizable(false).collapsible(false)
-            .frame(egui::Frame::NONE.fill(egui::Color32::WHITE)
-                .corner_radius(egui::CornerRadius::same(11))
-                .inner_margin(egui::Margin::symmetric(12,10))
-                .stroke(egui::Stroke::new(1.0,egui::Color32::from_rgb(221,225,230))))
-            .show(ctx,|ui|{
-                ui.spacing_mut().item_spacing=egui::vec2(6.0,7.0);
-                ui.visuals_mut().override_text_color=Some(egui::Color32::from_rgb(42,46,54));
-                ui.horizontal(|ui|{
-                    ui.selectable_value(&mut self.target,0,"Title");
-                    ui.selectable_value(&mut self.target,1,"Lyrics");
-                });
-                ui.horizontal(|ui|{
-                    ui.label("Font");
-                    egui::ComboBox::from_id_salt("song-v2-format-font")
-                        .selected_text(&self.style.font).width(180.0).show_ui(ui,|ui|{
-                            for family in deckcraft_fonts::FontDb::global().families() {
-                                ui.selectable_value(&mut self.style.font,family.clone(),family);
-                            }
-                        });
-                });
-                ui.horizontal(|ui|{
-                    ui.label("Size");
-                    let size=if self.target==0 {&mut self.style.title_size}else{&mut self.style.lyrics_size};
-                    ui.add(egui::Slider::new(size,16.0..=72.0).step_by(1.0));
-                });
-                ui.horizontal(|ui|{
-                    ui.label("Align");
-                    egui::ComboBox::from_id_salt("song-v2-format-align")
-                        .selected_text(&self.style.align)
-                        .show_ui(ui,|ui|{
-                            for (id,label) in [("left","Left"),("center","Center"),("right","Right")] {
-                                ui.selectable_value(&mut self.style.align,id.into(),label);
-                            }
-                        });
-                });
-                ui.horizontal(|ui|{
-                    ui.label("Line spacing");
-                    ui.add(egui::Slider::new(&mut self.style.line_spacing,1.0..=2.0).step_by(0.1));
-                });
-                ui.separator();
-                ui.horizontal(|ui|{
-                    ui.selectable_value(&mut self.scope,0,"This song");
-                    ui.selectable_value(&mut self.scope,1,"All songs");
-                    ui.selectable_value(&mut self.scope,2,"Selection");
-                });
-                if ui.button("Apply Formatting").clicked() {
-                    match self.apply(app) {
-                        Ok(n)=>{self.status=format!("Applied formatting to {n} item(s).");app.notify(self.status.clone());}
-                        Err(e)=>{self.status=e.clone();app.notify(e);}
-                    }
-                }
-                if !self.status.is_empty(){ui.small(&self.status);}
-            });
-        self.format_open=open;
-    }
-    fn apply(&mut self,app:&mut SlideApp)->Result<usize,String> {
-        let st=app.session.active().ok_or_else(||"Open a presentation first.".to_string())?;
-        let current=st.selection.slide;
-        let selected=st.selection.text.clone();
-        let targets:Vec<_> = if self.scope==2 {
-            let text=selected.ok_or_else(||"Select text in the song slide first.".to_string())?;
-            if !text.is_range(){return Err("Select a text range first.".into());}
-            if !st.doc.slides.get(current).is_some_and(|s|s.name.starts_with("Song · ")||s.name.starts_with("Song Part · ")) {
-                return Err("Select text on a song slide.".into());
-            }
-            vec![(current,text.shape)]
-        }else {
-            let indexes:Vec<usize>=if self.scope==1 {(0..st.doc.slides.len()).collect()}else{vec![current]};
-            indexes.into_iter().filter_map(|i|{
-                let slide=st.doc.slides.get(i)?;
-                if !slide.name.starts_with("Song · ") && !slide.name.starts_with("Song Part · ") {return None;}
-                let shape=slide.shapes.get(self.target)?;
-                Some((i,shape.id))
-            }).collect()
-        };
-        if targets.is_empty(){return Err("No matching Song text found.".into());}
-        let size=if self.target==0 {self.style.title_size}else{self.style.lyrics_size};
-        for (index,shape) in &targets {
-            if self.scope!=2 {
-                app.run("slide.go",json!({"index":index}))?;
-                app.run("selection.select",json!({"ids":[shape]}))?;
-            }
-            if !self.style.font.trim().is_empty() &&
-                deckcraft_fonts::FontDb::global().has_family(self.style.font.trim()) {
-                app.run("format.font",json!({"family":self.style.font}))?;
-            }
-            app.run("format.size",json!({"size":size}))?;
-            apply_alignment(app,&self.style)?;
-            if self.scope!=2 {app.run("format.autofit",json!({"mode":"shrink"}))?;}
-            if self.scope!=2 {
-                if let Some(mut meta)=get_note(app,*index,SOURCE_TAG){
-                    meta["style"]=self.style.json();
-                    save_note(app,*index,SOURCE_TAG,&meta)?;
-                }else if let Some(mut meta)=get_note(app,*index,PART_TAG){
-                    meta["style"]=self.style.json();
-                    save_note(app,*index,PART_TAG,&meta)?;
-                }
-            }
-        }
-        if self.scope!=2 {app.run("slide.go",json!({"index":current}))?;}
-        Ok(targets.len())
-    }
     fn mark(&mut self,app:&mut SlideApp,kind:&str)->Result<(),String>{
         let st=app.session.active().ok_or_else(||"No presentation.".to_string())?;
         let index=st.selection.slide;
@@ -271,7 +208,7 @@ impl SongTools {
         let (a,b)=(offset(start),offset(end));
         let lyrics=text_body_plain(body);
         if a>=b || b>lyrics.chars().count(){return Err("Select a lyric passage first.".into());}
-        let mut meta=get_note(app,index,SOURCE_TAG).ok_or_else(||"Song source metadata is missing.".to_string())?;
+        let mut meta=read_song_note(app,index,SOURCE_TAG).ok_or_else(||"Song source metadata is missing.".to_string())?;
         if meta["lyrics"].as_str()!=Some(lyrics.as_str()) {
             // Edits may shift character offsets. Reject old markers instead of splitting wrong text.
             meta["lyrics"]=json!(lyrics);
@@ -293,7 +230,7 @@ impl SongTools {
             .ok_or_else(||"Open a song slide first.".to_string())?;
         let (title,lyrics)=shapes_text(app,index)
             .ok_or_else(||"This song needs title and lyrics boxes.".to_string())?;
-        let mut meta=get_note(app,index,SOURCE_TAG)
+        let mut meta=read_song_note(app,index,SOURCE_TAG)
             .ok_or_else(||"Choose an original Song slide before splitting.".to_string())?;
         if meta["lyrics"].as_str()!=Some(lyrics.as_str()) {
             return Err("Lyrics have changed. Re-mark sections before splitting.".into());
@@ -314,7 +251,9 @@ impl SongTools {
         let mut at=source_index+1;
         for (n,(section,body)) in segments.iter().enumerate(){
             let data=json!({"version":2,"source_id":id,"section":section,
-                "style":style.json(),"part":n+1});
+                "style":style.json(),"part":n+1,
+                "title_format":meta["title_format"],"lyrics_format":meta["lyrics_format"],
+                "section_format":meta["section_formats"][section.as_str()]});
             insert_styled(app,at,
                 &format!("Song Part · {} · {}",title.chars().take(34).collect::<String>(),section),
                 &title,body,&style,&format!("{PART_TAG}{data}"))?;
