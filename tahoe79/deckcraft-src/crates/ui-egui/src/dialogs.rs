@@ -82,7 +82,7 @@ fn dialog_width(id: &str) -> f32 {
         "themeColors" => 760.0,
         "photoAlbum" | "chartData" | "smartart" | "customShow" => 630.0,
         "font" => 498.0,
-        "paragraph" => 516.0,
+        "paragraph" => 474.0,
         "themeFonts" | "headerFooter" | "hyperlink" | "preferences"
         | "setupShow" | "sizePosition" | "autocorrect" => 482.0,
         "replaceFonts" | "find" | "tabs" | "slideSize" => 424.0,
@@ -93,7 +93,8 @@ fn dialog_width(id: &str) -> f32 {
 fn dialog_estimated_height(id: &str) -> f32 {
     match id {
         "themeColors" | "photoAlbum" | "chartData" | "smartart" => 530.0,
-        "font" | "paragraph" | "preferences" | "themeFonts" => 325.0,
+        "font" | "preferences" | "themeFonts" => 325.0,
+        "paragraph" => 340.0,
         "replaceFonts" => 245.0,
         "find" | "tabs" | "hyperlink" | "sizePosition" => 280.0,
         _ => 205.0,
@@ -3024,48 +3025,56 @@ fn line_preset_label(kind: &str, value: &str) -> &'static str {
 }
 
 /// Home › Paragraph launcher. One OK applies alignment, indentation and spacing together.
+fn paragraph_field(ui: &mut Ui, d: &mut Dialog, key: &str, unit: &str) {
+    let mut value = d.get(key, "0");
+    ui.horizontal(|ui| {
+        ui.add(egui::TextEdit::singleline(&mut value).desired_width(92.0));
+        ui.label(unit);
+    });
+    d.fields.insert(key.to_owned(), value);
+}
+
+/// Home › Paragraph launcher: compact formatting panel, original commands untouched.
 fn paragraph_dialog(app: &mut SlideApp, ui: &mut Ui, d: &mut Dialog) -> bool {
-    ui.set_min_width(460.0);
+    ui.set_min_width(428.0);
+    ui.spacing_mut().item_spacing = vec2(8.0, 5.0);
     seed_paragraph_fields(d);
+
     ui.horizontal(|ui| {
-        ui.add_sized(vec2(110.0, 20.0), egui::Label::new("Alignment"));
-        choice(
-            ui,
-            d,
-            "paragraph_align",
-            "align",
-            &[
-                ("left", "Left"),
-                ("center", "Center"),
-                ("right", "Right"),
-                ("justify", "Justify"),
-                ("justLow", "Justify low"),
-                ("distributed", "Distributed"),
-            ],
-        );
+        ui.add_sized(vec2(88.0, 24.0), egui::Label::new("Alignment"));
+        choice(ui, d, "paragraph_align", "align", &[
+            ("left", "Left"), ("center", "Center"), ("right", "Right"),
+            ("justify", "Justify"), ("justLow", "Justify low"),
+            ("distributed", "Distributed"),
+        ]);
     });
-    ui.label(egui::RichText::new("Indentation").strong());
-    ui.horizontal(|ui| {
-        let _ = labeled_text(ui, d, "Before text", "before", 64.0);
-        ui.label("in");
-        ui.add_space(12.0);
-        let _ = labeled_text(ui, d, "After text", "after", 64.0);
-        ui.label("in");
+
+    ui.add_space(6.0);
+    ui.label(egui::RichText::new("INDENTATION").size(11.0).strong().color(Color32::from_rgb(109, 120, 134)));
+    ui.separator();
+    ui.columns(2, |cols| {
+        cols[0].label("Before text");
+        paragraph_field(&mut cols[0], d, "before", "in");
+        cols[1].label("After text");
+        paragraph_field(&mut cols[1], d, "after", "in");
     });
-    ui.horizontal(|ui| {
-        ui.add_sized(vec2(110.0, 20.0), egui::Label::new("Special"));
-        choice(ui, d, "paragraph_special", "special", &[("none", "None"), ("first", "First line"), ("hanging", "Hanging")]);
-        ui.add_space(8.0);
-        let _ = labeled_text(ui, d, "By", "by", 64.0);
-        ui.label("in");
+    ui.columns(2, |cols| {
+        cols[0].label("Special");
+        choice(&mut cols[0], d, "paragraph_special", "special", &[
+            ("none", "None"), ("first", "First line"), ("hanging", "Hanging"),
+        ]);
+        cols[1].label("By");
+        paragraph_field(&mut cols[1], d, "by", "in");
     });
-    ui.label(egui::RichText::new("Spacing").strong());
-    ui.horizontal(|ui| {
-        let _ = labeled_text(ui, d, "Spacing before", "spaceBefore", 64.0);
-        ui.label("pt");
-        ui.add_space(12.0);
-        let _ = labeled_text(ui, d, "Spacing after", "spaceAfter", 64.0);
-        ui.label("pt");
+
+    ui.add_space(6.0);
+    ui.label(egui::RichText::new("SPACING").size(11.0).strong().color(Color32::from_rgb(109, 120, 134)));
+    ui.separator();
+    ui.columns(2, |cols| {
+        cols[0].label("Before");
+        paragraph_field(&mut cols[0], d, "spaceBefore", "pt");
+        cols[1].label("After");
+        paragraph_field(&mut cols[1], d, "spaceAfter", "pt");
     });
     let mut picked: Option<(&'static str, Option<&'static str>)> = None;
     ui.horizontal(|ui| {
@@ -3098,11 +3107,12 @@ fn paragraph_dialog(app: &mut SlideApp, ui: &mut Ui, d: &mut Dialog) -> bool {
             d.fields.insert("lineValue".into(), "1".into());
         }
     }
+    ui.add_space(5.0);
+    ui.separator();
     let mut open_tabs = false;
     ui.horizontal(|ui| {
-        if ui.button("Tabs…").clicked() {
-            open_tabs = true;
-        }
+        if ui.button("Tabs…").clicked() { open_tabs = true; }
+        ui.add_space(8.0);
     });
     let (ok, cancel) = buttons(ui, "OK");
     if open_tabs {

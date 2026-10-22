@@ -965,30 +965,97 @@ fn cloud_files(ui: &mut Ui, bs: &mut Backstage, t: &Tokens) {
         dim(ui, "Sign in to Tahoe to see your Cloudinary files, then click Refresh.");
         return;
     };
+    // Mirror the Recent presentation rows: filename and metadata stay aligned,
+    // while Open / Download / Rename retain their existing Cloudinary bridge actions.
+    let width = ui.available_width().min(CONTENT_W).max(240.0);
+    let compact = width < 900.0;
+    let row_h = if compact { 91.0 } else { 62.0 };
+    let (header, _) = ui.allocate_exact_size(vec2(width, 27.0), Sense::hover());
+    ui.painter().rect_filled(header, CornerRadius::same(5), t.card);
+    ui.painter().text(pos2(header.left() + 47.0, header.center().y),
+        Align2::LEFT_CENTER, "NAME", theme::font(11.0), t.text_dim);
+    if !compact {
+        ui.painter().text(pos2(header.left() + width * 0.51, header.center().y),
+            Align2::LEFT_CENTER, "MODIFIED", theme::font(11.0), t.text_dim);
+        ui.painter().text(pos2(header.right() - 394.0, header.center().y),
+            Align2::LEFT_CENTER, "STORAGE", theme::font(11.0), t.text_dim);
+    }
+    ui.painter().text(pos2(header.right() - 238.0, header.center().y),
+        Align2::LEFT_CENTER, "ACTIONS", theme::font(11.0), t.text_dim);
+
     let mut shown = 0;
+    let query = bs.query.trim().to_lowercase();
     for f in files.iter().rev() {
         let id = f.get("id").and_then(Value::as_str).unwrap_or("");
         let name = f.get("name").and_then(Value::as_str).unwrap_or("");
         let cloud = f.get("cloudName").and_then(Value::as_str).unwrap_or("");
         let storage_id = f.get("storageId").and_then(Value::as_str).unwrap_or("");
         let modified = f.get("modified").and_then(Value::as_str).unwrap_or("");
-        if id.is_empty() || name.is_empty() || (!bs.cloud_storage_filter.is_empty() && bs.cloud_storage_filter != storage_id)
-            || !name.to_lowercase().contains(&bs.query.trim().to_lowercase()) { continue; }
-        shown += 1;
+        if id.is_empty() || name.is_empty()
+            || (!bs.cloud_storage_filter.is_empty() && bs.cloud_storage_filter != storage_id)
+            || !name.to_lowercase().contains(&query) { continue; }
+
         let ext = f.get("format").and_then(Value::as_str).unwrap_or("deckcraft");
         let bytes = f.get("size").and_then(Value::as_u64).unwrap_or(0);
-        ui.horizontal(|ui| {
-            if ui.add(egui::Button::new(RichText::new(name).color(t.text)).frame(false).min_size(vec2(280.0, 30.0))).clicked() {
-                ui.ctx().data_mut(|d| d.insert_temp(egui::Id::new("tahoe-deckcraft-cloud-file-action"), format!("open:{id}")));
+        let detail = if compact {
+            format!("{} · {} · {} · {}", ext.to_uppercase(), format_bytes(bytes), modified, cloud)
+        } else {
+            format!("{} · {}", ext.to_uppercase(), format_bytes(bytes))
+        };
+        let (rect, hover) = ui.allocate_exact_size(vec2(width, row_h), Sense::hover());
+        if shown % 2 == 0 {
+            ui.painter().rect_filled(rect, CornerRadius::same(5), t.card.gamma_multiply(0.30));
+        }
+        if hover.hovered() {
+            ui.painter().rect_filled(rect, CornerRadius::same(6), t.hover);
+        }
+        ui.painter().line_segment([rect.left_bottom(), rect.right_bottom()], Stroke::new(1.0, t.separator));
+        icons::paint(ui.painter(),
+            Rect::from_center_size(pos2(rect.left() + 22.0, rect.top() + 29.0), vec2(25.0, 25.0)),
+            Icon::Slide, t.accent, false);
+
+        let text_right = if compact { rect.right() - 12.0 } else { rect.left() + width * 0.48 };
+        let clip = Rect::from_min_max(pos2(rect.left() + 45.0, rect.top()), pos2(text_right, rect.top() + 53.0));
+        let paint = ui.painter().with_clip_rect(clip);
+        paint.text(pos2(rect.left() + 47.0, rect.top() + 20.0),
+            Align2::LEFT_CENTER, name, theme::font(13.5), t.text);
+        paint.text(pos2(rect.left() + 47.0, rect.top() + 40.0),
+            Align2::LEFT_CENTER, &detail, theme::font(11.0), t.text_dim);
+        let name_click = ui.allocate_rect(Rect::from_min_max(
+            pos2(rect.left() + 44.0, rect.top() + 4.0),
+            pos2(text_right, rect.top() + 53.0)), Sense::click());
+        if name_click.on_hover_text(format!("Open {name}")).clicked() {
+            ui.ctx().data_mut(|d| d.insert_temp(
+                egui::Id::new("tahoe-deckcraft-cloud-file-action"), format!("open:{id}")));
+        }
+        if !compact {
+            let date = modified.split('T').next().unwrap_or(modified);
+            let date_clip = Rect::from_min_max(
+                pos2(rect.left() + width * 0.51, rect.top()),
+                pos2(rect.right() - 402.0, rect.bottom()));
+            ui.painter().with_clip_rect(date_clip).text(
+                pos2(rect.left() + width * 0.51, rect.center().y),
+                Align2::LEFT_CENTER, date, theme::font(11.5), t.text_dim);
+            let storage_clip = Rect::from_min_max(
+                pos2(rect.right() - 394.0, rect.top()), pos2(rect.right() - 254.0, rect.bottom()));
+            ui.painter().with_clip_rect(storage_clip).text(
+                pos2(rect.right() - 392.0, rect.center().y),
+                Align2::LEFT_CENTER, cloud, theme::font(11.5), t.text_dim);
+        }
+
+        let buttons_y = if compact { rect.bottom() - 34.0 } else { rect.center().y - 13.0 };
+        let mut x = rect.right() - 238.0;
+        for (label, action, w) in [("Open", "open", 60.0), ("Download", "download", 92.0), ("Rename", "rename", 70.0)] {
+            let hit = Rect::from_min_size(pos2(x, buttons_y), vec2(w, 26.0));
+            if ui.put(hit, egui::Button::new(RichText::new(label).size(11.5)).min_size(vec2(w, 26.0)))
+                .on_hover_text(format!("{label} {name}")).clicked()
+            {
+                ui.ctx().data_mut(|d| d.insert_temp(
+                    egui::Id::new("tahoe-deckcraft-cloud-file-action"), format!("{action}:{id}")));
             }
-            dim(ui, &format!("{ext} · {} · {modified} · {cloud}", format_bytes(bytes)));
-            for (label, action) in [("Open", "open"), ("Download", "download"), ("Rename", "rename")] {
-                if ui.small_button(label).clicked() {
-                    ui.ctx().data_mut(|d| d.insert_temp(egui::Id::new("tahoe-deckcraft-cloud-file-action"), format!("{action}:{id}")));
-                }
-            }
-        });
-        ui.separator();
+            x += w + 8.0;
+        }
+        shown += 1;
     }
     if shown == 0 { dim(ui, "No presentations match your search or storage filter."); }
 }

@@ -73,7 +73,10 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
         }
         // Keep the left toolbar strictly outside the audience/present actions region.
         // At narrow widths the title gets the remaining space, never overlays buttons.
-        let right_reserved = if cfg!(target_arch = "wasm32") { 244.0 } else { 320.0 };
+        let web_narrow = cfg!(target_arch = "wasm32") && rect.width() < 760.0;
+        let web_tiny = cfg!(target_arch = "wasm32") && rect.width() < 540.0;
+        let right_reserved = if web_tiny { 106.0 } else if web_narrow { 164.0 }
+            else if cfg!(target_arch = "wasm32") { 244.0 } else { 320.0 };
         let toolbar_right = (rect.max.x - right_reserved - 8.0).max(rect.min.x + left + 20.0);
         let mut child = ui.new_child(
             egui::UiBuilder::new()
@@ -100,19 +103,27 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
             }
             child.separator();
         }
-        crate::qat::show(app, &mut child);
+        // At small sizes prioritize the two generators, retaining QAT in an overflow menu.
+        if !web_narrow {
+            crate::qat::show(app, &mut child);
+        }
         if cfg!(target_arch = "wasm32") {
-            child.separator();
-            let compact = rect.width() < 1150.0;
-            if child.button(if compact { "✦" } else { "✦ Smart" })
+            if !web_narrow { child.separator(); }
+            if child.add(egui::Button::new("Smart").min_size(vec2(51.0, control_h - 4.0)))
                 .on_hover_text("Smart Generate · Bible program and sermon text (slide 0)").clicked()
             {
                 ui.ctx().data_mut(|d| d.insert_temp(egui::Id::new("tahoe-smart-quick"), true));
             }
-            if child.button(if compact { "Bible" } else { "Bible Generate" })
+            if child.add(egui::Button::new("Bible").min_size(vec2(48.0, control_h - 4.0)))
                 .on_hover_text("Generate editable Bible slides").clicked()
             {
                 ui.ctx().data_mut(|d| d.insert_temp(egui::Id::new("tahoe-bible-quick"), true));
+            }
+            if web_narrow {
+                child.menu_button("⋯", |menu_ui| {
+                    menu_ui.label("Quick Access");
+                    menu_ui.horizontal(|row| crate::qat::show(app, row));
+                }).response.on_hover_text("Quick Access Toolbar");
             }
         }
         #[cfg(target_arch = "wasm32")]
@@ -127,7 +138,7 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
             // The title occupies only the unclaimed span between the actual last
             // quick action and the fixed right-hand actions. Never paint on Smart/Bible.
             let title_left = child.next_widget_position().x + 8.0;
-            let title_right = rect.right() - 246.0;
+            let title_right = rect.right() - right_reserved - 4.0;
             let available = (title_right - title_left).max(0.0);
             let width = available.min(390.0);
             let title_rect = Rect::from_center_size(
@@ -188,7 +199,7 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
                 .layout(egui::Layout::right_to_left(egui::Align::Center)),
         );
         right.spacing_mut().item_spacing.x = 6.0;
-        if icon_toggle(&mut right, Icon::Search, "Search commands (⇧⌘P)", true, false).clicked() {
+        if !web_tiny && icon_toggle(&mut right, Icon::Search, "Search commands (⇧⌘P)", true, false).clicked() {
             app.palette = Some((String::new(), 0));
         }
         // Present pill: real projector-screen pictogram, not a font-dependent square glyph.
@@ -196,7 +207,7 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
             egui::Button::new(egui::RichText::new("      Present").color(t.accent_text).font(theme::bold(13.0)))
                 .fill(t.accent)
                 .corner_radius(control_h / 2.0)
-                .min_size(vec2(110.0, control_h)),
+                .min_size(vec2(if web_tiny { 86.0 } else { 110.0 }, control_h)),
         );
         let ink = Stroke::new(1.5, t.accent_text);
         let icon_x = share.rect.left() + 15.0;
@@ -215,10 +226,10 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
             let from = if hidden { app.show_start_index() } else { from };
             app.start_show(from, false);
         }
-        if icon_toggle(&mut right, Icon::CommentsBubble, "Comments", has_doc, app.ui.pane.as_deref() == Some("comments")).clicked() {
+        if !web_narrow && icon_toggle(&mut right, Icon::CommentsBubble, "Comments", has_doc, app.ui.pane.as_deref() == Some("comments")).clicked() {
             let _ = app.run("view.pane", json!({"pane": "comments", "toggle": true}));
         }
-        if icon_toggle(
+        if !web_narrow && icon_toggle(
             &mut right,
             if app.ui.brightness == theme::Brightness::Dark { Icon::Sparkle } else { Icon::Palette },
             "Light/Dark appearance",
