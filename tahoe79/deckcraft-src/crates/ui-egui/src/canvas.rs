@@ -1183,6 +1183,43 @@ fn context_menu(app: &mut SlideApp, resp: &egui::Response) {
         ui.separator();
         // Right-clicking the text being edited keeps it (`PointerKind::ContextClick`): text items.
         let editing = app.session.active().is_some_and(|d| d.selection.text.as_ref().is_some_and(|t| !t.notes));
+        // Song-specific marking uses the real PowerSlidePro text selection.
+        // The web shell receives these context actions after the canvas renders.
+        let (song_source, song_any, song_lyrics_selected) = app.session.active().map_or((false,false,false), |d| {
+            let Some(slide) = d.current_slide() else { return (false,false,false); };
+            let source = slide.name.starts_with("Song · ");
+            let any = source || slide.name.starts_with("Song Part · ");
+            let selected = source && d.selection.text.as_ref().is_some_and(|t|
+                t.is_range() && !t.notes && slide.shapes.get(1).is_some_and(|s| s.id == t.shape));
+            (source,any,selected)
+        });
+        if song_any {
+            if song_lyrics_selected {
+                ui.menu_button("Mark Song Section", |menu| {
+                    for (label, key) in [
+                        ("Verse","tahoe-song-mark-verse"), ("Chorus","tahoe-song-mark-chorus"),
+                        ("Bridge","tahoe-song-mark-bridge"), ("Pre-Chorus","tahoe-song-mark-prechorus"),
+                        ("Intro / Outro","tahoe-song-mark-intro"),
+                        ("Instrumental","tahoe-song-mark-instrumental"),
+                        ("Remove Section Mark","tahoe-song-mark-clear"),
+                    ] {
+                        if menu.button(label).clicked() {
+                            ui.ctx().data_mut(|d|d.insert_temp(egui::Id::new(key),true));
+                            menu.close();
+                        }
+                    }
+                });
+            }
+            if ui.button("Song Formatting…").clicked() {
+                ui.ctx().data_mut(|d|d.insert_temp(egui::Id::new("tahoe-song-format"),true));
+                ui.close();
+            }
+            if song_source && ui.button("Split by Sections").clicked() {
+                ui.ctx().data_mut(|d|d.insert_temp(egui::Id::new("tahoe-song-split"),true));
+                ui.close();
+            }
+            ui.separator();
+        }
         if editing {
             if ui.button("Paragraph…").clicked() {
                 app.dialog = Some(crate::dialogs::Dialog::new("paragraph"));

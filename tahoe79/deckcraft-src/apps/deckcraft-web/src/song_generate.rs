@@ -78,7 +78,7 @@ impl SongGenerator {
                 ui.spacing_mut().item_spacing = egui::vec2(6.0, 5.0);
                 ui.spacing_mut().interact_size.y = 27.0;
                 ui.visuals_mut().override_text_color = Some(egui::Color32::from_rgb(42, 46, 54));
-                ui.small("Paste a numbered worship list. Review all uncertain matches before generating.");
+                ui.small("One song = one editable slide · title and all lyrics. Mark Verse/Chorus/Bridge and split later.");
                 let (rect, _) = ui.allocate_exact_size(
                     egui::vec2(ui.available_width().max(240.0), 136.0), egui::Sense::hover());
                 native_song_input(ctx, rect, &mut self.input);
@@ -164,7 +164,7 @@ impl SongGenerator {
                 let ready = !self.rows.is_empty() && !self.library.is_empty()
                     && self.rows.iter().all(|r| r.skip || r.selected.is_some())
                     && self.rows.iter().any(|r| !r.skip);
-                if existing { ui.small("Existing Song slides detected. Updating replaces only Song slides."); }
+                if existing { ui.small("Existing Song slides detected. Updating replaces Song slides only."); }
                 if !self.status.is_empty() { ui.label(&self.status); }
                 ui.horizontal(|ui| {
                     let text = if existing { "Update Song Slides" } else { "Generate Song Slides" };
@@ -176,6 +176,12 @@ impl SongGenerator {
                             }
                             Err(e) => { self.status = e.clone(); app.notify(e); }
                         }
+                    }
+                    if ui.button("Song Formatting").clicked() {
+                        ui.ctx().data_mut(|d|d.insert_temp(egui::Id::new("tahoe-song-format"),true));
+                    }
+                    if ui.button("Split Sections").clicked() {
+                        ui.ctx().data_mut(|d|d.insert_temp(egui::Id::new("tahoe-song-split"),true));
                     }
                     if ui.button("Clear").clicked() {
                         self.input.clear();
@@ -248,9 +254,11 @@ impl SongGenerator {
 
     fn generate(&self, app: &mut SlideApp, replace: bool) -> Result<usize, String> {
         if replace {
+            // Replace Song sources and their associated split slides; leave Bible,
+            // Smart and independently authored slides untouched.
             let indexes: Vec<usize> = app.session.active()
                 .map(|d| d.doc.slides.iter().enumerate().filter_map(|(i, s)|
-                    (s.name.starts_with("Song · ")).then_some(i)).collect())
+                    (s.name.starts_with("Song · ") || s.name.starts_with("Song Part · ")).then_some(i)).collect())
                 .unwrap_or_default();
             for index in indexes.into_iter().rev() {
                 app.run("slide.delete", json!({"index": index}))?;
@@ -265,29 +273,8 @@ impl SongGenerator {
             let song = self.library.get(row.selected.ok_or_else(|| format!("Choose song {}.", i+1))?)
                 .ok_or_else(|| "Selected song is unavailable.".to_string())?;
             let display_title = strip_catalog_number(&song.title);
-            let notes = if row.key.is_empty() { "Allsong catalog".to_owned() }
-                else { format!("Allsong catalog · Key: {}", row.key) };
-            let slide_name = format!("Song · {:02} · {}{}", i + 1,
-                display_title.chars().take(52).collect::<String>(),
-                if row.key.is_empty() { String::new() } else { format!(" [{}]", row.key) });
-            app.run("slide.new", json!({"layout":"blank"}))?;
-            app.run("slide.rename", json!({"name": slide_name}))?;
-            app.run("insert.textBox", json!({"rect":[60.0, 114.0, 840.0, 305.0], "text":display_title}))?;
-            apply_generated_style(app, &self.font_family, 43.0, true)?;
-            app.run("format.autofit", json!({"mode":"shrink"}))?;
-            let index = app.session.active().map(|d| d.selection.slide).unwrap_or(0);
-            app.run("slide.notes", json!({"index":index,"text":notes}))?;
+            super::song_v2::insert_song(app, i+1, display_title, &song.lyrics, &row.key, &self.font_family)?;
             made += 1;
-            for (part, text) in lyric_slides(&song.lyrics).into_iter().enumerate() {
-                app.run("slide.new", json!({"layout":"blank"}))?;
-                app.run("slide.rename", json!({"name":format!("Song · {:02} · Lyrics {}", i+1, part+1)}))?;
-                app.run("insert.textBox", json!({"rect":[34.0, 28.0, 892.0, 470.0], "text":text}))?;
-                apply_generated_style(app, &self.font_family, 38.0, true)?;
-                app.run("format.autofit", json!({"mode":"shrink"}))?;
-                let index = app.session.active().map(|d| d.selection.slide).unwrap_or(0);
-                app.run("slide.notes", json!({"index":index,"text":format!("{} · {}", row.requested, notes)}))?;
-                made += 1;
-            }
         }
         Ok(made)
     }

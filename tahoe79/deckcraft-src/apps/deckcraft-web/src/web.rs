@@ -11,6 +11,10 @@ mod bible_data;
 mod song_generate;
 use song_generate::SongGenerator;
 
+#[path = "song_v2.rs"]
+mod song_v2;
+use song_v2::SongTools;
+
 use serde_json::json;
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
@@ -197,9 +201,10 @@ pub fn start() {
                     let mut smart = SmartGenerator::default();
                     smart.font_family = if db.has_family(BIBLE_DEFAULT_FONT) { BIBLE_DEFAULT_FONT.to_owned() } else { default_khmer_family.clone() };
                     let mut bible = BibleGenerator::default();
-                    let mut song = SongGenerator::default();
+                    let song = SongGenerator::default();
+                    let song_tools = SongTools::default();
                     bible.font_family = if db.has_family(BIBLE_DEFAULT_FONT) { BIBLE_DEFAULT_FONT.to_owned() } else { default_khmer_family.clone() };
-                    Ok(Box::new(WebShell { app, inbox, smart, bible, song, typography: TypographyPanel::default(), presenting: false,
+                    Ok(Box::new(WebShell { app, inbox, smart, bible, song, song_tools, typography: TypographyPanel::default(), presenting: false,
                         cloud_seen_docs: std::collections::HashSet::new(),
                         audience_mode: q.contains("audience=1"),
                         audience_ready_sent: false,
@@ -238,6 +243,7 @@ struct WebShell {
     smart: SmartGenerator,
     bible: BibleGenerator,
     song: SongGenerator,
+    song_tools: SongTools,
     typography: TypographyPanel,
     presenting: bool,
     cloud_seen_docs: std::collections::HashSet<u64>,
@@ -569,7 +575,9 @@ impl eframe::App for WebShell {
             }
             self.smart.ui(ui.ctx(), &mut self.app);
             self.bible.ui(ui.ctx(), &mut self.app);
+            self.song_tools.poll_menu(ui.ctx(), &mut self.app);
             self.song.ui(ui.ctx(), &mut self.app);
+            self.song_tools.ui(ui.ctx(), &mut self.app);
             self.typography.ui(ui.ctx(), &mut self.app);
         }
     }
