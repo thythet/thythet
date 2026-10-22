@@ -1,13 +1,13 @@
 {
   "name": "powerslidepro-desktop",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "private": true,
   "description": "PowerSlidePro offline presentation software — Built and Prepared by Thet",
   "main": "main.cjs",
   "license": "UNLICENSED",
   "scripts": {
     "stage": "node scripts/stage.cjs",
-    "check": "node --check main.cjs && node --check preload.cjs && node --check scripts/stage.cjs && python3 scripts/make_icons.py && node scripts/stage.cjs",
+    "check": "node --check main.cjs && node --check preload.cjs && node --check scripts/stage.cjs && node --check updater.cjs && node --test tests/updater.test.cjs && python3 scripts/make_icons.py && node scripts/stage.cjs",
     "dist:win": "electron-builder --win nsis --x64 --publish never",
     "dist:mac": "electron-builder --mac dmg --x64 --arm64 --publish never"
   },
@@ -25,6 +25,7 @@
     "files": [
       "main.cjs",
       "preload.cjs",
+      "updater.cjs",
       "payload/**/*",
       "package.json",
       "build/icon.png"
@@ -55,7 +56,18 @@
       "createStartMenuShortcut": true,
       "perMachine": true
     },
-    "artifactName": "PowerSlidePro-${version}-${os}-${arch}.${ext}"
+    "artifactName": "PowerSlidePro-${version}-${os}-${arch}.${ext}",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "thythet",
+        "repo": "thythet",
+        "releaseType": "release"
+      }
+    ]
   },
-  "author": "Thet"
+  "author": "Thet",
+  "dependencies": {
+    "electron-updater": "6.6.2"
+  }
 }

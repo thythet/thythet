@@ -12,6 +12,30 @@ html,body{margin:0;height:100%;overflow:hidden;background:#24262a;color:#fff;fon
 #deckCraftFrame{position:absolute;inset:0;border:0;width:100%;height:100%;display:block;background:#24262a}
 #toast{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);padding:10px 16px;border-radius:9px;background:#252c37e8;color:#fff;box-shadow:0 10px 30px #0005;opacity:0;pointer-events:none;transition:opacity .2s;z-index:100}
 #toast.visible{opacity:1}
+
+/* Desktop-only native update affordance, above the existing WASM toolbar. */
+[hidden]{display:none!important}
+#pspro-update-badge{position:fixed;z-index:150;top:56px;right:211px;height:29px;
+ border:1px solid #a8c6ff;border-radius:8px;background:#e9f3ff;color:#155dc4;
+ padding:0 12px;font:600 12px system-ui;cursor:pointer;box-shadow:0 1px 4px #0002}
+#pspro-update-badge:hover{background:#d9eaff}
+#pspro-update-panel{box-sizing:border-box;position:fixed;z-index:180;right:175px;top:93px;
+ width:min(354px,calc(100vw - 24px));padding:16px;border-radius:14px;background:#fff;
+ border:1px solid #dce2ea;color:#202a39;box-shadow:0 12px 40px #17243940;
+ font:13px system-ui;line-height:1.4}
+.pspro-update-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pspro-update-head strong{font-size:14px}
+#pspro-update-close{cursor:pointer;background:transparent;border:0;color:#657083;font-size:22px}
+#pspro-update-detail{font-size:12px;color:#607086;white-space:pre-wrap;margin:10px 0 14px}
+.pspro-update-controls{display:flex;gap:8px;justify-content:flex-end}
+.pspro-update-controls button{font:600 12px system-ui;padding:8px 12px;border-radius:8px;cursor:pointer}
+#pspro-update-action{background:#e56732;color:#fff;border:1px solid #dd5c28}
+#pspro-update-later{background:#fff;color:#415069;border:1px solid #cfd6e0}
+#pspro-update-action:disabled{opacity:.6;cursor:wait}
+#pspro-update-progress{height:5px;background:#e5ebf3;border-radius:8px;overflow:hidden;margin:0 0 12px}
+#pspro-update-fill{width:0;height:100%;background:#e56732}
+@media(max-width:850px){#pspro-update-badge{right:178px;padding:0 7px}#pspro-update-panel{right:12px}}
+
 </style>
 </head>
 <body>
@@ -19,6 +43,19 @@ html,body{margin:0;height:100%;overflow:hidden;background:#24262a;color:#fff;fon
   <iframe id="deckCraftFrame" src="apps/deckcraft-web/index.html?blank&desktop=1"
     title="PowerSlidePro editor" allow="clipboard-read;clipboard-write;fullscreen"></iframe>
 </div>
+<button id="pspro-update-badge" type="button" hidden aria-label="PowerSlidePro software update available">↻ Update</button>
+<section id="pspro-update-panel" role="dialog" aria-modal="false" aria-labelledby="pspro-update-title" hidden>
+  <div class="pspro-update-head">
+    <strong id="pspro-update-title">Software Update</strong>
+    <button id="pspro-update-close" type="button" aria-label="Close update panel">×</button>
+  </div>
+  <div id="pspro-update-detail" role="status" aria-live="polite"></div>
+  <div id="pspro-update-progress" hidden><div id="pspro-update-fill"></div></div>
+  <div class="pspro-update-controls">
+    <button id="pspro-update-later" type="button">Later</button>
+    <button id="pspro-update-action" type="button">Check Now</button>
+  </div>
+</section>
 <div id="toast" role="status" aria-live="polite"></div>
 <script src="assets/js/powerslidepro-present-v1.js"></script>
 <script>
@@ -28,6 +65,66 @@ const iframe=document.getElementById('deckCraftFrame');
 const origin=location.origin;
 const host=window.PowerSlideDesktop;
 let savingAs=false,toastTimer;
+
+const updateBadge=document.getElementById('pspro-update-badge');
+const updatePanel=document.getElementById('pspro-update-panel');
+const updateDetail=document.getElementById('pspro-update-detail');
+const updateProgress=document.getElementById('pspro-update-progress');
+const updateFill=document.getElementById('pspro-update-fill');
+const updateAction=document.getElementById('pspro-update-action');
+let updateState={phase:'idle',currentVersion:'',version:'',percent:0,message:''};
+function drawUpdate(){
+ const phase=updateState.phase||'idle',version=updateState.version||'';
+ const badgeVisible=['available','downloading','ready'].includes(phase);
+ updateBadge.hidden=!badgeVisible;
+ updateBadge.textContent=phase==='ready'?'↻ Restart':phase==='downloading'
+   ?'↓ '+Math.round(updateState.percent||0)+'%':'↻ Update';
+ updateProgress.hidden=phase!=='downloading';
+ updateFill.style.width=Math.max(0,Math.min(100,Number(updateState.percent)||0))+'%';
+ updateAction.disabled=phase==='checking'||phase==='downloading';
+ const prefix='Installed version '+(updateState.currentVersion||'unknown')+'. ';
+ const statuses={
+   idle:'Check GitHub Releases for a newer version.',
+   checking:'Checking for PowerSlidePro updates…',
+   current:'You have the latest PowerSlidePro.',
+   available:'Version '+version+' is available. Choose Download to get the update.',
+   downloading:'Downloading version '+version+'… '+Math.round(updateState.percent||0)+'%',
+   ready:'Version '+version+' is ready. Save all presentations before you restart.',
+   unsupported:updateState.message||'Automatic updating is not supported on this system.',
+   error:updateState.message||'Could not check for updates.'
+ };
+ updateDetail.textContent=prefix+(statuses[phase]||'');
+ updateAction.textContent={
+   checking:'Checking…',current:'Check Again',available:'Download',
+   downloading:'Downloading…',ready:'Restart & Install',
+   unsupported:'View Releases',error:'Retry'
+ }[phase]||'Check Now';
+}
+function showUpdatePanel(){
+ updatePanel.hidden=false;
+ drawUpdate();
+}
+function hideUpdatePanel(){updatePanel.hidden=true;}
+updateBadge.addEventListener('click',showUpdatePanel);
+document.getElementById('pspro-update-close').addEventListener('click',hideUpdatePanel);
+document.getElementById('pspro-update-later').addEventListener('click',hideUpdatePanel);
+updateAction.addEventListener('click',async()=>{
+ const p=updateState.phase;
+ try{
+   if(p==='available')await host?.downloadUpdate?.();
+   else if(p==='ready')await host?.installUpdate?.();
+   else if(p==='unsupported')await host?.openUpdateRelease?.();
+   else if(p!=='checking'&&p!=='downloading')await host?.checkUpdate?.();
+ }catch(error){toast('Software Update: '+String(error));}
+});
+host?.onUpdateState?.(value=>{
+ if(value&&typeof value.phase==='string'){updateState=value;drawUpdate();}
+});
+host?.onUpdateOpen?.(()=>showUpdatePanel());
+host?.updateStatus?.().then(value=>{if(value&&value.phase){updateState=value;drawUpdate();}})
+ .catch(()=>{});
+drawUpdate();
+
 let pullingOpen=false;
 let waitingForReady=false;
 // For Windows Explorer double-clicks and File → Open, do not send documents

@@ -1,5 +1,6 @@
 'use strict';
-const { app, BrowserWindow, dialog, ipcMain, session, Menu } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain, session, Menu, shell } = require('electron');
+const { createDesktopUpdater, GITHUB_RELEASES } = require('./updater.cjs');
 const fs = require('node:fs');
 const http = require('node:http');
 const path = require('node:path');
@@ -22,6 +23,8 @@ const MIME = {
 let server;
 let origin;
 let mainWindow;
+let editorSession;
+let desktopUpdater;
 const savedPaths = new Map();
 const openQueue = [];
 const awaitingOpen = new Map();
@@ -72,13 +75,25 @@ function aboutPowerSlidePro() {
   void dialog.showMessageBox(parent || undefined, {
     type: 'info', title: 'About PowerSlidePro',
     message: 'PowerSlidePro Desktop',
-    detail: 'Version 0.1.2\nBuilt and Prepared by Thet\n\nOffline Bible presentations, Khmer typography and slideshow editing.',
+    detail: 'Version '+app.getVersion()+'\nBuilt and Prepared by Thet\n\nOffline Bible presentations, Khmer typography and slideshow editing.',
     buttons: ['OK'], icon: nativeIcon()
   });
 }
 function nativeIcon() {
   try { return require('electron').nativeImage.createFromPath(APP_ICON); }
   catch (_) { return undefined; }
+}
+function showSoftwareUpdate() {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('pspro:update-open');
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.focus();
+  }
+}
+function publishUpdateStatus(state) {
+  if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.webContents.isDestroyed()) {
+    mainWindow.webContents.send('pspro:update-state', state);
+  }
 }
 function installMenu() {
   const menu = [
@@ -88,7 +103,15 @@ function installMenu() {
       { role: 'quit', label: 'Exit PowerSlidePro' }
     ] },
     { label: 'View', submenu: [{ role: 'reload' }, { role: 'togglefullscreen' }] },
-    { label: 'Help', submenu: [{ label: 'About PowerSlidePro', click: aboutPowerSlidePro }] }
+    { label: 'Help', submenu: [
+      { label: 'Check for Updates…', click: () => {
+        showSoftwareUpdate();
+        void desktopUpdater?.check({ manual: true });
+      } },
+      { label: 'Download Latest Release…', click: () => { void shell.openExternal(GITHUB_RELEASES); } },
+      { type: 'separator' },
+      { label: 'About PowerSlidePro', click: aboutPowerSlidePro }
+    ] }
   ];
   if (process.platform === 'darwin') {
     menu.unshift({label: 'PowerSlidePro', submenu: [
@@ -142,6 +165,7 @@ function createMainWindow() {
     icon: APP_ICON,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
+      partition: 'persist:pspro-editor',
       sandbox: true, contextIsolation: true, nodeIntegration: false,
       webSecurity: true, backgroundThrottling: false
     }
@@ -158,6 +182,7 @@ function createMainWindow() {
           width: 1280, height: 720, backgroundColor: '#000',
           webPreferences: {
             sandbox: true, contextIsolation: true, nodeIntegration: false,
+            partition: 'persist:pspro-editor',
             webSecurity: true, backgroundThrottling: false
           }
         }
@@ -182,12 +207,15 @@ if (ownsInstance) app.whenReady().then(async () => {
     app.quit(); return;
   }
   origin = 'http://127.0.0.1:' + server.address().port;
-  session.defaultSession.webRequest.onBeforeRequest((details, callback) => {
+  // Sandbox the presentation editor to local resources only. The update client
+  // uses Electron's separate default session for HTTPS GitHub Release requests.
+  editorSession = session.fromPartition('persist:pspro-editor');
+  editorSession.webRequest.onBeforeRequest((details, callback) => {
     const url = details.url;
     callback({ cancel: !(url.startsWith(origin + '/') || url.startsWith('blob:') || url.startsWith('data:')) });
   });
   // Download API (PPTX/PDF/image) uses an OS file save dialog.
-  session.defaultSession.on('will-download', (_event, item) => {
+  editorSession.on('will-download', (_event, item) => {
     item.setSaveDialogOptions({ title: 'Save PowerSlidePro file', defaultPath: item.getFilename() });
   });
   // Load a user-associated file through the existing PowerSlidePro editor.
@@ -248,9 +276,38 @@ if (ownsInstance) app.whenReady().then(async () => {
       mainWindow.isMaximized() ? mainWindow.unmaximize() : mainWindow.maximize();
     else if (command === 'fullscreen') mainWindow.setFullScreen(!mainWindow.isFullScreen());
   });
+  desktopUpdater = createDesktopUpdater({
+    app, dialog, platform: process.platform,
+    updater: process.platform === 'win32' && app.isPackaged
+      ? require('electron-updater').autoUpdater : null,
+    getWindow: () => mainWindow,
+    notify: publishUpdateStatus
+  });
+  ipcMain.handle('pspro:update-status', event => {
+    if (!mainWindow || event.sender !== mainWindow.webContents) return { phase: 'error', message: 'Invalid window' };
+    return desktopUpdater.status();
+  });
+  ipcMain.handle('pspro:update-check', event => {
+    if (!mainWindow || event.sender !== mainWindow.webContents) return { phase: 'error', message: 'Invalid window' };
+    return desktopUpdater.check({ manual: true });
+  });
+  ipcMain.handle('pspro:update-download', event => {
+    if (!mainWindow || event.sender !== mainWindow.webContents) return { phase: 'error', message: 'Invalid window' };
+    return desktopUpdater.download();
+  });
+  ipcMain.handle('pspro:update-install', event => {
+    if (!mainWindow || event.sender !== mainWindow.webContents) return false;
+    return desktopUpdater.install();
+  });
+  ipcMain.handle('pspro:update-release', event => {
+    if (!mainWindow || event.sender !== mainWindow.webContents) return false;
+    void shell.openExternal(GITHUB_RELEASES);
+    return true;
+  });
   installMenu();
   createMainWindow();
+  desktopUpdater.start();
   app.on('activate', () => { if (!BrowserWindow.getAllWindows().length) createMainWindow(); });
 });
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
-app.on('before-quit', () => { if (server) server.close(); });
+app.on('before-quit', () => { desktopUpdater?.stop(); if (server) server.close(); });
