@@ -302,6 +302,8 @@ pub struct FontDb {
     faces: RwLock<Vec<Arc<FontFace>>>,
     /// Installed PC font names supplied by the trusted desktop host (WASM).
     desktop_families: RwLock<Vec<String>>,
+    /// Khmer OS and other locally shipped faces; wins over desktop detection.
+    packaged_families: RwLock<Vec<String>>,
     /// User imported fonts stored in this web app’s IndexedDB library.
     imported_families: RwLock<Vec<String>>,
     outlines: Mutex<HashMap<(u32, u32), Arc<BezPath>>>,
@@ -792,6 +794,7 @@ impl FontDb {
         Self {
             faces: RwLock::new(faces),
             desktop_families: RwLock::new(Vec::new()),
+            packaged_families: RwLock::new(Vec::new()),
             imported_families: RwLock::new(Vec::new()),
             outlines: Mutex::new(HashMap::new()),
             #[cfg(not(target_arch = "wasm32"))]
@@ -838,6 +841,22 @@ impl FontDb {
         self.catalog.read().unwrap_or_else(|e| e.into_inner())
     }
 
+    /// Advertise font families supplied by this app's offline font manifest.
+    /// Called before the optional Khmer OS font files are loaded, so all
+    /// bundled font names appear immediately without network download delays.
+    /// Desktop names with the same family must never replace bundled entries.
+    pub fn set_packaged_families(&self, names: Vec<String>) {
+        let mut unique: Vec<String> = Vec::new();
+        for name in names {
+            let name=name.trim();
+            if name.is_empty() || name.len()>160 ||
+                unique.iter().any(|s|s.eq_ignore_ascii_case(name)) {continue;}
+            unique.push(name.to_owned());
+        }
+        unique.sort_by_key(|s|s.to_lowercase());
+        *self.packaged_families.write().unwrap_or_else(|e|e.into_inner())=unique;
+    }
+
     /// Names that the desktop host has cataloged. Not available to normal web
     /// pages, which cannot enumerate a computer's font folders.
     pub fn set_desktop_families(&self, names: Vec<String>) {
@@ -861,18 +880,29 @@ impl FontDb {
     /// Bundled fonts first, browser-imported fonts next, installed desktop
     /// fonts last. Every displayed name is unique ignoring case.
     pub fn grouped_families(&self) -> (Vec<String>,Vec<String>,Vec<String>) {
+        let packaged=self.packaged_families.read().unwrap_or_else(|e|e.into_inner()).clone();
         let imported=self.imported_families.read().unwrap_or_else(|e|e.into_inner()).clone();
         let native=self.desktop_families.read().unwrap_or_else(|e|e.into_inner()).clone();
         let mut regular=Vec::new();
         let mut mine=Vec::new();
         let mut local=Vec::new();
         let mut seen=std::collections::HashSet::new();
-        for f in self.read_faces().iter(){
-            let name=&f.family;
+        for face in self.read_faces().iter(){
+            let name=&face.family;
             if !seen.insert(name.to_lowercase()){continue;}
-            if imported.iter().any(|x|x.eq_ignore_ascii_case(name)){mine.push(name.clone());}
-            else if native.iter().any(|x|x.eq_ignore_ascii_case(name)){local.push(name.clone());}
-            else {regular.push(name.clone());}
+            // Bundled resources always stay in the Bundled Fonts section,
+            // even when an identical family is also installed in Windows.
+            if packaged.iter().any(|x|x.eq_ignore_ascii_case(name)){
+                regular.push(name.clone());
+            } else if imported.iter().any(|x|x.eq_ignore_ascii_case(name)){
+                mine.push(name.clone());
+            } else if native.iter().any(|x|x.eq_ignore_ascii_case(name)){
+                local.push(name.clone());
+            } else {regular.push(name.clone());}
+        }
+        // Include bundled Khmer OS families before background loading finishes.
+        for name in packaged {
+            if seen.insert(name.to_lowercase()){regular.push(name);}
         }
         for name in native {
             if seen.insert(name.to_lowercase()){local.push(name);}
@@ -1531,5 +1561,30 @@ mod font_dir_tests {
         u.sort();
         u.dedup();
         assert_eq!(u.len(), d.len());
+    }
+}
+
+#[cfg(test)]
+mod tahoe_bundled_tests {
+    use super::FontDb;
+
+    #[test]
+    fn advertised_khmer_pack_has_priority_over_pc_fonts() {
+        let db=FontDb::with_font_dirs(vec![]);
+        db.set_desktop_families(vec![
+            "Khmer OS Battambang".to_owned(),"Arial".to_owned()
+        ]);
+        db.set_packaged_families(vec![
+            "Khmer OS Battambang".to_owned(),
+            "Khmer OS Siemreap".to_owned(),
+            "khmer os battambang".to_owned(),
+        ]);
+        let (bundled, imported, installed)=db.grouped_families();
+        assert!(bundled.iter().any(|f|f.eq_ignore_ascii_case("Khmer OS Battambang")));
+        assert!(bundled.iter().any(|f|f.eq_ignore_ascii_case("Khmer OS Siemreap")));
+        assert_eq!(bundled.iter().filter(|f|f.eq_ignore_ascii_case("Khmer OS Battambang")).count(),1);
+        assert!(!installed.iter().any(|f|f.eq_ignore_ascii_case("Khmer OS Battambang")));
+        assert!(installed.iter().any(|f|f.eq_ignore_ascii_case("Arial")));
+        assert!(imported.is_empty());
     }
 }

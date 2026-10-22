@@ -112,6 +112,12 @@ window.tahoeFontRequest=family=>{
   if(typeof family!=='string'||family.length>160)return;
   if(window.parent!==window)window.parent.postMessage({type:'tahoe-font-need',family},location.origin);
 };
+// The app owns these 40 offline Khmer OS font files. Select and load an
+// individual face even before background preloading has completed.
+window.tahoeBundledFontRequest=family=>{
+  if(typeof family!=='string'||family.length>160)return;
+  window.postMessage({type:'tahoe-font-bundled',family},location.origin);
+};
 window.tahoeFontRescan=()=>{
   if(window.parent!==window)window.parent.postMessage({type:'tahoe-font-rescan'},location.origin);
 };

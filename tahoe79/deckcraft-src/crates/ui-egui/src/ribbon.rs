@@ -694,10 +694,29 @@ fn font_group(app: &mut SlideApp, ui: &mut Ui, st: &Value) {
                         ui.separator();
                     }
                     ui.label("BUNDLED FONTS");
-                    for name in bundled {
-                        if ui.button(&name).clicked(){
-                            run(app,"format.font",json!({"family":name}));
-                            ui.close();
+                    let (khmer_os, other): (Vec<String>, Vec<String>) = bundled.into_iter()
+                        .partition(|name| name.to_lowercase().contains("khmer os")
+                            || name.eq_ignore_ascii_case("KunKhmer"));
+                    if !khmer_os.is_empty() {
+                        ui.small(format!("Khmer OS collection · 40 font files ({} families)", khmer_os.len()));
+                        for name in khmer_os {
+                            if ui.button(&name).clicked() {
+                                // Fonts announced by the offline manifest may still be
+                                // loading. Request the selected binary immediately.
+                                font_host_action("tahoeBundledFontRequest",Some(&name));
+                                run(app,"format.font",json!({"family":name}));
+                                ui.close();
+                            }
+                        }
+                    }
+                    if !other.is_empty() {
+                        ui.separator();
+                        ui.small("OTHER BUNDLED FONTS");
+                        for name in other {
+                            if ui.button(&name).clicked() {
+                                run(app,"format.font",json!({"family":name}));
+                                ui.close();
+                            }
                         }
                     }
                     if !imported.is_empty(){

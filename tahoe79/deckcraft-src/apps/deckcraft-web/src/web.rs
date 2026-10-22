@@ -140,9 +140,11 @@ fn install_cloud_open_receiver() {
 
 fn request_selected_desktop_font(family:&str){
     if let Some(window)=web_sys::window(){
-        if let Ok(v)=js_sys::Reflect::get(window.as_ref(),&"tahoeFontRequest".into()){
-            if let Ok(f)=v.dyn_into::<js_sys::Function>(){
-                let _=f.call1(&wasm_bindgen::JsValue::NULL,&family.into());
+        for action in ["tahoeBundledFontRequest","tahoeFontRequest"] {
+            if let Ok(v)=js_sys::Reflect::get(window.as_ref(),&action.into()){
+                if let Ok(f)=v.dyn_into::<js_sys::Function>(){
+                    let _=f.call1(&wasm_bindgen::JsValue::NULL,&family.into());
+                }
             }
         }
     }
@@ -172,6 +174,15 @@ fn install_tahoe_font_receiver() {
                     if values.length()>4000{return;}
                     let families=values.iter().filter_map(|x|x.as_string()).collect();
                     db.set_desktop_families(families);
+                }
+                "tahoe-font-bundled" if same_window=>{
+                    let name=js_sys::Reflect::get(&data,&"family".into()).ok()
+                        .and_then(|x|x.as_string()).unwrap_or_default();
+                    if !name.trim().is_empty()&&name.len()<=160 {
+                        wasm_bindgen_futures::spawn_local(async move {
+                            load_requested_tahoe_font(&name).await;
+                        });
+                    }
                 }
                 "tahoe-font-data"=>{
                     if !(same_window||from_parent){return;}
@@ -2711,6 +2722,14 @@ async fn load_tahoe_fonts() -> Option<std::sync::Arc<deckcraft_fonts::FontFace>>
         return None;
     };
     let db = deckcraft_fonts::FontDb::global();
+    // Restore the entire shipped Khmer OS collection in the Bundled Fonts
+    // menu immediately. Font binaries still load on demand/in the background.
+    // Windows-installed families never take precedence over these names.
+    db.set_packaged_families(fonts.iter().filter_map(|font|{
+        let file=font.get("file")?.as_str()?;
+        if !file.starts_with("khmer-os/"){return None;}
+        font.get("family")?.as_str().map(str::to_owned)
+    }).collect());
     // Optional user-provided pack is only considered when actually installed.
     // Without this probe, 40 missing requests can stall WASM startup.
     // No pack-wide availability probe: each essential font is requested directly.
@@ -2773,6 +2792,26 @@ async fn load_tahoe_fonts() -> Option<std::sync::Arc<deckcraft_fonts::FontFace>>
     selected
 }
 
+
+
+async fn load_requested_tahoe_font(family:&str) {
+    let db=deckcraft_fonts::FontDb::global();
+    if db.has_family(family) {return;}
+    let Ok(manifest)=fetch_url_text("../../assets/fonts/fonts.json").await else{return};
+    let Ok(value)=serde_json::from_str::<serde_json::Value>(&manifest) else{return};
+    let Some(fonts)=value.get("fonts").and_then(serde_json::Value::as_array) else{return};
+    for font in fonts {
+        let Some(name)=font.get("family").and_then(serde_json::Value::as_str) else{continue};
+        if !name.eq_ignore_ascii_case(family){continue;}
+        let Some(file)=font.get("file").and_then(serde_json::Value::as_str) else{continue};
+        if !file.starts_with("khmer-os/")||file.contains("..")||
+            !(file.ends_with(".ttf")||file.ends_with(".otf")){continue;}
+        if let Ok(bytes)=fetch_url_bytes(&format!("../../assets/fonts/{file}")).await{
+            let added=db.add_font(bytes);
+            if added>0{log::info!("Restored bundled font on demand: {name} ({added} face(s))");}
+        }
+    }
+}
 
 async fn load_remaining_tahoe_fonts() {
     let Ok(manifest) = fetch_url_text("../../assets/fonts/fonts.json").await else { return };
