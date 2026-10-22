@@ -31,9 +31,11 @@
     })();
   </script>
   
+  <script src="./font-manager.js" defer></script>
+  
 <script type="module">
-import init, * as bindings from './deckcraft-web-d44e2f75a03752a4.js';
-const wasm = await init({ module_or_path: './deckcraft-web-9d5c46d85ba8034a_bg.wasm' });
+import init, * as bindings from './deckcraft-web-bfde33db664b1e7e.js';
+const wasm = await init({ module_or_path: './deckcraft-web-c1145766d5cf2d94_bg.wasm' });
 
 
 window.wasmBindings = bindings;
@@ -49,7 +51,7 @@ dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
     #deckcraft_loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
       color: #b8b8b8; font: 14px system-ui, sans-serif; pointer-events: none; }
   </style>
-<link rel="modulepreload" href="./deckcraft-web-d44e2f75a03752a4.js" crossorigin="anonymous" integrity="sha384-YYW8WBo2rudd0BuH6ywosk1pv044eeN/h4oY9Vx9wsJEYxkIDdqgjKvI+BJvTB8g"><link rel="preload" href="./deckcraft-web-9d5c46d85ba8034a_bg.wasm" crossorigin="anonymous" integrity="sha384-i4uzQgb+X8kzoRLkygilj/7cy+BbXJhdroDoYJEnY0l4L3ZijiO1nRgtoh6mcWRi" as="fetch" type="application/wasm"></head>
+<link rel="modulepreload" href="./deckcraft-web-bfde33db664b1e7e.js" crossorigin="anonymous" integrity="sha384-iwSb/rC9CIhBcu0DYguEeyUTnbdMJILVQCeeq4vXWmh2e7Ewc+X2pGCY1uiXb2HF"><link rel="preload" href="./deckcraft-web-c1145766d5cf2d94_bg.wasm" crossorigin="anonymous" integrity="sha384-wdK5sFqAXsNwi2vXsr2cYZJzzHQAj4ZitRPljBJktX6IFmXMpdPjxjsUx4Zw/rh9" as="fetch" type="application/wasm"></head>
 <body>
   <canvas id="deckcraft_canvas"></canvas>
   <div id="deckcraft_loading">Loading PowerSlidePro&hellip;</div>
