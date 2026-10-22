@@ -71,6 +71,12 @@ jobs:
                   raise RuntimeError("Khmer glyph coverage validation failed")
           assert (target / "SFHelloKOKH-Regular.ttf").is_file(), "Regular Khmer font conversion missing"
           PY
+          # Bundle unchanged Allsong JSON under the PowerSlidePro web app so the
+          # song generator reads same-origin resources and can reuse offline SW cache.
+          mkdir -p apps/deckcraft-web/song-library
+          cp ../assets/songs.json apps/deckcraft-web/song-library/songs.json
+          cp ../Allsong/assets/songs/allsong2.json apps/deckcraft-web/song-library/allsong2.json
+          cp ../Allsong/assets/songs/allsong3.json apps/deckcraft-web/song-library/allsong3.json
           find apps/deckcraft-web -maxdepth 2 -type f -print
 
       - name: Validate build
@@ -80,6 +86,9 @@ jobs:
           test -f tahoe79/apps/deckcraft-web/index.html
           find tahoe79/apps/deckcraft-web -maxdepth 1 -name '*.wasm' -print -quit | grep -q .
           test -s tahoe79/apps/deckcraft-web/fonts/SFHelloKOKH-Regular.ttf
+          test -s tahoe79/apps/deckcraft-web/song-library/songs.json
+          test -s tahoe79/apps/deckcraft-web/song-library/allsong2.json
+          test -s tahoe79/apps/deckcraft-web/song-library/allsong3.json
 
       - name: Commit compiled DeckCraft Web
         run: |

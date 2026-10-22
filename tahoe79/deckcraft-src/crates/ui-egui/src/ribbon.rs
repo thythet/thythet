@@ -75,6 +75,7 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
         // At narrow widths the title gets the remaining space, never overlays buttons.
         let web_narrow = cfg!(target_arch = "wasm32") && rect.width() < 760.0;
         let web_tiny = cfg!(target_arch = "wasm32") && rect.width() < 540.0;
+        let web_micro = cfg!(target_arch = "wasm32") && rect.width() < 430.0;
         let right_reserved = if web_tiny { 106.0 } else if web_narrow { 164.0 }
             else if cfg!(target_arch = "wasm32") { 244.0 } else { 320.0 };
         let toolbar_right = (rect.max.x - right_reserved - 8.0).max(rect.min.x + left + 20.0);
@@ -83,7 +84,7 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
                 .max_rect(Rect::from_min_max(pos2(rect.min.x + left, rect.min.y), pos2(toolbar_right, rect.max.y)))
                 .layout(egui::Layout::left_to_right(egui::Align::Center)),
         );
-        child.spacing_mut().item_spacing.x = if cfg!(target_arch = "wasm32") { 6.0 } else { 3.0 };
+        child.spacing_mut().item_spacing.x = if web_micro { 2.0 } else if cfg!(target_arch = "wasm32") { 6.0 } else { 3.0 };
         let has_doc = app.session.active().is_some();
         let dirty = app.session.active().is_some_and(|d| d.is_dirty());
         if cfg!(target_arch = "wasm32") {
@@ -95,31 +96,37 @@ pub fn title_bar(app: &mut SlideApp, ui: &mut Ui) {
             ] {
                 // Match Tahoe Admin's flat traffic lights: clean 14px circles, no glyphs.
                 // The invisible 20px pointer target preserves touch and click usability.
-                let (circle, hit) = child.allocate_exact_size(vec2(20.0, 20.0), Sense::click());
+                let (circle, hit) = child.allocate_exact_size(vec2(if web_micro { 14.0 } else { 20.0 }, 20.0), Sense::click());
                 child.painter().circle_filled(circle.center(), 7.0, color);
                 if hit.on_hover_text(tooltip).clicked() {
                     ui.ctx().data_mut(|d| d.insert_temp(egui::Id::new(("tahoe-deckcraft-window", action)), true));
                 }
             }
-            child.separator();
+            if !web_micro { child.separator(); }
         }
-        // At small sizes prioritize the two generators, retaining QAT in an overflow menu.
+        // Prioritize all three generators in narrow Tahoe windows.
         if !web_narrow {
             crate::qat::show(app, &mut child);
         }
         if cfg!(target_arch = "wasm32") {
             if !web_narrow { child.separator(); }
-            if child.add(egui::Button::new("Smart").min_size(vec2(51.0, control_h - 4.0)))
+            if child.add(egui::Button::new("Smart").min_size(vec2(if web_micro { 40.0 } else { 51.0 }, control_h - 4.0)))
                 .on_hover_text("Smart Generate · Bible program and sermon text (slide 0)").clicked()
             {
                 ui.ctx().data_mut(|d| d.insert_temp(egui::Id::new("tahoe-smart-quick"), true));
             }
-            if child.add(egui::Button::new("Bible").min_size(vec2(48.0, control_h - 4.0)))
+            if child.add(egui::Button::new("Bible").min_size(vec2(if web_micro { 40.0 } else { 48.0 }, control_h - 4.0)))
                 .on_hover_text("Generate editable Bible slides").clicked()
             {
                 ui.ctx().data_mut(|d| d.insert_temp(egui::Id::new("tahoe-bible-quick"), true));
             }
-            if web_narrow {
+            if child.add(egui::Button::new("Song")
+                .min_size(vec2(if web_micro { 40.0 } else { 48.0 }, control_h - 4.0)))
+                .on_hover_text("Match Allsong titles and generate editable worship slides").clicked()
+            {
+                ui.ctx().data_mut(|d| d.insert_temp(egui::Id::new("tahoe-song-quick"), true));
+            }
+            if web_narrow && !web_micro {
                 child.menu_button("⋯", |menu_ui| {
                     menu_ui.label("Quick Access");
                     menu_ui.horizontal(|row| crate::qat::show(app, row));

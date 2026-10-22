@@ -7,6 +7,10 @@ use wasm_bindgen::JsCast as _;
 #[path = "bible_data.rs"]
 mod bible_data;
 
+#[path = "song_generate.rs"]
+mod song_generate;
+use song_generate::SongGenerator;
+
 use serde_json::json;
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
@@ -193,8 +197,9 @@ pub fn start() {
                     let mut smart = SmartGenerator::default();
                     smart.font_family = if db.has_family(BIBLE_DEFAULT_FONT) { BIBLE_DEFAULT_FONT.to_owned() } else { default_khmer_family.clone() };
                     let mut bible = BibleGenerator::default();
+                    let mut song = SongGenerator::default();
                     bible.font_family = if db.has_family(BIBLE_DEFAULT_FONT) { BIBLE_DEFAULT_FONT.to_owned() } else { default_khmer_family.clone() };
-                    Ok(Box::new(WebShell { app, inbox, smart, bible, typography: TypographyPanel::default(), presenting: false,
+                    Ok(Box::new(WebShell { app, inbox, smart, bible, song, typography: TypographyPanel::default(), presenting: false,
                         cloud_seen_docs: std::collections::HashSet::new(),
                         audience_mode: q.contains("audience=1"),
                         audience_ready_sent: false,
@@ -232,6 +237,7 @@ struct WebShell {
     inbox: Inbox,
     smart: SmartGenerator,
     bible: BibleGenerator,
+    song: SongGenerator,
     typography: TypographyPanel,
     presenting: bool,
     cloud_seen_docs: std::collections::HashSet<u64>,
@@ -558,8 +564,12 @@ impl eframe::App for WebShell {
             if take(egui::Id::new("tahoe-bible-quick")) {
                 self.bible.open = true;
             }
+            if take(egui::Id::new("tahoe-song-quick")) {
+                self.song.open = true;
+            }
             self.smart.ui(ui.ctx(), &mut self.app);
             self.bible.ui(ui.ctx(), &mut self.app);
+            self.song.ui(ui.ctx(), &mut self.app);
             self.typography.ui(ui.ctx(), &mut self.app);
         }
     }
