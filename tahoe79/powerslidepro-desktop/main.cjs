@@ -23,13 +23,56 @@ let server;
 let origin;
 let mainWindow;
 const savedPaths = new Map();
+const openQueue = [];
+const awaitingOpen = new Map();
+const MAX_OPEN_BYTES = 40 * 1024 * 1024;
+let openSequence = 0;
+// Only the native launcher and the user-selected Open dialog may enqueue paths.
+function queueDeckcraftFile(candidate) {
+  if (typeof candidate !== 'string' || path.extname(candidate).toLowerCase() !== '.deckcraft') return false;
+  const filePath = path.resolve(candidate);
+  if (!openQueue.includes(filePath)) openQueue.push(filePath);
+  if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.webContents.isDestroyed()) {
+    mainWindow.webContents.send('pspro:file-queued');
+  }
+  return true;
+}
+function queueLaunchArguments(argv) {
+  const offset = process.defaultApp ? 2 : 1;
+  for (const arg of argv.slice(offset)) {
+    if (queueDeckcraftFile(arg)) break;
+  }
+}
+async function openFromFileMenu() {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  const selection = await dialog.showOpenDialog(mainWindow, {
+    title: 'Open PowerSlidePro presentation',
+    properties: ['openFile'],
+    filters: [{name: 'PowerSlidePro Presentation', extensions: ['deckcraft']}]
+  });
+  if (!selection.canceled && selection.filePaths.length) queueDeckcraftFile(selection.filePaths[0]);
+}
+const ownsInstance = app.requestSingleInstanceLock();
+if (ownsInstance) queueLaunchArguments(process.argv);
+app.on('second-instance', (_event, argv) => {
+  if (!ownsInstance) return;
+  queueLaunchArguments(argv);
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.focus();
+  }
+});
+app.on('open-file', (event, filePath) => {
+  event.preventDefault();
+  if (ownsInstance) queueDeckcraftFile(filePath);
+});
 const APP_ICON = path.join(__dirname, 'build', 'icon.png');
 function aboutPowerSlidePro() {
   const parent = BrowserWindow.getFocusedWindow() || mainWindow;
   void dialog.showMessageBox(parent || undefined, {
     type: 'info', title: 'About PowerSlidePro',
     message: 'PowerSlidePro Desktop',
-    detail: 'Version 0.1.1\nBuilt and Prepared by Thet\n\nOffline Bible presentations, Khmer typography and slideshow editing.',
+    detail: 'Version 0.1.2\nBuilt and Prepared by Thet\n\nOffline Bible presentations, Khmer typography and slideshow editing.',
     buttons: ['OK'], icon: nativeIcon()
   });
 }
@@ -39,7 +82,11 @@ function nativeIcon() {
 }
 function installMenu() {
   const menu = [
-    { label: 'File', submenu: [{ role: 'quit', label: 'Exit PowerSlidePro' }] },
+    { label: 'File', submenu: [
+      { label: 'Open Presentation…', accelerator: 'CmdOrCtrl+O', click: openFromFileMenu },
+      { type: 'separator' },
+      { role: 'quit', label: 'Exit PowerSlidePro' }
+    ] },
     { label: 'View', submenu: [{ role: 'reload' }, { role: 'togglefullscreen' }] },
     { label: 'Help', submenu: [{ label: 'About PowerSlidePro', click: aboutPowerSlidePro }] }
   ];
@@ -123,7 +170,7 @@ function createMainWindow() {
   });
 }
 
-app.whenReady().then(async () => {
+if (ownsInstance) app.whenReady().then(async () => {
   server = http.createServer(respond);
   try {
     await new Promise((resolve, reject) => {
@@ -142,6 +189,31 @@ app.whenReady().then(async () => {
   // Download API (PPTX/PDF/image) uses an OS file save dialog.
   session.defaultSession.on('will-download', (_event, item) => {
     item.setSaveDialogOptions({ title: 'Save PowerSlidePro file', defaultPath: item.getFilename() });
+  });
+  // Load a user-associated file through the existing PowerSlidePro editor.
+  // The renderer never supplies a filesystem path; it only asks for a queued file.
+  ipcMain.handle('pspro:next-open-file', async (event) => {
+    if (!mainWindow || event.sender !== mainWindow.webContents) return { error: 'Invalid window' };
+    if (!openQueue.length) return null;
+    const filePath = openQueue.shift();
+    try {
+      const stat = await fs.promises.stat(filePath);
+      if (!stat.isFile() || stat.size < 1 || stat.size > MAX_OPEN_BYTES)
+        throw new Error('Presentation must be a file smaller than 40 MB');
+      const data = await fs.promises.readFile(filePath);
+      const id = 'desktop-open:' + (++openSequence);
+      awaitingOpen.set(id, filePath);
+      if (awaitingOpen.size > 20) awaitingOpen.delete(awaitingOpen.keys().next().value);
+      return { id, name: path.basename(filePath), data: data.toString('base64') };
+    } catch (error) { return { error: 'Unable to open presentation: ' + String(error) }; }
+  });
+  ipcMain.on('pspro:file-opened', (event, payload) => {
+    if (!mainWindow || event.sender !== mainWindow.webContents) return;
+    const id = typeof payload?.id === 'string' ? payload.id : '';
+    const uid = typeof payload?.uid === 'string' ? payload.uid : '';
+    if (!/^[0-9]{1,20}$/.test(uid) || !awaitingOpen.has(id)) return;
+    savedPaths.set(uid, awaitingOpen.get(id));
+    awaitingOpen.delete(id);
   });
   ipcMain.handle('pspro:save', async (event, payload) => {
     if (!mainWindow || event.sender !== mainWindow.webContents)

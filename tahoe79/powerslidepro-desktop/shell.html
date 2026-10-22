@@ -28,6 +28,37 @@ const iframe=document.getElementById('deckCraftFrame');
 const origin=location.origin;
 const host=window.PowerSlideDesktop;
 let savingAs=false,toastTimer;
+let pullingOpen=false;
+let waitingForReady=false;
+// For Windows Explorer double-clicks and File → Open, do not send documents
+// until the embedded WASM editor removes its loading indicator.
+async function openQueuedDocument(){
+ if(pullingOpen||!host?.nextOpenFile)return;
+ try {
+   const doc=iframe.contentDocument;
+   if(!doc||doc.getElementById('deckcraft_loading')){
+     if(!waitingForReady){
+       waitingForReady=true;
+       setTimeout(()=>{waitingForReady=false;openQueuedDocument();},400);
+     }
+     return;
+   }
+ }catch(_){return;}
+ pullingOpen=true;
+ try {
+   const file=await host.nextOpenFile();
+   if(file?.error) toast(file.error);
+   else if(file?.data&&file?.name&&file?.id) {
+     send('tahoe-deckcraft-cloud-open',{
+       name:file.name,data:file.data,id:file.id
+     });
+     toast('Opening '+file.name);
+   }
+ }catch(error){toast('Open failed: '+String(error));}
+ finally{pullingOpen=false;}
+}
+iframe.addEventListener('load',()=>setTimeout(openQueuedDocument,300));
+host?.onFileQueued?.(()=>openQueuedDocument());
 function toast(text){
  const el=document.getElementById('toast');el.textContent=text;
  el.classList.add('visible');clearTimeout(toastTimer);
@@ -62,6 +93,13 @@ window.addEventListener('message',async e=>{
      savingAs=false;
      if(result?.saved)toast('Saved to computer');
      else if(result?.error)toast('Save failed: '+result.error);
+   }else if(data.action==='opened'){
+     // The WASM editor confirms it opened this exact local document, so
+     // Save can update its original path without an additional file dialog.
+     if(String(data.name||'').startsWith('desktop-open:')){
+       host?.confirmOpenedFile?.(String(data.name),String(data.uid));
+       setTimeout(openQueuedDocument,250);
+     }
    }else if(data.action==='saveError'){toast('Save failed: '+(data.name||'Unknown error'));}
    else if(data.action==='library'||data.action==='list')
      toast('Offline mode: use File → Open for local presentations.');

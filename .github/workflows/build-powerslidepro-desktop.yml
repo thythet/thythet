@@ -45,6 +45,18 @@ jobs:
           python-version: '3.12'
       - name: Install Pillow for application icons
         run: python -m pip install Pillow==11.3.0
+      - name: Verify Windows file association configuration
+        working-directory: tahoe79/powerslidepro-desktop
+        run: |
+          node - <<'JS'
+          const assert = require('node:assert/strict');
+          const conf = require('./package.json');
+          assert.equal(conf.version, '0.1.2');
+          assert.equal(conf.build.nsis.perMachine, true);
+          const assoc = conf.build.win.fileAssociations.find(x => x.ext === 'deckcraft');
+          assert.equal(assoc.icon, 'deckcraft.ico');
+          console.log('NSIS installer includes .deckcraft file association and custom icon.');
+          JS
       - name: Verify editor and bundle all offline files
         working-directory: tahoe79/powerslidepro-desktop
         run: npm run check
@@ -82,9 +94,18 @@ jobs:
         run: |
           node --check main.cjs
           node --check preload.cjs
+          node --check scripts/stage.cjs
       - name: Install build dependencies
         working-directory: powerslidepro-desktop
         run: npm install --no-audit --no-fund
+      - name: Validate dedicated document icon (Windows)
+        if: matrix.target == 'win'
+        shell: pwsh
+        working-directory: powerslidepro-desktop
+        run: |
+          if (-not (Test-Path "build/deckcraft.ico")) { throw "Missing .deckcraft document icon" }
+          if ((Get-Item "build/deckcraft.ico").Length -lt 1024) { throw "Document icon too small" }
+          Write-Host "Document icon packaged with PowerSlidePro main installer."
       - name: Build installer
         working-directory: powerslidepro-desktop
         env:
@@ -151,14 +172,17 @@ jobs:
           test -s SHA256SUMS.txt
       - uses: softprops/action-gh-release@v2
         with:
-          tag_name: powerslidepro-desktop-v0.1.1
-          name: PowerSlidePro Desktop v0.1.1 (unsigned beta)
+          tag_name: powerslidepro-desktop-v0.1.2
+          name: PowerSlidePro Desktop v0.1.2 (unsigned beta)
           prerelease: true
           generate_release_notes: false
           body: |
             Offline PowerSlidePro Windows 10/11 and macOS (Intel / Apple Silicon).
             Includes Smart Bible Generate, 66 Bible books, Khmer OS fonts,
             editing, local save, PPTX export and Presenter/Audience screens.
+            Windows installer also registers the .deckcraft extension and the
+            custom blue file icon in the same installation (requires admin approval).
+            Double-click or File → Open to open local .deckcraft presentations.
             
             Installers are unsigned by default. Windows SmartScreen and
             macOS Gatekeeper may warn on first install. Verified code signing

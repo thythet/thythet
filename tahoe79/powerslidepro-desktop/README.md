@@ -60,3 +60,16 @@ Tahoe78 and earlier versions and user cloud data remain unchanged.
   are stored in the repository; absence retains an unsigned beta.
 - Signing alone cannot guarantee removal of Microsoft SmartScreen prompts;
   verified publisher identity and app reputation are managed by Windows.
+
+## Windows .deckcraft icon and file association (v0.1.2)
+
+The regular **PowerSlidePro Windows installer now installs everything in one step**:
+- The original application icon remains the icon for PowerSlidePro itself.
+- The dedicated supplied blue 3D cross / slide icon is used for `.deckcraft` documents.
+- The NSIS installer registers `.deckcraft` as a PowerSlidePro Presentation file type with Open With / double-click support.
+- The installer is machine-wide (`nsis.perMachine: true`), so Windows displays the UAC administrator approval prompt at installation time. No second icon installer or registry script is required.
+- Windows respects existing per-user default-app choices: if another program is selected for `.deckcraft`, Windows may display that program's icon until the user sets PowerSlidePro as the default.
+- On uninstall, NSIS removes the association according to electron-builder's standard file-association behavior.
+- To open an associated file, launch PowerSlidePro from a `.deckcraft` file in Explorer. The desktop shell passes its bytes only to the embedded PowerSlidePro editor; it does not execute the file or modify it during opening.
+
+To test: install the `PowerSlidePro-0.1.2-win-x64.exe` package, save a `.deckcraft` file, verify the icon in Windows Explorer, double-click it, and check its slides open and remain editable. If Windows retains an old icon, check **Open with → Choose another app → PowerSlidePro**. The desktop installer is distinct from the Chrome/PWA web installation.

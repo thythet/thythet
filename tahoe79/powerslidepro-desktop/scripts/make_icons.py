@@ -22,7 +22,17 @@ square(512).save(BUILD / 'icon.png', optimize=True)
 square(256).save(BUILD / 'icon.ico', format='ICO', sizes=[
     (16,16),(24,24),(32,32),(48,48),(64,64),(128,128),(256,256)])
 square(1024).save(BUILD / 'icon.icns', format='ICNS')
-for name in ('icon.png','icon.ico','icon.icns'):
+# Dedicated document icon: the user's blue 3D cross + slide artwork.
+# Keep it separate from the PowerSlidePro application icon.
+DOCUMENT_SOURCE = ROOT / 'brand' / 'deckcraft-file-source.png'
+if not DOCUMENT_SOURCE.is_file():
+    raise SystemExit('Missing .deckcraft file-type artwork')
+document = Image.open(DOCUMENT_SOURCE).convert('RGBA')
+document.resize((256, 256), Image.Resampling.LANCZOS).save(
+    BUILD / 'deckcraft.ico', format='ICO',
+    sizes=[(16,16),(24,24),(32,32),(48,48),(64,64),(128,128),(256,256)]
+)
+for name in ('icon.png','icon.ico','icon.icns','deckcraft.ico'):
     path = BUILD / name
     if not path.exists() or path.stat().st_size < 100:
         raise SystemExit('Icon generation failed: ' + name)
