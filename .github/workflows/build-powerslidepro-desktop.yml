@@ -101,6 +101,8 @@ jobs:
           node --test tests/updater.test.cjs
       - name: Install build dependencies
         working-directory: powerslidepro-desktop
+        env:
+          NPM_CONFIG_CACHE: ${{ runner.temp }}/powerslidepro-npm-${{ matrix.target }}
         run: npm install --no-audit --no-fund
       - name: Validate dedicated document icon (Windows)
         if: matrix.target == 'win'
