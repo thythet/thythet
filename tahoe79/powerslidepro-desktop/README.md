@@ -98,3 +98,7 @@ Browser web pages cannot silently scan computer font folders. PowerSlidePro Desk
 ### Installer rebuild synchronization
 
 The font-enabled Tahoe79 WASM build is committed separately by GitHub Actions (compiled engine commit `85a9dbccde81858eb6cb5bb97b774c8587b02374`). Repackage Desktop **after** that build so the Windows and macOS installers embed the actual updated WASM and browser Font Manager, not the previous compiled runtime. The GitHub Release workflow republishes the v0.1.4 installers and checksums from that synchronized build.
+
+### v0.1.5 — Khmer OS bundled font restoration
+
+The offline package retains all 40 Khmer OS font files. The font menu now advertises Khmer OS families immediately, keeps them in **Bundled Fonts** even when a PC-installed font has the same name, and loads a selected bundled face on demand. Browser Font Manager and PC-font detection remain available. This installer is built against the corresponding newly compiled Tahoe79 WASM engine.
