@@ -100,11 +100,11 @@ impl UiFonts {
     }
 
     /// Install the interface fonts again when faces were added. True if they were.
-    pub fn apply(&mut self, ctx: &egui::Context) -> bool {
+    pub fn apply(&mut self, ctx: &egui::Context, interface_font: &str) -> bool {
         if !std::mem::take(&mut self.changed) {
             return false;
         }
-        crate::theme::install_fonts_with(ctx, &self.faces);
+        crate::theme::install_interface_fonts(ctx, &self.faces, interface_font);
         ctx.request_repaint();
         true
     }
