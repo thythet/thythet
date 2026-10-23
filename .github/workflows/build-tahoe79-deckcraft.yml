@@ -44,6 +44,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y binaryen python3-fonttools
 
+      - name: Test Khmer generator clipboard and native text input
+        run: |
+          node --check tahoe79/deckcraft-src/apps/deckcraft-web/generator-paste.js
+          node --test tahoe79/deckcraft-src/apps/deckcraft-web/generator-paste.test.cjs
       - name: Build DeckCraft Web
         run: |
           set -euxo pipefail
@@ -91,6 +95,8 @@ jobs:
           test -s tahoe79/apps/deckcraft-web/song-library/allsong3.json
           test -s tahoe79/apps/deckcraft-web/font-manager.js
           node --check tahoe79/apps/deckcraft-web/font-manager.js
+          test -s tahoe79/apps/deckcraft-web/generator-paste.js
+          node --check tahoe79/apps/deckcraft-web/generator-paste.js
 
       - name: Commit compiled DeckCraft Web
         run: |

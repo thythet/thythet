@@ -191,7 +191,18 @@ function safeName(name){
 window.addEventListener('message',async e=>{
  if(e.origin!==origin||e.source!==iframe.contentWindow)return;
  const data=e.data||{};
- if(data.type==='tahoe-font-ready'){
+ if(data.type==='tahoe-generator-paste-request'){
+   const id=data.id;
+   const request=data.request;
+   if((id==='tahoe-song-khmer-input'||id==='tahoe-smart-khmer-input')
+       && Number.isSafeInteger(request)&&request>0 && request<1000000000){
+     let value='';
+     try{value=String(await host?.readPasteText?.()||'').slice(0,500000);}
+     catch(error){toast('Clipboard read failed: '+String(error));}
+     send('tahoe-generator-paste-result',{id,request,text:value});
+   }
+   return;
+ }else if(data.type==='tahoe-font-ready'){
    void sendInstalledFontCatalog();
    return;
  }else if(data.type==='tahoe-font-need'){

@@ -2040,6 +2040,9 @@ impl SmartGenerator {
                 }
                 ui.separator();
                 ui.horizontal(|ui| {
+                    if ui.button("Paste").on_hover_text("Paste from the clipboard into Smart Generate").clicked() {
+                        paste_generator_input("tahoe-smart-khmer-input");
+                    }
                     if ui.button("Sample").clicked() {
                         self.input = smart_sample().to_string();
                         set_native_smart_input(&self.input);
@@ -2121,6 +2124,14 @@ impl SmartGenerator {
             }
         }
     }
+}
+
+/// Paste directly into the native generator textarea on desktop and in web.
+fn paste_generator_input(id: &str) {
+    let Some(win) = web_sys::window() else { return };
+    let Ok(value) = js_sys::Reflect::get(win.as_ref(), &"tahoeGeneratorPaste".into()) else { return };
+    let Ok(func) = value.dyn_into::<js_sys::Function>() else { return };
+    let _ = func.call1(&wasm_bindgen::JsValue::NULL, &id.into());
 }
 
 /// Native DOM editing is essential for accurate Khmer shaping and line breaks.

@@ -2,6 +2,7 @@
 const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('PowerSlideDesktop', Object.freeze({
   save: (data) => ipcRenderer.invoke('pspro:save', data),
+  readPasteText: () => ipcRenderer.invoke('pspro:paste-text'),
   listPCFonts: () => ipcRenderer.invoke('pspro:list-pc-fonts'),
   readPCFont: family => ipcRenderer.invoke('pspro:read-pc-font', family),
   nextOpenFile: () => ipcRenderer.invoke('pspro:next-open-file'),

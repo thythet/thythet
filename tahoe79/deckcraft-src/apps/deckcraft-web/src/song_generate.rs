@@ -167,6 +167,9 @@ impl SongGenerator {
                 if existing { ui.small("Existing Song slides detected. Updating replaces Song slides only."); }
                 if !self.status.is_empty() { ui.label(&self.status); }
                 ui.horizontal(|ui| {
+                    if ui.button("Paste").on_hover_text("Paste worship song list from the clipboard").clicked() {
+                        super::paste_generator_input("tahoe-song-khmer-input");
+                    }
                     let text = if existing { "Update Song Slides" } else { "Generate Song Slides" };
                     if ui.add_enabled(ready, egui::Button::new(text)).clicked() {
                         match self.generate(app, existing) {

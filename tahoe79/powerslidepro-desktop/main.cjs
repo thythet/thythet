@@ -1,5 +1,5 @@
 'use strict';
-const { app, BrowserWindow, dialog, ipcMain, session, Menu, shell } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain, session, Menu, shell, clipboard } = require('electron');
 const { createDesktopUpdater, GITHUB_RELEASES } = require('./updater.cjs');
 const fs = require('node:fs');
 const http = require('node:http');
@@ -103,6 +103,14 @@ function installMenu() {
       { label: 'Open Presentation…', accelerator: 'CmdOrCtrl+O', click: openFromFileMenu },
       { type: 'separator' },
       { role: 'quit', label: 'Exit PowerSlidePro' }
+    ] },
+    // Native Edit roles are required by Chromium/WebKit to reliably route
+    // Cmd+V / Ctrl+V into focused Khmer DOM textareas on both platforms.
+    { label: 'Edit', submenu: [
+      { role: 'undo' }, { role: 'redo' }, { type: 'separator' },
+      { role: 'cut' }, { role: 'copy' }, { role: 'paste' },
+      { role: 'pasteAndMatchStyle' }, { role: 'delete' },
+      { type: 'separator' }, { role: 'selectAll' }
     ] },
     { label: 'View', submenu: [{ role: 'reload' }, { role: 'togglefullscreen' }] },
     { label: 'Help', submenu: [
@@ -222,6 +230,13 @@ if (ownsInstance) app.whenReady().then(async () => {
   });
   // Load a user-associated file through the existing PowerSlidePro editor.
   // The renderer never supplies a filesystem path; it only asks for a queued file.
+  // Clipboard reads are requested only when the user presses Paste inside a
+  // generator textbox. Return plain text, never HTML or executable content.
+  ipcMain.handle('pspro:paste-text', event => {
+    if (!mainWindow || event.sender !== mainWindow.webContents) return '';
+    const value = clipboard.readText('clipboard');
+    return typeof value === 'string' ? value.slice(0, 500_000) : '';
+  });
   ipcMain.handle('pspro:list-pc-fonts', event => {
     if (!mainWindow || event.sender!==mainWindow.webContents)return [];
     return installedFonts.scan();
