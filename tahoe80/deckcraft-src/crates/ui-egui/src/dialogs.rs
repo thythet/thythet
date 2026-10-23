@@ -249,6 +249,7 @@ fn preferences_snapshot(app: &SlideApp) -> Value {
         "dark": app.ui.brightness == theme::Brightness::Dark,
         "uiScale": app.ui.ui_scale,
         "interfaceFont": app.ui.interface_font,
+        "savedInterfaceFont": app.ui.saved_interface_font,
         "prefs": serde_json::to_value(&app.session.prefs).unwrap_or(Value::Null),
     })
 }
@@ -265,8 +266,13 @@ fn restore_preferences(app: &mut SlideApp, d: &Dialog) {
         app.ui.ui_scale = scale as f32;
     }
     if let Some(font) = before.get("interfaceFont").and_then(Value::as_str) {
-        if app.ui.interface_font != font {
-            app.ui.interface_font = font.to_owned();
+        // A successful Set as Default remains committed even when the dialog closes.
+        let previous_saved = before.get("savedInterfaceFont").and_then(Value::as_str).unwrap_or("Default");
+        let restore_font = if app.ui.saved_interface_font != previous_saved {
+            app.ui.saved_interface_font.as_str()
+        } else { font };
+        if app.ui.interface_font != restore_font {
+            app.ui.interface_font = restore_font.to_owned();
             app.styled = false;
         }
     }
@@ -2274,9 +2280,20 @@ fn body(app: &mut SlideApp, ui: &mut Ui, d: &mut Dialog) -> bool {
                     d.fields.insert("lastInterfaceFont".into(), app.ui.interface_font.clone());
                     app.styled = false;
                 }
-                if ui.button("Reset interface font").clicked() {
-                    app.ui.interface_font = "Default".into();
-                    app.styled = false;
+                ui.horizontal(|ui| {
+                    if ui.button("Set as Default").clicked() {
+                        app.ui.interface_font_save_request = Some(app.ui.interface_font.clone());
+                        app.ui.interface_font_save_message = Some("Saving…".into());
+                    }
+                    if ui.button("Reset to Default").clicked() {
+                        app.ui.interface_font = "Default".into();
+                        app.ui.interface_font_save_message = None;
+                        app.styled = false;
+                    }
+                });
+                ui.label(format!("Saved default: {}", app.ui.saved_interface_font));
+                if let Some(message) = &app.ui.interface_font_save_message {
+                    ui.label(egui::RichText::new(message).small());
                 }
             }
             ui.label(egui::RichText::new("Editing").font(theme::bold(13.0)));
@@ -2297,7 +2314,13 @@ fn body(app: &mut SlideApp, ui: &mut Ui, d: &mut Dialog) -> bool {
                 ui.text_edit_singleline(&mut app.session.prefs.author);
             });
             let (ok, cancel) = buttons(ui, "Done");
+            if ok && app.ui.desktop_ui_fonts && app.ui.interface_font != app.ui.saved_interface_font {
+                // Done also commits the selected default, preserving existing user expectations.
+                app.ui.interface_font_save_request = Some(app.ui.interface_font.clone());
+                app.ui.interface_font_save_message = Some("Saving…".into());
+            }
             if cancel {
+                // Cancel discards only an uncommitted preview.
                 restore_preferences(app, d);
             }
             ok || cancel
