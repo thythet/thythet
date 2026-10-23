@@ -340,7 +340,7 @@ impl UiState {
         self.zoom = self.zoom.filter(|z| z.is_finite() && *z > 0.0).map(|z| z.clamp(*ZOOM_RANGE.start(), *ZOOM_RANGE.end()));
         self.sorter_zoom = within(self.sorter_zoom, 0.5, 3.0, d.sorter_zoom);
         self.ui_scale = within(self.ui_scale, 0.5, 3.0, d.ui_scale);
-        if self.interface_font.len() > 160 || self.interface_font.contains(['/', '\\', '\0']) {
+        if self.interface_font.len() > 160 || self.interface_font.chars().any(|c| matches!(c, '/' | '\\' | '\0')) {
             self.interface_font = d.interface_font;
         }
         self.notes_height = within(self.notes_height, 0.0, 2000.0, d.notes_height);
