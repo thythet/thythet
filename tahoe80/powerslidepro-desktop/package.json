@@ -7,7 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "stage": "node scripts/stage.cjs",
-    "check": "node --check main.cjs && node --check preload.cjs && node --check scripts/stage.cjs && node --check updater.cjs && node --check pc-fonts.cjs && node --check scripts/after-pack.cjs && node --test tests/updater.test.cjs tests/pc-fonts.test.cjs && python3 scripts/make_icons.py && node scripts/stage.cjs",
+    "check": "node --check main.cjs && node --check preload.cjs && node --check scripts/stage.cjs && node --check updater.cjs && node --check pc-fonts.cjs && node --check mac-fonts.cjs && node --check scripts/after-pack.cjs && node --test tests/updater.test.cjs tests/pc-fonts.test.cjs && python3 scripts/make_icons.py && node scripts/stage.cjs",
     "dist:win": "electron-builder --win nsis --x64 --publish never",
     "dist:mac": "electron-builder --mac dmg --x64 --arm64 --publish never"
   },
@@ -27,6 +27,7 @@
       "preload.cjs",
       "updater.cjs",
       "pc-fonts.cjs",
+      "mac-fonts.cjs",
       "payload/**/*",
       "package.json",
       "build/icon.png"
