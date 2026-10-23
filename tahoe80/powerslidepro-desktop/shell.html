@@ -213,7 +213,11 @@ window.addEventListener('message',async e=>{
     return;
   }else if(data.type==='tahoe-ui-font-preference'){
     if((host?.platform==='darwin'||host?.platform==='win32') && typeof data.family==='string'){
-      void host?.setUIFont?.(data.family);
+      // Only explicit Set as Default or Done actions commit the font to disk.
+      let success=false;
+      try { success=(await host?.setUIFont?.(data.family))===true; }
+      catch(error) { console.warn('Could not save the interface font:',error); }
+      send('tahoe-ui-font-saved',{family:data.family,success});
     }
     return;
  }else if(data.type==='tahoe-font-need'){
