@@ -1,6 +1,6 @@
 {
   "name": "powerslidepro-desktop",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "private": true,
   "description": "PowerSlidePro offline presentation software — Built and Prepared by Thet",
   "main": "main.cjs",
