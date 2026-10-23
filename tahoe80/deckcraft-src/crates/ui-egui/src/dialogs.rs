@@ -2252,18 +2252,20 @@ fn body(app: &mut SlideApp, ui: &mut Ui, d: &mut Dialog) -> bool {
                 }
                 d.fields.remove("uiScale");
             }
-            if app.ui.macos_ui_fonts {
+            if app.ui.desktop_ui_fonts {
                 ui.horizontal(|ui| {
                     ui.label("Interface font");
-                    egui::ComboBox::from_id_salt("macos-interface-font")
+                    let system_label = if app.ui.windows_ui_fonts { "Windows System" } else { "macOS System" };
+                    egui::ComboBox::from_id_salt("desktop-interface-font")
                         .selected_text(&app.ui.interface_font)
                         .width(215.0)
                         .show_ui(ui, |ui| {
-                            for choice in ["Default", "macOS System", "Inter"] {
+                            for choice in ["Default", system_label, "Inter"] {
                                 ui.selectable_value(&mut app.ui.interface_font, choice.to_owned(), choice);
                             }
                             ui.separator();
                             for family in deckcraft_fonts::FontDb::global().families() {
+                                if matches!(family.as_str(), "Default" | "Inter" | "Windows System" | "macOS System") { continue; }
                                 ui.selectable_value(&mut app.ui.interface_font, family.clone(), &family);
                             }
                         });
