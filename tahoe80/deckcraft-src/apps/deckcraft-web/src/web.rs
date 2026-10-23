@@ -27,8 +27,8 @@ const LOADING_ID: &str = "deckcraft_loading";
 
 thread_local! {
     static FONT_REPAINT_CONTEXT: RefCell<Option<egui::Context>> = const { RefCell::new(None) };
-    static MAC_UI_FONT_PENDING: RefCell<Option<String>> = const { RefCell::new(None) };
-    static MAC_UI_FONT_REINSTALL: RefCell<bool> = const { RefCell::new(false) };
+    static DESKTOP_UI_FONT_PENDING: RefCell<Option<String>> = const { RefCell::new(None) };
+    static DESKTOP_UI_FONT_REINSTALL: RefCell<bool> = const { RefCell::new(false) };
     static CLOUD_OPEN_PENDING: RefCell<Vec<(String, String, String)>> = const { RefCell::new(Vec::new()) };
     static CLOUD_LIST_PENDING: RefCell<Vec<String>> = const { RefCell::new(Vec::new()) };
     static CLOUD_NAME_PENDING: RefCell<Vec<(u64, String, bool)>> = const { RefCell::new(Vec::new()) };
@@ -142,6 +142,12 @@ fn install_cloud_open_receiver() {
 // read-only OS-font registry catalog, never a caller-provided file path.
 
 fn request_selected_desktop_font(family:&str){
+    if family=="Windows System" {
+        for name in ["Segoe UI", "Segoe UI Variable", "Arial"] {
+            request_selected_desktop_font(name);
+        }
+        return;
+    }
     if family=="macOS System" {
         for name in ["SF Pro Text", ".AppleSystemUIFont", "Helvetica Neue"] {
             request_selected_desktop_font(name);
@@ -188,7 +194,7 @@ fn install_tahoe_font_receiver() {
                     let name=js_sys::Reflect::get(&data,&"family".into())
                         .ok().and_then(|v|v.as_string()).unwrap_or_default();
                     if !name.is_empty() && name.len()<=160 && !name.chars().any(|c| matches!(c, '/' | '\\' | '\0')) {
-                        MAC_UI_FONT_PENDING.with(|p| *p.borrow_mut()=Some(name));
+                        DESKTOP_UI_FONT_PENDING.with(|p| *p.borrow_mut()=Some(name));
                         FONT_REPAINT_CONTEXT.with(|slot| {
                             if let Some(ctx)=slot.borrow().as_ref(){ctx.request_repaint();}
                         });
@@ -214,7 +220,7 @@ fn install_tahoe_font_receiver() {
                     if bytes.length()<100||bytes.length()>45*1024*1024{return;}
                     let before=db.families();
                     if db.add_font(bytes.to_vec())==0{return;}
-                    MAC_UI_FONT_REINSTALL.with(|p| *p.borrow_mut()=true);
+                    DESKTOP_UI_FONT_REINSTALL.with(|p| *p.borrow_mut()=true);
                     FONT_REPAINT_CONTEXT.with(|slot| {
                         if let Some(ctx)=slot.borrow().as_ref(){ctx.request_repaint();}
                     });
@@ -235,7 +241,7 @@ fn install_tahoe_font_receiver() {
     let _=win.add_event_listener_with_callback("message",callback.as_ref().unchecked_ref());
     callback.forget();
 }
-fn post_macos_ui_font_choice(family:&str){
+fn post_desktop_ui_font_choice(family:&str){
     let Some(win)=web_sys::window() else{return};
     let Ok(Some(parent))=win.parent() else{return};
     let origin=win.location().origin().unwrap_or_default();
@@ -302,7 +308,8 @@ pub fn start() {
                     // Install the Khmer face in both, or dialogs/edit boxes still show tofu squares.
                     app.ui_fonts.faces.extend(khmer_ui_faces.iter().cloned());
                     let q = query();
-                    app.ui.macos_ui_fonts=q.contains("macui=1");
+                    app.ui.desktop_ui_fonts=q.contains("macui=1") || q.contains("winui=1");
+                    app.ui.windows_ui_fonts=q.contains("winui=1");
                     if !q.contains("blank") {
                         if let Err(e) = deckcraft_engine::sample::open_sample(&mut app.session) {
                             log::error!("sample deck: {e}");
@@ -389,8 +396,8 @@ struct WebShell {
 
 impl eframe::App for WebShell {
     fn logic(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        if self.app.ui.macos_ui_fonts {
-            MAC_UI_FONT_PENDING.with(|p| {
+        if self.app.ui.desktop_ui_fonts {
+            DESKTOP_UI_FONT_PENDING.with(|p| {
                 if let Some(name)=p.borrow_mut().take(){
                     self.app.ui.interface_font=name.clone();
                     self.last_interface_font=name.clone();
@@ -401,9 +408,9 @@ impl eframe::App for WebShell {
             if self.app.ui.interface_font != self.last_interface_font {
                 self.last_interface_font=self.app.ui.interface_font.clone();
                 request_selected_desktop_font(&self.last_interface_font);
-                post_macos_ui_font_choice(&self.last_interface_font);
+                post_desktop_ui_font_choice(&self.last_interface_font);
             }
-            MAC_UI_FONT_REINSTALL.with(|p|{
+            DESKTOP_UI_FONT_REINSTALL.with(|p|{
                 if std::mem::replace(&mut *p.borrow_mut(),false){
                     self.app.refresh_interface_fonts();
                 }
