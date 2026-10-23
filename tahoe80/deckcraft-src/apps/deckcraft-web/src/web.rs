@@ -142,6 +142,12 @@ fn install_cloud_open_receiver() {
 // read-only OS-font registry catalog, never a caller-provided file path.
 
 fn request_selected_desktop_font(family:&str){
+    if family=="macOS System" {
+        for name in ["SF Pro Text", ".AppleSystemUIFont", "Helvetica Neue"] {
+            request_selected_desktop_font(name);
+        }
+        return;
+    }
     if let Some(window)=web_sys::window(){
         for action in ["tahoeBundledFontRequest","tahoeFontRequest"] {
             if let Ok(v)=js_sys::Reflect::get(window.as_ref(),&action.into()){
@@ -181,7 +187,7 @@ fn install_tahoe_font_receiver() {
                 "tahoe-ui-font-restore" if from_parent=>{
                     let name=js_sys::Reflect::get(&data,&"family".into())
                         .ok().and_then(|v|v.as_string()).unwrap_or_default();
-                    if !name.is_empty() && name.len()<=160 && !name.contains(['/', '\\\\']) {
+                    if !name.is_empty() && name.len()<=160 && !name.chars().any(|c| matches!(c, '/' | '\\' | '\0')) {
                         MAC_UI_FONT_PENDING.with(|p| *p.borrow_mut()=Some(name));
                         FONT_REPAINT_CONTEXT.with(|slot| {
                             if let Some(ctx)=slot.borrow().as_ref(){ctx.request_repaint();}
