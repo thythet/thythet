@@ -51,11 +51,14 @@ jobs:
           node - <<'JS'
           const assert = require('node:assert/strict');
           const conf = require('./package.json');
-          assert.equal(conf.version, '0.1.7');
+          assert.equal(conf.version, '0.1.8');
           assert.equal(conf.build.nsis.perMachine, true);
           const assoc = conf.build.win.fileAssociations.find(x => x.ext === 'deckcraft');
           assert.equal(assoc.icon, 'deckcraft.ico');
-          console.log('NSIS installer includes .deckcraft file association and custom icon.');
+          const macAssoc=conf.build.mac.fileAssociations.find(x=>x.ext==='deckcraft');
+          assert.equal(macAssoc.icon,'deckcraft.icns');
+          assert.equal(macAssoc.role,'Editor');
+          console.log('NSIS and macOS installers register .deckcraft document icons.');
           JS
       - name: Verify editor and bundle all offline files
         working-directory: tahoe79/powerslidepro-desktop
@@ -113,6 +116,13 @@ jobs:
           if (-not (Test-Path "build/deckcraft.ico")) { throw "Missing .deckcraft document icon" }
           if ((Get-Item "build/deckcraft.ico").Length -lt 1024) { throw "Document icon too small" }
           Write-Host "Document icon packaged with PowerSlidePro main installer."
+      - name: Validate Mac Finder file association icon
+        if: matrix.target == 'mac'
+        shell: bash
+        working-directory: powerslidepro-desktop
+        run: |
+          test -s build/deckcraft.icns
+          echo "Document ICNS created separately from application icon."
       - name: Build installer
         working-directory: powerslidepro-desktop
         env:
@@ -128,6 +138,8 @@ jobs:
           set -euo pipefail
           count=0
           while IFS= read -r -d '' app; do
+            test -s "$app/Contents/Resources/deckcraft.icns"
+            /usr/libexec/PlistBuddy -c 'Print :CFBundleDocumentTypes' "$app/Contents/Info.plist" | grep -q 'deckcraft'
             codesign --verify --deep --verbose=2 "$app"
             codesign -dv --verbose=2 "$app" 2>&1 | grep -q 'Signature=adhoc'
             echo "Verified ad-hoc app signature: $app"
@@ -145,7 +157,7 @@ jobs:
           $metadata = 'dist/latest.yml'
           if (-not (Test-Path $metadata)) { throw 'Missing latest.yml; Windows in-app updates would not work' }
           $body = Get-Content -Raw $metadata
-          if ($body -notmatch 'version: 0\.1\.7') { throw 'Windows update metadata has wrong version' }
+          if ($body -notmatch 'version: 0\.1\.8') { throw 'Windows update metadata has wrong version' }
           if ($body -notmatch 'sha512:') { throw 'Windows update metadata is missing the SHA-512 checksum' }
           Write-Host 'Windows updater manifest verified.'
       - name: Windows Defender scan and signing status
@@ -200,7 +212,7 @@ jobs:
         run: |
           test "$(find release-assets -maxdepth 1 -name '*.exe' | wc -l)" -ge 1
           test -s release-assets/latest.yml
-          grep -q 'version: 0.1.7' release-assets/latest.yml
+          grep -q 'version: 0.1.8' release-assets/latest.yml
           grep -q 'sha512:' release-assets/latest.yml
           test "$(find release-assets -maxdepth 1 -name '*mac*x64.dmg' | wc -l)" -ge 1
           test "$(find release-assets -maxdepth 1 -name '*mac*arm64.dmg' | wc -l)" -ge 1
@@ -212,8 +224,8 @@ jobs:
           test -s SHA256SUMS.txt
       - uses: softprops/action-gh-release@v2
         with:
-          tag_name: powerslidepro-desktop-v0.1.7
-          name: PowerSlidePro Desktop v0.1.7 (ad-hoc signed Mac beta)
+          tag_name: powerslidepro-desktop-v0.1.8
+          name: PowerSlidePro Desktop v0.1.8 (ad-hoc signed Mac beta)
           prerelease: true
           generate_release_notes: false
           body: |
@@ -237,6 +249,12 @@ jobs:
             Smart Song and Smart Generate: fix Cmd+V/Ctrl+V paste with native
             Edit menu, focused Khmer text editing and Paste buttons in both
             Tahoe79 Web and Desktop. Right-click Paste works in editable fields.
+            Song metadata is stored in hidden slide tags rather than speaker
+            Notes, with compatibility for previous songs stored in notes.
+            Generate Songs, Song Formatting and Split Sections are grouped
+            as one Undo / Redo operation each.
+            macOS Finder registers the custom blue 3D .deckcraft file icon
+            and double-click opening, with app branding unchanged.
             macOS app bundles are ad-hoc signed and verified in CI to avoid
             invalid signature errors on Apple Silicon; they are NOT Apple
             Developer ID signed or notarized. Gatekeeper still requires manual

@@ -1,4 +1,5 @@
-//! Tahoe79 song slide tools. Song metadata is saved in slide notes, never in Allsong.
+//! Tahoe79 song slide tools. Internal song data is stored in slide tags,
+//! separate from editable speaker notes. Legacy notes-only slides remain readable.
 use super::{apply_generated_style, text_body_plain, SlideApp, BIBLE_DEFAULT_FONT};
 use serde_json::{json, Value};
 
@@ -43,10 +44,32 @@ fn note_data(s: &str, tag: &str) -> Option<Value> {
 pub(super) fn read_song_note(app: &SlideApp, index: usize, tag: &str) -> Option<Value> {
     let st = app.session.active()?;
     let slide = st.doc.slides.get(index)?;
+    let key = tag.trim_end();
+    // New files: metadata is inside the editable slide's tags, never Notes.
+    if let Some((_,value))=slide.tags.iter().find(|(name,_)|name==key) {
+        if let Ok(json)=serde_json::from_str(value){return Some(json);}
+    }
+    // Backwards compatibility: older .deckcraft presentations embedded the
+    // JSON directly in the speaker notes.
     note_data(&text_body_plain(&slide.notes), tag)
 }
 fn save_note(app: &mut SlideApp, index: usize, tag: &str, data: &Value) -> Result<(), String> {
-    app.run("slide.notes", json!({"index":index,"text": format!("{tag}{data}")}))?;
+    let key=tag.trim_end().to_string();
+    let value=data.to_string();
+    app.session.edit(|doc,_|{
+        let Some(slide)=doc.slides.get_mut(index) else {
+            return Err(deckcraft_engine::EngineError::Other("Song slide unavailable".into()));
+        };
+        let slide=std::sync::Arc::make_mut(slide);
+        slide.tags.retain(|(name,_)|name!=&key);
+        slide.tags.push((key,value));
+        // Migrate legacy notes without destroying genuine user speaker notes.
+        let visible=text_body_plain(&slide.notes);
+        if visible.starts_with(SOURCE_TAG)||visible.starts_with(PART_TAG){
+            slide.notes=Default::default();
+        }
+        Ok(())
+    }).map_err(|e|e.to_string())?;
     Ok(())
 }
 
@@ -135,7 +158,11 @@ fn insert_styled(app: &mut SlideApp, at: usize, name: &str, title: &str,
     apply_saved_style(app,&data["section_format"])?;
     app.run("format.autofit",json!({"mode":"shrink"}))?;
     let index=app.session.active().map(|d|d.selection.slide).unwrap_or(at);
-    app.run("slide.notes",json!({"index":index,"text":notes}))?;
+    let (tag,payload)=if let Some(data)=notes.strip_prefix(SOURCE_TAG) {(SOURCE_TAG,data)}
+        else if let Some(data)=notes.strip_prefix(PART_TAG) {(PART_TAG,data)}
+        else {return Err("Missing song metadata tag.".into());};
+    let value:Value=serde_json::from_str(payload).map_err(|e|e.to_string())?;
+    save_note(app,index,tag,&value)?;
     Ok(())
 }
 /// One whole song = exactly one slide, independent of lyric length.
@@ -169,7 +196,7 @@ impl SongTools {
             ctx.data_mut(|d|d.insert_temp(egui::Id::new("tahoe-format-song-open"),true));
         }
         if take("tahoe-song-split") {
-            match self.split(app) {
+            match app.grouped_undo("Split Song Sections", |app| self.split(app)) {
                 Ok(n)=>{self.status=format!("Split into {n} editable sections.");app.notify(self.status.clone());}
                 Err(e)=>{self.status=e.clone();app.notify(e);}
             }
@@ -240,7 +267,7 @@ impl SongTools {
         let id=source_id(app,index).ok_or_else(||"Song source unavailable.".to_string())?;
         let originals:Vec<usize>=app.session.active().map(|st|st.doc.slides.iter().enumerate()
             .filter_map(|(i,s)|{
-                let v=note_data(&text_body_plain(&s.notes),PART_TAG)?;
+                let v=read_song_note(app,i,PART_TAG)?;
                 (v["source_id"].as_str()==Some(id.as_str())).then_some(i)
             }).collect()).unwrap_or_default();
         for i in originals.into_iter().rev() {app.run("slide.delete",json!({"index":i}))?;}
@@ -292,6 +319,16 @@ fn section_chunks(lyrics:&str,marks:&Value)->Vec<(String,String)>{
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn song_metadata_tags_survive_serialization_without_filling_notes(){
+        let mut slide=deckcraft_model::Slide::default();
+        slide.tags.push((SOURCE_TAG.trim_end().into(),json!({"lyrics":"អរព្រះគុណ","sections":[]}).to_string()));
+        let packed=serde_json::to_string(&slide).unwrap();
+        let restored:deckcraft_model::Slide=serde_json::from_str(&packed).unwrap();
+        assert_eq!(restored.tags[0].0,SOURCE_TAG.trim_end());
+        assert_eq!(restored.notes.text(),"");
+        assert_eq!(serde_json::from_str::<Value>(&restored.tags[0].1).unwrap()["lyrics"],"អរព្រះគុណ");
+    }
     #[test]
     fn sections_preserve_unmarked_intro_and_order(){
         let marks=json!([{"start":6,"end":10,"type":"Verse"},{"start":13,"end":18,"type":"Chorus"}]);

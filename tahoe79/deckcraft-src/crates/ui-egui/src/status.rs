@@ -141,6 +141,13 @@ pub fn notes_pane(app: &mut SlideApp, ui: &mut Ui) {
         }
     }
     let notes = app.session.active().and_then(|st| st.current_slide()).map(|s| s.notes.clone()).unwrap_or_default();
+    // Pre-tag song projects wrote private JSON into speaker notes. The Notes
+    // editor should show a blank user note, never that internal payload.
+    // When an actual note is entered, slide.notes migrates the JSON to tags.
+    let notes=if notes.text().starts_with("TAHOE79_SONG_SOURCE_V2\n")
+        || notes.text().starts_with("TAHOE79_SONG_PART_V2\n") {
+        deckcraft_model::text::TextBody::default()
+    }else{notes};
     egui::Panel::bottom("notes")
         .resizable(true)
         .default_size(app.ui.notes_height)

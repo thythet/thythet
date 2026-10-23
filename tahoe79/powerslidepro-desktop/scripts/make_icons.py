@@ -32,7 +32,12 @@ document.resize((256, 256), Image.Resampling.LANCZOS).save(
     BUILD / 'deckcraft.ico', format='ICO',
     sizes=[(16,16),(24,24),(32,32),(48,48),(64,64),(128,128),(256,256)]
 )
-for name in ('icon.png','icon.ico','icon.icns','deckcraft.ico'):
+# macOS Finder file association icon, distinct from the PowerSlidePro app icon.
+# Use all standard ICNS sizes from the same original PNG artwork.
+document.resize((1024, 1024), Image.Resampling.LANCZOS).save(
+    BUILD / 'deckcraft.icns', format='ICNS'
+)
+for name in ('icon.png','icon.ico','icon.icns','deckcraft.ico','deckcraft.icns'):
     path = BUILD / name
     if not path.exists() or path.stat().st_size < 100:
         raise SystemExit('Icon generation failed: ' + name)

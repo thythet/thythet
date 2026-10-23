@@ -172,7 +172,7 @@ impl SongGenerator {
                     }
                     let text = if existing { "Update Song Slides" } else { "Generate Song Slides" };
                     if ui.add_enabled(ready, egui::Button::new(text)).clicked() {
-                        match self.generate(app, existing) {
+                        match app.grouped_undo("Generate Songs", |app| self.generate(app, existing)) {
                             Ok(n) => {
                                 self.status = format!("Generated {n} editable song slides.");
                                 app.notify(self.status.clone());

@@ -48,6 +48,9 @@ jobs:
         run: |
           node --check tahoe79/deckcraft-src/apps/deckcraft-web/generator-paste.js
           node --test tahoe79/deckcraft-src/apps/deckcraft-web/generator-paste.test.cjs
+      - name: Test grouped song Undo/Redo and rollback
+        working-directory: tahoe79/deckcraft-src
+        run: cargo test -p deckcraft-engine tahoe_undo_group_tests
       - name: Build DeckCraft Web
         run: |
           set -euxo pipefail

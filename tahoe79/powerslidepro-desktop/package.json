@@ -1,6 +1,6 @@
 {
   "name": "powerslidepro-desktop",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "private": true,
   "description": "PowerSlidePro offline presentation software — Built and Prepared by Thet",
   "main": "main.cjs",
@@ -48,7 +48,16 @@
       "target": "dmg",
       "category": "public.app-category.productivity",
       "identity": null,
-      "icon": "build/icon.icns"
+      "icon": "build/icon.icns",
+      "fileAssociations": [
+        {
+          "ext": "deckcraft",
+          "name": "PowerSlidePro Presentation",
+          "icon": "deckcraft.icns",
+          "role": "Editor",
+          "rank": "Owner"
+        }
+      ]
     },
     "nsis": {
       "oneClick": false,

@@ -178,6 +178,15 @@ pub struct History {
     pub costs: std::collections::HashMap<usize, usize>,
 }
 
+/// A batch of UI-level commands, recorded as one undoable operation.
+pub struct UndoGroup {
+    uid: u64,
+    doc: Arc<Presentation>,
+    selection: Selection,
+    history: History,
+    journal_len: usize,
+}
+
 /// A live pointer interaction: the document before it began (one undo step at the end).
 #[derive(Clone, Debug)]
 pub struct Interaction {
@@ -635,6 +644,41 @@ impl Session {
         Ok(r)
     }
 
+    /// Start an atomic multi-command history group. Use only for user-initiated
+    /// actions that stay in one presentation (e.g. Generate Songs / Split Sections).
+    /// No background job or timer holds this snapshot.
+    pub fn begin_undo_group(&mut self) -> Result<UndoGroup> {
+        self.end_composition();
+        let st = self.doc()?;
+        Ok(UndoGroup {
+            uid: st.uid,
+            doc: st.doc.clone(),
+            selection: st.selection.clone(),
+            history: st.history.clone(),
+            journal_len: self.journal.len(),
+        })
+    }
+
+    /// End a group, collapsing all commands to one entry. A failed group
+    /// restores the original presentation and its undo/redo stack.
+    pub fn end_undo_group(&mut self, group: UndoGroup, label: &str, success: bool) {
+        let UndoGroup { uid, doc, selection, history, journal_len } = group;
+        if !success {
+            self.journal.truncate(journal_len);
+        }
+        let Some(st) = self.active_mut() else { return };
+        if st.uid != uid { return; }
+        let changed = !Arc::ptr_eq(&doc, &st.doc);
+        st.history = history;
+        if !success {
+            st.doc = doc;
+            st.selection = selection;
+            if changed { st.revision = st.revision.saturating_add(1); }
+        } else if changed {
+            push_undo(st, HistoryEntry { label: label.to_owned(), doc, selection });
+        }
+    }
+
     pub fn commands(&self) -> Vec<CommandInfo> {
         command_specs().iter().map(|c| c.info(self)).collect()
     }
@@ -781,3 +825,36 @@ mod soak_tests;
 mod tests;
 #[cfg(test)]
 mod tests_keys;
+
+#[cfg(test)]
+mod tahoe_undo_group_tests {
+    use super::*;
+    use serde_json::json;
+    #[test]
+    fn generating_multiple_slides_is_one_undo_and_one_redo() {
+        let mut session=Session::with_new();
+        let old_count=session.active().unwrap().doc.slides.len();
+        let old_history=session.active().unwrap().history.undo.len();
+        let group=session.begin_undo_group().unwrap();
+        session.execute("slide.new",&json!({"layout":"blank"})).unwrap();
+        session.execute("slide.new",&json!({"layout":"blank"})).unwrap();
+        session.end_undo_group(group,"Generate Songs",true);
+        assert_eq!(session.active().unwrap().doc.slides.len(),old_count+2);
+        assert_eq!(session.active().unwrap().history.undo.len(),old_history+1);
+        session.execute("edit.undo",&json!({})).unwrap();
+        assert_eq!(session.active().unwrap().doc.slides.len(),old_count);
+        session.execute("edit.redo",&json!({})).unwrap();
+        assert_eq!(session.active().unwrap().doc.slides.len(),old_count+2);
+    }
+    #[test]
+    fn failed_group_preserves_presentation_and_history() {
+        let mut session=Session::with_new();
+        let old=session.active().unwrap().doc.clone();
+        let old_undo=session.active().unwrap().history.undo.len();
+        let group=session.begin_undo_group().unwrap();
+        session.execute("slide.new",&json!({"layout":"blank"})).unwrap();
+        session.end_undo_group(group,"Generate Songs",false);
+        assert_eq!(*session.active().unwrap().doc,*old);
+        assert_eq!(session.active().unwrap().history.undo.len(),old_undo);
+    }
+}

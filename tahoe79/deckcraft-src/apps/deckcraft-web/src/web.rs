@@ -1259,7 +1259,9 @@ impl TypographyPanel {
         }
         if close_now { self.open = false; }
         if apply_now {
-            self.status = match self.apply(app) {
+            self.status = match if self.tab==FormatTab::Song {
+                app.grouped_undo("Song Formatting", |app| self.apply(app))
+            } else { self.apply(app) } {
                 Ok(n) => format!("Applied formatting to {n} text item(s)."),
                 Err(e) => e,
             };

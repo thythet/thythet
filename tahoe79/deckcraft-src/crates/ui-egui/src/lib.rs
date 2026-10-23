@@ -656,6 +656,18 @@ impl SlideApp {
         self.recent_checked.remove(path);
     }
 
+    /// Treat a sequence of commands as one Undo/Redo action. The whole edit
+    /// is rolled back if a command fails; unrelated history is preserved.
+    pub fn grouped_undo<T>(
+        &mut self, label: &str,
+        action: impl FnOnce(&mut SlideApp) -> Result<T, String>,
+    ) -> Result<T, String> {
+        let snapshot = self.session.begin_undo_group().map_err(|e|e.to_string())?;
+        let result = action(self);
+        self.session.end_undo_group(snapshot, label, result.is_ok());
+        result
+    }
+
     /// Run a command by id (UI commands here, everything else in the engine). Errors show in the
     /// status bar and are returned.
     pub fn run(&mut self, id: &str, params: Value) -> Result<Value, String> {

@@ -504,7 +504,22 @@ fn notes(s: &mut Session, p: &Value) -> Result<Value> {
     let text = str_param(p, "text").unwrap_or("").to_string();
     s.edit(|doc, _| {
         if let Some(sl) = doc.slides.get_mut(i) {
-            let notes = &mut Arc::make_mut(sl).notes;
+            let slide = Arc::make_mut(sl);
+            // Existing song presentations stored their private JSON in speaker
+            // notes. Preserve it as a slide tag when the user edits real notes.
+            // Never expose or discard that legacy song metadata.
+            let before=slide.notes.text();
+            for tag in ["TAHOE79_SONG_SOURCE_V2\n","TAHOE79_SONG_PART_V2\n"]{
+                if let Some(data)=before.strip_prefix(tag){
+                    let key=tag.trim_end();
+                    if !slide.tags.iter().any(|(k,_)|k==key){
+                        slide.tags.push((key.into(),data.to_string()));
+                    }
+                    slide.notes=TextBody::default();
+                    break;
+                }
+            }
+            let notes = &mut slide.notes;
             match body {
                 Some(b) => *notes = b,
                 None => deckcraft_model::edit::replace_text(notes, &text),
