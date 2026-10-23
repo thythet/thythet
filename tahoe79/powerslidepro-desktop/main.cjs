@@ -180,6 +180,17 @@ function createMainWindow() {
       webSecurity: true, backgroundThrottling: false
     }
   });
+  // Right-click Paste for real DOM inputs only; do not interfere with the
+  // PowerSlidePro canvas editor's own Verse/Chorus/Bridge context menu.
+  mainWindow.webContents.on('context-menu', (_event, params) => {
+    if (!params.isEditable) return;
+    const edit = Menu.buildFromTemplate([
+      { role: 'undo' }, { role: 'redo' }, { type: 'separator' },
+      { role: 'cut' }, { role: 'copy' }, { role: 'paste' },
+      { type: 'separator' }, { role: 'selectAll' }
+    ]);
+    edit.popup({ window: mainWindow });
+  });
   mainWindow.once('ready-to-show', () => { if (mainWindow) mainWindow.show(); });
   mainWindow.loadURL(origin + '/tahoe79/index.html');
   mainWindow.on('closed', () => { mainWindow = null; });

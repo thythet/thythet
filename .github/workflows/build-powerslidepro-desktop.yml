@@ -51,7 +51,7 @@ jobs:
           node - <<'JS'
           const assert = require('node:assert/strict');
           const conf = require('./package.json');
-          assert.equal(conf.version, '0.1.6');
+          assert.equal(conf.version, '0.1.7');
           assert.equal(conf.build.nsis.perMachine, true);
           const assoc = conf.build.win.fileAssociations.find(x => x.ext === 'deckcraft');
           assert.equal(assoc.icon, 'deckcraft.ico');
@@ -145,7 +145,7 @@ jobs:
           $metadata = 'dist/latest.yml'
           if (-not (Test-Path $metadata)) { throw 'Missing latest.yml; Windows in-app updates would not work' }
           $body = Get-Content -Raw $metadata
-          if ($body -notmatch 'version: 0\.1\.6') { throw 'Windows update metadata has wrong version' }
+          if ($body -notmatch 'version: 0\.1\.7') { throw 'Windows update metadata has wrong version' }
           if ($body -notmatch 'sha512:') { throw 'Windows update metadata is missing the SHA-512 checksum' }
           Write-Host 'Windows updater manifest verified.'
       - name: Windows Defender scan and signing status
@@ -200,7 +200,7 @@ jobs:
         run: |
           test "$(find release-assets -maxdepth 1 -name '*.exe' | wc -l)" -ge 1
           test -s release-assets/latest.yml
-          grep -q 'version: 0.1.6' release-assets/latest.yml
+          grep -q 'version: 0.1.7' release-assets/latest.yml
           grep -q 'sha512:' release-assets/latest.yml
           test "$(find release-assets -maxdepth 1 -name '*mac*x64.dmg' | wc -l)" -ge 1
           test "$(find release-assets -maxdepth 1 -name '*mac*arm64.dmg' | wc -l)" -ge 1
@@ -212,8 +212,8 @@ jobs:
           test -s SHA256SUMS.txt
       - uses: softprops/action-gh-release@v2
         with:
-          tag_name: powerslidepro-desktop-v0.1.6
-          name: PowerSlidePro Desktop v0.1.6 (ad-hoc signed Mac beta)
+          tag_name: powerslidepro-desktop-v0.1.7
+          name: PowerSlidePro Desktop v0.1.7 (ad-hoc signed Mac beta)
           prerelease: true
           generate_release_notes: false
           body: |
@@ -234,6 +234,9 @@ jobs:
             Restores the bundled Khmer OS font pack (40 files) as its own
             always-visible section above installed PC fonts.
             
+            Smart Song and Smart Generate: fix Cmd+V/Ctrl+V paste with native
+            Edit menu, focused Khmer text editing and Paste buttons in both
+            Tahoe79 Web and Desktop. Right-click Paste works in editable fields.
             macOS app bundles are ad-hoc signed and verified in CI to avoid
             invalid signature errors on Apple Silicon; they are NOT Apple
             Developer ID signed or notarized. Gatekeeper still requires manual
