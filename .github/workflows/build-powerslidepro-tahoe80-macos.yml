@@ -93,6 +93,22 @@ jobs:
           node --check scripts/stage.cjs
           node --check scripts/after-pack.cjs
           node --test tests/*.test.cjs
+      - name: Verify actual macOS installed-font catalog
+        working-directory: powerslidepro-desktop
+        run: |
+          node - <<'JS'
+          const assert = require('node:assert/strict');
+          const {createMacFontCatalog}=require('./mac-fonts.cjs');
+          (async()=>{
+            const fonts=createMacFontCatalog();
+            const families=fonts.scan();
+            assert.ok(families.length>=10,'macOS should expose installed system font families');
+            const candidate=families.find(n=>/Helvetica Neue|Arial|SF Pro/i.test(n))||families[0];
+            const data=await fonts.read(candidate);
+            assert.ok(data?.bytes?.length>100,'a discovered macOS font must be loadable');
+            console.log('Native macOS font scan passed:',families.length,'families; loaded',candidate);
+          })().catch(e=>{console.error(e);process.exitCode=1;});
+          JS
       - name: Install desktop dependencies
         working-directory: powerslidepro-desktop
         run: npm install --no-audit --no-fund
