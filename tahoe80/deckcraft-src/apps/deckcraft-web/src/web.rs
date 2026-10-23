@@ -30,6 +30,7 @@ thread_local! {
     static DESKTOP_UI_FONT_PENDING: RefCell<Option<String>> = const { RefCell::new(None) };
     static DESKTOP_UI_FONT_SAVE_RESULT: RefCell<Option<(String, bool)>> = const { RefCell::new(None) };
     static DESKTOP_UI_FONT_REINSTALL: RefCell<bool> = const { RefCell::new(false) };
+    static DESKTOP_UI_FONT_CATALOG_REFRESH: RefCell<bool> = const { RefCell::new(false) };
     static CLOUD_OPEN_PENDING: RefCell<Vec<(String, String, String)>> = const { RefCell::new(Vec::new()) };
     static CLOUD_LIST_PENDING: RefCell<Vec<String>> = const { RefCell::new(Vec::new()) };
     static CLOUD_NAME_PENDING: RefCell<Vec<(u64, String, bool)>> = const { RefCell::new(Vec::new()) };
@@ -190,6 +191,12 @@ fn install_tahoe_font_receiver() {
                     if values.length()>4000{return;}
                     let families=values.iter().filter_map(|x|x.as_string()).collect();
                     db.set_desktop_families(families);
+                    // The saved font can arrive before the OS font catalog on startup.
+                    // Retry its load after the catalog becomes available; never reset the choice.
+                    DESKTOP_UI_FONT_CATALOG_REFRESH.with(|flag| *flag.borrow_mut()=true);
+                    FONT_REPAINT_CONTEXT.with(|slot| {
+                        if let Some(ctx)=slot.borrow().as_ref(){ctx.request_repaint();}
+                    });
                 }
                 "tahoe-ui-font-restore" if from_parent=>{
                     let name=js_sys::Reflect::get(&data,&"family".into())
@@ -429,6 +436,11 @@ impl eframe::App for WebShell {
                     } else {
                         self.app.ui.interface_font_save_message=Some("Could not save this font. Try again.".into());
                     }
+                }
+            });
+            DESKTOP_UI_FONT_CATALOG_REFRESH.with(|flag| {
+                if std::mem::replace(&mut *flag.borrow_mut(),false){
+                    request_selected_desktop_font(&self.app.ui.interface_font);
                 }
             });
             if self.app.ui.interface_font != self.last_interface_font {
