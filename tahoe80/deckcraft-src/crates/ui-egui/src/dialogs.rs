@@ -248,6 +248,7 @@ fn preferences_snapshot(app: &SlideApp) -> Value {
     json!({
         "dark": app.ui.brightness == theme::Brightness::Dark,
         "uiScale": app.ui.ui_scale,
+        "interfaceFont": app.ui.interface_font,
         "prefs": serde_json::to_value(&app.session.prefs).unwrap_or(Value::Null),
     })
 }
@@ -262,6 +263,12 @@ fn restore_preferences(app: &mut SlideApp, d: &Dialog) {
     }
     if let Some(scale) = before.get("uiScale").and_then(Value::as_f64) {
         app.ui.ui_scale = scale as f32;
+    }
+    if let Some(font) = before.get("interfaceFont").and_then(Value::as_str) {
+        if app.ui.interface_font != font {
+            app.ui.interface_font = font.to_owned();
+            app.styled = false;
+        }
     }
     if let Some(prefs) = before.get("prefs").and_then(|p| serde_json::from_value(p.clone()).ok()) {
         app.session.prefs = prefs;
@@ -2244,6 +2251,32 @@ fn body(app: &mut SlideApp, ui: &mut Ui, d: &mut Dialog) -> bool {
                     app.ui.ui_scale = scale;
                 }
                 d.fields.remove("uiScale");
+            }
+            #[cfg(target_os = "macos")]
+            {
+                ui.horizontal(|ui| {
+                    ui.label("Interface font");
+                    egui::ComboBox::from_id_salt("macos-interface-font")
+                        .selected_text(&app.ui.interface_font)
+                        .width(215.0)
+                        .show_ui(ui, |ui| {
+                            for choice in ["Default", "macOS System", "Inter"] {
+                                ui.selectable_value(&mut app.ui.interface_font, choice.to_owned(), choice);
+                            }
+                            ui.separator();
+                            for family in deckcraft_fonts::FontDb::global().families() {
+                                ui.selectable_value(&mut app.ui.interface_font, family.clone(), &family);
+                            }
+                        });
+                });
+                if d.get("lastInterfaceFont", "") != app.ui.interface_font {
+                    d.fields.insert("lastInterfaceFont".into(), app.ui.interface_font.clone());
+                    app.styled = false;
+                }
+                if ui.button("Reset interface font").clicked() {
+                    app.ui.interface_font = "Default".into();
+                    app.styled = false;
+                }
             }
             ui.label(egui::RichText::new("Editing").font(theme::bold(13.0)));
             ui.checkbox(&mut app.session.prefs.smart_guides, "Show smart guides");
