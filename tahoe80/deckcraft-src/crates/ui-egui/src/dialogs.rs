@@ -2252,8 +2252,7 @@ fn body(app: &mut SlideApp, ui: &mut Ui, d: &mut Dialog) -> bool {
                 }
                 d.fields.remove("uiScale");
             }
-            #[cfg(target_os = "macos")]
-            {
+            if app.ui.macos_ui_fonts {
                 ui.horizontal(|ui| {
                     ui.label("Interface font");
                     egui::ComboBox::from_id_salt("macos-interface-font")
