@@ -165,7 +165,7 @@ pub fn install_fonts_with(ctx: &egui::Context, extra: &[std::sync::Arc<deckcraft
     ctx.set_fonts(font_definitions(extra));
 }
 
-/// Select the macOS application's UI typeface without touching document fonts.
+/// Select the Windows/macOS desktop UI typeface without touching document fonts.
 /// The original bundled stack remains the fallback if a system face is absent.
 pub fn install_interface_fonts(
     ctx: &egui::Context,
@@ -179,6 +179,9 @@ pub fn install_interface_fonts(
             "macOS System" => ["SF Pro Text", ".AppleSystemUIFont", "Helvetica Neue"]
                 .into_iter()
                 .find(|name| deckcraft_fonts::FontDb::global().has_family(name)),
+            "Windows System" => ["Segoe UI", "Segoe UI Variable", "Arial"]
+                .into_iter()
+                .find(|name| deckcraft_fonts::FontDb::global().has_family(name)),
             other => Some(other),
         };
         if let Some(family) = family {
@@ -188,7 +191,7 @@ pub fn install_interface_fonts(
                 if !face.is_color() && face.data().len() <= (128 << 20) {
                     let mut data = FontData::from_owned(face.data().to_vec());
                     data.index = face.index();
-                    let key = "tahoe-macos-interface".to_owned();
+                    let key = "tahoe-desktop-interface".to_owned();
                     defs.font_data.insert(key.clone(), std::sync::Arc::new(data));
                     for family in [FontFamily::Proportional, FontFamily::Name("bold".into())] {
                         if let Some(list) = defs.families.get_mut(&family) {
