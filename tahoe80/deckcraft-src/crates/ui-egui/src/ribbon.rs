@@ -714,6 +714,7 @@ fn font_group(app: &mut SlideApp, ui: &mut Ui, st: &Value) {
                         ui.small("OTHER BUNDLED FONTS");
                         for name in other {
                             if ui.button(&name).clicked() {
+                                font_host_action("tahoeBundledFontRequest",Some(&name));
                                 run(app,"format.font",json!({"family":name}));
                                 ui.close();
                             }

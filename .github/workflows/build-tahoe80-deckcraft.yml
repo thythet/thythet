@@ -48,6 +48,9 @@ jobs:
         run: |
           node --check tahoe80/deckcraft-src/apps/deckcraft-web/generator-paste.js
           node --test tahoe80/deckcraft-src/apps/deckcraft-web/generator-paste.test.cjs
+      - name: Test bundled/installed font grouping and rescan
+        working-directory: tahoe80/deckcraft-src
+        run: cargo test -p deckcraft-fonts tahoe_bundled_tests --lib
       - name: Test grouped song Undo/Redo and rollback
         working-directory: tahoe80/deckcraft-src
         run: cargo test -p deckcraft-engine --test tahoe_undo_group

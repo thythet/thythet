@@ -155,7 +155,9 @@ impl SongGenerator {
                         .selected_text(&self.font_family).width(180.0)
                         .show_ui(ui, |ui| {
                             for family in deckcraft_fonts::FontDb::global().families() {
-                                ui.selectable_value(&mut self.font_family, family.clone(), family);
+                                if ui.selectable_value(&mut self.font_family, family.clone(), &family).clicked() {
+                                    super::request_selected_desktop_font(&family);
+                                }
                             }
                         });
                 });

@@ -860,12 +860,15 @@ impl FontDb {
     /// Names that the desktop host has cataloged. Not available to normal web
     /// pages, which cannot enumerate a computer's font folders.
     pub fn set_desktop_families(&self, names: Vec<String>) {
-        let loaded = self.read_faces();
+        let packaged = self.packaged_families.read().unwrap_or_else(|e| e.into_inner()).clone();
         let mut out = Vec::new();
         for name in names {
             let name = name.trim();
-            if name.is_empty() || name.len()>160 || out.iter().any(|s: &String| s.eq_ignore_ascii_case(name))
-               || loaded.iter().any(|f| f.family.eq_ignore_ascii_case(name)) {continue;}
+            // Retain installed families even after their faces are loaded:
+            // otherwise a PC font silently moves to Bundled Fonts on rescan.
+            if name.is_empty() || name.len()>160
+                || out.iter().any(|s: &String| s.eq_ignore_ascii_case(name))
+                || packaged.iter().any(|s| s.eq_ignore_ascii_case(name)) {continue;}
             out.push(name.to_owned());
         }
         out.sort_by_key(|s|s.to_lowercase());
@@ -1567,6 +1570,20 @@ mod font_dir_tests {
 #[cfg(test)]
 mod tahoe_bundled_tests {
     use super::FontDb;
+
+    #[test]
+    fn preloaded_pc_font_remains_in_installed_section_after_rescan() {
+        let db=FontDb::with_font_dirs(vec![]);
+        // Ubuntu is preloaded by FontDb at startup. The older PC catalog
+        // filtered it out even if Windows reported the same family.
+        assert!(db.has_family("Ubuntu"));
+        for _ in 0..2 {
+            db.set_desktop_families(vec!["Ubuntu".to_owned(),"Arial".to_owned()]);
+            let (_,_,installed)=db.grouped_families();
+            assert!(installed.iter().any(|n|n=="Ubuntu"));
+            assert!(installed.iter().any(|n|n=="Arial"));
+        }
+    }
 
     #[test]
     fn advertised_khmer_pack_has_priority_over_pc_fonts() {

@@ -26,6 +26,7 @@ const CANVAS_ID: &str = "deckcraft_canvas";
 const LOADING_ID: &str = "deckcraft_loading";
 
 thread_local! {
+    static FONT_REPAINT_CONTEXT: RefCell<Option<egui::Context>> = const { RefCell::new(None) };
     static CLOUD_OPEN_PENDING: RefCell<Vec<(String, String, String)>> = const { RefCell::new(Vec::new()) };
     static CLOUD_LIST_PENDING: RefCell<Vec<String>> = const { RefCell::new(Vec::new()) };
     static CLOUD_NAME_PENDING: RefCell<Vec<(u64, String, bool)>> = const { RefCell::new(Vec::new()) };
@@ -195,6 +196,9 @@ fn install_tahoe_font_receiver() {
                     if bytes.length()<100||bytes.length()>45*1024*1024{return;}
                     let before=db.families();
                     if db.add_font(bytes.to_vec())==0{return;}
+                    FONT_REPAINT_CONTEXT.with(|slot| {
+                        if let Some(ctx)=slot.borrow().as_ref(){ctx.request_repaint();}
+                    });
                     let after=db.families();
                     let imported=js_sys::Reflect::get(&data,&"source".into()).ok()
                         .and_then(|x|x.as_string()).as_deref()==Some("imported");
@@ -263,6 +267,7 @@ pub fn start() {
                 options,
                 Box::new(move |cc| {
                     log::info!("deckcraft-web {}: Glow/WebGL2 renderer", env!("CARGO_PKG_VERSION"));
+                    FONT_REPAINT_CONTEXT.with(|slot| *slot.borrow_mut() = Some(cc.egui_ctx.clone()));
                     let inbox: Inbox = Inbox::default();
                     let mut app = SlideApp::new(Session::new(), services(inbox.clone(), cc.egui_ctx.clone()));
                     // egui/epaint has a separate font atlas from DeckCraft's document font database.
@@ -829,11 +834,13 @@ impl Default for TypographyPanel {
             open: false, tab: FormatTab::TextBible,
             saved_regular: None, saved_song: None,
             song_target: SongTarget::Lyrics, song_reach: SongReach::All,
-            scope: ApplyScope::VerseNumbers,
-            font: "Khmer OS Muol Light".to_owned(), font_size: 40.0, line_spacing: 1.15,
-            set_font: true, set_size: true, set_spacing: false,
-            set_bold: true, bold: true, set_italic: true, italic: false,
-            set_underline: true, underline: false, set_color: true, color: "#614000".into(),
+            // Start with an ordinary current-slide scope and no pre-selected
+            // destructive formatting. Selecting a font auto-enables Font above.
+            scope: ApplyScope::CurrentSlide,
+            font: BIBLE_DEFAULT_FONT.to_owned(), font_size: 40.0, line_spacing: 1.15,
+            set_font: false, set_size: false, set_spacing: false,
+            set_bold: false, bold: false, set_italic: false, italic: false,
+            set_underline: false, underline: false, set_color: false, color: "#614000".into(),
             set_align: false, align: "center".into(),
             set_anchor: false, anchor: "top".into(), set_baseline: false,
             convert_numbers: false, number_style: VerseNumberStyle::English,
@@ -970,7 +977,17 @@ impl TypographyPanel {
             if value {d.insert_temp(id,false);}
             value
         });
-        if ribbon_open { self.switch_tab(FormatTab::TextBible);self.open=true; }
+        if ribbon_open {
+            self.switch_tab(FormatTab::TextBible);
+            // Apply to the selected text box by default; when no text box is
+            // selected, operate on the current slide, never silently restrict
+            // the user to a Bible verse number.
+            if let Some(doc)=app.session.active() {
+                let has_shape=!doc.selection.shapes.is_empty() || doc.selection.text.is_some();
+                self.scope=if has_shape {ApplyScope::Box}else{ApplyScope::CurrentSlide};
+            }
+            self.open=true;
+        }
         if song_open { self.switch_tab(FormatTab::Song);self.open=true; }
         if !self.open { return; }
         let mut apply_now = false;
@@ -1091,6 +1108,7 @@ impl TypographyPanel {
                                 .selected_text(&self.font).width(156.0).show_ui(ui, |ui| {
                                     for family in deckcraft_fonts::FontDb::global().families() {
                                         if ui.selectable_value(&mut self.font, family.clone(), &family).clicked() {
+                                            self.set_font = true;
                                             request_selected_desktop_font(&family);
                                         }
                                     }
@@ -1729,7 +1747,9 @@ impl BibleGenerator {
                         .show_ui(ui, |ui| {
                             ui.selectable_value(&mut self.font_family, String::new(), "Theme font");
                             for family in families {
-                                ui.selectable_value(&mut self.font_family, family.clone(), family);
+                                if ui.selectable_value(&mut self.font_family, family.clone(), &family).clicked() {
+                                    request_selected_desktop_font(&family);
+                                }
                             }
                         });
                 });
@@ -2024,7 +2044,9 @@ impl SmartGenerator {
                         .show_ui(ui, |ui| {
                             ui.selectable_value(&mut self.font_family, String::new(), "Theme font");
                             for family in families {
-                                ui.selectable_value(&mut self.font_family, family.clone(), family);
+                                if ui.selectable_value(&mut self.font_family, family.clone(), &family).clicked() {
+                                    request_selected_desktop_font(&family);
+                                }
                             }
                         });
                 });
@@ -2821,7 +2843,12 @@ async fn load_requested_tahoe_font(family:&str) {
             !(file.ends_with(".ttf")||file.ends_with(".otf")){continue;}
         if let Ok(bytes)=fetch_url_bytes(&format!("../../assets/fonts/{file}")).await{
             let added=db.add_font(bytes);
-            if added>0{log::info!("Restored bundled font on demand: {name} ({added} face(s))");}
+            if added>0{
+                log::info!("Restored bundled font on demand: {name} ({added} face(s))");
+                FONT_REPAINT_CONTEXT.with(|slot| {
+                    if let Some(ctx)=slot.borrow().as_ref(){ctx.request_repaint();}
+                });
+            }
         }
     }
 }
@@ -2841,6 +2868,11 @@ async fn load_remaining_tahoe_fonts() {
         if let Ok(bytes) = fetch_url_bytes(&url).await {
             added += db.add_font(bytes);
         }
+    }
+    if added>0 {
+        FONT_REPAINT_CONTEXT.with(|slot| {
+            if let Some(ctx)=slot.borrow().as_ref(){ctx.request_repaint();}
+        });
     }
     log::info!("PowerSlidePro: {} optional Khmer font faces loaded after startup", added);
 }
