@@ -173,7 +173,6 @@ pub fn install_interface_fonts(
     choice: &str,
 ) {
     let mut defs = font_definitions(extra);
-    #[cfg(target_os = "macos")]
     {
         let family = match choice {
             "Default" | "Inter" | "" => None,
@@ -200,8 +199,6 @@ pub fn install_interface_fonts(
             }
         }
     }
-    #[cfg(not(target_os = "macos"))]
-    let _ = choice;
     ctx.set_fonts(defs);
 }
 
