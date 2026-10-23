@@ -61,8 +61,8 @@ jobs:
           assert list(site.glob("*.wasm")), "WASM boot module missing"
           assert (site/"app/photocraft-web.js").is_file(), "Main engine loader missing"
           assert (site/"app/parts.txt").is_file(), "WASM manifest missing"
-          parts=[p.strip() for p in (site/"app/parts.txt").read_text().splitlines() if p.strip()]
-          assert parts and all((site/"app"/part).is_file() for part in parts), "WASM engine segments missing"
+          parts=list((site/"app").glob("*.part-*"))
+          assert parts and all(part.stat().st_size>0 for part in parts), "WASM engine segments missing"
           print("Installed PhotoCraft release:",len(list(site.rglob("*"))),"paths, engine parts:",len(parts))
           PY
       - name: Preserve upstream copyright, licenses, and third party attribution
