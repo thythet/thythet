@@ -1,0 +1,91 @@
+name: Install Photo web app into Tahoe81
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/install-photo-tahoe81.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tahoe81-photo-install
+  cancel-in-progress: false
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Download and verify upstream PhotoCraft web release
+        shell: bash
+        run: |
+          curl -fL --retry 4 --retry-all-errors \
+            'https://github.com/storytold/photocraft/releases/download/v0.14.0/photocraft-web-0.14.0.zip' \
+            -o "${RUNNER_TEMP}/photocraft-web-0.14.0.zip"
+          printf '%s  %s\n' \
+            '8ac7b50db8c8a4f8c40eece5bf5cdbf912f9fd9c092231b0705f7753a1581638' \
+            "${RUNNER_TEMP}/photocraft-web-0.14.0.zip" | sha256sum -c -
+      - name: Extract complete static site safely
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os, shutil, stat
+          from pathlib import Path, PurePosixPath
+          from zipfile import ZipFile
+          site=Path("tahoe81/photo")
+          archive=Path(os.environ["RUNNER_TEMP"])/"photocraft-web-0.14.0.zip"
+          site.mkdir(parents=True,exist_ok=True)
+          with ZipFile(archive) as z:
+              files=[item for item in z.infolist() if not item.is_dir()]
+              assert files, "Empty PhotoCraft web release"
+              assert sum(item.file_size for item in files)<300_000_000, "Unexpected release size"
+              for item in files:
+                  path=PurePosixPath(item.filename)
+                  parts=path.parts
+                  assert parts and ".." not in parts and not path.is_absolute(), item.filename
+                  assert not stat.S_ISLNK(item.external_attr >> 16), item.filename
+                  if parts[0]=="photocraft-web-0.14.0": parts=parts[1:]
+                  if not parts or parts[0]=="__MACOSX": continue
+                  dest=site.joinpath(*parts)
+                  dest.parent.mkdir(parents=True,exist_ok=True)
+                  with z.open(item) as source, dest.open("wb") as target:
+                      shutil.copyfileobj(source,target,length=1024*1024)
+          assert (site/"index.html").is_file(), "HTML entry point missing"
+          assert list(site.glob("*.js")), "JavaScript loader missing"
+          assert list(site.glob("*.wasm")), "WASM boot module missing"
+          assert (site/"app/photocraft-web.js").is_file(), "Main engine loader missing"
+          assert (site/"app/parts.txt").is_file(), "WASM manifest missing"
+          parts=[p.strip() for p in (site/"app/parts.txt").read_text().splitlines() if p.strip()]
+          assert parts and all((site/"app"/part).is_file() for part in parts), "WASM engine segments missing"
+          print("Installed PhotoCraft release:",len(list(site.rglob("*"))),"paths, engine parts:",len(parts))
+          PY
+      - name: Preserve upstream copyright, licenses, and third party attribution
+        shell: bash
+        run: |
+          for name in LICENSE-MIT LICENSE-APACHE NOTICE ATTRIBUTION.md; do
+            curl -fL --retry 3 --retry-all-errors \
+              "https://raw.githubusercontent.com/storytold/photocraft/v0.14.0/${name}" \
+              -o "tahoe81/photo/${name}"
+          done
+      - name: Publish Photo into Tahoe81 on main
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f tahoe81/photo/
+          if ! git diff --cached --quiet; then
+            git commit -m 'Install verified PhotoCraft browser editor into Tahoe81 Photo'
+            for attempt in 1 2 3; do
+              git fetch origin main
+              git rebase origin/main
+              if git push origin HEAD:main; then exit 0; fi
+              sleep 2
+            done
+            exit 1
+          fi
