@@ -2,7 +2,7 @@
   "id": "./",
   "name": "Tahoe81",
   "short_name": "Tahoe81",
-  "description": "Tahoe81 desktop with Photo, Vector, PowerSlidePro, Bible and thechat.",
+  "description": "Tahoe81 desktop with PDF, Photo, Vector, PowerSlidePro, Bible and thechat.",
   "start_url": "./?source=pwa",
   "scope": "./",
   "display": "standalone",
@@ -120,6 +120,19 @@
       "icons": [
         {
           "src": "assets/photo-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "PDF",
+      "short_name": "PDF",
+      "description": "Open the PDF editor.",
+      "url": "./?open=pdf",
+      "icons": [
+        {
+          "src": "assets/pdf-icon.svg",
           "sizes": "any",
           "type": "image/svg+xml"
         }
