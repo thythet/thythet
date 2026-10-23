@@ -41,8 +41,14 @@ jobs:
 
       - name: Install wasm-opt
         run: |
-          sudo apt-get update
-          sudo apt-get install -y binaryen python3-fonttools
+          # GitHub's Ubuntu images normally have current package indexes.
+          # Avoid a slow mirror refresh unless these packages are unavailable.
+          if ! sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y binaryen python3-fonttools; then
+            sudo apt-get update -o Acquire::Retries=2
+            sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y binaryen python3-fonttools
+          fi
+          wasm-opt --version
+          /usr/bin/python3 -c 'import fontTools'
 
       - name: Test Khmer generator clipboard and native text input
         run: |
