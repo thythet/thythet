@@ -6,7 +6,11 @@ const http = require('node:http');
 const path = require('node:path');
 const { URL } = require('node:url');
 const {createInstalledFontCatalog}=require('./pc-fonts.cjs');
-const installedFonts=createInstalledFontCatalog();
+const {createMacFontCatalog}=require('./mac-fonts.cjs');
+const installedFonts=process.platform==='darwin'?createMacFontCatalog():createInstalledFontCatalog();
+const validUIFont = name => typeof name==='string' && name.length<=160 &&
+  !/[\\/\u0000]/.test(name) && name.trim().length>0;
+const uiFontPath=()=>path.join(app.getPath('userData'),'tahoe80-ui-font.json');
 
 const DATA_DIR = app.isPackaged
   ? path.join(process.resourcesPath, 'app.asar', 'payload')
@@ -255,6 +259,23 @@ if (ownsInstance) app.whenReady().then(async () => {
   ipcMain.handle('pspro:read-pc-font', async (event, family) => {
     if (!mainWindow || event.sender!==mainWindow.webContents)return null;
     return installedFonts.read(family);
+  });
+  ipcMain.handle('pspro:ui-font-get', event => {
+    if (process.platform!=='darwin' || !mainWindow || event.sender!==mainWindow.webContents) return 'Default';
+    try {
+      const name=JSON.parse(fs.readFileSync(uiFontPath(),'utf8')).interfaceFont;
+      return validUIFont(name)?name:'Default';
+    } catch (_) {return 'Default';}
+  });
+  ipcMain.handle('pspro:ui-font-set', (event, name) => {
+    if (process.platform!=='darwin' || !mainWindow || event.sender!==mainWindow.webContents || !validUIFont(name)) return false;
+    try {
+      const file=uiFontPath(), tmp=file+'.tmp';
+      fs.mkdirSync(path.dirname(file),{recursive:true});
+      fs.writeFileSync(tmp,JSON.stringify({interfaceFont:name}),'utf8');
+      fs.renameSync(tmp,file);
+      return true;
+    } catch (_) {return false;}
   });
   ipcMain.handle('pspro:next-open-file', async (event) => {
     if (!mainWindow || event.sender !== mainWindow.webContents) return { error: 'Invalid window' };
