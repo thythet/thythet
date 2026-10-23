@@ -261,14 +261,14 @@ if (ownsInstance) app.whenReady().then(async () => {
     return installedFonts.read(family);
   });
   ipcMain.handle('pspro:ui-font-get', event => {
-    if (process.platform!=='darwin' || !mainWindow || event.sender!==mainWindow.webContents) return 'Default';
+    if (!['darwin','win32'].includes(process.platform) || !mainWindow || event.sender!==mainWindow.webContents) return 'Default';
     try {
       const name=JSON.parse(fs.readFileSync(uiFontPath(),'utf8')).interfaceFont;
       return validUIFont(name)?name:'Default';
     } catch (_) {return 'Default';}
   });
   ipcMain.handle('pspro:ui-font-set', (event, name) => {
-    if (process.platform!=='darwin' || !mainWindow || event.sender!==mainWindow.webContents || !validUIFont(name)) return false;
+    if (!['darwin','win32'].includes(process.platform) || !mainWindow || event.sender!==mainWindow.webContents || !validUIFont(name)) return false;
     try {
       const file=uiFontPath(), tmp=file+'.tmp';
       fs.mkdirSync(path.dirname(file),{recursive:true});
