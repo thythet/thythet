@@ -54,12 +54,12 @@ jobs:
       - name: Validate bundled WASM, 66 Bible books, Khmer OS fonts and JavaScript
         working-directory: tahoe80/powerslidepro-desktop
         run: npm run check
-      - name: Check Windows 0.1.10 installation and font preference config
+      - name: Check Windows 0.1.11 installation and font preference config
         working-directory: tahoe80/powerslidepro-desktop
         run: |
           node - <<'JS'
           const assert=require('node:assert/strict'),fs=require('node:fs'),p=require('./package.json');
-          assert.equal(p.version,'0.1.10');
+          assert.equal(p.version,'0.1.11');
           assert.equal(p.build.nsis.perMachine,true);
           assert.equal(p.build.win.fileAssociations.find(x=>x.ext==='deckcraft')?.icon,'deckcraft.ico');
           assert.ok(p.build.files.includes('ui-font-prefs.cjs'),'persistent preferences packaged');
@@ -111,11 +111,11 @@ jobs:
         working-directory: powerslidepro-desktop
         run: |
           $ErrorActionPreference = 'Stop'
-          $exe = Get-ChildItem 'dist/PowerSlidePro-0.1.10-win-x64.exe' -ErrorAction Stop | Select-Object -First 1
+          $exe = Get-ChildItem 'dist/PowerSlidePro-0.1.11-win-x64.exe' -ErrorAction Stop | Select-Object -First 1
           if (-not $exe -or $exe.Length -lt 1000000) { throw 'Windows installer missing or too small' }
           if (-not (Test-Path 'dist/latest.yml')) { throw 'Windows auto-update manifest missing' }
           $manifest=Get-Content -Raw 'dist/latest.yml'
-          if ($manifest -notmatch 'version: 0\.1\.10' -or $manifest -notmatch 'sha512:') { throw 'Windows updater manifest invalid' }
+          if ($manifest -notmatch 'version: 0\.1\.11' -or $manifest -notmatch 'sha512:') { throw 'Windows updater manifest invalid' }
           $sig=Get-AuthenticodeSignature $exe.FullName
           Write-Host "Authenticode signature: $($sig.Status)"
           if ($sig.Status -ne 'Valid') { Write-Warning 'Unsigned beta; Windows SmartScreen may show a warning.' }
@@ -126,7 +126,7 @@ jobs:
         with:
           name: powerslidepro-tahoe80-windows-installer
           path: |
-            powerslidepro-desktop/dist/PowerSlidePro-0.1.10-win-x64.exe
+            powerslidepro-desktop/dist/PowerSlidePro-0.1.11-win-x64.exe
             powerslidepro-desktop/dist/latest.yml
             powerslidepro-desktop/dist/SHA256SUMS-Windows.txt
           if-no-files-found: error
