@@ -394,7 +394,7 @@ impl eframe::App for WebShell {
                 if let Some(name)=p.borrow_mut().take(){
                     self.app.ui.interface_font=name.clone();
                     self.last_interface_font=name.clone();
-                    self.app.styled=false;
+                    self.app.refresh_interface_fonts();
                     request_selected_desktop_font(&name);
                 }
             });
@@ -405,7 +405,7 @@ impl eframe::App for WebShell {
             }
             MAC_UI_FONT_REINSTALL.with(|p|{
                 if std::mem::replace(&mut *p.borrow_mut(),false){
-                    self.app.styled=false;
+                    self.app.refresh_interface_fonts();
                 }
             });
         }
