@@ -208,7 +208,7 @@ impl SongTools {
             ("tahoe-song-mark-clear","Remove")
         ] {
             if take(command) {
-                match self.mark(app,kind) {
+                match app.grouped_undo("Mark Song Section", |app| self.mark(app,kind)) {
                     Ok(())=>{self.status=format!("Marked selection: {kind}.");app.notify(self.status.clone());}
                     Err(e)=>{self.status=e.clone();app.notify(e);}
                 }
