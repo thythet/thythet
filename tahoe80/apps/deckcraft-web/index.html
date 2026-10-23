@@ -36,8 +36,8 @@
   <script src="./font-manager.js" defer></script>
   
 <script type="module">
-import init, * as bindings from './deckcraft-web-687b1537b6fd023f.js';
-const wasm = await init({ module_or_path: './deckcraft-web-b8af4ae15eb29c1e_bg.wasm' });
+import init, * as bindings from './deckcraft-web-7d599ee448b2797a.js';
+const wasm = await init({ module_or_path: './deckcraft-web-cf72789fc14ae75a_bg.wasm' });
 
 
 window.wasmBindings = bindings;
@@ -53,7 +53,7 @@ dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
     #deckcraft_loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
       color: #b8b8b8; font: 14px system-ui, sans-serif; pointer-events: none; }
   </style>
-<link rel="modulepreload" href="./deckcraft-web-687b1537b6fd023f.js" crossorigin="anonymous" integrity="sha384-DGCmcPkT/QMHoYve5Dx2jk4JoqCHyVpj/Ziqgz+1f0RFItGIr+7MBKjYoczwXg47"><link rel="preload" href="./deckcraft-web-b8af4ae15eb29c1e_bg.wasm" crossorigin="anonymous" integrity="sha384-GvLH8yHbXjswuEYRTaelxRP/MApxgqo8EjiysFWFIpKpbXx7Ot+pxDYX5CtXlVRQ" as="fetch" type="application/wasm"></head>
+<link rel="modulepreload" href="./deckcraft-web-7d599ee448b2797a.js" crossorigin="anonymous" integrity="sha384-SL8YoblaNMN2GVxBX3pKygTlQwVqvACkg5fLyPB+Syxp5CyvGwdjbspv4xPuoFY3"><link rel="preload" href="./deckcraft-web-cf72789fc14ae75a_bg.wasm" crossorigin="anonymous" integrity="sha384-pB31RLP3exywSy8lraCSRY1dYqihF3z4PVkBMGG77Rw8hhb9z8eamZ4dhlpF2uwZ" as="fetch" type="application/wasm"></head>
 <body>
   <canvas id="deckcraft_canvas"></canvas>
   <div id="deckcraft_loading">Loading PowerSlidePro&hellip;</div>
