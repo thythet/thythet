@@ -64,7 +64,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#24262a;color:#fff;fon
 const iframe=document.getElementById('deckCraftFrame');
 const origin=location.origin;
 const host=window.PowerSlideDesktop;
-iframe.src='apps/deckcraft-web/index.html?blank&desktop=1'+(host?.platform==='darwin'?'&macui=1':'');
+iframe.src='apps/deckcraft-web/index.html?blank&desktop=1'+(host?.platform==='darwin'?'&macui=1':host?.platform==='win32'?'&winui=1':'');
 let savingAs=false,toastTimer;
 
 let fontCatalogDue=false;
@@ -205,7 +205,17 @@ window.addEventListener('message',async e=>{
    return;
  }else if(data.type==='tahoe-font-ready'){
    void sendInstalledFontCatalog();
-   return;
+    if(host?.platform==='darwin'||host?.platform==='win32'){
+      void host?.getUIFont?.().then(family=>{
+        send('tahoe-ui-font-restore',{family:typeof family==='string'?family:'Default'});
+      }).catch(()=>send('tahoe-ui-font-restore',{family:'Default'}));
+    }
+    return;
+  }else if(data.type==='tahoe-ui-font-preference'){
+    if((host?.platform==='darwin'||host?.platform==='win32') && typeof data.family==='string'){
+      void host?.setUIFont?.(data.family);
+    }
+    return;
  }else if(data.type==='tahoe-font-need'){
    void loadPCFont(data.family);
    return;
