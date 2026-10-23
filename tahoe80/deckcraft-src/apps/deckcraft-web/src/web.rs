@@ -28,6 +28,7 @@ const LOADING_ID: &str = "deckcraft_loading";
 thread_local! {
     static FONT_REPAINT_CONTEXT: RefCell<Option<egui::Context>> = const { RefCell::new(None) };
     static DESKTOP_UI_FONT_PENDING: RefCell<Option<String>> = const { RefCell::new(None) };
+    static DESKTOP_UI_FONT_SAVE_RESULT: RefCell<Option<(String, bool)>> = const { RefCell::new(None) };
     static DESKTOP_UI_FONT_REINSTALL: RefCell<bool> = const { RefCell::new(false) };
     static CLOUD_OPEN_PENDING: RefCell<Vec<(String, String, String)>> = const { RefCell::new(Vec::new()) };
     static CLOUD_LIST_PENDING: RefCell<Vec<String>> = const { RefCell::new(Vec::new()) };
@@ -195,6 +196,18 @@ fn install_tahoe_font_receiver() {
                         .ok().and_then(|v|v.as_string()).unwrap_or_default();
                     if !name.is_empty() && name.len()<=160 && !name.chars().any(|c| matches!(c, '/' | '\\' | '\0')) {
                         DESKTOP_UI_FONT_PENDING.with(|p| *p.borrow_mut()=Some(name));
+                        FONT_REPAINT_CONTEXT.with(|slot| {
+                            if let Some(ctx)=slot.borrow().as_ref(){ctx.request_repaint();}
+                        });
+                    }
+                }
+                "tahoe-ui-font-saved" if from_parent=>{
+                    let family=js_sys::Reflect::get(&data,&"family".into()).ok()
+                        .and_then(|v|v.as_string()).unwrap_or_default();
+                    let saved=js_sys::Reflect::get(&data,&"success".into()).ok()
+                        .and_then(|v|v.as_bool()).unwrap_or(false);
+                    if !family.is_empty() && family.len()<=160 {
+                        DESKTOP_UI_FONT_SAVE_RESULT.with(|slot| *slot.borrow_mut()=Some((family,saved)));
                         FONT_REPAINT_CONTEXT.with(|slot| {
                             if let Some(ctx)=slot.borrow().as_ref(){ctx.request_repaint();}
                         });
@@ -399,16 +412,32 @@ impl eframe::App for WebShell {
         if self.app.ui.desktop_ui_fonts {
             DESKTOP_UI_FONT_PENDING.with(|p| {
                 if let Some(name)=p.borrow_mut().take(){
+                    // Bootstrap the persisted default without writing it back to disk.
+                    self.app.ui.saved_interface_font=name.clone();
                     self.app.ui.interface_font=name.clone();
                     self.last_interface_font=name.clone();
+                    self.app.ui.interface_font_save_message=None;
                     self.app.refresh_interface_fonts();
                     request_selected_desktop_font(&name);
                 }
             });
+            DESKTOP_UI_FONT_SAVE_RESULT.with(|p| {
+                if let Some((name, saved))=p.borrow_mut().take(){
+                    if saved {
+                        self.app.ui.saved_interface_font=name;
+                        self.app.ui.interface_font_save_message=Some("Saved. This font will be used on restart.".into());
+                    } else {
+                        self.app.ui.interface_font_save_message=Some("Could not save this font. Try again.".into());
+                    }
+                }
+            });
             if self.app.ui.interface_font != self.last_interface_font {
+                // A selection previews the face but never silently changes the default.
                 self.last_interface_font=self.app.ui.interface_font.clone();
                 request_selected_desktop_font(&self.last_interface_font);
-                post_desktop_ui_font_choice(&self.last_interface_font);
+            }
+            if let Some(name)=self.app.ui.interface_font_save_request.take(){
+                post_desktop_ui_font_choice(&name);
             }
             DESKTOP_UI_FONT_REINSTALL.with(|p|{
                 if std::mem::replace(&mut *p.borrow_mut(),false){
