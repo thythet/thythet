@@ -264,6 +264,15 @@ pub struct UiState {
     pub ui_scale: f32,
     /// Desktop application interface typography only; never affects presentation text.
     pub interface_font: String,
+    /// Electron-persisted default, independent of presentation and web UI settings.
+    #[serde(skip)]
+    pub saved_interface_font: String,
+    /// Explicit save requested by Preferences; never save merely on preview.
+    #[serde(skip)]
+    pub interface_font_save_request: Option<String>,
+    /// Status of the last desktop preference write.
+    #[serde(skip)]
+    pub interface_font_save_message: Option<String>,
     /// True in macOS/Windows desktop editors; false in the Tahoe browser and slide renderer.
     #[serde(skip)]
     pub desktop_ui_fonts: bool,
@@ -310,6 +319,9 @@ impl Default for UiState {
             presenter_view: true,
             ui_scale: 1.0,
             interface_font: "Default".into(),
+            saved_interface_font: "Default".into(),
+            interface_font_save_request: None,
+            interface_font_save_message: None,
             desktop_ui_fonts: cfg!(any(target_os = "macos", target_os = "windows")),
             windows_ui_fonts: cfg!(target_os = "windows"),
             format_tab: "fill".into(),
