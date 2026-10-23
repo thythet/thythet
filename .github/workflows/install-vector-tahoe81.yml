@@ -1,0 +1,86 @@
+name: Install Vector web app into Tahoe81
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/install-vector-tahoe81.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tahoe81-vector-install
+  cancel-in-progress: false
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Download verified VectorCraft v0.16.0 web release
+        shell: bash
+        run: |
+          curl -fL --retry 4 --retry-all-errors \
+            'https://github.com/storytold/vectorcraft/releases/download/v0.16.0/vectorcraft-web-0.16.0.zip' \
+            -o "${RUNNER_TEMP}/vectorcraft-web-0.16.0.zip"
+          printf '%s  %s\n' \
+            '5041d69b82a6d7bc39527a15bc42ae8e3e19a92eb0b72efb112aa26aa25efc23' \
+            "${RUNNER_TEMP}/vectorcraft-web-0.16.0.zip" | sha256sum -c -
+      - name: Extract safe static site without altering upstream binaries
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path, PurePosixPath
+          from zipfile import ZipFile
+          import os
+          root=Path("tahoe81/vector")
+          root.mkdir(parents=True,exist_ok=True)
+          archive=Path(os.environ["RUNNER_TEMP"])/"vectorcraft-web-0.16.0.zip"
+          with ZipFile(archive) as z:
+              files=[x for x in z.infolist() if not x.is_dir()]
+              assert files, "Empty release archive"
+              assert sum(x.file_size for x in files)<450_000_000, "Unexpected release size"
+              for item in files:
+                  posix=PurePosixPath(item.filename)
+                  parts=posix.parts
+                  assert parts and ".." not in parts and not posix.is_absolute(),item.filename
+                  if parts[0]=="vectorcraft-web-0.16.0": parts=parts[1:]
+                  if not parts or parts[0]=="__MACOSX": continue
+                  dest=root.joinpath(*parts)
+                  dest.parent.mkdir(parents=True,exist_ok=True)
+                  with z.open(item) as source, dest.open("wb") as output:
+                      while data:=source.read(1024*1024): output.write(data)
+          assert (root/"index.html").is_file(), "Web entry point missing"
+          assert list(root.glob("*.wasm")), "WebAssembly payload missing"
+          assert list(root.glob("*.js")), "JavaScript loader missing"
+          print("Vector self-hosted web payload installed:",len(list(root.rglob("*"))),"paths")
+          PY
+      - name: Preserve project and dependency license notices
+        shell: bash
+        run: |
+          for file in LICENSE-MIT LICENSE-APACHE NOTICE ASSETS.md; do
+            curl -fL --retry 3 --retry-all-errors \
+              "https://raw.githubusercontent.com/storytold/vectorcraft/v0.16.0/${file}" \
+              -o "tahoe81/vector/${file}"
+          done
+      - name: Publish Vector assets to main
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f tahoe81/vector/
+          if ! git diff --cached --quiet; then
+            git commit -m 'Install verified VectorCraft WebAssembly web build in Tahoe81 Vector'
+            for attempt in 1 2 3; do
+              git fetch origin main
+              git rebase origin/main
+              if git push origin HEAD:main; then exit 0; fi
+              sleep 2
+            done
+            exit 1
+          fi
