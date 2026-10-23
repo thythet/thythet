@@ -1563,6 +1563,12 @@ impl SlideApp {
         }
     }
 
+    /// Rebuild the egui interface atlas when a desktop UI face arrives asynchronously.
+    /// This does not modify the document or presentation text.
+    pub fn refresh_interface_fonts(&mut self) {
+        self.styled = false;
+    }
+
     /// Per-frame logic before layout: styles, control requests, screenshots, shortcuts.
     pub fn logic(&mut self, ctx: &egui::Context) {
         let scale = self.ui.ui_scale.clamp(0.5, 3.0);
