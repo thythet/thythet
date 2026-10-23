@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "Tahoe80",
-  "short_name": "Tahoe80",
-  "description": "Tahoe80 desktop with thechat, Bible, PowerSlide, PowerSlidePro and AllSong.",
+  "name": "Tahoe81",
+  "short_name": "Tahoe81",
+  "description": "Tahoe81 desktop with Vector, PowerSlidePro, Bible and thechat.",
   "start_url": "./?source=pwa",
   "scope": "./",
   "display": "standalone",
@@ -96,6 +96,19 @@
           "src": "../chat22/icons/icon-192.png",
           "sizes": "192x192",
           "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Vector",
+      "short_name": "Vector",
+      "description": "Open the Vector illustration editor.",
+      "url": "./?open=vector",
+      "icons": [
+        {
+          "src": "assets/vector-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
         }
       ]
     }
