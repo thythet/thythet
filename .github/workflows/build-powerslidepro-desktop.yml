@@ -51,7 +51,7 @@ jobs:
           node - <<'JS'
           const assert = require('node:assert/strict');
           const conf = require('./package.json');
-          assert.equal(conf.version, '0.1.5');
+          assert.equal(conf.version, '0.1.6');
           assert.equal(conf.build.nsis.perMachine, true);
           const assoc = conf.build.win.fileAssociations.find(x => x.ext === 'deckcraft');
           assert.equal(assoc.icon, 'deckcraft.ico');
@@ -97,6 +97,7 @@ jobs:
           node --check scripts/stage.cjs
           node --check updater.cjs
           node --check pc-fonts.cjs
+          node --check scripts/after-pack.cjs
           node --test tests/pc-fonts.test.cjs
           node --test tests/updater.test.cjs
       - name: Install build dependencies
@@ -119,6 +120,23 @@ jobs:
           WIN_CSC_LINK: ${{ secrets.POWERSLIDEPRO_WIN_CSC_LINK }}
           WIN_CSC_KEY_PASSWORD: ${{ secrets.POWERSLIDEPRO_WIN_CSC_KEY_PASSWORD }}
         run: npm run dist:${{ matrix.target }}
+      - name: Verify ad-hoc signed macOS application (not notarized)
+        if: matrix.target == 'mac'
+        shell: bash
+        working-directory: powerslidepro-desktop
+        run: |
+          set -euo pipefail
+          count=0
+          while IFS= read -r -d '' app; do
+            codesign --verify --deep --verbose=2 "$app"
+            codesign -dv --verbose=2 "$app" 2>&1 | grep -q 'Signature=adhoc'
+            echo "Verified ad-hoc app signature: $app"
+            count=$((count+1))
+          done < <(find dist -maxdepth 3 -name 'PowerSlidePro.app' -type d -print0)
+          if [ "$count" -lt 2 ]; then
+            echo "Expected both arm64 and x64 macOS .app packages" >&2
+            exit 1
+          fi
       - name: Verify Windows auto-update manifest
         if: matrix.target == 'win'
         shell: pwsh
@@ -127,7 +145,7 @@ jobs:
           $metadata = 'dist/latest.yml'
           if (-not (Test-Path $metadata)) { throw 'Missing latest.yml; Windows in-app updates would not work' }
           $body = Get-Content -Raw $metadata
-          if ($body -notmatch 'version: 0\.1\.5') { throw 'Windows update metadata has wrong version' }
+          if ($body -notmatch 'version: 0\.1\.6') { throw 'Windows update metadata has wrong version' }
           if ($body -notmatch 'sha512:') { throw 'Windows update metadata is missing the SHA-512 checksum' }
           Write-Host 'Windows updater manifest verified.'
       - name: Windows Defender scan and signing status
@@ -182,7 +200,7 @@ jobs:
         run: |
           test "$(find release-assets -maxdepth 1 -name '*.exe' | wc -l)" -ge 1
           test -s release-assets/latest.yml
-          grep -q 'version: 0.1.5' release-assets/latest.yml
+          grep -q 'version: 0.1.6' release-assets/latest.yml
           grep -q 'sha512:' release-assets/latest.yml
           test "$(find release-assets -maxdepth 1 -name '*mac*x64.dmg' | wc -l)" -ge 1
           test "$(find release-assets -maxdepth 1 -name '*mac*arm64.dmg' | wc -l)" -ge 1
@@ -194,8 +212,8 @@ jobs:
           test -s SHA256SUMS.txt
       - uses: softprops/action-gh-release@v2
         with:
-          tag_name: powerslidepro-desktop-v0.1.5
-          name: PowerSlidePro Desktop v0.1.5 (unsigned beta)
+          tag_name: powerslidepro-desktop-v0.1.6
+          name: PowerSlidePro Desktop v0.1.6 (ad-hoc signed Mac beta)
           prerelease: true
           generate_release_notes: false
           body: |
@@ -216,9 +234,11 @@ jobs:
             Restores the bundled Khmer OS font pack (40 files) as its own
             always-visible section above installed PC fonts.
             
-            Installers are unsigned by default. Windows SmartScreen and
-            macOS Gatekeeper may warn on first install. Verified code signing
-            is optional through GitHub Actions secrets.
+            macOS app bundles are ad-hoc signed and verified in CI to avoid
+            invalid signature errors on Apple Silicon; they are NOT Apple
+            Developer ID signed or notarized. Gatekeeper still requires manual
+            approval for trusted beta releases. Windows SmartScreen may warn
+            because the Windows installer is unsigned.
             SHA256SUMS.txt allows users to verify installer integrity.
             Hands-on dual-screen testing is still recommended.
           files: release-assets/*

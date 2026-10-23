@@ -1,13 +1,13 @@
 {
   "name": "powerslidepro-desktop",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "private": true,
   "description": "PowerSlidePro offline presentation software — Built and Prepared by Thet",
   "main": "main.cjs",
   "license": "UNLICENSED",
   "scripts": {
     "stage": "node scripts/stage.cjs",
-    "check": "node --check main.cjs && node --check preload.cjs && node --check scripts/stage.cjs && node --check updater.cjs && node --check pc-fonts.cjs && node --test tests/updater.test.cjs tests/pc-fonts.test.cjs && python3 scripts/make_icons.py && node scripts/stage.cjs",
+    "check": "node --check main.cjs && node --check preload.cjs && node --check scripts/stage.cjs && node --check updater.cjs && node --check pc-fonts.cjs && node --check scripts/after-pack.cjs && node --test tests/updater.test.cjs tests/pc-fonts.test.cjs && python3 scripts/make_icons.py && node scripts/stage.cjs",
     "dist:win": "electron-builder --win nsis --x64 --publish never",
     "dist:mac": "electron-builder --mac dmg --x64 --arm64 --publish never"
   },
@@ -65,7 +65,8 @@
         "repo": "thythet",
         "releaseType": "release"
       }
-    ]
+    ],
+    "afterPack": "scripts/after-pack.cjs"
   },
   "author": "Thet",
   "dependencies": {

@@ -102,3 +102,9 @@ The font-enabled Tahoe79 WASM build is committed separately by GitHub Actions (c
 ### v0.1.5 — Khmer OS bundled font restoration
 
 The offline package retains all 40 Khmer OS font files. The font menu now advertises Khmer OS families immediately, keeps them in **Bundled Fonts** even when a PC-installed font has the same name, and loads a selected bundled face on demand. Browser Font Manager and PC-font detection remain available. This installer is built against the corresponding newly compiled Tahoe79 WASM engine.
+
+## v0.1.6 — Apple Silicon beta signing repair
+
+The macOS app bundle is **ad-hoc code signed** after Electron packs its files and prior to DMG creation. GitHub Actions verifies valid signatures for both ARM64 and x64 application bundles. This avoids shipping structurally unsigned Electron ARM executables that some macOS versions describe as “damaged”. These ad-hoc signatures are **not trusted Apple Developer ID signatures and are not notarized**. Users may still have to manually approve the app in System Settings → Privacy & Security after verifying the official download; the program should be copied to Applications before opening. The app remains offline-capable and bundled presentation files/fonts are unchanged.
+
+The permanent solution remains Developer ID Application signing followed by Apple notarization/stapling, using GitHub Actions secrets. Do not market ad-hoc signing as trusted/notarized, and do not advise globally disabling Gatekeeper.
