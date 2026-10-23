@@ -40,7 +40,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#24262a;color:#fff;fon
 </head>
 <body>
 <div id="deckCraftWindow">
-  <iframe id="deckCraftFrame" src="apps/deckcraft-web/index.html?blank&desktop=1"
+  <iframe id="deckCraftFrame" 
     title="PowerSlidePro editor" allow="clipboard-read;clipboard-write;fullscreen"></iframe>
 </div>
 <button id="pspro-update-badge" type="button" hidden aria-label="PowerSlidePro software update available">↻ Update</button>
@@ -64,6 +64,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#24262a;color:#fff;fon
 const iframe=document.getElementById('deckCraftFrame');
 const origin=location.origin;
 const host=window.PowerSlideDesktop;
+iframe.src='apps/deckcraft-web/index.html?blank&desktop=1'+(host?.platform==='darwin'?'&macui=1':'');
 let savingAs=false,toastTimer;
 
 let fontCatalogDue=false;
