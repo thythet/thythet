@@ -27,6 +27,8 @@ const LOADING_ID: &str = "deckcraft_loading";
 
 thread_local! {
     static FONT_REPAINT_CONTEXT: RefCell<Option<egui::Context>> = const { RefCell::new(None) };
+    static MAC_UI_FONT_PENDING: RefCell<Option<String>> = const { RefCell::new(None) };
+    static MAC_UI_FONT_REINSTALL: RefCell<bool> = const { RefCell::new(false) };
     static CLOUD_OPEN_PENDING: RefCell<Vec<(String, String, String)>> = const { RefCell::new(Vec::new()) };
     static CLOUD_LIST_PENDING: RefCell<Vec<String>> = const { RefCell::new(Vec::new()) };
     static CLOUD_NAME_PENDING: RefCell<Vec<(u64, String, bool)>> = const { RefCell::new(Vec::new()) };
@@ -176,6 +178,16 @@ fn install_tahoe_font_receiver() {
                     let families=values.iter().filter_map(|x|x.as_string()).collect();
                     db.set_desktop_families(families);
                 }
+                "tahoe-ui-font-restore" if from_parent=>{
+                    let name=js_sys::Reflect::get(&data,&"family".into())
+                        .ok().and_then(|v|v.as_string()).unwrap_or_default();
+                    if !name.is_empty() && name.len()<=160 && !name.contains(['/', '\\\\']) {
+                        MAC_UI_FONT_PENDING.with(|p| *p.borrow_mut()=Some(name));
+                        FONT_REPAINT_CONTEXT.with(|slot| {
+                            if let Some(ctx)=slot.borrow().as_ref(){ctx.request_repaint();}
+                        });
+                    }
+                }
                 "tahoe-font-bundled" if same_window=>{
                     let name=js_sys::Reflect::get(&data,&"family".into()).ok()
                         .and_then(|x|x.as_string()).unwrap_or_default();
@@ -196,6 +208,7 @@ fn install_tahoe_font_receiver() {
                     if bytes.length()<100||bytes.length()>45*1024*1024{return;}
                     let before=db.families();
                     if db.add_font(bytes.to_vec())==0{return;}
+                    MAC_UI_FONT_REINSTALL.with(|p| *p.borrow_mut()=true);
                     FONT_REPAINT_CONTEXT.with(|slot| {
                         if let Some(ctx)=slot.borrow().as_ref(){ctx.request_repaint();}
                     });
@@ -215,6 +228,15 @@ fn install_tahoe_font_receiver() {
         });
     let _=win.add_event_listener_with_callback("message",callback.as_ref().unchecked_ref());
     callback.forget();
+}
+fn post_macos_ui_font_choice(family:&str){
+    let Some(win)=web_sys::window() else{return};
+    let Ok(Some(parent))=win.parent() else{return};
+    let origin=win.location().origin().unwrap_or_default();
+    let data=js_sys::Object::new();
+    let _=js_sys::Reflect::set(&data,&"type".into(),&"tahoe-ui-font-preference".into());
+    let _=js_sys::Reflect::set(&data,&"family".into(),&family.into());
+    let _=parent.post_message(&data,&origin);
 }
 fn announce_tahoe_font_ready(){
     let Some(win)=web_sys::window() else{return};
@@ -274,6 +296,7 @@ pub fn start() {
                     // Install the Khmer face in both, or dialogs/edit boxes still show tofu squares.
                     app.ui_fonts.faces.extend(khmer_ui_faces.iter().cloned());
                     let q = query();
+                    app.ui.macos_ui_fonts=q.contains("macui=1");
                     if !q.contains("blank") {
                         if let Err(e) = deckcraft_engine::sample::open_sample(&mut app.session) {
                             log::error!("sample deck: {e}");
@@ -303,6 +326,7 @@ pub fn start() {
                     let song_tools = SongTools::default();
                     bible.font_family = if db.has_family(BIBLE_DEFAULT_FONT) { BIBLE_DEFAULT_FONT.to_owned() } else { default_khmer_family.clone() };
                     Ok(Box::new(WebShell { app, inbox, smart, bible, song, song_tools, typography: TypographyPanel::default(), presenting: false,
+                        last_interface_font: "Default".into(),
                         cloud_seen_docs: std::collections::HashSet::new(),
                         audience_mode: q.contains("audience=1"),
                         audience_ready_sent: false,
@@ -345,6 +369,7 @@ struct WebShell {
     song_tools: SongTools,
     typography: TypographyPanel,
     presenting: bool,
+    last_interface_font: String,
     cloud_seen_docs: std::collections::HashSet<u64>,
     audience_mode: bool,
     audience_ready_sent: bool,
@@ -358,6 +383,26 @@ struct WebShell {
 
 impl eframe::App for WebShell {
     fn logic(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        if self.app.ui.macos_ui_fonts {
+            MAC_UI_FONT_PENDING.with(|p| {
+                if let Some(name)=p.borrow_mut().take(){
+                    self.app.ui.interface_font=name.clone();
+                    self.last_interface_font=name.clone();
+                    self.app.styled=false;
+                    request_selected_desktop_font(&name);
+                }
+            });
+            if self.app.ui.interface_font != self.last_interface_font {
+                self.last_interface_font=self.app.ui.interface_font.clone();
+                request_selected_desktop_font(&self.last_interface_font);
+                post_macos_ui_font_choice(&self.last_interface_font);
+            }
+            MAC_UI_FONT_REINSTALL.with(|p|{
+                if std::mem::replace(&mut *p.borrow_mut(),false){
+                    self.app.styled=false;
+                }
+            });
+        }
         if self.audience_mode && !self.audience_ready_sent {
             post_parent_presentation("ready", "", 0, "");
             self.audience_ready_sent = true;
