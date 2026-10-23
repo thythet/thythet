@@ -2,6 +2,9 @@ name: Build Tahoe80 PowerSlidePro macOS
 
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows: ['Build Tahoe80 DeckCraft Web']
+    types: [completed]
   push:
     branches: [main]
     paths:
@@ -24,6 +27,9 @@ concurrency:
 
 jobs:
   stage:
+    # The web workflow writes compiled WASM with GITHUB_TOKEN; such writes do
+    # not trigger push workflows. workflow_run packages that verified output.
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
