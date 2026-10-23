@@ -262,11 +262,14 @@ pub struct UiState {
     pub recent_opened_at: HashMap<String, u64>,
     pub presenter_view: bool,
     pub ui_scale: f32,
-    /// macOS interface typography only; never affects presentation text.
+    /// Desktop application interface typography only; never affects presentation text.
     pub interface_font: String,
-    /// True only in native macOS or the macOS Electron/WASM editor (not slides).
+    /// True in macOS/Windows desktop editors; false in the Tahoe browser and slide renderer.
     #[serde(skip)]
-    pub macos_ui_fonts: bool,
+    pub desktop_ui_fonts: bool,
+    /// On Windows, expose the Windows System entry rather than macOS System.
+    #[serde(skip)]
+    pub windows_ui_fonts: bool,
     /// Format Shape pane: tab (`fill`, `effects`, `size`, `picture`, `text`).
     pub format_tab: String,
     /// The Text Pane's current SmartArt line (Add Shape, Promote and Demote act on it).
@@ -307,7 +310,8 @@ impl Default for UiState {
             presenter_view: true,
             ui_scale: 1.0,
             interface_font: "Default".into(),
-            macos_ui_fonts: cfg!(target_os = "macos"),
+            desktop_ui_fonts: cfg!(any(target_os = "macos", target_os = "windows")),
+            windows_ui_fonts: cfg!(target_os = "windows"),
             format_tab: "fill".into(),
             smartart_row: 0,
             smartart_focus: None,
