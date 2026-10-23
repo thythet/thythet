@@ -264,6 +264,9 @@ pub struct UiState {
     pub ui_scale: f32,
     /// macOS interface typography only; never affects presentation text.
     pub interface_font: String,
+    /// True only in native macOS or the macOS Electron/WASM editor (not slides).
+    #[serde(skip)]
+    pub macos_ui_fonts: bool,
     /// Format Shape pane: tab (`fill`, `effects`, `size`, `picture`, `text`).
     pub format_tab: String,
     /// The Text Pane's current SmartArt line (Add Shape, Promote and Demote act on it).
@@ -304,6 +307,7 @@ impl Default for UiState {
             presenter_view: true,
             ui_scale: 1.0,
             interface_font: "Default".into(),
+            macos_ui_fonts: cfg!(target_os = "macos"),
             format_tab: "fill".into(),
             smartart_row: 0,
             smartart_focus: None,
