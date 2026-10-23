@@ -1,4 +1,4 @@
-const APP='tahoe79-bible-app-v1',BIBLE='tahoe79-shared-bible-v1',RUNTIME='tahoe79-bible-runtime-v1';
+const APP='tahoe80-bible-app-v1',BIBLE='tahoe80-shared-bible-v1',RUNTIME='tahoe80-bible-runtime-v1';
 const DATA=new URL('../../data/',self.location.href).href;
 const ASSETS=new URL('../../assets/',self.location.href).href;
 const SHELL=[
@@ -12,7 +12,7 @@ self.addEventListener('install',e=>e.waitUntil(
 ));
 self.addEventListener('activate',e=>e.waitUntil(
   caches.keys().then(keys=>Promise.all(keys.filter(k=>
-    (/^(tahoe79-bible-|tahoe79-shared-bible-)/.test(k)&&![APP,BIBLE,RUNTIME].includes(k))
+    (/^(tahoe80-bible-|tahoe80-shared-bible-)/.test(k)&&![APP,BIBLE,RUNTIME].includes(k))
   ).map(k=>caches.delete(k)))).then(()=>self.clients.claim())
 ));
 async function cacheFirst(req,name){

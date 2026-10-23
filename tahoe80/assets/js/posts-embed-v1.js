@@ -1,10 +1,10 @@
-/* Tahoe79: isolate Posts embedded feed from its standalone page canvas.
+/* Tahoe80: isolate Posts embedded feed from its standalone page canvas.
    Original /posts/ files, Firebase, Cloudinary, authentication and post UI are unchanged. */
 (()=>{
 "use strict";
 const frame=document.getElementById("postsFrame");
 if(!frame)return;
-const STYLE_ID="tahoe79-posts-embed";
+const STYLE_ID="tahoe80-posts-embed";
 const styles=[
  "html,html:root,body,body.dark-mode{background:none!important;background-color:transparent!important;background-image:none!important;}",
  "html,body{min-height:100%!important;}",
@@ -46,7 +46,7 @@ function apply(){
    observer.observe(doc.documentElement,{attributes:true,attributeFilter:["style","class"]});
    observer.observe(doc.body,{attributes:true,attributeFilter:["style","class"]});
  }catch(error){
-   console.warn("[Tahoe79 Posts] Transparent iframe unavailable",error);
+   console.warn("[Tahoe80 Posts] Transparent iframe unavailable",error);
  }
 }
 frame.addEventListener("load",apply);

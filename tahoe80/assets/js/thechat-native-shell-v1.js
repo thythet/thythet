@@ -1,4 +1,4 @@
-/* Tahoe79 native thechat shell. This file affects only the embedded chat22 iframe.
+/* Tahoe80 native thechat shell. This file affects only the embedded chat22 iframe.
    Original chat22 files, accounts and data remain untouched. */
 (() => {
   "use strict";
@@ -38,9 +38,9 @@
       console.warn("thechat: could not access its same-origin shell", error);
       return;
     }
-    if (doc.getElementById("tahoe79-thechat-native-shell")) return;
+    if (doc.getElementById("tahoe80-thechat-native-shell")) return;
     const style = doc.createElement("style");
-    style.id = "tahoe79-thechat-native-shell";
+    style.id = "tahoe80-thechat-native-shell";
     style.textContent = [
       "html,body{height:100%!important;width:100%!important;overflow:hidden!important}",
       "body{background:transparent!important;background-image:none!important}",

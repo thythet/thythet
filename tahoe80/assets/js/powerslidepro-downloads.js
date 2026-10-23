@@ -1,4 +1,4 @@
-/* Tahoe79: thechat-style Get Software library, verified GitHub release links only. */
+/* Tahoe80: thechat-style Get Software library, verified GitHub release links only. */
 (()=>{
 'use strict';
 const RELEASE='powerslidepro-desktop-v0.1.9';
