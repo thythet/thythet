@@ -1103,7 +1103,9 @@ impl TypographyPanel {
                         ui.spacing_mut().item_spacing.x = 6.0;
                         format_tick(ui, &mut self.set_font, "Change font");
                         format_label(ui, "Font", 42.0);
-                        ui.add_enabled_ui(self.set_font, |ui| {
+                        // The font picker must remain usable even when Font is unchecked:
+                        // picking a family is itself an explicit request to change the font.
+                        ui.add_enabled_ui(true, |ui| {
                             egui::ComboBox::from_id_salt("tahoe-apply-font")
                                 .selected_text(&self.font).width(156.0).show_ui(ui, |ui| {
                                     for family in deckcraft_fonts::FontDb::global().families() {
@@ -1287,6 +1289,10 @@ impl TypographyPanel {
     }
     fn apply_to_selected(&self, app: &mut SlideApp) -> Result<(), String> {
         if self.set_font && !self.font.trim().is_empty() {
+            // Explicitly activate bundled/installed families for previously saved
+            // format settings too, not only when a dropdown item was clicked.
+            // The font receiver repaints once asynchronous bytes arrive.
+            request_selected_desktop_font(self.font.trim());
             app.run("format.font", json!({"family":self.font.trim()}))?;
         }
         if self.set_size {
