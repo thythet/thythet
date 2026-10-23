@@ -1,0 +1,133 @@
+name: Publish PowerSlidePro Tahoe80 v0.1.11
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/release-powerslidepro-tahoe80-v0.1.11.yml'
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: publish-powerslidepro-tahoe80-v0.1.11
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Verify source and successful installer build provenance
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for record in '39995014573 Windows' '39995014718 macOS'; do
+            read -r id platform <<< "$record"
+            state="$(gh api "repos/thythet/thythet/actions/runs/$id" --jq '.conclusion')"
+            sha="$(gh api "repos/thythet/thythet/actions/runs/$id" --jq '.head_sha')"
+            test "$state" = 'success'
+            test "$sha" = 'c3e326267d504b273c7e86527f89cb8953e63ea8'
+            echo "Verified successful Tahoe80 $platform package at $sha"
+          done
+          if gh api repos/thythet/thythet/releases/tags/powerslidepro-desktop-v0.1.11 >/dev/null 2>&1; then
+            echo 'Release already exists; refusing to silently overwrite.' >&2
+            exit 1
+          fi
+      - name: Download approved Windows x64 build
+        uses: actions/download-artifact@v4
+        with:
+          run-id: 39995014573
+          repository: thythet/thythet
+          github-token: ${{ github.token }}
+          name: powerslidepro-tahoe80-windows-installer
+          path: release-assets
+      - name: Download approved macOS Intel and Apple Silicon builds
+        uses: actions/download-artifact@v4
+        with:
+          run-id: 39995014718
+          repository: thythet/thythet
+          github-token: ${{ github.token }}
+          name: powerslidepro-tahoe80-macos-installers
+          path: release-assets
+      - name: Validate all three signed or unsigned beta installers and SHA-256 integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd release-assets
+          test -s PowerSlidePro-0.1.11-win-x64.exe
+          test -s PowerSlidePro-0.1.11-mac-arm64.dmg
+          test -s PowerSlidePro-0.1.11-mac-x64.dmg
+          test -s latest.yml
+          grep -q 'version: 0.1.11' latest.yml
+          grep -q 'sha512:' latest.yml
+          test -s SHA256SUMS-Windows.txt
+          test -s SHA256SUMS-macOS.txt
+          sha256sum --check SHA256SUMS-Windows.txt
+          sha256sum --check SHA256SUMS-macOS.txt
+          sha256sum PowerSlidePro-0.1.11-win-x64.exe PowerSlidePro-0.1.11-mac-arm64.dmg PowerSlidePro-0.1.11-mac-x64.dmg > SHA256SUMS.txt
+          test "$(wc -l < SHA256SUMS.txt)" -eq 3
+          test "$(find . -maxdepth 1 -type f -name '*.dmg' | wc -l)" -eq 2
+          test "$(find . -maxdepth 1 -type f -name '*.exe' | wc -l)" -eq 1
+      - name: Publish reviewed PowerSlidePro 0.1.11 release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: powerslidepro-desktop-v0.1.11
+          target_commitish: c3e326267d504b273c7e86527f89cb8953e63ea8
+          name: PowerSlidePro Desktop v0.1.11 (Windows + macOS beta)
+          prerelease: true
+          generate_release_notes: false
+          fail_on_unmatched_files: true
+          overwrite_files: false
+          body: |
+            PowerSlidePro 0.1.11 for Windows 10/11 (x64) and macOS (Apple Silicon arm64 / Intel x64).
+
+            **Fixed in 0.1.11:** Chosen interface fonts can now be saved with
+            Preferences → Set as Default (or Done) and restored after quitting
+            and reopening PowerSlidePro. Saves are acknowledged by the desktop
+            app, while Cancel discards unsaved previews. Font loading is retried
+            when the system font catalog arrives, and unavailable fonts fall
+            back visually without discarding the saved preference.
+
+            **New:** Preferences → Interface font with matching cross-platform controls:
+            Default, Inter, system UI typeface (Segoe UI on Windows / macOS System on Mac),
+            and installed OS font families. Includes Reset and per-device preference persistence.
+            UI font choice does not change slide fonts, Bible/song formatting, or PPTX exports.
+
+            Includes the existing offline editor, Khmer Bible, built-in Khmer fonts,
+            Smart Generate and Song Formatting, and local .deckcraft file association.
+
+            **macOS:** Select arm64 for Apple Silicon (M1/M2/M3/M4); x64 for Intel.
+            Builds are ad-hoc signed, NOT Apple Developer ID signed or notarized.
+            You may need to approve the app in macOS Privacy & Security.
+
+            **Windows:** Use PowerSlidePro-0.1.11-win-x64.exe. A Windows SmartScreen
+            warning is possible for unsigned beta installers.
+
+            **Integrity:** SHA256SUMS.txt contains SHA-256 hashes for all three installers.
+            Platform-specific checksum files are included as well.
+            Hands-on UI testing on users' computers is recommended.
+          files: |
+            release-assets/PowerSlidePro-0.1.11-win-x64.exe
+            release-assets/PowerSlidePro-0.1.11-mac-arm64.dmg
+            release-assets/PowerSlidePro-0.1.11-mac-x64.dmg
+            release-assets/latest.yml
+            release-assets/SHA256SUMS.txt
+            release-assets/SHA256SUMS-Windows.txt
+            release-assets/SHA256SUMS-macOS.txt
+      - name: Verify published public release and installer assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api repos/thythet/thythet/releases/tags/powerslidepro-desktop-v0.1.11 \
+            --jq '.assets[].name' | sort > published.txt
+          for asset in PowerSlidePro-0.1.11-win-x64.exe PowerSlidePro-0.1.11-mac-arm64.dmg PowerSlidePro-0.1.11-mac-x64.dmg SHA256SUMS.txt latest.yml; do
+            grep -Fxq "$asset" published.txt
+          done
+          echo 'PowerSlidePro 0.1.11 GitHub Release and installer assets are published.'
