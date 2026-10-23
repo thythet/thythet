@@ -118,3 +118,7 @@ Added macOS/Windows **Edit → Paste** and other native editing roles, and a con
 **Song metadata** now lives in serialized slide `tags` rather than speaker notes. Existing notes-only presentations continue to load, and editing old Notes migrates their metadata to tags. User-authored speaker notes remain editable. Generating all songs, applying Song Formatting and splitting sections are atomic actions in the undo/redo history (failure rolls back the entire action).
 
 **macOS document registration**: the Mac app bundles `deckcraft.icns`, made from the supplied blue cross-and-slide PNG, and registers `.deckcraft` as `PowerSlidePro Presentation` with Editor/Owner role in the macOS Info.plist. The normal PowerSlidePro application icon is unchanged. Finder associates the icon once the app is installed and registered; the user can choose PowerSlidePro via Get Info → Open with → Change All. Double-clicking uses the existing Electron `open-file` handler. GitHub Actions validates the document icon, CFBundleDocumentTypes and ad-hoc bundle signature.
+
+## v0.1.9 coordinated desktop release
+
+Repackaged AFTER successful Tahoe79 Song Notes/Undo WASM build commit `318e89e0262bc77dd36009aeaeb4045ee6f12417`, ensuring the desktop binaries include hidden song tags, single-step undo/redo, and the macOS document icon. No unrelated previous Tahoe folders changed.
