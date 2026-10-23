@@ -262,6 +262,8 @@ pub struct UiState {
     pub recent_opened_at: HashMap<String, u64>,
     pub presenter_view: bool,
     pub ui_scale: f32,
+    /// macOS interface typography only; never affects presentation text.
+    pub interface_font: String,
     /// Format Shape pane: tab (`fill`, `effects`, `size`, `picture`, `text`).
     pub format_tab: String,
     /// The Text Pane's current SmartArt line (Add Shape, Promote and Demote act on it).
@@ -301,6 +303,7 @@ impl Default for UiState {
             recent_opened_at: HashMap::new(),
             presenter_view: true,
             ui_scale: 1.0,
+            interface_font: "Default".into(),
             format_tab: "fill".into(),
             smartart_row: 0,
             smartart_focus: None,
@@ -337,6 +340,9 @@ impl UiState {
         self.zoom = self.zoom.filter(|z| z.is_finite() && *z > 0.0).map(|z| z.clamp(*ZOOM_RANGE.start(), *ZOOM_RANGE.end()));
         self.sorter_zoom = within(self.sorter_zoom, 0.5, 3.0, d.sorter_zoom);
         self.ui_scale = within(self.ui_scale, 0.5, 3.0, d.ui_scale);
+        if self.interface_font.len() > 160 || self.interface_font.contains(['/', '\\', '\0']) {
+            self.interface_font = d.interface_font;
+        }
         self.notes_height = within(self.notes_height, 0.0, 2000.0, d.notes_height);
         self.thumbs_width = within(self.thumbs_width, 60.0, 1000.0, d.thumbs_width);
         self.pane_width = within(self.pane_width, 240.0, 520.0, d.pane_width);
@@ -1560,7 +1566,7 @@ impl SlideApp {
             ctx.set_zoom_factor(scale);
         }
         if !self.styled {
-            theme::install_fonts_with(ctx, &self.ui_fonts.faces);
+            theme::install_interface_fonts(ctx, &self.ui_fonts.faces, &self.ui.interface_font);
             self.styled = true;
             self.restyle = true;
         } else {
@@ -1642,7 +1648,7 @@ impl SlideApp {
         if let Some(st) = self.session.active() {
             self.ui_fonts.note_doc(ctx, st);
         }
-        self.ui_fonts.apply(ctx);
+        self.ui_fonts.apply(ctx, &self.ui.interface_font);
     }
 
     /// An input method's event for the slide's text (#101): the preedit is shown in the text and
