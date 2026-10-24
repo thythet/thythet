@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Grid">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#60e6af"/><stop offset="1" stop-color="#179b71"/></linearGradient></defs>
+<rect width="512" height="512" rx="112" fill="#19392f"/>
+<rect x="91" y="107" width="330" height="299" rx="34" fill="#eafdf5"/>
+<path d="M91 175h330M201 175v231M311 175v231M91 252h330M91 329h330" stroke="#62b599" stroke-width="12"/>
+<path d="M125 133h260" stroke="url(#g)" stroke-width="31" stroke-linecap="round"/>
+<rect x="214" y="190" width="83" height="48" rx="12" fill="url(#g)"/>
+<rect x="325" y="268" width="79" height="45" rx="11" fill="#1bab82"/>
+</svg>

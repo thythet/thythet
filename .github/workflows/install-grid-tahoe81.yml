@@ -1,0 +1,89 @@
+name: Install Grid web app into Tahoe81
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/install-grid-tahoe81.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tahoe81-grid-install
+  cancel-in-progress: false
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Download and verify GridCraft v0.11.1 official web build
+        shell: bash
+        run: |
+          curl -fL --retry 4 --retry-all-errors \
+            'https://github.com/storytold/gridcraft/releases/download/v0.11.1/gridcraft-web-0.11.1.zip' \
+            -o "${RUNNER_TEMP}/gridcraft-web-0.11.1.zip"
+          printf '%s  %s\n' \
+            'b9491325936457cebd874656becbe5d189fbd2039db6798d9d7f5c5e0190715e' \
+            "${RUNNER_TEMP}/gridcraft-web-0.11.1.zip" | sha256sum -c -
+      - name: Extract complete static site safely
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os, shutil, stat
+          from pathlib import Path, PurePosixPath
+          from zipfile import ZipFile
+          folder=Path("tahoe81/grid")
+          archive=Path(os.environ["RUNNER_TEMP"])/"gridcraft-web-0.11.1.zip"
+          folder.mkdir(parents=True,exist_ok=True)
+          with ZipFile(archive) as z:
+              files=[item for item in z.infolist() if not item.is_dir()]
+              assert files, "Empty GridCraft web release"
+              assert sum(item.file_size for item in files)<350_000_000, "Unexpected uncompressed size"
+              for item in files:
+                  p=PurePosixPath(item.filename)
+                  parts=p.parts
+                  assert parts and ".." not in parts and not p.is_absolute(), item.filename
+                  assert not stat.S_ISLNK(item.external_attr >> 16), item.filename
+                  if parts[0]=="gridcraft-web-0.11.1":parts=parts[1:]
+                  if not parts or parts[0]=="__MACOSX":continue
+                  dest=folder.joinpath(*parts)
+                  dest.parent.mkdir(parents=True,exist_ok=True)
+                  with z.open(item) as source,dest.open("wb") as output:
+                      shutil.copyfileobj(source,output,length=1024*1024)
+          assert (folder/"index.html").is_file(), "Missing HTML entry"
+          js=list(folder.glob("gridcraft-web-*.js"))
+          wasm=list(folder.glob("gridcraft-web-*_bg.wasm"))
+          assert js and wasm, "Missing GridCraft JS/WASM"
+          assert all(f.stat().st_size>0 for f in js+wasm), "Empty application asset"
+          print("Verified GridCraft files:",len(files),"JS:",len(js),"WASM:",len(wasm))
+          PY
+      - name: Preserve upstream licenses and third party credits
+        shell: bash
+        run: |
+          for name in LICENSE-MIT LICENSE-APACHE NOTICE ATTRIBUTION.md; do
+            curl -fL --retry 3 --retry-all-errors \
+              "https://raw.githubusercontent.com/storytold/gridcraft/v0.11.1/${name}" \
+              -o "tahoe81/grid/${name}"
+          done
+      - name: Commit verified GridCraft assets to main
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f tahoe81/grid/
+          if ! git diff --cached --quiet; then
+            git commit -m 'Install verified GridCraft web editor into Tahoe81 Grid'
+            for attempt in 1 2 3; do
+              git fetch origin main
+              git rebase origin/main
+              if git push origin HEAD:main; then exit 0; fi
+              sleep 2
+            done
+            exit 1
+          fi

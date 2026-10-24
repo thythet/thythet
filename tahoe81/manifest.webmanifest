@@ -2,7 +2,7 @@
   "id": "./",
   "name": "Tahoe81",
   "short_name": "Tahoe81",
-  "description": "Tahoe81 desktop with Effect, PDF, Photo, Vector, PowerSlidePro, Bible and thechat.",
+  "description": "Tahoe81 desktop with Grid, Effect, PDF, Photo, Vector, PowerSlidePro, Bible and thechat.",
   "start_url": "./?source=pwa",
   "scope": "./",
   "display": "standalone",
@@ -146,6 +146,19 @@
       "icons": [
         {
           "src": "assets/effect-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Grid",
+      "short_name": "Grid",
+      "description": "Open the Grid spreadsheet editor.",
+      "url": "./?open=grid",
+      "icons": [
+        {
+          "src": "assets/grid-icon.svg",
           "sizes": "any",
           "type": "image/svg+xml"
         }
