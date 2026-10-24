@@ -2,7 +2,7 @@
   "id": "./",
   "name": "Tahoe81",
   "short_name": "Tahoe81",
-  "description": "Tahoe81 desktop with Grid, Effect, PDF, Photo, Vector, PowerSlidePro, Bible and thechat.",
+  "description": "Tahoe81 desktop with Word, Grid, Effect, PDF, Photo, Vector, PowerSlidePro, Bible and thechat.",
   "start_url": "./?source=pwa",
   "scope": "./",
   "display": "standalone",
@@ -159,6 +159,19 @@
       "icons": [
         {
           "src": "assets/grid-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Word",
+      "short_name": "Word",
+      "description": "Open the Word document editor.",
+      "url": "./?open=word",
+      "icons": [
+        {
+          "src": "assets/word-icon.svg",
           "sizes": "any",
           "type": "image/svg+xml"
         }

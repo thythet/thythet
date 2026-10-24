@@ -1,0 +1,89 @@
+name: Install Word web app into Tahoe81
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/install-word-tahoe81.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tahoe81-word-install
+  cancel-in-progress: false
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Download and verify WordCraft v0.10.0 official web build
+        shell: bash
+        run: |
+          curl -fL --retry 4 --retry-all-errors \
+            'https://github.com/storytold/wordcraft/releases/download/v0.10.0/wordcraft-web-0.10.0.zip' \
+            -o "${RUNNER_TEMP}/wordcraft-web-0.10.0.zip"
+          printf '%s  %s\n' \
+            '46e32c024cac86d644874e7120ee9e42a6c0ccc76bd020ba9c741706b5b77b05' \
+            "${RUNNER_TEMP}/wordcraft-web-0.10.0.zip" | sha256sum -c -
+      - name: Extract complete static site safely
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os, shutil, stat
+          from pathlib import Path, PurePosixPath
+          from zipfile import ZipFile
+          folder=Path("tahoe81/word")
+          archive=Path(os.environ["RUNNER_TEMP"])/"wordcraft-web-0.10.0.zip"
+          folder.mkdir(parents=True,exist_ok=True)
+          with ZipFile(archive) as z:
+              files=[item for item in z.infolist() if not item.is_dir()]
+              assert files, "Empty WordCraft web release"
+              assert sum(item.file_size for item in files)<400_000_000, "Unexpected uncompressed size"
+              for item in files:
+                  p=PurePosixPath(item.filename)
+                  parts=p.parts
+                  assert parts and ".." not in parts and not p.is_absolute(), item.filename
+                  assert not stat.S_ISLNK(item.external_attr >> 16), item.filename
+                  if parts[0]=="wordcraft-web-0.10.0":parts=parts[1:]
+                  if not parts or parts[0]=="__MACOSX":continue
+                  dest=folder.joinpath(*parts)
+                  dest.parent.mkdir(parents=True,exist_ok=True)
+                  with z.open(item) as source,dest.open("wb") as output:
+                      shutil.copyfileobj(source,output,length=1024*1024)
+          assert (folder/"index.html").is_file(), "Missing HTML entry"
+          js=list(folder.glob("wordcraft-web-*.js"))
+          wasm=list(folder.glob("wordcraft-web-*_bg.wasm"))
+          assert js and wasm, "Missing WordCraft JS/WASM"
+          assert all(f.stat().st_size>0 for f in js+wasm), "Empty application asset"
+          print("Verified WordCraft web files:",len(files),"JS:",len(js),"WASM:",len(wasm))
+          PY
+      - name: Preserve original license and attribution files
+        shell: bash
+        run: |
+          for name in LICENSE-MIT LICENSE-APACHE NOTICE ATTRIBUTION.md; do
+            curl -fL --retry 3 --retry-all-errors \
+              "https://raw.githubusercontent.com/storytold/wordcraft/v0.10.0/${name}" \
+              -o "tahoe81/word/${name}"
+          done
+      - name: Commit verified WordCraft web files to main
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f tahoe81/word/
+          if ! git diff --cached --quiet; then
+            git commit -m 'Install verified WordCraft web editor into Tahoe81 Word'
+            for attempt in 1 2 3; do
+              git fetch origin main
+              git rebase origin/main
+              if git push origin HEAD:main; then exit 0; fi
+              sleep 2
+            done
+            exit 1
+          fi
