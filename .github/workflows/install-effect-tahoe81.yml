@@ -1,0 +1,92 @@
+name: Install Effect web app into Tahoe81
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/install-effect-tahoe81.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tahoe81-effect-install
+  cancel-in-progress: false
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Download and verify EffectCraft v0.16.0 web release
+        shell: bash
+        run: |
+          curl -fL --retry 4 --retry-all-errors \
+            'https://github.com/storytold/effectcraft/releases/download/v0.16.0/effectcraft-web-0.16.0.zip' \
+            -o "${RUNNER_TEMP}/effectcraft-web-0.16.0.zip"
+          printf '%s  %s\n' \
+            'b6d08ea9168dbca3257c4f68b658e1ec37e4a83718312e420c1cb99f38868a74' \
+            "${RUNNER_TEMP}/effectcraft-web-0.16.0.zip" | sha256sum -c -
+      - name: Safely extract complete EffectCraft static site
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os, shutil, stat
+          from pathlib import Path, PurePosixPath
+          from zipfile import ZipFile
+          root=Path("tahoe81/effect")
+          archive=Path(os.environ["RUNNER_TEMP"])/"effectcraft-web-0.16.0.zip"
+          root.mkdir(parents=True,exist_ok=True)
+          with ZipFile(archive) as z:
+              files=[x for x in z.infolist() if not x.is_dir()]
+              assert files,"Empty release"
+              assert sum(x.file_size for x in files)<500_000_000,"Unexpected uncompressed size"
+              for item in files:
+                  path=PurePosixPath(item.filename)
+                  parts=path.parts
+                  assert parts and ".." not in parts and not path.is_absolute(), item.filename
+                  assert not stat.S_ISLNK(item.external_attr >> 16), item.filename
+                  if parts[0]=="effectcraft-web-0.16.0": parts=parts[1:]
+                  if not parts or parts[0]=="__MACOSX":continue
+                  dest=root.joinpath(*parts)
+                  dest.parent.mkdir(parents=True,exist_ok=True)
+                  with z.open(item) as source,dest.open("wb") as target:
+                      shutil.copyfileobj(source,target,length=1024*1024)
+          assert (root/"index.html").is_file(),"Effect entry point missing"
+          assert (root/"effectcraft_web.js").is_file(),"Effect JS module missing"
+          assert (root/"effectcraft_web_bg.wasm").is_file(),"Effect WASM module missing"
+          assert (root/"effectcraft_web_bg.wasm").stat().st_size>10_000_000,"WASM payload unexpectedly small"
+          assert (root/"worker.js").is_file(),"Render worker missing"
+          assert (root/"audio-worklet.js").is_file(),"Audio worklet missing"
+          assert (root/"sw.js").is_file(),"App service worker missing"
+          assert (root/"manifest.webmanifest").is_file(),"App manifest missing"
+          print("EffectCraft web installation verified:", len(files), "files")
+          PY
+      - name: Preserve original license notices and attribution
+        shell: bash
+        run: |
+          for name in LICENSE-MIT LICENSE-APACHE NOTICE ATTRIBUTION.md; do
+            curl -fL --retry 3 --retry-all-errors \
+              "https://raw.githubusercontent.com/storytold/effectcraft/v0.16.0/${name}" \
+              -o "tahoe81/effect/${name}"
+          done
+      - name: Commit installed EffectCraft assets
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f tahoe81/effect/
+          if ! git diff --cached --quiet; then
+            git commit -m 'Install verified EffectCraft WebAssembly build in Tahoe81 Effect'
+            for attempt in 1 2 3; do
+              git fetch origin main
+              git rebase origin/main
+              if git push origin HEAD:main; then exit 0; fi
+              sleep 2
+            done
+            exit 1
+          fi

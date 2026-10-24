@@ -2,7 +2,7 @@
   "id": "./",
   "name": "Tahoe81",
   "short_name": "Tahoe81",
-  "description": "Tahoe81 desktop with PDF, Photo, Vector, PowerSlidePro, Bible and thechat.",
+  "description": "Tahoe81 desktop with Effect, PDF, Photo, Vector, PowerSlidePro, Bible and thechat.",
   "start_url": "./?source=pwa",
   "scope": "./",
   "display": "standalone",
@@ -133,6 +133,19 @@
       "icons": [
         {
           "src": "assets/pdf-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Effect",
+      "short_name": "Effect",
+      "description": "Open motion graphics and effects.",
+      "url": "./?open=effect",
+      "icons": [
+        {
+          "src": "assets/effect-icon.svg",
           "sizes": "any",
           "type": "image/svg+xml"
         }
