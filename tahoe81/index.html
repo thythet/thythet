@@ -3158,14 +3158,20 @@ body.theme-dark .wall-admin-post,body.theme-navy .wall-admin-post{border-color:r
 .window.dash-narrow .wall-admin-post{grid-template-columns:1fr!important}.window.dash-narrow .wall-admin-post .editor-control{grid-template-columns:1fr!important}
 
 
-/* Keep Tahoe80's selected flower wallpaper even in low-power Fast Mode. */
+/* Tahoe81: original flower image is a fallback, never a forced wallpaper.
+   Respect user images and gradient presets in Fast Mode too. */
 .wallpaper-layer{background-image:url("assets/wallpaper-default.png");background-size:cover;background-position:center}
 html.fast-mode body.theme-light .wallpaper-layer,
 html.fast-mode body.theme-dark .wallpaper-layer,
 html.fast-mode body.theme-gray .wallpaper-layer,
 html.fast-mode body.theme-navy .wallpaper-layer{
- background:url("assets/wallpaper-default.png") center / cover no-repeat!important;
- opacity:1!important;filter:none!important
+ background-image:var(--tahoe-wallpaper-image,url("assets/wallpaper-default.png"))!important;
+ background-color:transparent!important;
+ background-size:var(--tahoe-wallpaper-fit,cover)!important;
+ background-position:var(--tahoe-wallpaper-position,center)!important;
+ background-repeat:no-repeat!important;
+ opacity:var(--tahoe-wallpaper-opacity,1)!important;
+ filter:none!important
 }
 </style>
 <link id="psnKhmerFontLibrary" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Bayon&family=Content:wght@400;700&family=Dangrek&family=Freehand&family=Hanuman:wght@400;700&family=Kantumruy+Pro:wght@400;600;700&family=Khmer&family=Koulen&family=Metal&family=Moul&family=Moulpali&family=Noto+Sans+Khmer:wght@400;600;700&family=Noto+Serif+Khmer:wght@400;600;700&family=Odor+Mean+Chey&family=Preahvihear&family=Siemreap&family=Taprom&display=swap">
@@ -3194,6 +3200,25 @@ html.fast-mode body.theme-navy .wallpaper-layer{
 .b2-drag-edge.bottom{left:14px!important;right:14px!important;bottom:5px!important;height:7px!important}
 .b2-drag-edge.left{left:5px!important;top:14px!important;bottom:14px!important;width:7px!important;height:auto!important}
 .b2-drag-edge.right{right:5px!important;top:14px!important;bottom:14px!important;width:7px!important;height:auto!important}
+/* Tahoe81 visible Arrange Apps control (mouse, keyboard and touch).
+   Stays with the desktop, behind open app windows. */
+.desktop-arrange-button{
+ position:fixed;top:74px;right:20px;z-index:12;height:37px;
+ display:flex;align-items:center;justify-content:center;gap:9px;
+ padding:0 12px;border:1px solid rgba(255,255,255,.76);border-radius:13px;
+ background:rgba(247,250,253,.84);color:#243144;box-shadow:0 6px 22px rgba(0,0,0,.14);
+ backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);
+ font:650 12px/1 var(--font,Inter,system-ui,sans-serif);cursor:pointer;user-select:none
+}
+.desktop-arrange-button i{font-size:17px;color:#3668b5}
+.desktop-arrange-button:hover,.desktop-arrange-button[aria-expanded="true"]{background:rgba(255,255,255,.96);box-shadow:0 8px 26px rgba(0,0,0,.20)}
+.desktop-arrange-button:focus-visible{outline:3px solid var(--accent,#0b6fe8);outline-offset:2px}
+body.theme-dark .desktop-arrange-button,body.theme-navy .desktop-arrange-button{background:rgba(27,35,50,.87);color:#f4f8ff;border-color:rgba(255,255,255,.2)}
+body.theme-dark .desktop-arrange-button i,body.theme-navy .desktop-arrange-button i{color:#a9caff}
+@media(max-width:760px){
+ .desktop-arrange-button{top:calc(70px + env(safe-area-inset-top));right:12px;width:40px;height:40px;padding:0;border-radius:13px}
+ .desktop-arrange-button span{display:none}
+}
 /* ===== v75 Desktop icon arrangement ===== */
 .desktop-context-menu{
   position:fixed;z-index:100500;display:none;min-width:238px;padding:7px;border-radius:15px;
@@ -3560,6 +3585,7 @@ body #postsWindow #postsFrame{background:none!important;background-color:transpa
 <button class="desktop-app-launcher" id="qtLauncher" aria-label="Open ពេលសៀមស្ងាត់" title="ពេលសៀមស្ងាត់"><img src="../qt/assets/site-icon.png" alt=""></button>
 <button class="desktop-app-launcher" id="bibleWebLauncher" aria-label="Open ព្រះគម្ពីរខ្មែរ ១៩៥៤ (Web)" title="ព្រះគម្ពីរខ្មែរ ១៩៥៤ (Web)"><img src="../bible/assets/icon-192.png" alt=""></button>
 <button class="desktop-app-launcher" id="allSongWebLauncher" aria-label="Open Song Finder" title="Song Finder"><i class="ri-music-2-fill" aria-hidden="true"></i></button>
+<button type="button" class="desktop-arrange-button" id="arrangeAppsBtn" aria-label="Arrange Apps" aria-controls="desktopContextMenu" aria-expanded="false" title="Arrange apps and desktop icons"><i class="ri-layout-grid-fill" aria-hidden="true"></i><span>Arrange Apps</span></button>
 <div class="desktop-context-menu" id="desktopContextMenu" role="menu" aria-label="Desktop arrangement">
   <div class="desktop-menu-title">Desktop Icons</div>
   <button type="button" data-desktop-action="auto"><i class="ri-layout-grid-fill"></i><span>Auto Arrange</span><span class="desktop-check"></span></button>
@@ -4811,13 +4837,16 @@ const state={
   dim:saved.dim||null,
   settings:saved.settings||{}
 };
-// Tahoe80-only enforced appearance, leaving other apps' design settings alone.
+// Tahoe81: keep the historical flower as DEFAULT only, not as a forced choice.
+// Retain the existing Inter UI font behavior and all other settings.
 const TAHOE80_FLOWER_URL=new URL("assets/wallpaper-default.png",document.baseURI).href;
 function enforceTahoe80Appearance(){
  const w=state.wallpaper||{};
- const expected={src:TAHOE80_FLOWER_URL,fit:"cover",position:"center",opacity:100,presetGradient:""};
- let changed=w.src!==expected.src||w.fit!==expected.fit||w.position!==expected.position||w.opacity!==100||w.presetGradient!=="";
- if(changed)state.wallpaper=expected;
+ let changed=false;
+ if(!w.src&&!w.presetGradient){
+   state.wallpaper={...w,src:TAHOE80_FLOWER_URL,fit:w.fit||"cover",position:w.position||"center",opacity:w.opacity??100,presetGradient:""};
+   changed=true;
+ }
  if(state.settings.fontPreset!=="inter"){state.settings.fontPreset="inter";changed=true}
  return changed;
 }
@@ -5371,10 +5400,10 @@ function arrangeDesktopLaunchers(){
  if(!state.settings?.dashboardLauncherPos)pinDashboardLauncher()
 }
 function updateDesktopContextMenu(){const menu=$("#desktopContextMenu");if(!menu)return;menu.querySelector('[data-desktop-action="snap"]')?.classList.toggle("checked",!!state.settings.desktopSnapToGrid)}
-function hideDesktopContextMenu(){$("#desktopContextMenu")?.classList.remove("show")}
+function hideDesktopContextMenu(){$("#desktopContextMenu")?.classList.remove("show");$("#arrangeAppsBtn")?.setAttribute("aria-expanded","false")}
 function showDesktopContextMenu(x,y){
  const menu=$("#desktopContextMenu");if(!menu)return;updateDesktopContextMenu();menu.classList.add("show");menu.style.left="0px";menu.style.top="0px";
- const r=menu.getBoundingClientRect(),left=clamp(x,6,Math.max(6,innerWidth-r.width-6)),top=clamp(y,6,Math.max(6,innerHeight-r.height-6));menu.style.left=left+"px";menu.style.top=top+"px"
+ const r=menu.getBoundingClientRect(),left=clamp(x,6,Math.max(6,innerWidth-r.width-6)),top=clamp(y,6,Math.max(6,innerHeight-r.height-6));menu.style.left=left+"px";menu.style.top=top+"px";$("#arrangeAppsBtn")?.setAttribute("aria-expanded","true")
 }
 function desktopContextTargetAllowed(target){
  if(target.closest(".desktop-app-launcher,.finder-launcher,.minimized-launcher"))return true;
@@ -5382,6 +5411,12 @@ function desktopContextTargetAllowed(target){
 }
 function bindDesktopContextMenu(){
  const menu=$("#desktopContextMenu");if(!menu)return;
+ const arrangeBtn=$("#arrangeAppsBtn");
+ arrangeBtn?.addEventListener("click",e=>{
+   e.preventDefault();e.stopPropagation();
+   if(menu.classList.contains("show"))return hideDesktopContextMenu();
+   const r=arrangeBtn.getBoundingClientRect();showDesktopContextMenu(r.right-238,r.bottom+7);
+ });
  menu.addEventListener("click",e=>{const b=e.target.closest("[data-desktop-action]");if(!b)return;const a=b.dataset.desktopAction;
    if(a==="snap"){state.settings.desktopSnapToGrid=!state.settings.desktopSnapToGrid;save();updateDesktopContextMenu();showToast(state.settings.desktopSnapToGrid?"Snap to Grid on":"Snap to Grid off");return}
    hideDesktopContextMenu();if(a==="auto")arrangeDesktopIcons("auto",state.settings.desktopArrangeSort||"type");else if(["top","left","right","bottom"].includes(a))arrangeDesktopIcons(a,state.settings.desktopArrangeSort||"type");else if(a==="name")arrangeDesktopIcons("auto","name");else if(a==="type")arrangeDesktopIcons("auto","type");else if(a==="reset")resetDesktopIconLayout()
@@ -5507,7 +5542,11 @@ function applyWallpaper(){
  const w=state.wallpaper||{};
  const layer=$("#wallpaperLayer");if(!layer)return;
  const src=normalizeImageURL(w.src||"");
- const setSrc=u=>{layer.style.backgroundImage=u?`url("${String(u).replace(/"/g,"%22")}")`:(w.presetGradient||"none")};
+ const setSrc=u=>{
+   const image=u?`url("${String(u).replace(/"/g,"%22")}")`:(w.presetGradient||`url("${TAHOE80_FLOWER_URL}")`);
+   layer.style.backgroundImage=image;
+   layer.style.setProperty("--tahoe-wallpaper-image",image);
+ };
  if(src){
    const mem=imageObjectURLs.get(src);setSrc(mem||src);
    if(!mem)cachedImageObjectURL(src).then(url=>{if(url&&normalizeImageURL(state.wallpaper?.src||"")===src)setSrc(url)});
@@ -5516,6 +5555,9 @@ function applyWallpaper(){
  layer.style.backgroundSize=w.fit||"cover";
  layer.style.backgroundPosition=w.position||"center";
  layer.style.opacity=Math.max(0,Math.min(1,(w.opacity??100)/100));
+ layer.style.setProperty("--tahoe-wallpaper-fit",w.fit||"cover");
+ layer.style.setProperty("--tahoe-wallpaper-position",w.position||"center");
+ layer.style.setProperty("--tahoe-wallpaper-opacity",String(Math.max(0,Math.min(1,(w.opacity??100)/100))));
 }
 function firebasePathURL(){
  const db=(backend.firebase?.databaseURL||"").replace(/\/+$/,""),path=(backend.firebase?.globalPath||"adminDashboard/global").replace(/^\/+|\/+$/g,"");
@@ -5553,7 +5595,7 @@ function mergeGlobalConfig(g){
  if(g.writerUid&&firebaseRuntime.user?.uid===g.writerUid&&Date.now()-Number(g.updatedAt||0)<2500)return;
  if(g.system)Object.assign(state,g.system);
  if(g.appearance)Object.assign(state,g.appearance); // backward compatible with v24
- if(g.wallpaper)state.wallpaper=g.wallpaper;
+ if(g.wallpaper&&!isProReadOnly())state.wallpaper=g.wallpaper; // Pro wallpapers are per-user
  const firstHydrate=isOwnerAdmin()&&!firebaseRuntime.hydrated&&localStorage.getItem("tahoe.v31.recoveryDone")!=="1";
  const mergeMap=(name)=>{
    const remote=(g[name]&&typeof g[name]==="object")?g[name]:{};
@@ -6378,7 +6420,7 @@ function bindPage(){
  $$("[data-menu-check]",page).forEach(b=>b.onclick=()=>{if(!canUsePersonalSettings())return showToast("Pro access required");const k="menu."+b.dataset.menuCheck,v=!(state.settings[k]??b.classList.contains("on"));state.settings[k]=v;b.classList.toggle("on",v);save()});
  $$("[data-wallpaper-preset]",page).forEach(b=>b.onclick=()=>{
    if(!canUsePersonalSettings())return showToast("Pro access required");
-   state.wallpaper={...(state.wallpaper||{}),src:"",presetGradient:b.dataset.wallpaperGradient};$("#wallpaperLayer").style.backgroundImage=b.dataset.wallpaperGradient;save();render();showToast(`${b.dataset.wallpaperPreset} wallpaper selected`)
+   state.wallpaper={...(state.wallpaper||{}),src:"",presetGradient:b.dataset.wallpaperGradient};applyWallpaper();save();render();showToast(`${b.dataset.wallpaperPreset} wallpaper selected`)
  });
  $$('[data-wallpaper-library]',page).forEach(b=>b.onclick=()=>{
    if(!canUsePersonalSettings())return showToast("Pro access required");
@@ -6583,7 +6625,7 @@ function bindPage(){
    };
    if(fit)fit.onchange=()=>{state.wallpaper={...(state.wallpaper||{}),fit:fit.value};applyWallpaper();save()};
    if(pos)pos.onchange=()=>{state.wallpaper={...(state.wallpaper||{}),position:pos.value};applyWallpaper();save()};
-   if(clear)clear.onclick=()=>{state.wallpaper={src:"",fit:"cover",position:"center",opacity:100};applyWallpaper();save();render();showToast("Background cleared")};
+   if(clear)clear.onclick=()=>{state.wallpaper={src:TAHOE80_FLOWER_URL,fit:"cover",position:"center",opacity:100,presetGradient:""};applyWallpaper();save();render();showToast("Default wallpaper restored")};
 
    const target=$("#iconTarget",page),input=$("#iconHtml",page),sidePreview=$("#sidebarIconPreview",page),pagePreview=$("#pageIconPreview",page);
    const applySide=$("#applySidebarIcon",page),applyPage=$("#applyPageIcon",page),applyBoth=$("#applyBothIcon",page),resetSide=$("#resetSidebarIcon",page),resetPage=$("#resetPageIcon",page);
