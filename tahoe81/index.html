@@ -5566,7 +5566,7 @@ function firebasePathURL(){
  return `${db}/${path}.json${auth}`;
 }
 function globalSettingsPayload(){
- const localOnly=new Set(["fastMode","finderLauncherPos","bibleLauncherPos","powerSlideLauncherPos","bibleNextLauncherPos","powerSlideNextLauncherPos","allSongNextLauncherPos","deckCraftLauncherPos","theChatLauncherPos","dashboardLauncherPos","desktopSnapToGrid","desktopArrangeMode","desktopArrangeSort","bibleWindowState","powerSlideWindowState","deckCraftWindowState","theChatWindowState","preZoomSize","preZoomDim","preZoomPos","iconEditorTarget","bibleLast"]);
+ const localOnly=new Set(["fastMode","vectorLauncherPos","photoLauncherPos","pdfLauncherPos","effectLauncherPos","gridLauncherPos","wordLauncherPos","postsLauncherPos","prayInfoLauncherPos","listenWordLauncherPos","qtLauncherPos","bibleWebLauncherPos","allSongWebLauncherPos","finderLauncherPos","bibleLauncherPos","powerSlideLauncherPos","bibleNextLauncherPos","powerSlideNextLauncherPos","allSongNextLauncherPos","deckCraftLauncherPos","theChatLauncherPos","dashboardLauncherPos","desktopSnapToGrid","desktopArrangeMode","desktopArrangeSort","bibleWindowState","powerSlideWindowState","deckCraftWindowState","theChatWindowState","preZoomSize","preZoomDim","preZoomPos","iconEditorTarget","bibleLast"]);
  return Object.fromEntries(Object.entries(state.settings||{}).filter(([k])=>!localOnly.has(k)));
 }
 function globalConfigPayload(){
@@ -5618,6 +5618,18 @@ function mergeGlobalConfig(g){
      allSongNextLauncherPos:state.settings?.allSongNextLauncherPos,
      deckCraftLauncherPos:state.settings?.deckCraftLauncherPos,
      theChatLauncherPos:state.settings?.theChatLauncherPos,
+     vectorLauncherPos:state.settings?.vectorLauncherPos,
+     photoLauncherPos:state.settings?.photoLauncherPos,
+     pdfLauncherPos:state.settings?.pdfLauncherPos,
+     effectLauncherPos:state.settings?.effectLauncherPos,
+     gridLauncherPos:state.settings?.gridLauncherPos,
+     wordLauncherPos:state.settings?.wordLauncherPos,
+     postsLauncherPos:state.settings?.postsLauncherPos,
+     prayInfoLauncherPos:state.settings?.prayInfoLauncherPos,
+     listenWordLauncherPos:state.settings?.listenWordLauncherPos,
+     qtLauncherPos:state.settings?.qtLauncherPos,
+     bibleWebLauncherPos:state.settings?.bibleWebLauncherPos,
+     allSongWebLauncherPos:state.settings?.allSongWebLauncherPos,
      dashboardLauncherPos:state.settings?.dashboardLauncherPos,
      desktopSnapToGrid:state.settings?.desktopSnapToGrid,
      desktopArrangeMode:state.settings?.desktopArrangeMode,
@@ -6921,7 +6933,8 @@ tahoeSafeInit("finder controls",()=>ffBind());
 tahoeSafeInit("desktop apps",()=>bindDesktopApps());
 tahoeSafeInit("finder rendering",()=>{syncFinderTahoeStyle();ffRender()});
 tahoeSafeInit("finder window restore",()=>{if(ff.window&&innerWidth>760){const fw=$("#finderWindow");Object.assign(fw.style,ff.window);syncFinderTahoeStyle()}});
-tahoeSafeInit("app windows restore",()=>{for(const id of ["bible","powerslide","deckcraft","thechat"])tahoeSafeInit("restore "+id,()=>restoreDesktopAppState(id));arrangeDesktopLaunchers();bindDesktopContextMenu()});
+tahoeSafeInit("app windows restore",()=>{for(const id of ["bible","powerslide","deckcraft","thechat"])tahoeSafeInit("restore "+id,()=>restoreDesktopAppState(id));arrangeDesktopLaunchers()});
+tahoeSafeInit("desktop arrangement",()=>bindDesktopContextMenu());
 focusTahoeWindow(win);
 win.addEventListener("pointerdown",()=>focusTahoeWindow(win),{capture:true});
 $("#finderWindow").addEventListener("pointerdown",()=>focusTahoeWindow($("#finderWindow")),{capture:true});
