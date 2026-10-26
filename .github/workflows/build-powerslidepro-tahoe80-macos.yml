@@ -67,7 +67,11 @@ jobs:
           assert.equal(p.build.mac.fileAssociations.find(x => x.ext === 'deckcraft')?.icon, 'deckcraft.icns');
           assert.equal(p.build.mac.fileAssociations.find(x => x.ext === 'deckcraft')?.role, 'Editor');
           assert.ok(fs.statSync('build/deckcraft.icns').size > 1024);
+          assert.equal(require('./package.json').version, '0.1.12');
+          assert.ok(require('./package.json').build.files.includes('export-formats.cjs'));
           assert.ok(fs.statSync('payload/tahoe80/apps/deckcraft-web/index.html').size > 0);
+          const wasm=fs.readdirSync('payload/tahoe80/apps/deckcraft-web').find(x=>x.endsWith('_bg.wasm'));
+          assert.ok(wasm && fs.readFileSync('payload/tahoe80/apps/deckcraft-web/'+wasm).includes(Buffer.from('saveImagesDone')), 'New slide-image export WASM build is required');
           console.log('Tahoe80 offline staging and macOS .deckcraft association validated.');
           JS
       - uses: actions/upload-artifact@v4
@@ -94,6 +98,7 @@ jobs:
         run: |
           node --check main.cjs
           node --check preload.cjs
+          node --check export-formats.cjs
           node --check pc-fonts.cjs
           node --check updater.cjs
           node --check scripts/stage.cjs

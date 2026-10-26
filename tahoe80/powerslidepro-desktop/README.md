@@ -122,3 +122,14 @@ Added macOS/Windows **Edit → Paste** and other native editing roles, and a con
 ## v0.1.9 coordinated desktop release
 
 Repackaged AFTER successful Tahoe79 Song Notes/Undo WASM build commit `318e89e0262bc77dd36009aeaeb4045ee6f12417`, ensuring the desktop binaries include hidden song tags, single-step undo/redo, and the macOS document icon. No unrelated previous Tahoe folders changed.
+
+## v0.1.12 — Desktop Save As formats and orange document icon
+
+- The user's **orange glossy cross with layered slides** is the new `.deckcraft` document association artwork, derived from the supplied transparent PNG and converted to Windows `.ico` and macOS `.icns`. The separate PowerSlidePro **application** icon does not change.
+- **File → Save As…** offers native `.deckcraft`, editable PowerPoint `.pptx`, multi-page PDF `.pdf`, PNG and JPEG (current slide). The File → Export submenu also offers **All Slides as PNG Images** and **All Slides as JPEG Images**, written as consecutively numbered image files beside the chosen destination.
+- Normal **Save** retains the original `.deckcraft` path and format; exporting a different file format does not overwrite or replace the editable native presentation.
+- The real compiled Rust PowerSlidePro engine encodes PPTX and PDF and renders images. JPEG is converted from true rendered PNG using Electron's native image encoder; no file-extension renaming or fake formats.
+- Destination paths are owned by the native Electron process, and the untrusted renderer receives only a temporary export request identifier.
+- Existing PowerSlidePro projects, bundled Khmer fonts, Bible data and slideshow features remain unchanged.
+
+**Verification**: stage the new WASM release, execute unit tests, inspect Finder and Explorer icon association, open and export real multi-slide documents on both systems. GitHub CI builds are a prerequisite; publishing is separate from producing installer artifacts.

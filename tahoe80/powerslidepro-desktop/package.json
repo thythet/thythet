@@ -1,13 +1,13 @@
 {
   "name": "powerslidepro-desktop",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "private": true,
   "description": "PowerSlidePro offline presentation software — Built and Prepared by Thet",
   "main": "main.cjs",
   "license": "UNLICENSED",
   "scripts": {
     "stage": "node scripts/stage.cjs",
-    "check": "node --check main.cjs && node --check preload.cjs && node --check scripts/stage.cjs && node --check updater.cjs && node --check pc-fonts.cjs && node --check mac-fonts.cjs && node --check ui-font-prefs.cjs && node --check scripts/after-pack.cjs && node --test tests/updater.test.cjs tests/pc-fonts.test.cjs tests/ui-font-prefs.test.cjs tests/ui-font-bridge.test.cjs && python3 scripts/make_icons.py && node scripts/stage.cjs && node --test tests/mac-fonts.test.cjs",
+    "check": "node --check main.cjs && node --check preload.cjs && node --check scripts/stage.cjs && node --check updater.cjs && node --check pc-fonts.cjs && node --check mac-fonts.cjs && node --check ui-font-prefs.cjs && node --check export-formats.cjs && node --check scripts/after-pack.cjs && node --test tests/export-formats.test.cjs tests/updater.test.cjs tests/pc-fonts.test.cjs tests/ui-font-prefs.test.cjs tests/ui-font-bridge.test.cjs && python3 scripts/make_icons.py && node scripts/stage.cjs && node --test tests/mac-fonts.test.cjs",
     "dist:win": "electron-builder --win nsis --x64 --publish never",
     "dist:mac": "electron-builder --mac dmg --x64 --arm64 --publish never"
   },
@@ -29,6 +29,7 @@
       "pc-fonts.cjs",
       "mac-fonts.cjs",
       "ui-font-prefs.cjs",
+      "export-formats.cjs",
       "payload/**/*",
       "package.json",
       "build/icon.png"
