@@ -35,6 +35,7 @@ thread_local! {
     static CLOUD_LIST_PENDING: RefCell<Vec<String>> = const { RefCell::new(Vec::new()) };
     static CLOUD_NAME_PENDING: RefCell<Vec<(u64, String, bool)>> = const { RefCell::new(Vec::new()) };
     static CLOUD_EXPORT_PENDING: RefCell<Vec<(u64, String, String)>> = const { RefCell::new(Vec::new()) };
+    static DESKTOP_SAVE_AS_PENDING: RefCell<bool> = const { RefCell::new(false) };
     // Same-origin Tahoe presenter <-> independent audience browser window.
     static AUDIENCE_LOAD_PENDING: RefCell<Vec<(String, String, usize)>> = const { RefCell::new(Vec::new()) };
     static AUDIENCE_REMOTE_PENDING: RefCell<Vec<(usize, String)>> = const { RefCell::new(Vec::new()) };
@@ -81,11 +82,14 @@ fn install_cloud_open_receiver() {
                     }
                 }
             }
+            "tahoe-deckcraft-save-as" => {
+                DESKTOP_SAVE_AS_PENDING.with(|p| *p.borrow_mut() = true);
+            }
             "tahoe-deckcraft-cloud-export" => {
                 if let Ok(uid) = val("uid").parse::<u64>() {
                     let name = val("name");
                     let format = val("format");
-                    if matches!(format.as_str(), "pptx" | "deckcraft") && !name.trim().is_empty() && name.chars().count() <= 140 {
+                    if matches!(format.as_str(), "pptx" | "deckcraft" | "pdf" | "png" | "jpg" | "png-all" | "jpg-all") && !name.trim().is_empty() && name.chars().count() <= 140 {
                         CLOUD_EXPORT_PENDING.with(|q| q.borrow_mut().push((uid, name, format)));
                     }
                 }
@@ -650,7 +654,46 @@ impl eframe::App for WebShell {
         });
         CLOUD_EXPORT_PENDING.with(|queue| {
             for (uid, name, format) in std::mem::take(&mut *queue.borrow_mut()) {
-                if !self.app.session.active().is_some_and(|d| d.uid == uid) { continue; }
+                let Some(active) = self.app.session.active() else { continue };
+                if active.uid != uid { continue; }
+                // PPTX/PDF use the genuine engine encoder. Images use the actual
+                // slide renderer. The native shell converts PNG bytes to JPEG.
+                if matches!(format.as_str(), "png" | "jpg" | "png-all" | "jpg-all") {
+                    let all = format.ends_with("-all");
+                    let count = active.doc.slides.len();
+                    if all && count > 500 {
+                        post_parent_cloud_v93("saveError", "Too many slides (limit: 500)", &format, uid, None);
+                        continue;
+                    }
+                    let indices: Vec<usize> = if all { (0..count).collect() }
+                        else { vec![active.selection.slide] };
+                    let mut failed = false;
+                    for index in indices {
+                        match self.app.run("file.render", json!({"slide":index,"scale":2.0})) {
+                            Ok(v) => {
+                                if let Some(png) = v.get("png").and_then(serde_json::Value::as_str) {
+                                    let action = if all { "saveImageData" } else { "saveData" };
+                                    let part_name = if all { index.to_string() } else { name.clone() };
+                                    post_parent_cloud_v93(action, &part_name, &format, uid, Some(png));
+                                } else {
+                                    failed = true;
+                                    post_parent_cloud_v93("saveError", "Slide render returned no image", &format, uid, None);
+                                    break;
+                                }
+                            }
+                            Err(e) => {
+                                failed = true;
+                                self.app.set_status(format!("Image export failed: {e}"));
+                                post_parent_cloud_v93("saveError", &e.to_string(), &format, uid, None);
+                                break;
+                            }
+                        }
+                    }
+                    if all && !failed {
+                        post_parent_cloud_v93("saveImagesDone", &name, &format, uid, None);
+                    }
+                    continue;
+                }
                 match self.app.run("file.saveBytes", json!({"format":format})) {
                     Ok(v) => if let Some(data) = v.get("data").and_then(serde_json::Value::as_str) {
                         post_parent_cloud_v93("saveData", &name, &format, uid, Some(data));
@@ -694,6 +737,13 @@ impl eframe::App for WebShell {
 
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         self.app.ui(ui);
+        DESKTOP_SAVE_AS_PENDING.with(|p| {
+            if std::mem::replace(&mut *p.borrow_mut(), false) {
+                if let Some(d) = self.app.session.active() {
+                    post_parent_cloud_v93("saveAsIntent", &d.title(), "deckcraft", d.uid, None);
+                }
+            }
+        });
         if let Some(save_as) = self.app.web_save_request.take() {
             if self.live_mode {
                 self.send_live_edit("save");

@@ -66,6 +66,12 @@ const origin=location.origin;
 const host=window.PowerSlideDesktop;
 iframe.src='apps/deckcraft-web/index.html?blank&desktop=1'+(host?.platform==='darwin'?'&macui=1':host?.platform==='win32'?'&winui=1':'');
 let savingAs=false,toastTimer;
+let preferredExport='',activeExport=null,allImagesWrites=Promise.resolve(),allImagesError=null;
+const validExportFormats=new Set(['deckcraft','pptx','pdf','png','jpg','png-all','jpg-all']);
+host?.onSaveAsRequest?.(format=>{
+  preferredExport=validExportFormats.has(format)?format:'';
+  send('tahoe-deckcraft-save-as');
+});
 
 let fontCatalogDue=false;
 async function sendInstalledFontCatalog(){
@@ -234,18 +240,52 @@ window.addEventListener('message',async e=>{
      else host?.windowAction(data.command);
    }
  }else if(data.type==='tahoe-deckcraft-cloud'){
-   if(data.action==='saveIntent'||data.action==='saveAsIntent'){
-     savingAs=data.action==='saveAsIntent';
-     send('tahoe-deckcraft-cloud-export',{
-       uid:String(data.uid),name:safeName(data.name),format:'deckcraft'
-     });
+   if(data.action==='saveIntent'){
+     if(activeExport){toast('Finish the current export first');return;}
+     send('tahoe-deckcraft-cloud-export',{uid:String(data.uid),name:safeName(data.name),format:'deckcraft'});
+   }else if(data.action==='saveAsIntent'){
+     if(activeExport){toast('Finish the current export first');return;}
+     if(!host?.prepareExport){toast('Desktop Save As is unavailable');return;}
+     const preferred=preferredExport;preferredExport='';
+     const target=await host.prepareExport({uid:String(data.uid),name:String(data.name||'Presentation'),preferred});
+     if(target?.cancelled)return;
+     if(target?.error){toast('Save As: '+target.error);return;}
+     if(!target?.requestId||!validExportFormats.has(target.format)){toast('Unknown export format');return;}
+     activeExport={id:target.requestId,uid:String(data.uid),format:target.format};
+     allImagesWrites=Promise.resolve();allImagesError=null;
+     send('tahoe-deckcraft-cloud-export',{uid:String(data.uid),name:safeName(data.name),format:target.format});
    }else if(data.action==='saveData'){
-     if(!host?.save){toast('Desktop file saving is unavailable.');return;}
-     const result=await host.save({uid:String(data.uid),name:data.name,
-       data:data.data,saveAs:savingAs});
-     savingAs=false;
-     if(result?.saved)toast('Saved to computer');
-     else if(result?.error)toast('Save failed: '+result.error);
+     const pending=activeExport;
+     if(pending){
+       if(String(data.uid)!==pending.uid||data.format!==pending.format){toast('Export response mismatch');return;}
+       const result=await host?.writeExport?.({requestId:pending.id,uid:pending.uid,data:data.data});
+       await host?.finishExport?.(pending.id);
+       activeExport=null;
+       if(result?.saved)toast('Exported '+result.file);
+       else toast('Export failed: '+(result?.error||'Unknown error'));
+     }else{
+       if(!host?.save){toast('Desktop file saving is unavailable');return;}
+       const result=await host.save({uid:String(data.uid),name:data.name,data:data.data,saveAs:false});
+       if(result?.saved)toast('Saved to computer');
+       else if(result?.error)toast('Save failed: '+result.error);
+     }
+   }else if(data.action==='saveImageData'){
+     const pending=activeExport;
+     if(!pending||!['png-all','jpg-all'].includes(pending.format)||String(data.uid)!==pending.uid)return;
+     const index=Number(data.name);
+     allImagesWrites=allImagesWrites.then(async()=>{
+       if(allImagesError)return;
+       const result=await host?.writeExport?.({requestId:pending.id,uid:pending.uid,data:data.data,index});
+       if(!result?.saved)allImagesError=result?.error||'Image save failed';
+     }).catch(err=>{allImagesError=String(err);});
+   }else if(data.action==='saveImagesDone'){
+     const pending=activeExport;
+     if(!pending||!['png-all','jpg-all'].includes(pending.format)||String(data.uid)!==pending.uid)return;
+     await allImagesWrites;
+     await host?.finishExport?.(pending.id);
+     activeExport=null;
+     if(allImagesError)toast('Export failed: '+allImagesError);
+     else toast('All slides exported as images');
    }else if(data.action==='opened'){
      // The WASM editor confirms it opened this exact local document, so
      // Save can update its original path without an additional file dialog.
@@ -253,7 +293,11 @@ window.addEventListener('message',async e=>{
        host?.confirmOpenedFile?.(String(data.name),String(data.uid));
        setTimeout(openQueuedDocument,250);
      }
-   }else if(data.action==='saveError'){toast('Save failed: '+(data.name||'Unknown error'));}
+   }else if(data.action==='saveError'){
+     if(activeExport)await host?.finishExport?.(activeExport.id);
+     activeExport=null;allImagesError=null;
+     toast('Save failed: '+(data.name||'Unknown error'));
+   }
    else if(data.action==='library'||data.action==='list')
      toast('Offline mode: use File → Open for local presentations.');
    else if(data.action==='nameRequest'){

@@ -2,6 +2,15 @@
 const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('PowerSlideDesktop', Object.freeze({
   save: (data) => ipcRenderer.invoke('pspro:save', data),
+  prepareExport: (payload) => ipcRenderer.invoke('pspro:export-prepare', payload),
+  writeExport: (payload) => ipcRenderer.invoke('pspro:export-write', payload),
+  finishExport: (requestId) => ipcRenderer.invoke('pspro:export-finish', requestId),
+  onSaveAsRequest: (callback) => {
+    if (typeof callback !== 'function') return () => {};
+    const listener = (_event, format) => callback(typeof format === 'string' ? format : '');
+    ipcRenderer.on('pspro:save-as-request', listener);
+    return () => ipcRenderer.removeListener('pspro:save-as-request', listener);
+  },
   readPasteText: () => ipcRenderer.invoke('pspro:paste-text'),
   listPCFonts: () => ipcRenderer.invoke('pspro:list-pc-fonts'),
   readPCFont: family => ipcRenderer.invoke('pspro:read-pc-font', family),
