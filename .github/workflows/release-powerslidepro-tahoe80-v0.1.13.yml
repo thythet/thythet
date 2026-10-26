@@ -1,0 +1,138 @@
+name: Publish PowerSlidePro Tahoe80 v0.1.13
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/release-powerslidepro-tahoe80-v0.1.13.yml'
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: publish-powerslidepro-tahoe80-v0.1.13
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Verify source and successful installer build provenance
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for record in '40292465315 de6c0df83771afd6c88805bc79ee8b9f371583d8 Windows' '40292218935 f6928c7ee9f2ffdeec941cc3cf429bf7a8e6e28d macOS'; do
+            read -r id expected_sha platform <<< "$record"
+            state="$(gh api "repos/thythet/thythet/actions/runs/$id" --jq '.conclusion')"
+            sha="$(gh api "repos/thythet/thythet/actions/runs/$id" --jq '.head_sha')"
+            test "$state" = 'success'
+            test "$sha" = "$expected_sha"
+            echo "Verified successful Tahoe80 $platform package at $sha"
+          done
+          if gh api repos/thythet/thythet/releases/tags/powerslidepro-desktop-v0.1.13 >/dev/null 2>&1; then
+            echo 'Release already exists; refusing to silently overwrite.' >&2
+            exit 1
+          fi
+      - name: Download approved Windows x64 build
+        uses: actions/download-artifact@v4
+        with:
+          run-id: 40292465315
+          repository: thythet/thythet
+          github-token: ${{ github.token }}
+          name: powerslidepro-tahoe80-windows-installer
+          path: release-assets
+      - name: Download approved macOS Intel and Apple Silicon builds
+        uses: actions/download-artifact@v4
+        with:
+          run-id: 40292218935
+          repository: thythet/thythet
+          github-token: ${{ github.token }}
+          name: powerslidepro-tahoe80-macos-installers
+          path: release-assets
+      - name: Validate all three signed or unsigned beta installers and SHA-256 integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd release-assets
+          test -s PowerSlidePro-0.1.13-win-x64.exe
+          test -s PowerSlidePro-0.1.13-mac-arm64.dmg
+          test -s PowerSlidePro-0.1.13-mac-x64.dmg
+          test -s latest.yml
+          grep -q 'version: 0.1.13' latest.yml
+          grep -q 'sha512:' latest.yml
+          test -s SHA256SUMS-Windows.txt
+          test -s SHA256SUMS-macOS.txt
+          sha256sum --check SHA256SUMS-Windows.txt
+          sha256sum --check SHA256SUMS-macOS.txt
+          sha256sum PowerSlidePro-0.1.13-win-x64.exe PowerSlidePro-0.1.13-mac-arm64.dmg PowerSlidePro-0.1.13-mac-x64.dmg > SHA256SUMS.txt
+          test "$(wc -l < SHA256SUMS.txt)" -eq 3
+          test "$(find . -maxdepth 1 -type f -name '*.dmg' | wc -l)" -eq 2
+          test "$(find . -maxdepth 1 -type f -name '*.exe' | wc -l)" -eq 1
+      - name: Publish reviewed PowerSlidePro 0.1.13 release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: powerslidepro-desktop-v0.1.13
+          target_commitish: de6c0df83771afd6c88805bc79ee8b9f371583d8
+          name: PowerSlidePro Desktop v0.1.13 (Windows + macOS beta)
+          prerelease: true
+          generate_release_notes: false
+          fail_on_unmatched_files: true
+          overwrite_files: false
+          body: |
+            PowerSlidePro 0.1.13 for Windows 10/11 (x64) and macOS (Apple Silicon/Intel).
+
+            **New Save As:** File → Save As… lets you select a native editable
+            .deckcraft project, editable PowerPoint .pptx, PDF .pdf,
+            PNG .png or JPEG .jpg (current slide).
+            File → Export also offers all slides as numbered PNG/JPEG files.
+            Save (Ctrl+S / Cmd+S) continues to update the original
+            editable .deckcraft document without changing its file format.
+            Exports are produced by the real presentation and rendering engine,
+            not by renaming a .deckcraft file.
+
+            **Windows icon cache fix:** .deckcraft documents now use a fresh, versioned
+            orange cross-and-layered-slides icon resource. The NSIS installer
+            notifies Explorer about the updated association. Existing projects
+            remain unchanged. The PowerSlidePro application icon stays blue.
+            If an older association was manually selected, set PowerSlidePro
+            as the default .deckcraft app in Windows Default Apps.
+            The PowerSlidePro application icon remains unchanged.
+
+            Keeps existing Khmer OS fonts, 66 Bible books, Smart Generate,
+            worship song formatting, Presenter/Audience, installed UI font
+            preferences, offline use and native editable projects.
+
+            **macOS:** arm64 is for Apple Silicon; x64 is for Intel.
+            Ad-hoc signed only, not Developer ID signed or notarized.
+            macOS may require manual approval in Privacy & Security.
+            **Windows:** 64-bit NSIS installer; Windows SmartScreen may warn.
+            Per-machine installation may ask for administrator permission.
+
+            SHA256SUMS.txt contains checksums for all three installers.
+            Both platform CI packaging pipelines passed, but hands-on testing
+            of open/save/export on user machines is still recommended.
+          files: |
+            release-assets/PowerSlidePro-0.1.13-win-x64.exe
+            release-assets/PowerSlidePro-0.1.13-mac-arm64.dmg
+            release-assets/PowerSlidePro-0.1.13-mac-x64.dmg
+            release-assets/latest.yml
+            release-assets/SHA256SUMS.txt
+            release-assets/SHA256SUMS-Windows.txt
+            release-assets/SHA256SUMS-macOS.txt
+      - name: Verify published public release and installer assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api repos/thythet/thythet/releases/tags/powerslidepro-desktop-v0.1.13 \
+            --jq '.assets[].name' | sort > published.txt
+          for asset in PowerSlidePro-0.1.13-win-x64.exe PowerSlidePro-0.1.13-mac-arm64.dmg PowerSlidePro-0.1.13-mac-x64.dmg SHA256SUMS.txt latest.yml; do
+            grep -Fxq "$asset" published.txt
+          done
+          echo 'PowerSlidePro 0.1.13 GitHub Release and installer assets are published.'
