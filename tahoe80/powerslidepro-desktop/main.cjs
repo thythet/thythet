@@ -1,5 +1,6 @@
 'use strict';
-const { app, BrowserWindow, dialog, ipcMain, session, Menu, shell, clipboard } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain, session, Menu, shell, clipboard, nativeImage } = require('electron');
+const { exportFilters, formatFromPath, suggestedExportName, isImageFormat, isAllSlidesFormat } = require('./export-formats.cjs');
 const { createDesktopUpdater, GITHUB_RELEASES } = require('./updater.cjs');
 const fs = require('node:fs');
 const http = require('node:http');
@@ -33,6 +34,9 @@ let desktopUpdater;
 const savedPaths = new Map();
 const openQueue = [];
 const awaitingOpen = new Map();
+const pendingExports = new Map();
+let exportSequence = 0;
+const MAX_EXPORT_BYTES = 180 * 1024 * 1024;
 const MAX_OPEN_BYTES = 40 * 1024 * 1024;
 let openSequence = 0;
 // Only the native launcher and the user-selected Open dialog may enqueue paths.
@@ -100,10 +104,25 @@ function publishUpdateStatus(state) {
     mainWindow.webContents.send('pspro:update-state', state);
   }
 }
+function requestSaveAs(format = '') {
+  if (!mainWindow || mainWindow.isDestroyed() || mainWindow.webContents.isDestroyed()) return;
+  mainWindow.webContents.send('pspro:save-as-request', format);
+}
 function installMenu() {
   const menu = [
     { label: 'File', submenu: [
       { label: 'Open Presentation…', accelerator: 'CmdOrCtrl+O', click: openFromFileMenu },
+      { label: 'Save As…', accelerator: 'CmdOrCtrl+Shift+S', click: () => requestSaveAs() },
+      { label: 'Export', submenu: [
+        {label:'PowerPoint (.pptx)…',click:()=>requestSaveAs('pptx')},
+        {label:'PDF Document (.pdf)…',click:()=>requestSaveAs('pdf')},
+        {type:'separator'},
+        {label:'Current Slide as PNG…',click:()=>requestSaveAs('png')},
+        {label:'Current Slide as JPEG…',click:()=>requestSaveAs('jpg')},
+        {type:'separator'},
+        {label:'All Slides as PNG Images…',click:()=>requestSaveAs('png-all')},
+        {label:'All Slides as JPEG Images…',click:()=>requestSaveAs('jpg-all')}
+      ] },
       { type: 'separator' },
       { role: 'quit', label: 'Exit PowerSlidePro' }
     ] },
@@ -241,6 +260,74 @@ if (ownsInstance) app.whenReady().then(async () => {
   // Download API (PPTX/PDF/image) uses an OS file save dialog.
   editorSession.on('will-download', (_event, item) => {
     item.setSaveDialogOptions({ title: 'Save PowerSlidePro file', defaultPath: item.getFilename() });
+  });
+  // Save As: the main process owns the destination path. The renderer only sees
+  // a one-time request ID and format, never the destination directory.
+  ipcMain.handle('pspro:export-prepare', async (event, payload) => {
+    if (!mainWindow || event.sender !== mainWindow.webContents) return { error: 'Invalid window' };
+    const uid = String(payload?.uid || '');
+    if (!/^[0-9]{1,20}$/.test(uid)) return { error: 'Invalid presentation' };
+    const preferred = typeof payload?.preferred === 'string' ? payload.preferred : '';
+    const options = {
+      title: 'Save As — PowerSlidePro',
+      defaultPath: suggestedExportName(payload?.name, preferred),
+      filters: exportFilters
+    };
+    const result = await dialog.showSaveDialog(mainWindow, options);
+    if (result.canceled || !result.filePath) return { cancelled: true };
+    const format = formatFromPath(result.filePath);
+    if (!format) return { error: 'Choose .deckcraft, .pptx, .pdf, .png, or .jpg' };
+    const requested = preferred === 'png-all' || preferred === 'jpg-all';
+    const actual = requested && format === preferred.split('-')[0] ? preferred : format;
+    const id = String(++exportSequence);
+    pendingExports.set(id, { path: result.filePath, format: actual, uid, nextIndex: 0 });
+    if (pendingExports.size > 20) pendingExports.delete(pendingExports.keys().next().value);
+    return { requestId: id, format: actual, uid };
+  });
+  ipcMain.handle('pspro:export-write', async (event, payload) => {
+    if (!mainWindow || event.sender !== mainWindow.webContents) return { error: 'Invalid window' };
+    const id = String(payload?.requestId || '');
+    const rec = pendingExports.get(id);
+    if (!rec) return { error: 'Save As request expired' };
+    if (payload?.uid !== rec.uid) return { error: 'Presentation changed during export' };
+    const data = payload?.data;
+    if (typeof data !== 'string' || data.length > MAX_EXPORT_BYTES * 1.34 || !/^[A-Za-z0-9+/=\\r\\n]+$/.test(data))
+      return { error: 'Invalid export data' };
+    const bytes = Buffer.from(data, 'base64');
+    if (!bytes.length || bytes.length > MAX_EXPORT_BYTES) return { error: 'Export is empty or too large' };
+    const baseFormat = rec.format.replace('-all', '');
+    let output = bytes;
+    if (isImageFormat(rec.format)) {
+      if (bytes.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a')
+        return { error: 'Invalid rendered image data' };
+      if (baseFormat === 'jpg') {
+        const img = nativeImage.createFromBuffer(bytes);
+        if (img.isEmpty()) return { error: 'Could not convert slide to JPEG' };
+        output = img.toJPEG(92);
+      }
+    } else if (baseFormat === 'pdf') {
+      if (bytes.subarray(0, 5).toString('ascii') !== '%PDF-') return { error: 'Invalid PDF bytes' };
+    } else if (baseFormat === 'pptx' || baseFormat === 'deckcraft') {
+      if (bytes.subarray(0, 2).toString('ascii') !== 'PK') return { error: 'Invalid presentation archive' };
+    }
+    let target = rec.path;
+    if (isAllSlidesFormat(rec.format)) {
+      const index = Number(payload.index);
+      if (!Number.isSafeInteger(index) || index !== rec.nextIndex || index >= 500)
+        return { error: 'Unexpected image slide sequence' };
+      const ext = path.extname(target);
+      const stem = path.basename(target, ext);
+      target = path.join(path.dirname(target), stem + '-' + String(index + 1).padStart(3, '0') + ext);
+      rec.nextIndex++;
+    } else pendingExports.delete(id);
+    try {
+      await fs.promises.writeFile(target, output, {flag: 'w'});
+      return { saved: true, count: rec.nextIndex, file: path.basename(target) };
+    } catch (error) { pendingExports.delete(id); return { error: String(error) }; }
+  });
+  ipcMain.handle('pspro:export-finish', (event, requestId) => {
+    if (!mainWindow || event.sender !== mainWindow.webContents) return false;
+    return pendingExports.delete(String(requestId || ''));
   });
   // Load a user-associated file through the existing PowerSlidePro editor.
   // The renderer never supplies a filesystem path; it only asks for a queued file.
