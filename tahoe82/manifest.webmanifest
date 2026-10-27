@@ -1,0 +1,181 @@
+{
+  "id": "./",
+  "name": "Tahoe81",
+  "short_name": "Tahoe81",
+  "description": "Tahoe81 desktop with Word, Grid, Effect, PDF, Photo, Vector, PowerSlidePro, Bible and thechat.",
+  "start_url": "./?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "background_color": "#f4f8fb",
+  "theme_color": "#dff4ff",
+  "orientation": "any",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": [
+    "productivity",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Bible 1954",
+      "short_name": "Bible",
+      "description": "Open the Khmer Bible 1954 reader.",
+      "url": "./?open=bible",
+      "icons": [
+        {
+          "src": "assets/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "PowerSlide",
+      "short_name": "PowerSlide",
+      "description": "Open PowerSlide presentation studio.",
+      "url": "./?open=powerslide",
+      "icons": [
+        {
+          "src": "assets/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "AllSong",
+      "short_name": "AllSong",
+      "description": "Open the worship-song library.",
+      "url": "./?open=allsong",
+      "icons": [
+        {
+          "src": "assets/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "PowerSlidePro Web",
+      "short_name": "PowerSlidePro",
+      "description": "Open PowerSlidePro Web presentation editor with Bible Generate.",
+      "url": "./?open=deckcraft",
+      "icons": [
+        {
+          "src": "assets/powerslidepro-logo.png",
+          "sizes": "512x512",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "thechat",
+      "short_name": "thechat",
+      "description": "Open thechat messenger inside Tahoe.",
+      "url": "./?open=thechat",
+      "icons": [
+        {
+          "src": "../chat22/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Vector",
+      "short_name": "Vector",
+      "description": "Open the Vector illustration editor.",
+      "url": "./?open=vector",
+      "icons": [
+        {
+          "src": "assets/vector-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Photo",
+      "short_name": "Photo",
+      "description": "Open the Photo image editor.",
+      "url": "./?open=photo",
+      "icons": [
+        {
+          "src": "assets/photo-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "PDF",
+      "short_name": "PDF",
+      "description": "Open the PDF editor.",
+      "url": "./?open=pdf",
+      "icons": [
+        {
+          "src": "assets/pdf-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Effect",
+      "short_name": "Effect",
+      "description": "Open motion graphics and effects.",
+      "url": "./?open=effect",
+      "icons": [
+        {
+          "src": "assets/effect-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Grid",
+      "short_name": "Grid",
+      "description": "Open the Grid spreadsheet editor.",
+      "url": "./?open=grid",
+      "icons": [
+        {
+          "src": "assets/grid-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Word",
+      "short_name": "Word",
+      "description": "Open the Word document editor.",
+      "url": "./?open=word",
+      "icons": [
+        {
+          "src": "assets/word-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ]
+}
