@@ -463,6 +463,7 @@ if (ownsInstance) app.whenReady().then(async () => {
     void shell.openExternal(GITHUB_RELEASES);
     return true;
   });
+  recentFiles = loadRecentFiles();
   installMenu();
   createMainWindow();
   desktopUpdater.start();
