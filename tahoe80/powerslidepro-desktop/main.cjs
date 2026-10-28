@@ -32,6 +32,28 @@ let mainWindow;
 let editorSession;
 let desktopUpdater;
 const savedPaths = new Map();
+// Recent local projects (paths only; never store presentation contents).
+const RECENT_LIMIT = 20;
+function recentListFile() { return path.join(app.getPath('userData'), 'recent-presentations.json'); }
+function loadRecentFiles() {
+  try {
+    const data = JSON.parse(fs.readFileSync(recentListFile(), 'utf8'));
+    return Array.isArray(data) ? data.filter(x => typeof x?.path === 'string' && path.isAbsolute(x.path) && path.extname(x.path).toLowerCase() === '.deckcraft').slice(0, RECENT_LIMIT) : [];
+  } catch { return []; }
+}
+let recentFiles = [];
+function rememberRecentFile(filename) {
+  if (!filename || path.extname(filename).toLowerCase() !== '.deckcraft') return;
+  const resolved = path.resolve(filename);
+  recentFiles = [{path: resolved, name:path.basename(resolved), openedAt:new Date().toISOString()}, ...recentFiles.filter(x => x.path !== resolved)].slice(0, RECENT_LIMIT);
+  try { fs.writeFileSync(recentListFile(), JSON.stringify(recentFiles, null, 2), {mode:0o600}); } catch {}
+  installMenu();
+}
+function recentMenuItems() {
+  const existing = recentFiles.filter(x => { try { return fs.statSync(x.path).isFile(); } catch { return false; } });
+  return existing.length ? existing.map(x => ({label:x.name, sublabel:x.path, click:()=>queueDeckcraftFile(x.path)})) : [{label:'No recent presentations',enabled:false}];
+}
+
 const openQueue = [];
 const awaitingOpen = new Map();
 const pendingExports = new Map();
@@ -112,6 +134,7 @@ function installMenu() {
   const menu = [
     { label: 'File', submenu: [
       { label: 'Open Presentation…', accelerator: 'CmdOrCtrl+O', click: openFromFileMenu },
+      { label: 'Open Recent', submenu: recentMenuItems() },
       { label: 'Save As…', accelerator: 'CmdOrCtrl+Shift+S', click: () => requestSaveAs() },
       { label: 'Export', submenu: [
         {label:'PowerPoint (.pptx)…',click:()=>requestSaveAs('pptx')},
@@ -375,6 +398,7 @@ if (ownsInstance) app.whenReady().then(async () => {
     const uid = typeof payload?.uid === 'string' ? payload.uid : '';
     if (!/^[0-9]{1,20}$/.test(uid) || !awaitingOpen.has(id)) return;
     savedPaths.set(uid, awaitingOpen.get(id));
+    rememberRecentFile(awaitingOpen.get(id));
     awaitingOpen.delete(id);
   });
   ipcMain.handle('pspro:save', async (event, payload) => {
@@ -399,6 +423,7 @@ if (ownsInstance) app.whenReady().then(async () => {
       if (!bytes.length) throw new Error('Empty presentation');
       await fs.promises.writeFile(target, bytes);
       if (uid) savedPaths.set(uid, target);
+      rememberRecentFile(target);
       return { saved: true, path: target };
     } catch (error) { return { error: String(error) }; }
   });
