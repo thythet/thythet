@@ -628,6 +628,26 @@ fn presentation_rows(app: &SlideApp, ctx: &egui::Context, query: &str, source: u
             }
         }
     }
+    #[cfg(target_arch = "wasm32")]
+    if source != 1 {
+        let raw=ctx.data(|d| d.get_temp::<String>(egui::Id::new("tahoe-desktop-recent-files"))).unwrap_or_default();
+        let data:Value=serde_json::from_str(&raw).unwrap_or(Value::Null);
+        if let Some(files)=data.get("files").and_then(Value::as_array) {
+            for f in files {
+                let name=f.get("name").and_then(Value::as_str).unwrap_or("");
+                let id=f.get("id").and_then(Value::as_str).unwrap_or("");
+                if name.is_empty() || !id.chars().all(|c|c.is_ascii_digit()) || id.is_empty() {continue;}
+                if !q.is_empty() && !name.to_lowercase().contains(&q) {continue;}
+                let available=f.get("available").and_then(Value::as_bool).unwrap_or(false);
+                rows.push(PresentationRow {
+                    id:format!("desktop-recent:{}",id),name:name.into(),
+                    detail:if available {"On this computer".into()}else{"File not found".into()},
+                    source:"This device", format:"DECKCRAFT".into(),
+                    when:"Recently opened".into(),stamp:0,local:false,
+                });
+            }
+        }
+    }
     #[cfg(not(target_arch = "wasm32"))]
     let _ = ctx;
     if source != 1 {
@@ -753,12 +773,15 @@ fn recent_list(app: &mut SlideApp, ui: &mut Ui, bs: &mut Backstage, limit: usize
                         app.forget_recent(&e.id);
                     }
                 }
-                if click.on_hover_text(if e.local { e.id.clone() } else { format!("Open {} from Cloudinary", e.name) }).clicked() {
+                if click.on_hover_text(if e.local { e.id.clone() } else { format!("Open {}", e.name) }).clicked() {
                     if e.local {
                         app.open_path_in_background(&e.id);
                     } else {
+                        let action=if let Some(id)=e.id.strip_prefix("desktop-recent:") {
+                            format!("desktopOpen:{}",id)
+                        } else {format!("open:{}", e.id)};
                         ui.ctx().data_mut(|d| d.insert_temp(
-                            egui::Id::new("tahoe-deckcraft-cloud-file-action"), format!("open:{}", e.id)));
+                            egui::Id::new("tahoe-deckcraft-cloud-file-action"), action));
                     }
                 }
             }

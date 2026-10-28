@@ -48,6 +48,15 @@ function rememberRecentFile(filename) {
   recentFiles = [{path: resolved, name:path.basename(resolved), openedAt:new Date().toISOString()}, ...recentFiles.filter(x => x.path !== resolved)].slice(0, RECENT_LIMIT);
   try { fs.writeFileSync(recentListFile(), JSON.stringify(recentFiles, null, 2), {mode:0o600}); } catch {}
   installMenu();
+  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('pspro:recent-updated');
+}
+function recentPublicList() {
+  return recentFiles.map((x,i)=>({id:String(i),name:x.name,openedAt:x.openedAt,available:fs.existsSync(x.path)}));
+}
+function queueRecentByIndex(index) {
+  if (!/^\\d{1,2}$/.test(String(index))) return false;
+  const item=recentFiles[Number(index)];
+  return !!item && fs.existsSync(item.path) && queueDeckcraftFile(item.path);
 }
 function recentMenuItems() {
   const existing = recentFiles.filter(x => { try { return fs.statSync(x.path).isFile(); } catch { return false; } });
@@ -376,6 +385,14 @@ if (ownsInstance) app.whenReady().then(async () => {
   ipcMain.handle('pspro:ui-font-set', (event, name) => {
     if (!['darwin','win32'].includes(process.platform) || !mainWindow || event.sender!==mainWindow.webContents) return false;
     return uiFontPrefs.set(name);
+  });
+  ipcMain.handle('pspro:recent-list', event => {
+    if (!mainWindow || event.sender!==mainWindow.webContents) return [];
+    return recentPublicList();
+  });
+  ipcMain.handle('pspro:recent-open', (event,id) => {
+    if (!mainWindow || event.sender!==mainWindow.webContents) return false;
+    return queueRecentByIndex(id);
   });
   ipcMain.handle('pspro:next-open-file', async (event) => {
     if (!mainWindow || event.sender !== mainWindow.webContents) return { error: 'Invalid window' };

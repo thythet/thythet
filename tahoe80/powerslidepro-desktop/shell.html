@@ -182,7 +182,14 @@ async function openQueuedDocument(){
  }catch(error){toast('Open failed: '+String(error));}
  finally{pullingOpen=false;}
 }
-iframe.addEventListener('load',()=>setTimeout(openQueuedDocument,300));
+async function refreshDesktopRecent(){
+ try {
+   const files=await host?.recentList?.();
+   send('tahoe-desktop-recent-list',{data:JSON.stringify({files:Array.isArray(files)?files:[]})});
+ }catch(error){console.warn('Recent files refresh failed',error);}
+}
+iframe.addEventListener('load',()=>{setTimeout(openQueuedDocument,300);setTimeout(refreshDesktopRecent,700)});
+host?.onRecentUpdated?.(()=>refreshDesktopRecent());
 host?.onFileQueued?.(()=>openQueuedDocument());
 function toast(text){
  const el=document.getElementById('toast');el.textContent=text;
@@ -239,6 +246,10 @@ window.addEventListener('message',async e=>{
      if(data.command==='live-edit')toast('Live Edit is currently available in Tahoe online.');
      else host?.windowAction(data.command);
    }
+ }else if(data.type==='tahoe-deckcraft-cloud' && data.action==='desktopOpen'){
+   const success=await host?.openRecent?.(String(data.id||''));
+   if(!success)toast('Recent file not found');
+   return;
  }else if(data.type==='tahoe-deckcraft-cloud'){
    if(data.action==='saveIntent'){
      if(activeExport){toast('Finish the current export first');return;}

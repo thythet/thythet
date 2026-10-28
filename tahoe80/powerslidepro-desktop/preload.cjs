@@ -16,6 +16,13 @@ contextBridge.exposeInMainWorld('PowerSlideDesktop', Object.freeze({
   readPCFont: family => ipcRenderer.invoke('pspro:read-pc-font', family),
   getUIFont: () => ipcRenderer.invoke('pspro:ui-font-get'),
   setUIFont: family => ipcRenderer.invoke('pspro:ui-font-set', family),
+  recentList: () => ipcRenderer.invoke('pspro:recent-list'),
+  openRecent: id => ipcRenderer.invoke('pspro:recent-open', id),
+  onRecentUpdated: callback => {
+    if (typeof callback !== 'function') return () => {};
+    const listener=()=>callback();ipcRenderer.on('pspro:recent-updated',listener);
+    return ()=>ipcRenderer.removeListener('pspro:recent-updated',listener);
+  },
   nextOpenFile: () => ipcRenderer.invoke('pspro:next-open-file'),
   confirmOpenedFile: (id, uid) => ipcRenderer.send('pspro:file-opened', { id, uid }),
   onFileQueued: (callback) => {

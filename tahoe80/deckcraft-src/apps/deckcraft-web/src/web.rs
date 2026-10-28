@@ -33,6 +33,7 @@ thread_local! {
     static DESKTOP_UI_FONT_CATALOG_REFRESH: RefCell<bool> = const { RefCell::new(false) };
     static CLOUD_OPEN_PENDING: RefCell<Vec<(String, String, String)>> = const { RefCell::new(Vec::new()) };
     static CLOUD_LIST_PENDING: RefCell<Vec<String>> = const { RefCell::new(Vec::new()) };
+    static DESKTOP_RECENT_PENDING: RefCell<Vec<String>> = const { RefCell::new(Vec::new()) };
     static CLOUD_NAME_PENDING: RefCell<Vec<(u64, String, bool)>> = const { RefCell::new(Vec::new()) };
     static CLOUD_EXPORT_PENDING: RefCell<Vec<(u64, String, String)>> = const { RefCell::new(Vec::new()) };
     static DESKTOP_SAVE_AS_PENDING: RefCell<bool> = const { RefCell::new(false) };
@@ -67,6 +68,10 @@ fn install_cloud_open_receiver() {
                 let ext = name.rsplit('.').next().unwrap_or("").to_ascii_lowercase();
                 if ext != "deckcraft" && ext != "pptx" { return; }
                 CLOUD_OPEN_PENDING.with(|q| q.borrow_mut().push((name, data, id)));
+            }
+            "tahoe-desktop-recent-list" => {
+                let data=val("data");
+                if data.len() <= 100_000 { DESKTOP_RECENT_PENDING.with(|q| q.borrow_mut().push(data)); }
             }
             "tahoe-deckcraft-cloud-list" => {
                 let data = val("data");
@@ -619,6 +624,11 @@ impl eframe::App for WebShell {
                         Err(e) => post_parent_presentation("error", &e.to_string(), index, ""),
                     }
                 }
+            }
+        });
+        DESKTOP_RECENT_PENDING.with(|q| {
+            if let Some(data)=std::mem::take(&mut *q.borrow_mut()).pop() {
+                ctx.data_mut(|d| d.insert_temp(egui::Id::new("tahoe-desktop-recent-files"),data));
             }
         });
         CLOUD_LIST_PENDING.with(|q| {
