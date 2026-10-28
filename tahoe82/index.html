@@ -5379,6 +5379,7 @@ function arrangeDesktopIcons(mode="auto",sort="type"){
    if(mode==="left"){col=Math.floor(i/rows);row=i%rows;left=margin+col*cellX;top=topMargin+row*cellY}
    else if(mode==="right"){col=Math.floor(i/rows);row=i%rows;left=innerWidth-margin-iw-col*cellX;top=topMargin+row*cellY}
    else if(mode==="bottom"){col=i%cols;row=Math.floor(i/cols);left=margin+col*cellX;top=innerHeight-margin-ih-row*cellY}
+   else if(mode==="top"){const slot=i+1;col=slot%cols;row=Math.floor(slot/cols);left=margin+col*cellX;top=10+row*cellY}
    else{col=i%cols;row=Math.floor(i/cols);left=margin+col*cellX;top=topMargin+row*cellY}
    setDesktopLauncherPoint(item,left,top,{persist:false,animate:true})
  });
