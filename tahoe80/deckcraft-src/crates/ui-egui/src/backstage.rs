@@ -677,7 +677,7 @@ fn recent_list(app: &mut SlideApp, ui: &mut Ui, bs: &mut Backstage, limit: usize
         ui.ctx().data_mut(|d| d.insert_temp(egui::Id::new("tahoe-deckcraft-cloud-refresh"), true));
     }
     let all = presentation_rows(app, ui.ctx(), &bs.query, 0);
-    let n_cloud = all.iter().filter(|entry| !entry.local).count();
+    let n_cloud = all.iter().filter(|entry| !entry.local && !entry.id.starts_with("desktop-recent:")).count();
     let n_local = all.len() - n_cloud;
     ui.horizontal(|ui| {
         for (source, text) in [(0, format!("Recent ({})", all.len())),
@@ -697,7 +697,7 @@ fn recent_list(app: &mut SlideApp, ui: &mut Ui, bs: &mut Backstage, limit: usize
     });
     ui.add_space(7.0);
     let list: Vec<PresentationRow> = all.into_iter().filter(|e| match bs.recent_source {
-        1 => !e.local, 2 => e.local, _ => true,
+        1 => !e.local && !e.id.starts_with("desktop-recent:"), 2 => e.local || e.id.starts_with("desktop-recent:"), _ => true,
     }).take(limit).collect();
     if list.is_empty() {
         ui.add_space(14.0);
