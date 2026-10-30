@@ -54,7 +54,7 @@ function recentPublicList() {
   return recentFiles.map((x,i)=>({id:String(i),name:x.name,openedAt:x.openedAt,available:fs.existsSync(x.path)}));
 }
 function queueRecentByIndex(index) {
-  if (!/^\\d{1,2}$/.test(String(index))) return false;
+  if (!/^[0-9]{1,2}$/.test(String(index))) return false;
   const item=recentFiles[Number(index)];
   return !!item && fs.existsSync(item.path) && queueDeckcraftFile(item.path);
 }

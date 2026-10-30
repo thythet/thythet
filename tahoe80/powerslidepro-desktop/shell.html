@@ -247,7 +247,7 @@ window.addEventListener('message',async e=>{
      else host?.windowAction(data.command);
    }
  }else if(data.type==='tahoe-deckcraft-cloud' && data.action==='desktopOpen'){
-   const success=await host?.openRecent?.(String(data.id||''));
+   const success=await host?.openRecent?.(String(data.name||''));
    if(!success)toast('Recent file not found');
    return;
  }else if(data.type==='tahoe-deckcraft-cloud'){
