@@ -122,7 +122,7 @@ jobs:
           if (-not $exe -or $exe.Length -lt 1000000) { throw 'Windows installer missing or too small' }
           if (-not (Test-Path 'dist/latest.yml')) { throw 'Windows auto-update manifest missing' }
           $manifest=Get-Content -Raw 'dist/latest.yml'
-          if ($manifest -notmatch 'version: 0\.1\.13' -or $manifest -notmatch 'sha512:') { throw 'Windows updater manifest invalid' }
+          if ($manifest -notmatch 'version: 0\.1\.16' -or $manifest -notmatch 'sha512:') { throw 'Windows updater manifest invalid' }
           $sig=Get-AuthenticodeSignature $exe.FullName
           Write-Host "Authenticode signature: $($sig.Status)"
           if ($sig.Status -ne 'Valid') { Write-Warning 'Unsigned beta; Windows SmartScreen may show a warning.' }
