@@ -250,6 +250,10 @@ window.addEventListener('message',async e=>{
    const success=await host?.openRecent?.(String(data.name||''));
    if(!success)toast('Recent file not found');
    return;
+ }else if(data.type==='tahoe-deckcraft-cloud' && data.action==='desktopReveal'){
+   const success=await host?.revealRecent?.(String(data.name||''));
+   if(!success)toast('File location unavailable');
+   return;
  }else if(data.type==='tahoe-deckcraft-cloud'){
    if(data.action==='saveIntent'){
      if(activeExport){toast('Finish the current export first');return;}

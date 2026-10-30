@@ -51,12 +51,26 @@ function rememberRecentFile(filename) {
   if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('pspro:recent-updated');
 }
 function recentPublicList() {
-  return recentFiles.map((x,i)=>({id:String(i),name:x.name,openedAt:x.openedAt,available:fs.existsSync(x.path)}));
+  return recentFiles.map((x,i)=>{
+    const openedAtMs=Date.parse(x.openedAt);
+    return {id:String(i),name:x.name,openedAt:x.openedAt,
+      openedAtMs:Number.isFinite(openedAtMs)?openedAtMs:0,available:fs.existsSync(x.path)};
+  });
 }
 function queueRecentByIndex(index) {
   if (!/^[0-9]{1,2}$/.test(String(index))) return false;
   const item=recentFiles[Number(index)];
   return !!item && fs.existsSync(item.path) && queueDeckcraftFile(item.path);
+}
+function revealRecentByIndex(index) {
+  if (!/^[0-9]{1,2}$/.test(String(index))) return false;
+  const item=recentFiles[Number(index)];
+  if (!item) return false;
+  try {
+    if (!fs.statSync(item.path).isFile()) return false;
+    shell.showItemInFolder(item.path); // Finder on macOS, File Explorer on Windows
+    return true;
+  } catch { return false; }
 }
 function recentMenuItems() {
   const existing = recentFiles.filter(x => { try { return fs.statSync(x.path).isFile(); } catch { return false; } });
@@ -393,6 +407,10 @@ if (ownsInstance) app.whenReady().then(async () => {
   ipcMain.handle('pspro:recent-open', (event,id) => {
     if (!mainWindow || event.sender!==mainWindow.webContents) return false;
     return queueRecentByIndex(id);
+  });
+  ipcMain.handle('pspro:recent-reveal', (event,id) => {
+    if (!mainWindow || event.sender!==mainWindow.webContents) return false;
+    return revealRecentByIndex(id);
   });
   ipcMain.handle('pspro:next-open-file', async (event) => {
     if (!mainWindow || event.sender !== mainWindow.webContents) return { error: 'Invalid window' };

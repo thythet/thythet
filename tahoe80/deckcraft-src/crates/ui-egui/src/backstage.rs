@@ -643,7 +643,9 @@ fn presentation_rows(app: &SlideApp, ctx: &egui::Context, query: &str, source: u
                     id:format!("desktop-recent:{}",id),name:name.into(),
                     detail:if available {"On this computer".into()}else{"File not found".into()},
                     source:"This device", format:"DECKCRAFT".into(),
-                    when:"Recently opened".into(),stamp:0,local:false,
+                    when:"Recently opened".into(),
+                    stamp:f.get("openedAtMs").and_then(Value::as_u64).unwrap_or(0),
+                    local:false,
                 });
             }
         }
@@ -759,6 +761,25 @@ fn recent_list(app: &mut SlideApp, ui: &mut Ui, bs: &mut Backstage, limit: usize
                         pos2(rect.left() + width * 0.73, rect.center().y),
                         Align2::LEFT_CENTER, e.source, theme::font(12.0), t.text_dim);
                 }
+                let mut reveal_clicked=false;
+                if e.id.starts_with("desktop-recent:") {
+                    let reveal=ui.allocate_rect(Rect::from_min_max(
+                        pos2(rect.right()-37.0,rect.top()+9.0),
+                        pos2(rect.right()-5.0,rect.bottom()-9.0)),Sense::click());
+                    reveal.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button,true,"Open File Location"));
+                    if reveal.hovered() {
+                        ui.painter().rect_filled(reveal.rect,CornerRadius::same(6),t.selected);
+                    }
+                    icons::paint(ui.painter(),Rect::from_center_size(reveal.rect.center(),vec2(17.0,17.0)),
+                        Icon::OpenFolder,t.accent,false);
+                    reveal_clicked=reveal.on_hover_text("Open File Location in Finder / File Explorer").clicked();
+                    if reveal_clicked {
+                        if let Some(id)=e.id.strip_prefix("desktop-recent:") {
+                            ui.ctx().data_mut(|d| d.insert_temp(
+                                egui::Id::new("tahoe-deckcraft-cloud-file-action"),format!("desktopReveal:{}",id)));
+                        }
+                    }
+                }
                 if e.local {
                     let dismiss = ui.allocate_rect(Rect::from_min_max(
                         pos2(rect.right() - 35.0, rect.top() + 10.0),
@@ -773,7 +794,7 @@ fn recent_list(app: &mut SlideApp, ui: &mut Ui, bs: &mut Backstage, limit: usize
                         app.forget_recent(&e.id);
                     }
                 }
-                if click.on_hover_text(if e.local { e.id.clone() } else { format!("Open {}", e.name) }).clicked() {
+                if click.on_hover_text(if e.local { e.id.clone() } else { format!("Open {}", e.name) }).clicked() && !reveal_clicked {
                     if e.local {
                         app.open_path_in_background(&e.id);
                     } else {

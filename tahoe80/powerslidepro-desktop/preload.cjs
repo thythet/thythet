@@ -18,6 +18,7 @@ contextBridge.exposeInMainWorld('PowerSlideDesktop', Object.freeze({
   setUIFont: family => ipcRenderer.invoke('pspro:ui-font-set', family),
   recentList: () => ipcRenderer.invoke('pspro:recent-list'),
   openRecent: id => ipcRenderer.invoke('pspro:recent-open', id),
+  revealRecent: id => ipcRenderer.invoke('pspro:recent-reveal', id),
   onRecentUpdated: callback => {
     if (typeof callback !== 'function') return () => {};
     const listener=()=>callback();ipcRenderer.on('pspro:recent-updated',listener);
