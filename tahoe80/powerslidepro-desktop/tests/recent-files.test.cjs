@@ -30,7 +30,7 @@ test('Recent list publishes the last-opened timestamp for newest-first sorting',
     [
       {path:'/demo/new.deckcraft',name:'new.deckcraft',openedAt:'2026-10-30T16:30:00.000Z'},
       {path:'/demo/old.deckcraft',name:'old.deckcraft',openedAt:'2026-10-29T16:30:00.000Z'}
-    ],{existsSync:()=>true});
+    ],{existsSync:()=>true})();
   assert.ok(list[0].openedAtMs > list[1].openedAtMs);
   assert.deepEqual(list.map(x=>x.name),['new.deckcraft','old.deckcraft']);
 });
