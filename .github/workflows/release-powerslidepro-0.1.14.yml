@@ -1,0 +1,137 @@
+name: Release PowerSlidePro 0.1.14 (Windows and macOS)
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ['Build Tahoe80 DeckCraft Web']
+    types: [completed]
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/release-powerslidepro-0.1.14.yml'
+permissions:
+  contents: read
+concurrency:
+  group: powerslidepro-release-0-1-14
+  cancel-in-progress: false
+jobs:
+  stage:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            tahoe80/powerslidepro-desktop
+            tahoe80/apps/deckcraft-web
+            tahoe80/assets/fonts
+            tahoe80/data/books
+            tahoe80/assets/js/powerslidepro-present-v1.js
+            tahoe80/assets/powerslidepro-audience.html
+            tahoe80/assets/powerslidepro-logo.png
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install Pillow==11.3.0
+      - name: Validate and stage offline editor
+        working-directory: tahoe80/powerslidepro-desktop
+        run: |
+          node -e "if(require('./package.json').version!=='0.1.14') process.exit(1)"
+          npm run check
+      - name: Validate recent files bridge
+        working-directory: tahoe80/powerslidepro-desktop
+        run: |
+          grep -q "pspro:recent-list" main.cjs
+          grep -q "tahoe-desktop-recent-list" shell.html
+          grep -q "recentList:" preload.cjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: powerslidepro-014-source
+          path: tahoe80/powerslidepro-desktop/
+          if-no-files-found: error
+          retention-days: 2
+  package:
+    needs: stage
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: win
+          - os: macos-latest
+            target: mac
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: powerslidepro-014-source
+          path: powerslidepro-desktop
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate desktop scripts
+        working-directory: powerslidepro-desktop
+        run: |
+          node --check main.cjs
+          node --check preload.cjs
+      - name: Install dependencies
+        working-directory: powerslidepro-desktop
+        run: npm install --no-audit --no-fund
+      - name: Build installers
+        working-directory: powerslidepro-desktop
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+          WIN_CSC_LINK: ${{ secrets.POWERSLIDEPRO_WIN_CSC_LINK }}
+          WIN_CSC_KEY_PASSWORD: ${{ secrets.POWERSLIDEPRO_WIN_CSC_KEY_PASSWORD }}
+        run: npm run dist:${{ matrix.target }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: powerslidepro-014-${{ matrix.target }}
+          path: |
+            powerslidepro-desktop/dist/*.exe
+            powerslidepro-desktop/dist/*.dmg
+            powerslidepro-desktop/dist/latest.yml
+            powerslidepro-desktop/dist/*.blockmap
+          if-no-files-found: error
+          retention-days: 30
+  release:
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: powerslidepro-014-*
+          merge-multiple: true
+          path: release-assets
+      - name: Check both platforms and generate checksums
+        run: |
+          set -euo pipefail
+          test -s release-assets/PowerSlidePro-0.1.14-win-x64.exe
+          test -s release-assets/PowerSlidePro-0.1.14-mac-arm64.dmg
+          test -s release-assets/PowerSlidePro-0.1.14-mac-x64.dmg
+          test -s release-assets/latest.yml
+          grep -q 'version: 0.1.14' release-assets/latest.yml
+          (cd release-assets && sha256sum *.exe *.dmg > SHA256SUMS.txt)
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: powerslidepro-desktop-v0.1.14
+          target_commitish: main
+          name: PowerSlidePro Desktop v0.1.14 (Windows + macOS beta)
+          prerelease: true
+          fail_on_unmatched_files: true
+          body: |
+            PowerSlidePro v0.1.14: persistent local Recent Files in File > Open Recent and Home > My Presentations.
+            Windows x64 and macOS Intel/Apple Silicon installers. Existing presentation files and settings are preserved.
+            Cloudinary desktop integration remains under development.
+          files: |
+            release-assets/*.exe
+            release-assets/*.dmg
+            release-assets/latest.yml
+            release-assets/*.blockmap
+            release-assets/SHA256SUMS.txt
