@@ -1,7 +1,7 @@
 /* Tahoe80: thechat-style Get Software library, verified GitHub release links only. */
 (()=>{
 'use strict';
-const RELEASE='powerslidepro-desktop-v0.1.15';
+const RELEASE='powerslidepro-desktop-v0.1.16';
 const ENDPOINT='https://api.github.com/repos/thythet/thythet/releases/tags/'+RELEASE;
 const btn=document.createElement('button');
 btn.id='pspro-desktop-get';btn.type='button';btn.setAttribute('aria-haspopup','dialog');
@@ -57,10 +57,10 @@ btn.addEventListener('click',()=>{
    el('div','sw-app-sub','Offline presentations · Khmer Bible · 66 books'));
  app.append(logo,info,el('span','sw-beta','BETA'));
  const heading=el('div','sw-platform-heading','Available for');
- const version=RELEASE.match(/v(\d+\.\d+\.\d+)$/)?.[1]||'0.1.15';
- const win=row('ri-windows-fill','Windows 10 / 11','64-bit · EXE · '+version,/PowerSlidePro-0\.1\.15-win-x64\.exe$/i);
- const arm=row('ri-apple-fill','macOS · Apple Silicon','M-series Mac · DMG · '+version,/PowerSlidePro-0\.1\.15-mac-arm64\.dmg$/i);
- const intel=row('ri-apple-fill','macOS · Intel','Intel Mac · DMG · '+version,/PowerSlidePro-0\.1\.15-mac-x64\.dmg$/i);
+ const version=RELEASE.match(/v(\d+\.\d+\.\d+)$/)?.[1]||'0.1.16';
+ const win=row('ri-windows-fill','Windows 10 / 11','64-bit · EXE · '+version,/PowerSlidePro-0\.1\.16-win-x64\.exe$/i);
+ const arm=row('ri-apple-fill','macOS · Apple Silicon','M-series Mac · DMG · '+version,/PowerSlidePro-0\.1\.16-mac-arm64\.dmg$/i);
+ const intel=row('ri-apple-fill','macOS · Intel','Intel Mac · DMG · '+version,/PowerSlidePro-0\.1\.16-mac-x64\.dmg$/i);
  const footer=el('footer','sw-footer');
  footer.append(el('p',null,'Built and Prepared by Thet'));
  const links=el('div','sw-links');
