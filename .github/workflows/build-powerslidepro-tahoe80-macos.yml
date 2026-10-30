@@ -67,7 +67,7 @@ jobs:
           assert.equal(p.build.mac.fileAssociations.find(x => x.ext === 'deckcraft')?.icon, 'deckcraft.icns');
           assert.equal(p.build.mac.fileAssociations.find(x => x.ext === 'deckcraft')?.role, 'Editor');
           assert.ok(fs.statSync('build/deckcraft.icns').size > 1024);
-          assert.equal(require('./package.json').version, '0.1.13');
+          assert.equal(require('./package.json').version, '0.1.14');
           assert.ok(require('./package.json').build.files.includes('export-formats.cjs'));
           assert.ok(fs.statSync('payload/tahoe80/apps/deckcraft-web/index.html').size > 0);
           const wasm=fs.readdirSync('payload/tahoe80/apps/deckcraft-web').find(x=>x.endsWith('_bg.wasm'));
