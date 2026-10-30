@@ -54,12 +54,12 @@ jobs:
       - name: Validate bundled WASM, 66 Bible books, Khmer OS fonts and JavaScript
         working-directory: tahoe80/powerslidepro-desktop
         run: npm run check
-      - name: Check Windows 0.1.14 installation and font preference config
+      - name: Check Windows 0.1.16 installation and font preference config
         working-directory: tahoe80/powerslidepro-desktop
         run: |
           node - <<'JS'
           const assert=require('node:assert/strict'),fs=require('node:fs'),p=require('./package.json');
-          assert.equal(p.version,'0.1.14');
+          assert.equal(p.version,'0.1.16');
           assert.equal(p.build.nsis.perMachine,true);
           assert.equal(p.build.win.fileAssociations.find(x=>x.ext==='deckcraft')?.icon,'deckcraft-orange-2026.ico');
           assert.equal(p.build.nsis.include,'build/installer.nsh','shell icon refresh installer hook');
@@ -118,7 +118,7 @@ jobs:
         working-directory: powerslidepro-desktop
         run: |
           $ErrorActionPreference = 'Stop'
-          $exe = Get-ChildItem 'dist/PowerSlidePro-0.1.14-win-x64.exe' -ErrorAction Stop | Select-Object -First 1
+          $exe = Get-ChildItem 'dist/PowerSlidePro-0.1.16-win-x64.exe' -ErrorAction Stop | Select-Object -First 1
           if (-not $exe -or $exe.Length -lt 1000000) { throw 'Windows installer missing or too small' }
           if (-not (Test-Path 'dist/latest.yml')) { throw 'Windows auto-update manifest missing' }
           $manifest=Get-Content -Raw 'dist/latest.yml'
@@ -133,7 +133,7 @@ jobs:
         with:
           name: powerslidepro-tahoe80-windows-installer
           path: |
-            powerslidepro-desktop/dist/PowerSlidePro-0.1.14-win-x64.exe
+            powerslidepro-desktop/dist/PowerSlidePro-0.1.16-win-x64.exe
             powerslidepro-desktop/dist/latest.yml
             powerslidepro-desktop/dist/SHA256SUMS-Windows.txt
           if-no-files-found: error
