@@ -971,10 +971,13 @@ fn cloud_files(ui: &mut Ui, bs: &mut Backstage, t: &Tokens) {
     let compact = width < 860.0;
     let row_h = if compact { 88.0 } else { 58.0 };
     const LEFT_PAD: f32 = 48.0;
-    const ACTIONS_W: f32 = 238.0;
+    // Smaller screens keep the three actions visible without spilling
+    // outside the file-list viewport.
+    let narrow = width < 420.0;
+    let actions_w: f32 = if narrow { 196.0 } else { 238.0 };
     const RIGHT_PAD: f32 = 12.0;
     let (header, _) = ui.allocate_exact_size(vec2(width, 32.0), Sense::hover());
-    let action_left = header.right() - RIGHT_PAD - ACTIONS_W;
+    let action_left = header.right() - RIGHT_PAD - actions_w;
     let storage_left = action_left - 134.0;
     let date_left = storage_left - 103.0;
     ui.painter().rect_filled(header, CornerRadius::same(4), t.card);
@@ -1031,7 +1034,7 @@ fn cloud_files(ui: &mut Ui, bs: &mut Backstage, t: &Tokens) {
             Icon::Slide, t.accent, false);
 
         // Clip long Khmer/English filenames to their own column.
-        let row_actions = rect.right() - RIGHT_PAD - ACTIONS_W;
+        let row_actions = rect.right() - RIGHT_PAD - actions_w;
         let row_storage = row_actions - 134.0;
         let row_date = row_storage - 103.0;
         let text_right = if compact { rect.right() - 12.0 } else { row_date - 12.0 };
@@ -1065,7 +1068,12 @@ fn cloud_files(ui: &mut Ui, bs: &mut Backstage, t: &Tokens) {
         // Buttons occupy the same right-aligned column in every row.
         let buttons_y = if compact { rect.bottom() - 32.0 } else { rect.center().y - 13.0 };
         let mut x = row_actions;
-        for (label, action, w) in [("Open", "open", 60.0), ("Download", "download", 92.0), ("Rename", "rename", 70.0)] {
+        let labels: [(&str, &str, f32); 3] = if narrow {
+            [("Open", "open", 50.0), ("Download", "download", 82.0), ("Rename", "rename", 56.0)]
+        } else {
+            [("Open", "open", 60.0), ("Download", "download", 92.0), ("Rename", "rename", 70.0)]
+        };
+        for (label, action, w) in labels {
             let hit = Rect::from_min_size(pos2(x, buttons_y), vec2(w, 26.0));
             if ui.put(hit, egui::Button::new(RichText::new(label).size(11.5)).min_size(vec2(w, 26.0)))
                 .on_hover_text(format!("{label} {name}")).clicked()
@@ -1073,7 +1081,7 @@ fn cloud_files(ui: &mut Ui, bs: &mut Backstage, t: &Tokens) {
                 ui.ctx().data_mut(|d| d.insert_temp(
                     egui::Id::new("tahoe-deckcraft-cloud-file-action"), format!("{action}:{id}")));
             }
-            x += w + 8.0;
+            x += w + if narrow { 4.0 } else { 8.0 };
         }
         shown += 1;
     }
