@@ -965,23 +965,32 @@ fn cloud_files(ui: &mut Ui, bs: &mut Backstage, t: &Tokens) {
         dim(ui, "Sign in to Tahoe to see your Cloudinary files, then click Refresh.");
         return;
     };
-    // Mirror the Recent presentation rows: filename and metadata stay aligned,
-    // while Open / Download / Rename retain their existing Cloudinary bridge actions.
+    // Fixed file-table columns. Every header, row, action and divider uses the
+    // same geometry so columns remain aligned when the Tahoe window resizes.
     let width = ui.available_width().min(CONTENT_W).max(240.0);
-    let compact = width < 900.0;
-    let row_h = if compact { 91.0 } else { 62.0 };
-    let (header, _) = ui.allocate_exact_size(vec2(width, 27.0), Sense::hover());
-    ui.painter().rect_filled(header, CornerRadius::same(5), t.card);
-    ui.painter().text(pos2(header.left() + 47.0, header.center().y),
+    let compact = width < 860.0;
+    let row_h = if compact { 88.0 } else { 58.0 };
+    const LEFT_PAD: f32 = 48.0;
+    const ACTIONS_W: f32 = 238.0;
+    const RIGHT_PAD: f32 = 12.0;
+    let (header, _) = ui.allocate_exact_size(vec2(width, 32.0), Sense::hover());
+    let action_left = header.right() - RIGHT_PAD - ACTIONS_W;
+    let storage_left = action_left - 134.0;
+    let date_left = storage_left - 103.0;
+    ui.painter().rect_filled(header, CornerRadius::same(4), t.card);
+    ui.painter().text(pos2(header.left() + LEFT_PAD, header.center().y),
         Align2::LEFT_CENTER, "NAME", theme::font(11.0), t.text_dim);
     if !compact {
-        ui.painter().text(pos2(header.left() + width * 0.51, header.center().y),
+        ui.painter().text(pos2(date_left + 2.0, header.center().y),
             Align2::LEFT_CENTER, "MODIFIED", theme::font(11.0), t.text_dim);
-        ui.painter().text(pos2(header.right() - 394.0, header.center().y),
+        ui.painter().text(pos2(storage_left + 2.0, header.center().y),
             Align2::LEFT_CENTER, "STORAGE", theme::font(11.0), t.text_dim);
+        ui.painter().text(pos2(action_left, header.center().y),
+            Align2::LEFT_CENTER, "ACTIONS", theme::font(11.0), t.text_dim);
     }
-    ui.painter().text(pos2(header.right() - 238.0, header.center().y),
-        Align2::LEFT_CENTER, "ACTIONS", theme::font(11.0), t.text_dim);
+    ui.painter().line_segment(
+        [pos2(header.left(), header.bottom() - 0.5), pos2(header.right(), header.bottom() - 0.5)],
+        Stroke::new(1.0, t.separator));
 
     let mut shown = 0;
     let query = bs.query.trim().to_lowercase();
@@ -1003,27 +1012,39 @@ fn cloud_files(ui: &mut Ui, bs: &mut Backstage, t: &Tokens) {
             format!("{} · {}", ext.to_uppercase(), format_bytes(bytes))
         };
         let (rect, hover) = ui.allocate_exact_size(vec2(width, row_h), Sense::hover());
+        // Flat, edge-to-edge backgrounds and single-pixel dividers avoid the
+        // broken/doubled lines produced by rounded, individually painted rows.
         if shown % 2 == 0 {
-            ui.painter().rect_filled(rect, CornerRadius::same(5), t.card.gamma_multiply(0.30));
+            ui.painter().rect_filled(rect, CornerRadius::ZERO, t.card.gamma_multiply(0.23));
         }
         if hover.hovered() {
-            ui.painter().rect_filled(rect, CornerRadius::same(6), t.hover);
+            ui.painter().rect_filled(rect, CornerRadius::ZERO, t.hover);
         }
-        ui.painter().line_segment([rect.left_bottom(), rect.right_bottom()], Stroke::new(1.0, t.separator));
+        ui.painter().line_segment(
+            [pos2(rect.left(), rect.bottom() - 0.5), pos2(rect.right(), rect.bottom() - 0.5)],
+            Stroke::new(1.0, t.separator));
+
         icons::paint(ui.painter(),
-            Rect::from_center_size(pos2(rect.left() + 22.0, rect.top() + 29.0), vec2(25.0, 25.0)),
+            Rect::from_center_size(
+                pos2(rect.left() + 22.0, if compact { rect.top() + 25.0 } else { rect.center().y }),
+                vec2(25.0, 25.0)),
             Icon::Slide, t.accent, false);
 
-        let text_right = if compact { rect.right() - 12.0 } else { rect.left() + width * 0.48 };
-        let clip = Rect::from_min_max(pos2(rect.left() + 45.0, rect.top()), pos2(text_right, rect.top() + 53.0));
+        // Clip long Khmer/English filenames to their own column.
+        let row_actions = rect.right() - RIGHT_PAD - ACTIONS_W;
+        let row_storage = row_actions - 134.0;
+        let row_date = row_storage - 103.0;
+        let text_right = if compact { rect.right() - 12.0 } else { row_date - 12.0 };
+        let clip = Rect::from_min_max(pos2(rect.left() + 45.0, rect.top() + 3.0),
+            pos2(text_right, rect.top() + 52.0));
         let paint = ui.painter().with_clip_rect(clip);
-        paint.text(pos2(rect.left() + 47.0, rect.top() + 20.0),
+        paint.text(pos2(rect.left() + LEFT_PAD, rect.top() + 20.0),
             Align2::LEFT_CENTER, name, theme::font(13.5), t.text);
-        paint.text(pos2(rect.left() + 47.0, rect.top() + 40.0),
+        paint.text(pos2(rect.left() + LEFT_PAD, rect.top() + 40.0),
             Align2::LEFT_CENTER, &detail, theme::font(11.0), t.text_dim);
         let name_click = ui.allocate_rect(Rect::from_min_max(
             pos2(rect.left() + 44.0, rect.top() + 4.0),
-            pos2(text_right, rect.top() + 53.0)), Sense::click());
+            pos2(text_right, rect.top() + 51.0)), Sense::click());
         if name_click.on_hover_text(format!("Open {name}")).clicked() {
             ui.ctx().data_mut(|d| d.insert_temp(
                 egui::Id::new("tahoe-deckcraft-cloud-file-action"), format!("open:{id}")));
@@ -1031,20 +1052,19 @@ fn cloud_files(ui: &mut Ui, bs: &mut Backstage, t: &Tokens) {
         if !compact {
             let date = modified.split('T').next().unwrap_or(modified);
             let date_clip = Rect::from_min_max(
-                pos2(rect.left() + width * 0.51, rect.top()),
-                pos2(rect.right() - 402.0, rect.bottom()));
+                pos2(row_date + 2.0, rect.top()), pos2(row_storage - 8.0, rect.bottom()));
             ui.painter().with_clip_rect(date_clip).text(
-                pos2(rect.left() + width * 0.51, rect.center().y),
+                pos2(row_date + 2.0, rect.center().y),
                 Align2::LEFT_CENTER, date, theme::font(11.5), t.text_dim);
             let storage_clip = Rect::from_min_max(
-                pos2(rect.right() - 394.0, rect.top()), pos2(rect.right() - 254.0, rect.bottom()));
+                pos2(row_storage + 2.0, rect.top()), pos2(row_actions - 8.0, rect.bottom()));
             ui.painter().with_clip_rect(storage_clip).text(
-                pos2(rect.right() - 392.0, rect.center().y),
+                pos2(row_storage + 2.0, rect.center().y),
                 Align2::LEFT_CENTER, cloud, theme::font(11.5), t.text_dim);
         }
-
-        let buttons_y = if compact { rect.bottom() - 34.0 } else { rect.center().y - 13.0 };
-        let mut x = rect.right() - 238.0;
+        // Buttons occupy the same right-aligned column in every row.
+        let buttons_y = if compact { rect.bottom() - 32.0 } else { rect.center().y - 13.0 };
+        let mut x = row_actions;
         for (label, action, w) in [("Open", "open", 60.0), ("Download", "download", 92.0), ("Rename", "rename", 70.0)] {
             let hit = Rect::from_min_size(pos2(x, buttons_y), vec2(w, 26.0));
             if ui.put(hit, egui::Button::new(RichText::new(label).size(11.5)).min_size(vec2(w, 26.0)))
