@@ -5458,20 +5458,30 @@
         <button class="policy-link-btn" type="button" data-policy-open="terms">Terms / App Policy</button>
       </div>
       <div class="auth-loading-text" id="authCopy">Checking your secure Google session...</div>
+      <button class="policy-link-btn" type="button" id="startupRetryBtn" style="display:none;min-height:40px;padding:8px 18px;margin-top:4px">Retry connection</button>
     </div>
   </section>
 
   <script>
+    // This watchdog is intentionally outside the Firebase module: it also
+    // works when mobile Chrome cannot download or initialize Firebase.
+    window.__sermonStartupRecovered = false;
     window.__sermonStartupFallback = setTimeout(function(){
       var gate = document.getElementById('authGate');
       if(!gate || !gate.classList.contains('checking')) return;
+      window.__sermonStartupRecovered = true;
       gate.classList.remove('checking', 'logged-in-preload');
       document.body.classList.add('auth-locked');
       var copy = document.getElementById('authCopy');
-      if(copy) copy.textContent = 'Connection is slow. Please sign in or refresh.';
+      if(copy) copy.textContent = 'Connection is slow. Check your internet or retry.';
       var art = document.getElementById('welcomeImageBtn');
       if(art) art.classList.remove('loading');
-    }, 14000);
+      var retry = document.getElementById('startupRetryBtn');
+      if(retry) retry.style.display = 'inline-flex';
+    }, 9000);
+    document.getElementById('startupRetryBtn')?.addEventListener('click', function(){
+      window.location.reload();
+    });
   </script>
   <script type="module">
     /*
@@ -5682,16 +5692,18 @@
           authGate.classList.toggle('logged-in-preload', !!user);
           if(user){
             hasConnectedToFirebaseBefore = false;
-            authGate.classList.remove('hidden');
-            authGate.classList.add('checking', 'logged-in-preload');
-            // Mobile networks can be slower; only show empty fallback if feed is still empty after a longer wait.
+            // A valid Firebase session is enough to show the application
+            // shell; remote profile/post queries must not lock the screen.
+            document.body.classList.remove('auth-locked');
+            authGate.classList.add('hidden');
+            authGate.classList.remove('checking', 'logged-in-preload');
+            if(!feed.querySelector('.post[data-post-id]')){
+              feed.innerHTML = '<div class="empty" data-feed-initial-status>Connecting to your posts...</div>';
+            }
             openFallbackTimer = setTimeout(() => {
-              if(runId !== authStateRunId || !authGate.classList.contains('checking')) return;
-              releaseAuthPreload("Still connecting. You can keep using the app while it refreshes.");
-              if(!feed.children.length){
-                feed.innerHTML = `<div class="empty">Still connecting. Please check your connection or reopen the app if posts do not appear.</div>`;
-              }
-            }, 28000);
+              if(runId !== authStateRunId) return;
+              showFeedStartupError('Connecting is taking longer than expected.');
+            }, 14000);
           }
           updateAuthUI();
           if(user){
@@ -5702,23 +5714,23 @@
             watchNotifications();
 
             const postsPromise = loadFirebasePosts().then(() => {
-              // Show the app as soon as posts are rendered so mobile users are not stuck on preload.
               if(runId === authStateRunId) releaseAuthPreload();
             }).catch(error => {
               console.warn("Initial posts load failed:", error);
+              if(runId === authStateRunId) showFeedStartupError("Could not load posts. Check your connection.");
             });
 
-            await Promise.allSettled([
-              postsPromise,
-              loadAudioStorageBases().catch(error => console.warn("Audio storage load skipped:", error)),
-              loadSocialData().catch(error => console.warn("Social data load skipped:", error))
-            ]);
+            // Supplemental social data must not delay the feed or live updates.
+            loadAudioStorageBases().catch(error => console.warn("Audio storage load skipped:", error));
+            loadSocialData().catch(error => console.warn("Social data load skipped:", error));
+            await postsPromise;
             if(runId !== authStateRunId) return;
-
-            if(isAdmin()){
-              loadAdminRequests().catch(error => console.warn("Admin requests load skipped:", error));
+            try{
+              watchRealtimeData();
+            }catch(error){
+              console.warn("Could not start realtime data:", error);
             }
-            watchRealtimeData();
+            if(isAdmin()) loadAdminRequests().catch(error => console.warn("Admin requests load skipped:", error));
             releaseAuthPreload();
           }else{
             authGate.classList.remove('logged-in-preload');
@@ -5748,10 +5760,8 @@
         }catch(error){
           console.error("App startup failed:", error);
           if(user){
-            releaseAuthPreload("Connection problem. The app opened, but some data may refresh slowly.");
-            if(!feed.children.length){
-              feed.innerHTML = `<div class="empty">Could not load posts yet. Please check your connection and reopen the app if needed.</div>`;
-            }
+            releaseAuthPreload();
+            showFeedStartupError("Could not finish connecting to your account.");
           }else{
             renderAuthGate();
           }
@@ -5845,6 +5855,27 @@
     const reviewNotifyBtn = document.getElementById('reviewNotifyBtn');
     const notifyBadge = document.getElementById('notifyBadge');
     const reviewBadge = document.getElementById('reviewBadge');
+
+    function showFeedStartupError(message){
+      if(!feed || !currentUser) return;
+      const initial = feed.querySelector('[data-feed-initial-status]');
+      // Never overwrite a feed that successfully rendered real posts.
+      if(!initial && feed.querySelector('.post[data-post-id]')) return;
+      if(!initial && feed.children.length) return;
+      feed.innerHTML = '<div class="empty" data-feed-initial-status>' +
+        escapeHTML(message || "Could not load posts.") +
+        ' <button type="button" class="feed-search-follow" data-retry-feed style="margin:12px auto 0;display:block">Retry loading</button></div>';
+    }
+
+    document.addEventListener('click', event => {
+      if(!event.target.closest('[data-retry-feed]')) return;
+      if(!currentUser) return;
+      feed.innerHTML = '<div class="empty" data-feed-initial-status>Connecting to your posts...</div>';
+      loadFirebasePosts().catch(error => {
+        console.warn("Manual feed retry failed:", error);
+        showFeedStartupError("Could not load posts. Check your connection.");
+      });
+    });
 
     function escapeHTML(str=""){
       return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
@@ -9050,16 +9081,27 @@
     async function ensureUserProfile(user){
       if(!USE_FIREBASE || !user) return;
       const userRef = fb.dbRef(db, `sermonUsers/${user.uid}`);
-      const snap = await fb.get(userRef);
-      const existing = snap.val() || {};
+      let existing = {};
+      let verifiedProfile = false;
+      try{
+        // Slow or offline RTDB requests must not block signed-in users forever.
+        const snap = await Promise.race([
+          fb.get(userRef),
+          new Promise((_,reject) => setTimeout(() => reject(new Error("Profile read timed out")), 7000))
+        ]);
+        existing = snap.val() || {};
+        verifiedProfile = true;
+      }catch(error){
+        console.warn("Profile unavailable; using restricted session until sync:", error);
+      }
       const admin = user.email === ADMIN_EMAIL;
       const profile = {
         uid:user.uid,
         email:user.email || "",
         name:user.displayName || "Church Member",
         photo:user.photoURL || "",
-        role:admin ? "admin" : (existing.role || "viewer"),
-        status:admin ? "approved" : (existing.status || "viewer"),
+        role:admin ? "admin" : (verifiedProfile ? existing.role || "viewer" : "viewer"),
+        status:admin ? "approved" : (verifiedProfile ? existing.status || "viewer" : "viewer"),
         blocked:admin ? false : existing.blocked === true,
         isPro:existing.isPro === true,
         cloudinary:existing.cloudinary || null,
@@ -9068,7 +9110,10 @@
         updatedAt:Date.now(),
         createdAt:existing.createdAt || Date.now()
       };
-      await fb.update(userRef, profile);
+      if(verifiedProfile){
+        // Profile writes should not hold the initial feed screen open.
+        fb.update(userRef, profile).catch(error => console.warn("Profile update deferred:", error));
+      }
       currentProfile = {...profile, forceLogoutAt:Number(existing.forceLogoutAt || 0), sessionStartedAt:Date.now()};
       renderAuthGate();
       updateAuthUI();
@@ -12671,7 +12716,7 @@
       if(event.key === "Escape") exitAppMediaFullscreen();
     });
     updateConnectionState(navigator.onLine !== false, false);
-    renderAuthGate("checking");
+    renderAuthGate(window.__sermonStartupRecovered ? "ready" : "checking");
   </script>
 </body>
 </html>
