@@ -4982,6 +4982,7 @@
                 </select>
               </label>
             </div>
+            <div class="field-help">Source: up to 250 MB. Converts to MP3 before upload. Output must be under 95 MB. Large recordings may require a desktop browser.</div>
             <div class="audio-convert-summary" id="audioConvertSummary" role="status" aria-live="polite"></div>
             <div class="audio-selected" id="audioSelectedText">No storage audio selected.</div>
             <div class="composer-actions">
@@ -5596,7 +5597,8 @@
     let audioUploadBusy = false;
     let audioEncoderPromise = null;
     let audioEncoder = null;
-    const AUDIO_INPUT_MAX_BYTES = 120 * 1024 * 1024;
+    // The source is converted locally first; it is not uploaded raw.
+    const AUDIO_INPUT_MAX_BYTES = 250 * 1024 * 1024;
     const AUDIO_OUTPUT_MAX_BYTES = 95 * 1024 * 1024;
     const COMPOSER_DRAFT_KEY = "sermonComposerDraft";
     const uploadIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"/></svg>`;
@@ -10825,7 +10827,7 @@
         return;
       }
       if(file.size > AUDIO_INPUT_MAX_BYTES){
-        const message = "Audio source exceeds the 120 MB browser conversion limit.";
+        const message = "Audio source is over 250 MB. Choose a file of 250 MB or less.";
         setComposerStatusMessage(message, "error");
         alert(message);
         return;
@@ -10846,12 +10848,21 @@
         if(audioQualitySelect) audioQualitySelect.disabled = true;
         setAudioConvertSummary("");
         const alreadyMp3 = /\.mp3$/i.test(file.name || "") || file.type === "audio/mpeg";
-        setComposerStatusMessage(alreadyMp3 ? "Preparing original MP3 upload..." : "Converting audio locally to high-quality MP3...");
-        // Already-MP3 sources require no conversion and preserve their fidelity.
-        const uploadFile = alreadyMp3 ? file : await convertAudioToMp3(file, selectedBitrate, progressId);
-        const keptOriginalMp3 = alreadyMp3;
+        // Already-small MP3 files keep their existing quality. Large MP3s
+        // must be converted first or Cloudinary will reject the raw source.
+        const needsConversion = !alreadyMp3 || file.size > AUDIO_OUTPUT_MAX_BYTES;
+        setComposerStatusMessage(needsConversion
+          ? "Converting audio to a smaller MP3 before upload..."
+          : "Preparing original MP3 upload...");
+        if(file.size > 120 * 1024 * 1024){
+          setAudioConvertSummary("Large source (" + formatAudioBytes(file.size) +
+            "): conversion happens on this device and may need substantial memory, especially on a phone.");
+        }
+        const uploadFile = needsConversion ? await convertAudioToMp3(file, selectedBitrate, progressId) : file;
+        const keptOriginalMp3 = !needsConversion;
         if(uploadFile.size > AUDIO_OUTPUT_MAX_BYTES) {
-          throw new Error("Converted MP3 is over 95 MB. Choose 128 kbps or split the recording.");
+          throw new Error("Converted MP3 is " + formatAudioBytes(uploadFile.size) +
+            ", over the 95 MB upload limit. Select 128 kbps or split the recording; the 250 MB source itself cannot be uploaded unchanged.");
         }
         const sizeChange = Math.round(100 * (1 - uploadFile.size / file.size));
         const sizeLabel = keptOriginalMp3
