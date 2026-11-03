@@ -10648,9 +10648,11 @@
     // The single-threaded FFmpeg core works on GitHub Pages without server
     // cross-origin-isolation headers. It is fetched only after audio is chosen.
     // Audio bytes stay in this browser until the converted MP3 is uploaded.
-    const AUDIO_FFMPEG_CDN = "https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.15/dist/umd";
+    // Keep UMD wrapper and classic worker together, on the same origin.
+    // Passing classWorkerURL to this UMD build creates a module worker;
+    // importScripts() then fails and its Webpack fallback throws MODULE_NOT_FOUND.
+    const AUDIO_FFMPEG_LOCAL_WRAPPER = "./assets/ffmpeg/ffmpeg.js";
     const AUDIO_FFMPEG_CORE_CDN = "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd";
-    const AUDIO_FFMPEG_BACKUP = "https://unpkg.com/@ffmpeg/ffmpeg@0.12.15/dist/umd";
     const AUDIO_FFMPEG_CORE_BACKUP = "https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd";
 
     function explainAudioFailure(error){
@@ -10725,23 +10727,13 @@
         try{
           setAudioProgressStage(progressId, "Downloading MP3 converter (approximately 32 MB on first use)...", 2);
           if(!window.FFmpegWASM?.FFmpeg){
-            phase = "loading converter JavaScript";
-            try{
-              await loadAudioConverterScript(AUDIO_FFMPEG_CDN + "/ffmpeg.js");
-            }catch(error){
-              console.warn("Primary MP3 wrapper failed, trying backup:", error);
-              await loadAudioConverterScript(AUDIO_FFMPEG_BACKUP + "/ffmpeg.js");
-            }
+            phase = "loading local converter JavaScript";
+            // The wrapper automatically starts ./814.ffmpeg.js as a classic
+            // worker. Do not provide classWorkerURL for the UMD build.
+            await loadAudioConverterScript(AUDIO_FFMPEG_LOCAL_WRAPPER);
           }
           if(!window.FFmpegWASM?.FFmpeg) throw new Error("MP3 converter is unavailable in this browser.");
 
-          phase = "downloading audio worker";
-          setAudioProgressStage(progressId, "Downloading MP3 converter worker...", 3);
-          const workerURL = await fetchAudioConverterBlobURL(
-            AUDIO_FFMPEG_CDN + "/814.ffmpeg.js", "text/javascript",
-            AUDIO_FFMPEG_BACKUP + "/814.ffmpeg.js"
-          );
-          temporaryURLs.push(workerURL);
           phase = "downloading FFmpeg core";
           setAudioProgressStage(progressId, "Downloading MP3 encoding engine...", 5);
           const coreURL = await fetchAudioConverterBlobURL(
@@ -10762,7 +10754,7 @@
           engine = new window.FFmpegWASM.FFmpeg();
           // Broken workers can otherwise leave FFmpeg.load() pending forever.
           await Promise.race([
-            engine.load({classWorkerURL:workerURL, coreURL, wasmURL}),
+            engine.load({coreURL, wasmURL}),
             new Promise((_, reject) => setTimeout(() => reject(
               new Error("The MP3 encoding engine did not start. Try refreshing the page or using a smaller recording.")
             ), 45000))
