@@ -7,7 +7,7 @@
   <title>JESUS LOVEME</title>
   <meta name="description" content="Church sermon image and audio post platform." />
   <meta name="theme-color" content="#081522" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdn.tailwindcss.com https://apis.google.com https://www.googleapis.com https://accounts.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; img-src 'self' https: data: blob:; media-src 'self' https: data: blob:; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net data:; connect-src 'self' https: wss:; frame-src https://accounts.google.com https://*.firebaseapp.com; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob: https://www.gstatic.com https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://apis.google.com https://www.googleapis.com https://accounts.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; img-src 'self' https: data: blob:; media-src 'self' https: data: blob:; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net data:; connect-src 'self' https: wss:; frame-src https://accounts.google.com https://*.firebaseapp.com; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=()" />
   <meta property="og:title" content="JESUS LOVEME" />
@@ -2653,6 +2653,57 @@
     .audio-clear-btn.show{
       display:grid;
     }
+    .audio-convert-bar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      border:1px solid rgba(150,213,255,.2);
+      background:rgba(255,255,255,.065);
+      border-radius:13px;
+      padding:8px 10px;
+    }
+    .audio-convert-bar-title{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      color:rgba(243,250,255,.92);
+      font-size:11px;
+      font-weight:800;
+    }
+    .audio-convert-bar-title i{color:#8bdafa;font-size:16px}
+    .audio-convert-bar label{
+      display:flex;
+      align-items:center;
+      gap:7px;
+      color:rgba(255,255,255,.7);
+      font-size:11px;
+      font-weight:700;
+    }
+    .audio-bitrate-select{
+      min-height:30px;
+      padding:4px 7px;
+      border:1px solid rgba(165,223,255,.22);
+      border-radius:9px;
+      color:white;
+      background:#29485e;
+      font-size:11px;
+      font-weight:800;
+      cursor:pointer;
+    }
+    .audio-bitrate-select:disabled{opacity:.55;cursor:wait}
+    .audio-convert-summary{
+      display:none;
+      color:rgba(238,249,255,.86);
+      font-size:11px;
+      line-height:1.5;
+      padding:0 3px;
+      overflow-wrap:anywhere;
+    }
+    .audio-convert-summary:not(:empty){display:block}
+    .audio-convert-summary.error{color:#ffb4c3}
+    .audio-convert-summary.success{color:#98e9cc}
     .audio-selected{
       margin-top:-6px;
       color:rgba(255,255,255,.66);
@@ -4921,6 +4972,17 @@
             </div>
             <input type="hidden" id="audioUrlInput" />
             <div id="audioLinkRows"></div>
+            <div class="audio-convert-bar">
+              <span class="audio-convert-bar-title"><i class="ri-sound-module-line" aria-hidden="true"></i> Smart MP3 converter</span>
+              <label for="audioBitrateSelect">Quality
+                <select class="audio-bitrate-select" id="audioBitrateSelect" aria-label="MP3 conversion quality">
+                  <option value="128">128 kbps</option>
+                  <option value="160" selected>160 kbps</option>
+                  <option value="192">192 kbps</option>
+                </select>
+              </label>
+            </div>
+            <div class="audio-convert-summary" id="audioConvertSummary" role="status" aria-live="polite"></div>
             <div class="audio-selected" id="audioSelectedText">No storage audio selected.</div>
             <div class="composer-actions">
               <button class="btn danger" type="button" id="clearFormBtn">Clear</button>
@@ -5518,6 +5580,14 @@
     let audioPublicValues = [false];
     let audioStorageBases = [];
     let detectedAudioUrl = "";
+    const AUDIO_BITRATES = [128, 160, 192];
+    let audioBitrate = Number(localStorage.getItem("sermonAudioBitrate")) || 160;
+    if(!AUDIO_BITRATES.includes(audioBitrate)) audioBitrate = 160;
+    let audioUploadBusy = false;
+    let audioEncoderPromise = null;
+    let audioEncoder = null;
+    const AUDIO_INPUT_MAX_BYTES = 120 * 1024 * 1024;
+    const AUDIO_OUTPUT_MAX_BYTES = 95 * 1024 * 1024;
     const COMPOSER_DRAFT_KEY = "sermonComposerDraft";
     const uploadIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"/></svg>`;
     const uploadedCheckSVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125v-9M10.125 2.25h.375a9 9 0 0 1 9 9v.375M10.125 2.25A3.375 3.375 0 0 1 13.5 5.625v1.5c0 .621.504 1.125 1.125 1.125h1.5a3.375 3.375 0 0 1 3.375 3.375M9 15l2.25 2.25L15 12"/></svg>`;
@@ -10529,6 +10599,119 @@
       }
     }
 
+
+    // The single-threaded FFmpeg core works on GitHub Pages without server
+    // cross-origin-isolation headers. It is fetched only after audio is chosen.
+    // Audio bytes stay in this browser until the converted MP3 is uploaded.
+    const AUDIO_FFMPEG_CDN = "https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.15/dist/umd";
+    const AUDIO_FFMPEG_CORE_CDN = "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd";
+
+    function formatAudioBytes(size){
+      const bytes = Math.max(0, Number(size) || 0);
+      return bytes >= 1048576 ? (bytes / 1048576).toFixed(1) + " MB"
+        : (bytes / 1024).toFixed(1) + " KB";
+    }
+
+    function setAudioConvertSummary(message="", state=""){
+      const element = document.getElementById("audioConvertSummary");
+      if(!element) return;
+      element.textContent = message;
+      element.className = "audio-convert-summary" + (state ? " " + state : "");
+    }
+
+    function setAudioProgressStage(id, label, percent){
+      const row = document.getElementById(id);
+      if(row){
+        const stage = row.querySelector(".composer-upload-progress-row-label");
+        if(stage) stage.textContent = label;
+      }
+      setUploadProgress(id, percent);
+    }
+
+    async function fetchAudioConverterBlobURL(url, mime){
+      const response = await fetch(url, {mode:"cors", cache:"force-cache"});
+      if(!response.ok) throw new Error("Could not download the audio converter. Check your connection.");
+      return URL.createObjectURL(new Blob([await response.blob()], {type:mime}));
+    }
+
+    async function loadAudioConverter(progressId){
+      if(audioEncoder) return audioEncoder;
+      if(audioEncoderPromise) return audioEncoderPromise;
+      audioEncoderPromise = (async () => {
+        const temporaryURLs = [];
+        let engine = null;
+        try{
+          setAudioProgressStage(progressId, "Loading MP3 converter (first run downloads ~32 MB)...", 3);
+          if(!window.FFmpegWASM?.FFmpeg){
+            await new Promise((resolve,reject) => {
+              const script = document.createElement("script");
+              script.src = AUDIO_FFMPEG_CDN + "/ffmpeg.js";
+              script.async = true;
+              script.onload = resolve;
+              script.onerror = () => reject(new Error("MP3 converter script could not load."));
+              document.head.appendChild(script);
+            });
+          }
+          if(!window.FFmpegWASM?.FFmpeg) throw new Error("MP3 converter is unavailable in this browser.");
+          const workerURL = await fetchAudioConverterBlobURL(AUDIO_FFMPEG_CDN + "/814.ffmpeg.js", "text/javascript");
+          temporaryURLs.push(workerURL);
+          const coreURL = await fetchAudioConverterBlobURL(AUDIO_FFMPEG_CORE_CDN + "/ffmpeg-core.js", "text/javascript");
+          temporaryURLs.push(coreURL);
+          const wasmURL = await fetchAudioConverterBlobURL(AUDIO_FFMPEG_CORE_CDN + "/ffmpeg-core.wasm", "application/wasm");
+          temporaryURLs.push(wasmURL);
+          engine = new window.FFmpegWASM.FFmpeg();
+          await engine.load({classWorkerURL:workerURL, coreURL, wasmURL});
+          audioEncoder = engine;
+          return engine;
+        }catch(error){
+          try{engine?.terminate()}catch(ignored){}
+          audioEncoder = null;
+          throw error;
+        }finally{
+          // FFmpeg has loaded the core into its worker at this point.
+          // Keeping URLs alive avoids failures in browsers with deferred fetches.
+          if(!audioEncoder) temporaryURLs.forEach(url => URL.revokeObjectURL(url));
+        }
+      })();
+      try{return await audioEncoderPromise;}
+      catch(error){audioEncoderPromise = null;throw error;}
+    }
+
+    async function convertAudioToMp3(file, bitrate, progressId){
+      if(!AUDIO_BITRATES.includes(bitrate)) throw new Error("Unsupported MP3 bitrate.");
+      const ffmpeg = await loadAudioConverter(progressId);
+      const match = String(file.name || "").toLowerCase().match(/\.([a-z0-9]+)$/);
+      const extension = match ? match[1] : "audio";
+      const inputName = "source-audio." + extension;
+      const outputName = "compressed-audio.mp3";
+      const progressListener = ({progress}) => {
+        if(!Number.isFinite(progress)) return;
+        const percent = 8 + Math.min(1, Math.max(0, progress)) * 55;
+        setAudioProgressStage(progressId, "Converting to MP3 • " + bitrate + " kbps...", percent);
+      };
+      ffmpeg.on("progress", progressListener);
+      try{
+        setAudioProgressStage(progressId, "Preparing audio conversion...", 8);
+        await ffmpeg.writeFile(inputName, new Uint8Array(await file.arrayBuffer()));
+        const code = await ffmpeg.exec([
+          "-hide_banner", "-loglevel", "error", "-i", inputName,
+          "-map", "0:a:0", "-vn", "-c:a", "libmp3lame",
+          "-b:a", bitrate + "k", "-id3v2_version", "3", outputName
+        ]);
+        if(code !== 0) throw new Error("Audio could not be encoded to MP3. Please try another file.");
+        const result = await ffmpeg.readFile(outputName);
+        if(!result?.length) throw new Error("The MP3 converter returned an empty file.");
+        const stem = String(file.name || "sermon-audio").replace(/\.[^.]+$/, "")
+          .replace(/[\/\\?%*:|"<>]/g, "_").slice(0, 90) || "sermon-audio";
+        const mp3 = new File([result], stem + ".mp3", {type:"audio/mpeg", lastModified:Date.now()});
+        return mp3;
+      }finally{
+        ffmpeg.off("progress", progressListener);
+        await ffmpeg.deleteFile(inputName).catch(() => {});
+        await ffmpeg.deleteFile(outputName).catch(() => {});
+      }
+    }
+
     async function uploadAudioToCloudinary(file, button, index=0){
       if(!file) return;
       const audioExtOk = /\.(mp3|m4a|aac|wav|ogg|oga|webm)$/i.test(file.name || "");
@@ -10536,10 +10719,10 @@
         setComposerStatusMessage("Please choose an audio file.", "error");
         return;
       }
-      const maxAudioBytes = 55 * 1024 * 1024;
-      if(file.size > maxAudioBytes){
-        setComposerStatusMessage("Audio file must be below 55MB.", "error");
-        alert("Audio file is too large.\n\nPlease choose an audio file below 55MB.");
+      if(file.size > AUDIO_INPUT_MAX_BYTES){
+        const message = "Audio source exceeds the 120 MB browser conversion limit.";
+        setComposerStatusMessage(message, "error");
+        alert(message);
         return;
       }
       const settings = activeCloudinarySettings();
@@ -10548,37 +10731,62 @@
         alert("Please set up your private Cloudinary storage first.\n\nGo to Profile > Storage > Private Cloudinary Storage.");
         return;
       }
-      const progressId = addUploadProgressRow(file.name || `Audio ${index + 1}`);
+      const selectedBitrate = audioBitrate;
+      const progressId = addUploadProgressRow(file.name || ("Audio " + (index + 1)));
+      const audioQualitySelect = document.getElementById("audioBitrateSelect");
       try{
         button?.classList.add("uploading");
         if(button) button.disabled = true;
-        setComposerStatusMessage("Uploading audio...");
+        if(audioQualitySelect) audioQualitySelect.disabled = true;
+        setAudioConvertSummary("");
+        setComposerStatusMessage("Converting audio locally to high-quality MP3...");
+        let uploadFile = await convertAudioToMp3(file, selectedBitrate, progressId);
+        // Re-encoding an existing MP3 may make it larger or reduce fidelity.
+        // Preserve the original MP3 if that happens.
+        const keptOriginalMp3 = /\.mp3$/i.test(file.name || "") && file.size <= uploadFile.size;
+        if(keptOriginalMp3) uploadFile = file;
+        if(uploadFile.size > AUDIO_OUTPUT_MAX_BYTES) {
+          throw new Error("Converted MP3 is over 95 MB. Choose 128 kbps or split the recording.");
+        }
+        const sizeChange = Math.round(100 * (1 - uploadFile.size / file.size));
+        const sizeLabel = keptOriginalMp3
+          ? "Original MP3 is already smaller; kept its quality."
+          : sizeChange > 0 ? sizeChange + "% smaller"
+          : sizeChange < 0 ? Math.abs(sizeChange) + "% larger (MP3 output)" : "same file size";
+        const report = formatAudioBytes(file.size) + " → " + formatAudioBytes(uploadFile.size) +
+          " • " + (keptOriginalMp3 ? "Original MP3" : selectedBitrate + " kbps MP3") + " • " + sizeLabel;
+        setAudioConvertSummary(report);
+        setAudioProgressStage(progressId, "Uploading MP3 to Cloudinary...", 65);
+        setComposerStatusMessage("Uploading compressed MP3 to Cloudinary...");
         const formData = new FormData();
-        formData.append("file", file);
+        formData.append("file", uploadFile, uploadFile.name);
         formData.append("upload_preset", settings.uploadPreset);
-        if(settings.folder) formData.append("folder", `${settings.folder}/audio`);
-        setUploadProgress(progressId, 1);
+        if(settings.folder) formData.append("folder", settings.folder + "/audio");
         const result = await uploadCloudinaryWithProgress(
-          `https://api.cloudinary.com/v1_1/${encodeURIComponent(settings.cloudName)}/auto/upload`,
+          "https://api.cloudinary.com/v1_1/" + encodeURIComponent(settings.cloudName) + "/auto/upload",
           formData,
-          percent => setUploadProgress(progressId, percent)
+          percent => setAudioProgressStage(progressId, "Uploading MP3 to Cloudinary...", 65 + percent * 0.35)
         );
-        setUploadProgress(progressId, 100);
+        setAudioProgressStage(progressId, "MP3 uploaded", 100);
         setAudioLinkAt(index, result.secure_url);
         if(audioFileNameInput) audioFileNameInput.value = result.original_filename || audioFileLabel(result.secure_url);
         updateAudioSelectedText();
         saveComposerDraft();
-        setComposerStatusMessage("Audio uploaded.", "success");
-        hideUploadProgress(progressId, 650);
+        setAudioConvertSummary(report + " • Uploaded", "success");
+        setComposerStatusMessage("MP3 converted and uploaded.", "success");
+        hideUploadProgress(progressId, 900);
       }catch(error){
-        console.error("Cloudinary audio upload failed:", error);
+        console.error("Smart MP3 audio upload failed:", error);
         failUploadProgressRow(progressId, "Failed");
-        hideUploadProgress(progressId, 1800);
-        setComposerStatusMessage(`Audio upload failed. ${error.message || ""}`.trim(), "error");
-        alert("Audio upload failed.\n\n" + (error.message || "Please check Cloudinary upload preset."));
+        hideUploadProgress(progressId, 2500);
+        const message = error?.message || "Please check connection, memory, or Cloudinary settings.";
+        setAudioConvertSummary("Audio upload stopped: " + message, "error");
+        setComposerStatusMessage("MP3 conversion/upload failed. " + message, "error");
+        alert("Audio was not uploaded.\n\n" + message + "\n\nTry a smaller file or use Chrome on a desktop.");
       }finally{
         button?.classList.remove("uploading");
         if(button) button.disabled = false;
+        if(audioQualitySelect) audioQualitySelect.disabled = false;
       }
     }
 
@@ -10615,6 +10823,10 @@
     }
 
     async function uploadAudioFileList(files, startIndex=null){
+      if(audioUploadBusy){
+        setComposerStatusMessage("Finish the current audio conversion before selecting more files.");
+        return;
+      }
       const valid = Array.from(files || []).filter(file => {
         const audioExtOk = /\.(mp3|m4a|aac|wav|ogg|oga|webm)$/i.test(file.name || "");
         return file.type?.startsWith("audio/") || audioExtOk;
@@ -10623,7 +10835,9 @@
         if((files || []).length) setComposerStatusMessage("Please choose audio files.", "error");
         return;
       }
+      audioUploadBusy = true;
       let nextIndex = startIndex;
+      try{
       for(let i = 0; i < valid.length; i++){
         const file = valid[i];
         syncAudioLinkValues();
@@ -10646,6 +10860,9 @@
         const button = document.querySelector(`.audio-picker-row [data-audio-upload-index="${index}"].audio-upload-btn`);
         await uploadAudioToCloudinary(file, button, index);
         nextIndex = null;
+      }
+      }finally{
+        audioUploadBusy = false;
       }
     }
 
@@ -10892,6 +11109,10 @@
 
     async function publishPost(e){
       e.preventDefault();
+      if(audioUploadBusy){
+        setComposerStatusMessage("Wait for audio conversion and Cloudinary upload to finish.", "error");
+        return;
+      }
       const statusEl = document.getElementById('composerStatus');
       const publishBtn = e.target.querySelector('button[type="submit"]');
       const setComposerStatus = (message, type="") => {
@@ -11453,6 +11674,20 @@
         scrollTicking = false;
       });
     }, {passive:true});
+    const audioBitrateSelect = document.getElementById("audioBitrateSelect");
+    if(audioBitrateSelect){
+      audioBitrateSelect.value = String(audioBitrate);
+      audioBitrateSelect.addEventListener("change", () => {
+        const value = Number(audioBitrateSelect.value);
+        if(audioUploadBusy || !AUDIO_BITRATES.includes(value)){
+          audioBitrateSelect.value = String(audioBitrate);
+          return;
+        }
+        audioBitrate = value;
+        localStorage.setItem("sermonAudioBitrate", String(value));
+        setAudioConvertSummary("");
+      });
+    }
     document.getElementById('clearFormBtn').addEventListener('click', resetComposer);
     document.getElementById('composerForm').addEventListener('submit', publishPost);
     document.getElementById('composerForm').addEventListener('input', e => {
