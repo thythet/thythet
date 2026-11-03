@@ -5499,8 +5499,13 @@
     let feedRenderedCount = 0;
     let feedLoadObserver = null;
     let firebaseHasOlderPosts = false;
-    let firebaseOldestPostCreatedAt = null;
+    let firebaseOlderCursor = null;
     let firebaseLoadingOlderPosts = false;
+    let firebasePaginationStarted = false;
+    let firebaseFullFeedLoaded = false;
+    let feedLoadFailed = false;
+    let feedAppendInFlight = false;
+    let feedRenderGeneration = 0;
     const loadedImageURLs = new Set();
     const preloadedImageURLs = new Set();
     const queuedImageURLs = [];
@@ -7832,20 +7837,48 @@
       if(profileBoard.classList.contains('open')) renderProfileBoard();
     }
 
+    // Match Firebase RTDB orderByChild('createdAt') ordering, including equal
+    // timestamps and legacy posts with a missing createdAt value.
+    function comparePostFirebaseOrder(a, b){
+      const av = a?.createdAt ?? null;
+      const bv = b?.createdAt ?? null;
+      const rank = value => value === null ? 0 : typeof value === "boolean" ? 1
+        : typeof value === "number" ? 2 : typeof value === "string" ? 3 : 4;
+      if(rank(av) !== rank(bv)) return rank(bv) - rank(av);
+      if(av !== bv){
+        if(typeof av === "number") return bv - av;
+        return String(av) < String(bv) ? 1 : -1;
+      }
+      const ai = String(a?.id || "");
+      const bi = String(b?.id || "");
+      return ai === bi ? 0 : ai < bi ? 1 : -1;
+    }
+
     function postListFromSnapshotValue(value){
       return Object.entries(value || {})
         .filter(([id,p]) => id !== APP_SETTINGS_POST_KEY && p?.type !== "appSettings")
         .map(([id,p]) => ({id,...p}))
-        .sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+        .sort(comparePostFirebaseOrder);
     }
 
-    function limitedPostsQuery(limit=FIREBASE_POST_PAGE_SIZE, beforeCreatedAt=null){
+    // Cursor must use BOTH the database value and the child key, otherwise
+    // multiple posts with identical timestamps disappear between pages.
+    // Include settings/hidden entries in the cursor because Firebase counts them.
+    function cursorFromPostsSnapshot(value){
+      const entries = Object.entries(value || {})
+        .filter(([,p]) => p && typeof p === "object")
+        .map(([id,p]) => ({id, createdAt:p.createdAt ?? null}))
+        .sort(comparePostFirebaseOrder);
+      const oldest = entries[entries.length - 1];
+      return oldest ? {createdAt:oldest.createdAt, id:oldest.id} : null;
+    }
+
+    function limitedPostsQuery(limit=FIREBASE_POST_PAGE_SIZE, beforeCursor=null){
       const postsRef = fb.dbRef(db, 'sermonPosts');
       if(!fb.query || !fb.orderByChild || !fb.limitToLast) return postsRef;
+      if(beforeCursor && !fb.endBefore) throw new Error("Firebase cursor query is unavailable");
       const constraints = [fb.orderByChild('createdAt')];
-      if(beforeCreatedAt !== null && beforeCreatedAt !== undefined && fb.endBefore){
-        constraints.push(fb.endBefore(Number(beforeCreatedAt) || 0));
-      }
+      if(beforeCursor) constraints.push(fb.endBefore(beforeCursor.createdAt, beforeCursor.id));
       constraints.push(fb.limitToLast(limit));
       return fb.query(postsRef, ...constraints);
     }
@@ -7855,61 +7888,102 @@
       nextPosts.forEach(post => {
         if(post?.id) merged.set(post.id, post);
       });
-      firebasePosts = [...merged.values()].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-      const oldest = firebasePosts[firebasePosts.length - 1];
-      firebaseOldestPostCreatedAt = oldest ? Number(oldest.createdAt || 0) : null;
+      firebasePosts = [...merged.values()].sort(comparePostFirebaseOrder);
     }
 
     async function loadOlderFirebasePosts(){
-      if(!USE_FIREBASE || firebaseLoadingOlderPosts || !firebaseHasOlderPosts || firebaseOldestPostCreatedAt === null) return;
+      if(!USE_FIREBASE || firebaseLoadingOlderPosts || !firebaseHasOlderPosts || !firebaseOlderCursor) return false;
       firebaseLoadingOlderPosts = true;
+      const beforeCursor = firebaseOlderCursor;
       try{
-        const snap = await fb.get(limitedPostsQuery(FIREBASE_POST_PAGE_SIZE, firebaseOldestPostCreatedAt));
-        const olderPosts = postListFromSnapshotValue(snap.val() || {});
-        firebaseHasOlderPosts = olderPosts.length >= FIREBASE_POST_PAGE_SIZE;
-        mergeFirebasePosts(olderPosts);
+        const snap = await fb.get(limitedPostsQuery(FIREBASE_POST_PAGE_SIZE, beforeCursor));
+        const value = snap.val() || {};
+        const nextCursor = cursorFromPostsSnapshot(value);
+        if(nextCursor && nextCursor.id === beforeCursor.id && nextCursor.createdAt === beforeCursor.createdAt){
+          throw new Error("Older posts pagination cursor did not advance");
+        }
+        mergeFirebasePosts(postListFromSnapshotValue(value));
+        firebaseOlderCursor = nextCursor;
+        firebaseHasOlderPosts = Object.keys(value).length >= FIREBASE_POST_PAGE_SIZE && !!nextCursor;
+        firebasePaginationStarted = true;
+        feedLoadFailed = false;
         feedRenderPosts = visiblePosts();
+        return true;
       }catch(error){
-        console.warn("Could not load older posts:", error);
+        console.warn("Paged older-post query failed; retrying full feed:", error);
+        // Older posts must remain accessible even if ordered queries are not
+        // permitted by the deployed Firebase database rules.
+        try{
+          const full = await fb.get(fb.dbRef(db, 'sermonPosts'));
+          firebasePosts = postListFromSnapshotValue(full.val() || {});
+          firebaseOlderCursor = null;
+          firebaseHasOlderPosts = false;
+          firebasePaginationStarted = true;
+          firebaseFullFeedLoaded = true;
+          feedLoadFailed = false;
+          feedRenderPosts = visiblePosts();
+          return true;
+        }catch(fallbackError){
+          console.warn("Could not load older posts, including full-feed fallback:", fallbackError);
+          feedLoadFailed = true;
+          return false;
+        }
       }finally{
         firebaseLoadingOlderPosts = false;
       }
     }
 
-    function applyPostsSnapshot(value){
+    function applyPostsSnapshot(value, fullFeed=false){
       const previousVisiblePosts = visiblePosts();
       if(value && Object.prototype.hasOwnProperty.call(value, APP_SETTINGS_POST_KEY)){
         applyAppSettings(value[APP_SETTINGS_POST_KEY] || {});
       }
-      const nextPosts = postListFromSnapshotValue(value);
-      cleanupInvalidPostsForAdmin(nextPosts);
-      firebaseHasOlderPosts = nextPosts.length >= FIREBASE_POST_PAGE_SIZE;
-      const nextVisiblePosts = visiblePostsFrom(nextPosts);
+      const latestPosts = postListFromSnapshotValue(value);
+      cleanupInvalidPostsForAdmin(latestPosts);
+
+      if(fullFeed){
+        firebasePosts = latestPosts;
+        firebaseOlderCursor = null;
+        firebaseHasOlderPosts = false;
+        firebasePaginationStarted = true;
+        firebaseFullFeedLoaded = true;
+      }else{
+        // A live listener watches only the newest page. Never erase already
+        // fetched older pages when likes, views, or new posts trigger a refresh.
+        const ids = new Set(latestPosts.map(post => post.id));
+        const boundary = latestPosts[latestPosts.length - 1];
+        const olderCached = boundary
+          ? firebasePosts.filter(post => !ids.has(post.id) && comparePostFirebaseOrder(post, boundary) > 0)
+          : [];
+        firebasePosts = [...latestPosts, ...olderCached].sort(comparePostFirebaseOrder);
+        if(!firebasePaginationStarted && !firebaseFullFeedLoaded){
+          firebaseOlderCursor = cursorFromPostsSnapshot(value);
+          firebaseHasOlderPosts = Object.keys(value || {}).length >= FIREBASE_POST_PAGE_SIZE && !!firebaseOlderCursor;
+        }
+      }
+
+      const nextVisiblePosts = visiblePosts();
       const canPatchCounters = postsCanPatchCountersOnly(previousVisiblePosts, nextVisiblePosts)
         && document.querySelectorAll('.post[data-post-id]').length > 0;
-
-      firebasePosts = nextPosts;
-      const oldest = firebasePosts[firebasePosts.length - 1];
-      firebaseOldestPostCreatedAt = oldest ? Number(oldest.createdAt || 0) : null;
       if(canPatchCounters){
         updatePostCounterUI(nextVisiblePosts);
         updatePostMetaUI();
         return;
       }
-
-      renderPostsPreservingAudio(nextVisiblePosts);
+      // Preserve the visible scroll depth when a live snapshot changes.
+      renderPostsPreservingAudio(nextVisiblePosts, Math.max(FEED_INITIAL_RENDER_COUNT, feedRenderedCount));
     }
 
-    function watchPostsSnapshot(ref){
+    function watchPostsSnapshot(ref, fullFeed=false){
       return fb.onValue(ref, snap => {
-        applyPostsSnapshot(snap.val() || {});
+        applyPostsSnapshot(snap.val() || {}, fullFeed);
         renderRoleUI();
         scheduleAdminRealtimeRefresh();
       }, error => {
         console.warn("Could not watch posts:", error);
-        if(ref !== fb.dbRef(db, 'sermonPosts')){
+        if(!fullFeed){
           try{
-            postsUnsubscribe = watchPostsSnapshot(fb.dbRef(db, 'sermonPosts'));
+            postsUnsubscribe = watchPostsSnapshot(fb.dbRef(db, 'sermonPosts'), true);
           }catch(fallbackError){
             console.warn("Could not start fallback posts watcher:", fallbackError);
           }
@@ -9414,7 +9488,10 @@
     }
 
     function feedLoadSentinelHTML(){
-      return `<div class="feed-load-sentinel" data-feed-load-sentinel>Loading more posts</div>`;
+      return '<div class="feed-load-sentinel" data-feed-load-sentinel>' +
+        (feedLoadFailed
+          ? '<span>Could not load older posts.</span> <button class="feed-search-follow" type="button" data-load-more-posts>Retry</button>'
+          : 'Loading more posts') + '</div>';
     }
 
     function setupRenderedPostFeatures(){
@@ -9430,8 +9507,10 @@
       stopFeedLoadObserver();
       const sentinel = feed.querySelector('[data-feed-load-sentinel]');
       if(!sentinel || (feedRenderedCount >= feedRenderPosts.length && !firebaseHasOlderPosts)) return;
-      if(!('IntersectionObserver' in window)){
-        sentinel.innerHTML = `<button class="feed-search-follow" type="button" data-load-more-posts>Load more</button>`;
+      if(feedAppendInFlight) return;
+      if(feedLoadFailed || !('IntersectionObserver' in window)){
+        sentinel.innerHTML = '<button class="feed-search-follow" type="button" data-load-more-posts>' +
+          (feedLoadFailed ? 'Retry loading older posts' : 'Load more') + '</button>';
         return;
       }
       feedLoadObserver = new IntersectionObserver(entries => {
@@ -9441,31 +9520,48 @@
     }
 
     async function appendMoreFeedPosts(){
-      if(feedRenderPosts.length - feedRenderedCount <= FEED_BATCH_RENDER_COUNT && firebaseHasOlderPosts){
-        await loadOlderFirebasePosts();
+      if(feedAppendInFlight) return;
+      feedAppendInFlight = true;
+      stopFeedLoadObserver();
+      const renderGeneration = feedRenderGeneration;
+      try{
+        if(feedRenderPosts.length - feedRenderedCount <= FEED_BATCH_RENDER_COUNT && firebaseHasOlderPosts){
+          await loadOlderFirebasePosts();
+        }
+        // A realtime update may have rebuilt the feed while this request ran.
+        if(renderGeneration !== feedRenderGeneration) return;
+        if(feedRenderedCount >= feedRenderPosts.length){
+          const sentinel = feed.querySelector('[data-feed-load-sentinel]');
+          if(!firebaseHasOlderPosts) sentinel?.remove();
+          else if(sentinel && feedLoadFailed) sentinel.outerHTML = feedLoadSentinelHTML();
+          return;
+        }
+        const sentinel = feed.querySelector('[data-feed-load-sentinel]');
+        if(sentinel) sentinel.remove();
+        const start = feedRenderedCount;
+        const end = Math.min(feedRenderPosts.length, start + FEED_BATCH_RENDER_COUNT);
+        feed.insertAdjacentHTML('beforeend', feedRenderPosts.slice(start, end).map((post,index)=>postHTML(post,start + index)).join(""));
+        feedRenderedCount = end;
+        if(feedRenderedCount < feedRenderPosts.length || firebaseHasOlderPosts) feed.insertAdjacentHTML('beforeend', feedLoadSentinelHTML());
+        setupRenderedPostFeatures();
+      }finally{
+        feedAppendInFlight = false;
+        setupFeedLoadObserver();
       }
-      if(feedRenderedCount >= feedRenderPosts.length){
-        if(!firebaseHasOlderPosts) feed.querySelector('[data-feed-load-sentinel]')?.remove();
-        return;
-      }
-      const sentinel = feed.querySelector('[data-feed-load-sentinel]');
-      if(sentinel) sentinel.remove();
-      const start = feedRenderedCount;
-      const end = Math.min(feedRenderPosts.length, start + FEED_BATCH_RENDER_COUNT);
-      feed.insertAdjacentHTML('beforeend', feedRenderPosts.slice(start, end).map((post,index)=>postHTML(post,start + index)).join(""));
-      feedRenderedCount = end;
-      if(feedRenderedCount < feedRenderPosts.length || firebaseHasOlderPosts) feed.insertAdjacentHTML('beforeend', feedLoadSentinelHTML());
-      setupRenderedPostFeatures();
-      setupFeedLoadObserver();
     }
 
     function renderPosts(posts, initialCount=FEED_INITIAL_RENDER_COUNT){
       exitAppMediaFullscreen();
       stopFeedLoadObserver();
+      feedRenderGeneration++;
       feedRenderPosts = posts;
       feedRenderedCount = 0;
       if(!posts.length){
-        feed.innerHTML = `<div class="empty">${canUpload() ? "No posts yet. Tap + to create the first sermon post." : "No sermon posts yet."}</div>`;
+        feed.innerHTML = '<div class="empty">' + (firebaseHasOlderPosts
+          ? 'Finding older posts...'
+          : (canUpload() ? 'No posts yet. Tap + to create the first sermon post.' : 'No sermon posts yet.')) + '</div>'
+          + (firebaseHasOlderPosts ? feedLoadSentinelHTML() : '');
+        setupFeedLoadObserver();
         return;
       }
       feedRenderedCount = Math.min(posts.length, Math.max(FEED_INITIAL_RENDER_COUNT, Number(initialCount) || 0));
@@ -10035,21 +10131,30 @@
       const sharedPreview = !currentUser && sharedLink;
       if(!currentUser && !sharedLink) return renderAuthGate();
       let snap;
+      let loadedFullFeed = !!sharedLink;
       try{
         snap = await fb.get(sharedLink ? fb.dbRef(db, 'sermonPosts') : limitedPostsQuery(FIREBASE_POST_PAGE_SIZE));
       }catch(error){
         console.warn("Limited post load failed; retrying full feed load.", error);
         snap = await fb.get(fb.dbRef(db, 'sermonPosts'));
+        loadedFullFeed = true;
       }
-      const val = snap.val() || {};
+      let val = snap.val() || {};
       let posts = postListFromSnapshotValue(val);
-      if(!sharedLink && !posts.length){
+      if(!sharedLink && !posts.length && !loadedFullFeed){
         const fallbackSnap = await fb.get(fb.dbRef(db, 'sermonPosts')).catch(() => null);
-        posts = postListFromSnapshotValue(fallbackSnap?.val?.() || {});
+        if(fallbackSnap){
+          val = fallbackSnap.val() || {};
+          posts = postListFromSnapshotValue(val);
+          loadedFullFeed = true;
+        }
       }
       firebasePosts = posts;
-      firebaseHasOlderPosts = !sharedLink && posts.length >= FIREBASE_POST_PAGE_SIZE;
-      firebaseOldestPostCreatedAt = posts.length ? Number(posts[posts.length - 1].createdAt || 0) : null;
+      firebaseFullFeedLoaded = loadedFullFeed;
+      firebasePaginationStarted = loadedFullFeed;
+      firebaseOlderCursor = loadedFullFeed ? null : cursorFromPostsSnapshot(val);
+      firebaseHasOlderPosts = !loadedFullFeed && Object.keys(val).length >= FIREBASE_POST_PAGE_SIZE && !!firebaseOlderCursor;
+      feedLoadFailed = false;
       cleanupInvalidPostsForAdmin(posts);
       const linkedPost = linkedPostFromPosts(posts);
       const visiblePosts = sharedLink
