@@ -304,6 +304,8 @@ pub struct FontDb {
     desktop_families: RwLock<Vec<String>>,
     /// Khmer OS and other locally shipped faces; wins over desktop detection.
     packaged_families: RwLock<Vec<String>>,
+    /// Shipped font names whose internal TTF family/style differs.
+    packaged_aliases: RwLock<HashMap<String, (String, String)>>,
     /// User imported fonts stored in this web app’s IndexedDB library.
     imported_families: RwLock<Vec<String>>,
     outlines: Mutex<HashMap<(u32, u32), Arc<BezPath>>>,
@@ -795,6 +797,7 @@ impl FontDb {
             faces: RwLock::new(faces),
             desktop_families: RwLock::new(Vec::new()),
             packaged_families: RwLock::new(Vec::new()),
+            packaged_aliases: RwLock::new(HashMap::new()),
             imported_families: RwLock::new(Vec::new()),
             outlines: Mutex::new(HashMap::new()),
             #[cfg(not(target_arch = "wasm32"))]
@@ -956,6 +959,22 @@ impl FontDb {
         self.add_fonts(vec![bytes])
     }
 
+    /// Load a bundled face using its advertised manifest label, even when the
+    /// actual TTF family/style differs (for example Khmer OS b -> Khmer OS Bold).
+    /// Preserve the original font data and all existing registered families.
+    pub fn add_packaged_font(&self, advertised: &str, bytes: Vec<u8>) -> usize {
+        let intrinsic = enumerate_faces(&bytes).into_iter().next()
+            .map(|(_, family, style, _)| (family, style));
+        let added = self.add_font(bytes);
+        if let Some((family, style)) = intrinsic {
+            if !family.eq_ignore_ascii_case(advertised) && self.is_loaded(&family) {
+                self.packaged_aliases.write().unwrap_or_else(|e| e.into_inner())
+                    .insert(advertised.to_lowercase(), (family, style));
+            }
+        }
+        added
+    }
+
     /// Add font files together: lookups see all of their faces or none, never part of a family.
     /// Returns the number of faces added.
     fn add_fonts(&self, files: Vec<Vec<u8>>) -> usize {
@@ -1096,6 +1115,13 @@ impl FontDb {
     /// an open substitute ([`substitutes`]), then to Inter. Installed system fonts are found by name
     /// whatever ran before.
     pub fn face(&self, family: &str, style: &str) -> Arc<FontFace> {
+        let alias = self.packaged_aliases.read().unwrap_or_else(|e| e.into_inner())
+            .get(&family.to_lowercase()).cloned();
+        if let Some((real_family, real_style)) = alias {
+            if let Some(f) = self.try_family(&real_family, &real_style) {
+                return f;
+            }
+        }
         if let Some(f) = self.try_family(family, style) {
             return f;
         }
@@ -1148,6 +1174,10 @@ impl FontDb {
 
     /// Is `family` available (loaded, or installed on the system)?
     pub fn has_family(&self, family: &str) -> bool {
+        if self.packaged_aliases.read().unwrap_or_else(|e| e.into_inner())
+            .contains_key(&family.to_lowercase()) {
+            return true;
+        }
         if self.is_loaded(family) {
             return true;
         }

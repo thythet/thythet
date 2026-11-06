@@ -694,6 +694,21 @@ impl SlideApp {
         result
     }
 
+    /// Default desktop theme for new presentations; never touch opened files
+    /// or the separately configurable interface font.
+    pub fn set_desktop_khmer_default(&mut self) {
+        if !self.ui.desktop_ui_fonts { return; }
+        if let Some(state) = self.session.active_mut() {
+            for master in &mut state.doc.masters {
+                for font in [&mut master.theme.fonts.major, &mut master.theme.fonts.minor] {
+                    font.latin = "Khmer OS Battambang".into();
+                    font.ea = "Khmer OS Battambang".into();
+                    font.cs = "Khmer OS Battambang".into();
+                }
+            }
+        }
+    }
+
     /// Run a command by id (UI commands here, everything else in the engine). Errors show in the
     /// status bar and are returned.
     pub fn run(&mut self, id: &str, params: Value) -> Result<Value, String> {
@@ -702,6 +717,9 @@ impl SlideApp {
         } else {
             self.session.execute(id, &params).map_err(|e| e.to_string())
         };
+        if r.is_ok() && id == "file.new" {
+            self.set_desktop_khmer_default();
+        }
         match &r {
             // Copy and Cut from the ribbon, menus, the slide's context menu or the control channel
             // put the text on the system clipboard, as Ctrl+C and Ctrl+X do (#431).
