@@ -699,7 +699,9 @@ impl SlideApp {
     pub fn set_desktop_khmer_default(&mut self) {
         if !self.ui.desktop_ui_fonts { return; }
         if let Some(state) = self.session.active_mut() {
-            for master in &mut state.doc.masters {
+            let doc = std::sync::Arc::make_mut(&mut state.doc);
+            for master in &mut doc.masters {
+                let master = std::sync::Arc::make_mut(master);
                 for font in [&mut master.theme.fonts.major, &mut master.theme.fonts.minor] {
                     font.latin = "Khmer OS Battambang".into();
                     font.ea = "Khmer OS Battambang".into();
