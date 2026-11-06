@@ -9,6 +9,7 @@ btn.setAttribute('aria-label','Get Software');
 btn.innerHTML='<span class="software-platform-icons" aria-hidden="true"><i class="ri-apple-fill"></i><i class="ri-windows-fill"></i></span><span>Get Software</span>';
 const style=document.createElement('style');
 style.textContent="#pspro-desktop-get,#pspro-download-backdrop{font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}\n#pspro-desktop-get{position:fixed;z-index:9;bottom:max(22px,env(safe-area-inset-bottom));right:18px;display:flex;align-items:center;gap:9px;padding:9px 14px;min-height:37px;border:1.5px solid #abcfff;border-radius:11px;background:#e5f0ff;color:#076be2;font-size:12px;font-weight:680;box-shadow:0 3px 12px #1f6ac916;cursor:pointer;transition:background .16s,border-color .16s,box-shadow .16s,transform .16s}\n#pspro-desktop-get:hover{background:#d7e9ff;border-color:#87b8fc;box-shadow:0 4px 16px #126ee32a;transform:translateY(-1px)}\n#pspro-desktop-get:active{background:#c5dfff;transform:translateY(0)}\n#pspro-desktop-get:focus-visible,#pspro-download-box button:focus-visible,#pspro-download-box a:focus-visible{outline:3px solid #80b6ff;outline-offset:2px}\n#pspro-desktop-get .software-platform-icons{display:inline-flex;align-items:center;gap:5px;font-size:16px;line-height:1}\n#pspro-download-backdrop{position:fixed;inset:0;z-index:2147483600;display:grid;place-items:center;padding:14px;background:rgba(26,32,44,.34);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}\n#pspro-download-box{position:relative;box-sizing:border-box;width:min(472px,100%);max-height:min(590px,calc(100dvh - 28px));overflow-y:auto;padding:22px;border:1px solid rgba(255,255,255,.94);border-radius:20px;background:rgba(249,251,254,.98);color:#242a35;box-shadow:0 26px 80px rgba(16,29,51,.25),0 3px 14px rgba(14,39,77,.09);font-size:12px;line-height:1.5}\n#pspro-download-box *{box-sizing:border-box}\n#pspro-download-box .sw-head{display:flex;align-items:center;gap:10px;padding-right:27px;margin-bottom:15px}\n#pspro-download-box .sw-head-icon{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;border:1px solid #d4e2fb;background:#e8f2ff;color:#0873eb;font-size:17px}\n#pspro-download-box h2{font-size:16px;line-height:1.2;font-weight:750;letter-spacing:-.3px;margin:0}\n#pspro-download-box .sw-overline{color:#7a869a;font-size:10px;letter-spacing:.3px}\n#pspro-download-box #pspro-dl-close{position:absolute;right:15px;top:15px;display:grid;place-items:center;border:0;width:27px;height:27px;border-radius:9px;background:#ebeff5;color:#697688;font-size:18px;cursor:pointer}\n#pspro-download-box #pspro-dl-close:hover{background:#dde7f2;color:#1e293b}\n#pspro-download-box .sw-app{display:flex;align-items:center;gap:11px;margin:0 0 7px;padding:10px;border:1px solid #e3e9f1;border-radius:13px;background:#fff}\n#pspro-download-box .sw-logo{width:45px;height:45px;object-fit:contain;flex:none}\n#pspro-download-box .sw-app-title{font-size:13px;font-weight:750;letter-spacing:-.1px}\n#pspro-download-box .sw-app-sub{font-size:10.5px;color:#778297}\n#pspro-download-box .sw-beta{margin-left:auto;align-self:flex-start;white-space:nowrap;border:1px solid #e0e9f6;background:#f0f6ff;color:#5486c6;border-radius:7px;padding:2px 6px;font-size:9px;font-weight:680}\n#pspro-download-box .sw-platform-heading{padding:9px 1px 4px;color:#7b889b;text-transform:uppercase;letter-spacing:.7px;font-size:10px;font-weight:700}\n#pspro-download-box .sw-platform{display:flex;align-items:center;gap:10px;padding:9px 1px;min-height:53px;border-bottom:1px solid #e8ebef}\n#pspro-download-box .sw-platform-icon{display:grid;place-items:center;flex:none;width:31px;height:31px;border-radius:9px;background:#f1f4f8;color:#343d4c;font-size:17px}\n#pspro-download-box .sw-platform-label{min-width:0;flex:1}\n#pspro-download-box .sw-platform-label strong{display:block;font-size:11.8px;font-weight:690;color:#202b39}\n#pspro-download-box .sw-platform-label small{display:block;margin-top:1px;color:#8a95a4;font-size:10px}\n#pspro-download-box .sw-download{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;padding:7px 11px;border:1.5px solid #add0ff;border-radius:9px;background:#e5f0ff;color:#0a71eb;text-decoration:none;font-size:11px;font-weight:700;transition:background .16s,border-color .16s,transform .16s}\n#pspro-download-box .sw-download:hover{background:#d5e7ff;border-color:#8fbdff;transform:translateY(-1px)}\n#pspro-download-box .sw-status{color:#98a1ad;font-size:10.5px;white-space:nowrap}\n#pspro-download-box .sw-footer{margin-top:12px;padding-top:10px;border-top:1px solid #e6ebf1}\n#pspro-download-box .sw-footer p{margin:0 0 7px;color:#7b8798;font-size:10.5px}\n#pspro-download-box .sw-footer a{color:#3679d6;text-decoration:none;font-size:10.5px;font-weight:600}\n#pspro-download-box .sw-footer a:hover{text-decoration:underline}\n#pspro-download-box .sw-links{display:flex;align-items:center;gap:15px;flex-wrap:wrap}\n@media(max-width:760px){#pspro-desktop-get{right:12px;bottom:max(100px,env(safe-area-inset-bottom))}#pspro-download-box{padding:17px;border-radius:16px}}\n@media(prefers-reduced-motion:reduce){#pspro-desktop-get,#pspro-download-box *{transition:none!important}}";
+style.textContent += "\n#pspro-download-box .sw-keyboard-app{gap:10px;margin-bottom:0}\n#pspro-download-box .sw-keyboard-icon{display:grid;place-items:center;flex:none;width:45px;height:45px;border-radius:10px;background:#edf3ff;color:#176cd5;font-size:23px}\n#pspro-download-box .sw-keyboard-info{flex:1;min-width:0}\n#pspro-download-box .sw-keyboard-help{margin:6px 1px 13px;padding:8px 10px;border:1px solid #e3e9f1;border-radius:10px;background:#f6f9fd;font-size:10.5px;color:#64748b}\n#pspro-download-box .sw-keyboard-help summary{cursor:pointer;color:#3679d6;font-weight:680}\n#pspro-download-box .sw-keyboard-help p{margin:8px 0 0;line-height:1.6;overflow-wrap:anywhere}\n@media(max-width:380px){#pspro-download-box .sw-keyboard-app{flex-wrap:wrap}#pspro-download-box .sw-keyboard-app .sw-download{margin-left:55px}}\n";
 document.head.appendChild(style);document.body.appendChild(btn);
 let overlay=null,lastFocus=null;
 function el(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;}
@@ -48,7 +49,7 @@ btn.addEventListener('click',()=>{
  if(overlay)return;
  rows.length=0;lastFocus=document.activeElement;overlay=el('div');overlay.id='pspro-download-backdrop';
  const d=el('section');d.id='pspro-download-box';d.setAttribute('role','dialog');
- d.setAttribute('aria-modal','true');d.setAttribute('aria-label','Get PowerSlidePro Desktop');
+ d.setAttribute('aria-modal','true');d.setAttribute('aria-label','Get Software');
  const x=el('button',null,'×');x.id='pspro-dl-close';x.type='button';
  x.setAttribute('aria-label','Close Get Software');x.onclick=close;
  const app=el('section','sw-app'),logo=el('img','sw-logo');
@@ -61,6 +62,21 @@ btn.addEventListener('click',()=>{
  const win=row('ri-windows-fill','Windows 10 / 11','64-bit · EXE · '+version,/PowerSlidePro-0\.1\.16-win-x64\.exe$/i);
  const arm=row('ri-apple-fill','macOS · Apple Silicon','M-series Mac · DMG · '+version,/PowerSlidePro-0\.1\.16-mac-arm64\.dmg$/i);
  const intel=row('ri-apple-fill','macOS · Intel','Intel Mac · DMG · '+version,/PowerSlidePro-0\.1\.16-mac-x64\.dmg$/i);
+ const keyboardHeading=el('div','sw-platform-heading','Keyboard layout');
+ const keyboardApp=el('section','sw-app sw-keyboard-app');
+ const keyboardIcon=el('span','sw-keyboard-icon');keyboardIcon.innerHTML='<i class="ri-keyboard-line" aria-hidden="true"></i>';
+ const keyboardInfo=el('div','sw-keyboard-info');
+ keyboardInfo.append(el('div','sw-app-title','Khmer Mac Keyboard'),
+   el('div','sw-app-sub','macOS · Khmer Unicode · Keylayout + icon'));
+ const keyboardLink=el('a','sw-download');
+ keyboardLink.href='downloads/Khmer-Mac-Keyboard-macOS.zip';
+ keyboardLink.download='Khmer-Mac-Keyboard-macOS.zip';
+ keyboardLink.innerHTML='<i class="ri-download-2-line" aria-hidden="true"></i><span>Download</span>';
+ keyboardLink.setAttribute('aria-label','Download Khmer Mac Keyboard ZIP for macOS');
+ keyboardApp.append(keyboardIcon,keyboardInfo,keyboardLink);
+ const keyboardHelp=el('details','sw-keyboard-help');
+ keyboardHelp.append(el('summary',null,'How to install on macOS'),
+   el('p',null,'Unzip the download. Copy both Khmer Mac.keylayout and Khmer Mac.icns into ~/Library/Keyboard Layouts/ (create the folder if needed). Log out and sign in again, then add Khmer Mac in System Settings → Keyboard → Text Input → Edit → Add Input Source.'));
  const footer=el('footer','sw-footer');
  footer.append(el('p',null,'Built and Prepared by Thet'));
  const links=el('div','sw-links');
@@ -69,7 +85,7 @@ btn.addEventListener('click',()=>{
  const checksum=el('a',null,'Verify SHA-256');checksum.id='pspro-download-checksums';checksum.hidden=true;
  checksum.target='_blank';checksum.rel='noopener noreferrer';
  links.append(releases,checksum);footer.append(links);
- d.append(x,app,heading,win,arm,intel,footer);
+ d.append(x,app,heading,win,arm,intel,keyboardHeading,keyboardApp,keyboardHelp,footer);
  overlay.append(d);document.body.append(overlay);
  overlay.onclick=e=>{if(e.target===overlay)close();};
  x.focus();loadReleases();
