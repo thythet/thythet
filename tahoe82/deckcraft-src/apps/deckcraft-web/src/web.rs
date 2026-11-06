@@ -346,6 +346,11 @@ pub fn start() {
                             log::warn!("Source slide hide: {e}");
                         }
                     }
+                    // The initial sample deck is freshly generated (never a saved file).
+                    // Normal file.new calls apply the same default in SlideApp::run.
+                    if !q.contains("blank") {
+                        app.set_new_presentation_khmer_font();
+                    }
                     if q.contains("show") {
                         app.start_show(0, false);
                     }
@@ -2906,7 +2911,8 @@ async fn load_tahoe_fonts() -> Option<std::sync::Arc<deckcraft_fonts::FontFace>>
                 continue;
             }
             let Ok(bytes) = fetch_url_bytes(&url).await else { continue };
-            let n = db.add_font(bytes);
+            let advertised = font.get("family").and_then(serde_json::Value::as_str).unwrap_or("");
+            let n = db.add_packaged_font(advertised, bytes);
             if n > 0 {
                 added += n;
                 log::info!("DeckCraft Khmer font loaded: {file} ({url}), {n} face(s)");
@@ -2947,8 +2953,8 @@ async fn load_requested_tahoe_font(family:&str) {
         if !file.starts_with("khmer-os/")||file.contains("..")||
             !(file.ends_with(".ttf")||file.ends_with(".otf")){continue;}
         if let Ok(bytes)=fetch_url_bytes(&format!("../../assets/fonts/{file}")).await{
-            let added=db.add_font(bytes);
-            if added>0{
+            let added=db.add_packaged_font(name, bytes);
+            if added>0 || db.has_family(name) {
                 log::info!("Restored bundled font on demand: {name} ({added} face(s))");
                 FONT_REPAINT_CONTEXT.with(|slot| {
                     if let Some(ctx)=slot.borrow().as_ref(){ctx.request_repaint();}
@@ -2971,7 +2977,8 @@ async fn load_remaining_tahoe_fonts() {
         if !(file.ends_with(".ttf") || file.ends_with(".otf")) { continue; }
         let url = format!("../../assets/fonts/{file}");
         if let Ok(bytes) = fetch_url_bytes(&url).await {
-            added += db.add_font(bytes);
+            let advertised = font.get("family").and_then(serde_json::Value::as_str).unwrap_or("");
+            added += db.add_packaged_font(advertised, bytes);
         }
     }
     if added>0 {

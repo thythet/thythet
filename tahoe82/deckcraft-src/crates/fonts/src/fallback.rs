@@ -181,6 +181,15 @@ impl FontDb {
                 return f;
             }
         }
+        // An unavailable Khmer face must not fall back unpredictably to SFHello
+        // or an arbitrary installed font. A valid explicit face already won.
+        if cluster.iter().any(|c| ('\u{1780}'..='\u{17ff}').contains(c)) {
+            let fallback = self.face("Khmer OS Battambang", style);
+            if fallback.family.eq_ignore_ascii_case("Khmer OS Battambang")
+                && covers_cluster(&fallback, cluster) {
+                return fallback;
+            }
+        }
         let exclude = chain.first().map(|f| f.id()).unwrap_or(u32::MAX);
         let f = match self.fallback_for(key, exclude) {
             Some(f) if covers_cluster(&f, cluster) => f,

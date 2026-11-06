@@ -241,7 +241,11 @@ pub fn dropdown(ui: &mut Ui, id: &str, current: &str, width: f32, enabled: bool,
     );
     chevron(&painter, pos2(rect.max.x - 9.0, rect.center().y), 3.0, t.text_dim);
     let _ = id;
-    egui::Popup::menu(&resp).width(width.max(140.0)).show(|ui| {
+    let popup = egui::Popup::menu(&resp).width(width.max(140.0));
+    let popup = if id == "font" {
+        popup.close_behavior(egui::PopupCloseBehavior::CloseOnClickOutside)
+    } else { popup };
+    popup.show(|ui| {
         egui::ScrollArea::vertical().max_height(360.0).show(ui, add_items);
     });
     resp

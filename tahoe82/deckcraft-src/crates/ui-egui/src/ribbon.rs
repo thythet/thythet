@@ -681,9 +681,29 @@ fn font_group(app: &mut SlideApp, ui: &mut Ui, st: &Value) {
                 let theme_fonts: Vec<String> = fams.iter().take(2).cloned().collect();
                 dropdown(ui, "font", &font, 150.0, en, |ui| {
                     let (bundled, imported, pc)=deckcraft_fonts::FontDb::global().grouped_families();
+                    let search_id = egui::Id::new("powerslidepro-font-search");
+                    let mut query = ui.ctx().data(|d| d.get_temp::<String>(search_id).unwrap_or_default());
+                    let search = ui.add(egui::TextEdit::singleline(&mut query)
+                        .hint_text("Search fonts by name…").desired_width(250.0));
+                    if search.changed() {
+                        ui.ctx().data_mut(|d| d.insert_temp(search_id, query.clone()));
+                    }
+                    let query = query.trim().to_lowercase();
+                    let matches = |name: &str| query.is_empty() || name.to_lowercase().contains(&query);
+                    if search.has_focus() && !query.is_empty()
+                        && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
+                        if let Some(name) = fams.iter().find(|name| matches(name)).cloned() {
+                            font_host_action("tahoeBundledFontRequest", Some(&name));
+                            font_host_action("tahoeFontRequest", Some(&name));
+                            run(app, "format.font", json!({"family":name}));
+                            ui.close();
+                        }
+                    }
+                    ui.separator();
                     if !theme_fonts.is_empty() {
                         ui.label("PRESENTATION THEME");
                         for (i, name) in theme_fonts.iter().enumerate() {
+                            if !matches(name) { continue; }
                             let label=if i==0 {format!("{name} (Headings)")}else{format!("{name} (Body)")};
                             if ui.button(label).clicked() {
                                 font_host_action("tahoeFontRequest",Some(name));
@@ -699,7 +719,7 @@ fn font_group(app: &mut SlideApp, ui: &mut Ui, st: &Value) {
                             || name.eq_ignore_ascii_case("KunKhmer"));
                     if !khmer_os.is_empty() {
                         ui.small(format!("Khmer OS collection · 40 font files ({} families)", khmer_os.len()));
-                        for name in khmer_os {
+                        for name in khmer_os.into_iter().filter(|name| matches(name)) {
                             if ui.button(&name).clicked() {
                                 // Fonts announced by the offline manifest may still be
                                 // loading. Request the selected binary immediately.
@@ -712,7 +732,7 @@ fn font_group(app: &mut SlideApp, ui: &mut Ui, st: &Value) {
                     if !other.is_empty() {
                         ui.separator();
                         ui.small("OTHER BUNDLED FONTS");
-                        for name in other {
+                        for name in other.into_iter().filter(|name| matches(name)) {
                             if ui.button(&name).clicked() {
                                 font_host_action("tahoeBundledFontRequest",Some(&name));
                                 run(app,"format.font",json!({"family":name}));
@@ -722,7 +742,7 @@ fn font_group(app: &mut SlideApp, ui: &mut Ui, st: &Value) {
                     }
                     if !imported.is_empty(){
                         ui.separator();ui.label("MY FONTS");
-                        for name in imported {
+                        for name in imported.into_iter().filter(|name| matches(name)) {
                             if ui.button(&name).clicked(){
                                 run(app,"format.font",json!({"family":name}));
                                 ui.close();
@@ -730,9 +750,9 @@ fn font_group(app: &mut SlideApp, ui: &mut Ui, st: &Value) {
                         }
                     }
                     ui.separator();
-                    ui.label("INSTALLED PC FONTS");
-                    if pc.is_empty(){ui.small("No system font catalog (web browser)");}
-                    for name in pc {
+                    ui.label("INSTALLED COMPUTER FONTS");
+                    if pc.is_empty(){ui.small("No installed font catalog available");}
+                    for name in pc.into_iter().filter(|name| matches(name)) {
                         if ui.button(&name).clicked(){
                             font_host_action("tahoeFontRequest",Some(&name));
                             run(app,"format.font",json!({"family":name}));

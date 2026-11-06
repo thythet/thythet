@@ -694,14 +694,38 @@ impl SlideApp {
         result
     }
 
+
+    /// Apply Tahoe82's presentation-only Khmer default to a newly created deck.
+    /// This does not change the Tahoe dashboard/UI font or saved presentations.
+    pub fn set_new_presentation_khmer_font(&mut self) {
+        if let Some(state) = self.session.active_mut() {
+            let doc = std::sync::Arc::make_mut(&mut state.doc);
+            for master in &mut doc.masters {
+                let master = std::sync::Arc::make_mut(master);
+                for font in [&mut master.theme.fonts.major, &mut master.theme.fonts.minor] {
+                    font.latin = "Khmer OS Battambang".into();
+                    font.ea = "Khmer OS Battambang".into();
+                    font.cs = "Khmer OS Battambang".into();
+                }
+            }
+        }
+    }
+
     /// Run a command by id (UI commands here, everything else in the engine). Errors show in the
     /// status bar and are returned.
     pub fn run(&mut self, id: &str, params: Value) -> Result<Value, String> {
+        // Explicitly chosen templates/themes retain their own font schemes.
+        let new_default = id == "file.new"
+            && params.get("theme").and_then(Value::as_str).unwrap_or("").is_empty()
+            && params.get("template").and_then(Value::as_str).unwrap_or("").is_empty();
         let r = if UI_COMMANDS.iter().any(|c| c.0 == id) {
             self.run_ui(id, &params)
         } else {
             self.session.execute(id, &params).map_err(|e| e.to_string())
         };
+        if r.is_ok() && new_default {
+            self.set_new_presentation_khmer_font();
+        }
         match &r {
             // Copy and Cut from the ribbon, menus, the slide's context menu or the control channel
             // put the text on the system clipboard, as Ctrl+C and Ctrl+X do (#431).
