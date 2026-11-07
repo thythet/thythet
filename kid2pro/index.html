@@ -824,6 +824,7 @@ const verificationListeners=new Set();
 const verificationLoaded=new Set();
 const verificationErrors=new Map();
 let verificationWritePending=false;
+let verificationSaveError=null;
 function verificationIsConfirmed(classId,date){
   return state.attendanceVerification[classId]?.[date]?.verified===true;
 }
@@ -868,7 +869,9 @@ function updateVerificationControl(classId,date){
   if(icon)icon.className=verified?"ri-checkbox-line":"ri-checkbox-blank-line";
   const label=button.querySelector("span");
   if(label)label.textContent=tr("attendanceVerified");
+  const errorForSelected=verificationSaveError?.key===classId+"/"+date?verificationSaveError?.message:"";
   if(hasError)status.textContent=tr("verificationAccessError")+" ("+verificationErrors.get(classId)+")";
+  else if(errorForSelected)status.textContent=errorForSelected;
   else if(verificationWritePending)status.textContent=tr("verificationSaving");
   else if(loading)status.textContent=tr("loading");
   else status.textContent="";
@@ -1911,6 +1914,7 @@ $("attVerifyBtn").onclick=async()=>{
   if(!confirm(message))return;
   const next=!current;
   const old=state.attendanceVerification[classId]?.[date]||{};
+  verificationSaveError=null;
   verificationWritePending=true;
   updateVerificationControl(classId,date);
   try{
@@ -1928,7 +1932,7 @@ $("attVerifyBtn").onclick=async()=>{
     await logActivity(next?"attendanceVerified":"attendanceReopened",
       `attendanceVerification/${classId}`,date,className(classId),{date,classId,churchId});
   }catch(error){
-    $("attVerifyStatus").textContent="Unable to save verification: "+(error.code||error.message);
+    verificationSaveError={key:classId+"/"+date,message:"Unable to save verification: "+(error.code||error.message)};
   }finally{
     verificationWritePending=false;
     updateVerificationControl($("attClass")?.value||"",state.selectedSunday);
@@ -2415,11 +2419,14 @@ function renderAttendance(useRangeSort=true){
   }
   document.querySelectorAll("[data-stu]").forEach(btn=>btn.onclick=async()=>{
     const sid=btn.dataset.stu, path=`attendance/${state.selectedSunday}/${classId}/${sid}`, popKey=`${state.selectedSunday}/${classId}/${sid}`;
-    const prev=rec[sid], next=prev==="present"?"absent":"present";
+    // A blank checkbox has no student record. The verified class/date record
+    // determines whether that blank is "absent" or "no record".
+    const prev=rec[sid], next=prev==="present"?null:"present";
     state.popAttendanceKey=popKey;
     state.attendance[state.selectedSunday] ||= {};
     state.attendance[state.selectedSunday][classId] ||= {};
-    state.attendance[state.selectedSunday][classId][sid]=next;
+    if(next===null) delete state.attendance[state.selectedSunday][classId][sid];
+    else state.attendance[state.selectedSunday][classId][sid]=next;
     playWeekPop(btn.closest(".att-card"));
     renderAttendance();
     setTimeout(()=>{if(state.popAttendanceKey===popKey){state.popAttendanceKey=""; renderAttendance();}},420);
@@ -2430,7 +2437,7 @@ function renderAttendance(useRangeSort=true){
       renderAttendance();
     }else{
       const st=state.students[sid]||{};
-      await logActivity("attendanceChecked",`attendance/${state.selectedSunday}/${classId}`,sid,st.name||sid,{date:state.selectedSunday,classId,churchId:st.churchId||attendanceChurchId(),status:next});
+      await logActivity("attendanceChecked",`attendance/${state.selectedSunday}/${classId}`,sid,st.name||sid,{date:state.selectedSunday,classId,churchId:st.churchId||attendanceChurchId(),status:next||"unmarked"});
     }
   });
   hideAttendanceLoadingSoon();
