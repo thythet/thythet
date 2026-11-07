@@ -274,6 +274,23 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
   .student-card .actions{gap:5px}
   .student-card .actions .icon-btn{width:38px;height:38px;min-width:38px;font-size:19px}
 }
+
+/* Love Kid Pro Cloudinary admin settings */
+.cloud-note{font-size:12px;font-weight:750;color:#ffe6ae;background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.25);border-radius:12px;margin:8px 0;padding:9px 11px;line-height:1.6}
+.cloud-panel{border:1px solid var(--line);border-radius:17px;margin:11px 0;background:rgba(255,255,255,.055)}
+.cloud-panel summary{display:flex;align-items:center;gap:8px;padding:12px;cursor:pointer;font-weight:900}
+.cloud-panel summary i{font-size:20px}
+#cloudinaryBadge{margin-left:auto;font-size:11px;color:#dbeafe;opacity:.75}
+.cloud-form{padding:0 12px 13px}
+.cloud-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.cloud-fields label{display:grid;gap:5px;font-size:12px;color:var(--muted);font-weight:850;min-width:0}
+.cloud-fields label:last-child{grid-column:1/-1}
+.cloud-fields input{min-width:0}
+.cloud-hint{font-size:12px;line-height:1.6;color:var(--muted)}
+.cloud-warning{display:flex;gap:9px;align-items:flex-start;font-size:12px;line-height:1.6;padding:10px;border-radius:12px;background:rgba(251,113,133,.10);border:1px solid rgba(251,113,133,.32);color:#ffe4e6;cursor:pointer}
+.cloud-warning input{flex:0 0 auto;margin-top:3px;width:17px;height:17px;accent-color:#5da7ff}
+#cloudSaveBtn{margin-top:11px}
+@media(max-width:640px){.cloud-fields{grid-template-columns:1fr}.cloud-fields label:last-child{grid-column:auto}}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#172b51">
@@ -421,6 +438,21 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
  <label class="btn" style="cursor:pointer">📷 Upload Photo<input type="file" id="studentPhotoUpload" accept="image/jpeg,image/png,image/webp" style="display:none"></label>
  <span id="studentUploadStatus" style="font-size:12px"></span>
  </div>
+ <p id="cloudinaryUploadNote" class="cloud-note">Cloudinary setup required before uploading student photos.</p>
+ <details id="cloudinarySettingsPanel" class="cloud-panel hidden">
+   <summary><i class="ri-cloud-line"></i> Cloudinary Settings <span id="cloudinaryBadge">Not configured</span></summary>
+   <div class="cloud-form">
+     <div class="cloud-fields">
+       <label>Cloud Name<input id="cloudNameInput" class="input" placeholder="your-cloud-name" maxlength="80" autocomplete="off"></label>
+       <label>Unsigned Upload Preset<input id="cloudPresetInput" class="input" placeholder="love_kid_unsigned" maxlength="100" autocomplete="off"></label>
+       <label>Upload Folder (optional)<input id="cloudFolderInput" class="input" placeholder="love-kid/students" maxlength="180" autocomplete="off"></label>
+     </div>
+     <p class="cloud-hint">Create an <b>Unsigned</b> upload preset in Cloudinary Settings → Upload. Set image-only formats, a size cap and a dedicated folder in that preset. Preset folder settings can override this optional folder.</p>
+     <label class="cloud-warning"><input id="cloudPublicAck" type="checkbox"> I understand unsigned uploads and student-photo URLs are public. I will only upload images with appropriate permission. Do not enter an API key or secret.</label>
+     <button type="button" id="cloudSaveBtn" class="btn primary">Save Cloudinary Settings</button>
+     <div id="cloudSaveStatus" class="status" aria-live="polite"></div>
+   </div>
+ </details>
       <div class="student-save-row"><input id="studentSearch" class="input" placeholder="Search students"><button id="saveStudent" class="btn primary">Save</button></div>
       <div id="studentStatus" class="status"></div>
     </div>
@@ -574,7 +606,7 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signInWithEmailAndPassword, setPersistence, browserLocalPersistence, browserSessionPersistence, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getDatabase, ref, set, push, onValue, remove, get, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-import {getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+// Student images upload directly to Cloudinary; no upload API secret in the client.
 
 const firebaseConfig = {
   apiKey: "AIzaSyD4SGK5Gvo1xtrljap1zay1bwDxlrlGmoY",
@@ -588,7 +620,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
-const storage=getStorage(app);
 const googleProvider=new GoogleAuthProvider();
 document.getElementById('googleLoginBtn').addEventListener('click',async()=>{
  const status=document.getElementById('loginStatus');
@@ -631,6 +662,70 @@ const state = { user:null, profile:null, role:"guest", churchId:null, selectedCh
 const attendanceListeners = new Set();
 const attendanceLoaded = new Set();
 const attendanceErrors = new Set();
+// This is PUBLIC unsigned-upload configuration, not a secret.
+const cloudStorageKey="kid2pro_cloudinary_config_v1";
+function cloudNormalize(v){
+  const c=v&&typeof v==="object"?v:{};
+  return {cloudName:String(c.cloudName||"").trim(),preset:String(c.preset||"").trim(),folder:String(c.folder||"").trim(),ack:Number(c.ack||0)};
+}
+function cloudLocal(){
+  try{return cloudNormalize(JSON.parse(localStorage.getItem(cloudStorageKey)||"{}"))}
+  catch{return cloudNormalize({})}
+}
+state.cloudinary=cloudLocal();
+let cloudDirty=false;
+const cloudValid=c=>/^[\w-]{2,80}$/.test(c.cloudName)&&/^[\w-]{1,100}$/.test(c.preset)&&c.ack>0;
+function cloudDisplay(){
+  const cfg=state.cloudinary,ok=cloudValid(cfg);
+  $("cloudinarySettingsPanel").classList.toggle("hidden",!canAdmin());
+  $("cloudinaryBadge").textContent=ok?"Configured":"Not configured";
+  $("cloudinaryUploadNote").textContent=ok
+    ?"Cloudinary ready. Image URLs are public; upload a photo, then press Save to link it to the student."
+    :"Cloudinary not configured. An administrator must set Cloud Name and Unsigned Upload Preset.";
+  if(canAdmin()&&!cloudDirty){
+    $("cloudNameInput").value=cfg.cloudName;
+    $("cloudPresetInput").value=cfg.preset;
+    $("cloudFolderInput").value=cfg.folder;
+    $("cloudPublicAck").checked=ok;
+  }
+}
+function cloudWatch(){
+  onValue(ref(db,"settings/cloudinary"),snapshot=>{
+    if(snapshot.exists()){
+      state.cloudinary=cloudNormalize(snapshot.val());
+      localStorage.setItem(cloudStorageKey,JSON.stringify(state.cloudinary));
+    }
+    cloudDisplay();
+  },err=>{
+    console.warn("Cloudinary settings not shared:",err.code||err.message);
+    cloudDisplay();
+    if(canAdmin()) $("cloudSaveStatus").textContent="Cannot read shared settings; local settings may still work on this device.";
+  });
+}
+["cloudNameInput","cloudPresetInput","cloudFolderInput","cloudPublicAck"].forEach(id=>{
+  $(id).addEventListener("input",()=>{cloudDirty=true});
+});
+$("cloudSaveBtn").onclick=async()=>{
+  const status=$("cloudSaveStatus"),btn=$("cloudSaveBtn");
+  if(!canAdmin()){status.textContent="Admin only.";return;}
+  const c=cloudNormalize({cloudName:$("cloudNameInput").value,preset:$("cloudPresetInput").value,folder:$("cloudFolderInput").value});
+  if(!/^[\w-]{2,80}$/.test(c.cloudName)||!/^[\w-]{1,100}$/.test(c.preset)){status.textContent="Enter a valid Cloud Name and unsigned preset.";return;}
+  if(c.folder&&(!/^[\w /.-]{1,180}$/.test(c.folder)||c.folder.split("/").includes(".."))){status.textContent="Invalid folder name.";return;}
+  if(!$("cloudPublicAck").checked){status.textContent="Confirm the public-photo warning before saving.";return;}
+  c.ack=Date.now();
+  btn.disabled=true;status.textContent="Saving…";
+  try{
+    await set(ref(db,"settings/cloudinary"),c);
+    state.cloudinary=c;
+    localStorage.setItem(cloudStorageKey,JSON.stringify(c));
+    status.textContent="Saved to Firebase; configured devices can now upload.";
+  }catch(err){
+    state.cloudinary=c;
+    localStorage.setItem(cloudStorageKey,JSON.stringify(c));
+    status.textContent="Saved on THIS DEVICE ONLY. Firebase permissions blocked sync: "+(err.code||err.message);
+  }finally{btn.disabled=false;cloudDirty=false;cloudDisplay();}
+};
+
 const I18N = {
   en: {
     appTitle:"Sunday School", loginTitle:"Sunday School", email:"Email", key:"Key", remember:"Remember Login",
@@ -805,6 +900,7 @@ function applyRole(){
   document.querySelectorAll(".nav-btn[data-page='church'],.nav-btn[data-page='roles'],.nav-btn[data-page='activity']").forEach(b=>b.classList.toggle("hidden",!canAdmin()));
   if($("dashboardBtn")) $("dashboardBtn").classList.toggle("hidden",!(canAdmin()||canTeacher()));
   document.querySelector(".nav-btn[data-page='classes']").classList.toggle("hidden",!(canAdmin()||canPastor()));
+  cloudDisplay();
 }
 document.querySelectorAll(".nav-btn[data-page]").forEach(b=>b.onclick=()=>{ if(b.classList.contains("attend-tab")) playWeekPop(b); page(b.dataset.page); });
 if($("dashboardBtn")) $("dashboardBtn").onclick=()=>{ localStorage.setItem("dashboardLang", currentLang); location.href="./dashboard.html"; };
@@ -852,6 +948,7 @@ function watch(path, target, sourceRef=ref(db,path)){
   });
 }
 function loadData(){
+  cloudWatch();
   watch("settings/themeBackgrounds","themeBackgroundsSettings");
   if(state.user) watch(`users/${state.user.uid}/appSettings/themeBackgrounds`,"themeBackgroundsUser");
   watch("settings/themeOptions","themeOptions");
@@ -1004,25 +1101,52 @@ $("saveClass").onclick=async()=>{
   const old=state.classes[id] || {};
   if(await write("classes/"+id,{...old,name,churchId,updatedAt:Date.now()},"classStatus",editingClassId?tr("classUpdated"):tr("classSaved"))){ await logActivity(action,"classes",id,name); editingClassId=""; $("className").value=""; renderClasses(); }
 };
-// Uploaded files use Firebase Storage; publish storage.rules separately before use.
-$("studentPhotoUpload").addEventListener('change',async e=>{
- const file=e.target.files?.[0], status=$("studentUploadStatus");
- if(!file)return;
- if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024){status.textContent='Use JPG, PNG, WebP under 5 MB.';return;}
- if(!state.user||!['admin','teacher','pastor'].includes(state.role)){status.textContent='Permission denied.';return;}
- const churchId=canAdmin()?$("studentChurch").value:roleChurch();
- if(!churchId){status.textContent='Choose a church before uploading.';return;}
- const id=editingStudentId||'draft-'+state.user.uid;
- const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
- const path=`student-photos/${encodeURIComponent(churchId)}/${encodeURIComponent(id)}/${Date.now()}.${ext}`;
- status.textContent='Uploading 0%';
- try{
-  const task=uploadBytesResumable(storageRef(storage,path),file,{contentType:file.type,customMetadata:{churchId,uploadedBy:state.user.uid}});
-  task.on('state_changed',s=>{status.textContent='Uploading '+Math.round(s.bytesTransferred/s.totalBytes*100)+'%';},err=>{status.textContent='Upload failed: '+(err.code||err.message);},async()=>{
-   try {$("studentPhoto").value=await getDownloadURL(task.snapshot.ref);status.textContent='Uploaded. Click Save to link photo.';}
-   catch(err){status.textContent='Could not retrieve URL: '+err.message;}
+// Cloudinary unsigned upload. The admin-controlled preset must restrict uploads.
+function cloudUpload(file,config,onProgress){
+  return new Promise((resolve,reject)=>{
+    const form=new FormData();
+    form.append("file",file);
+    form.append("upload_preset",config.preset);
+    if(config.folder)form.append("folder",config.folder);
+    const request=new XMLHttpRequest();
+    request.open("POST","https://api.cloudinary.com/v1_1/"+encodeURIComponent(config.cloudName)+"/image/upload");
+    request.timeout=90000;
+    request.upload.onprogress=e=>{if(e.lengthComputable)onProgress(Math.round(e.loaded/e.total*100))};
+    request.onerror=()=>reject(new Error("Network error"));
+    request.ontimeout=()=>reject(new Error("Upload timed out"));
+    request.onload=()=>{
+      let data={};
+      try{data=JSON.parse(request.responseText||"{}")}catch{}
+      if(request.status<200||request.status>=300){reject(new Error(data.error?.message||"HTTP "+request.status));return;}
+      try{
+        const url=new URL(data.secure_url);
+        if(url.protocol!=="https:"||!/(^|\\.)cloudinary\\.com$/i.test(url.hostname))throw Error();
+        resolve(data.secure_url);
+      }catch{reject(new Error("Cloudinary returned an invalid secure URL"))}
+    };
+    request.send(form);
   });
- }catch(err){status.textContent='Upload failed: '+err.message;}
+}
+$("studentPhotoUpload").addEventListener("change",async e=>{
+  const input=e.target,file=input.files?.[0],status=$("studentUploadStatus");
+  if(!file)return;
+  input.value="";
+  if(!["image/jpeg","image/png","image/webp"].includes(file.type)||file.size>5*1024*1024){
+    status.textContent="Use JPG, PNG or WebP under 5 MB.";return;
+  }
+  if(!state.user||!["admin","teacher","pastor"].includes(state.role)){status.textContent="Permission denied.";return;}
+  const church=canAdmin()?$("studentChurch").value:roleChurch();
+  if(!church){status.textContent="Choose a church first.";return;}
+  const cfg=cloudNormalize(state.cloudinary);
+  if(!cloudValid(cfg)){status.textContent="Cloudinary not configured. Ask the admin to open Cloudinary Settings.";return;}
+  const save=$("saveStudent");
+  input.disabled=true;save.disabled=true;status.textContent="Uploading 0%";
+  try{
+    const url=await cloudUpload(file,cfg,n=>{status.textContent="Uploading "+n+"%"});
+    $("studentPhoto").value=url;
+    status.textContent="Uploaded! Click Save to link this photo to the student.";
+  }catch(err){status.textContent="Upload failed: "+err.message}
+  finally{input.disabled=false;save.disabled=false;}
 });
 $("saveStudent").onclick=async()=>{ 
   const name=clean($("studentName").value), churchId=canAdmin()?$("studentChurch").value:roleChurch(), classId=$("studentClass").value; 
