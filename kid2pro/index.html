@@ -387,6 +387,36 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
   .att-photo-row .att-order{width:25px;height:30px}
   .att-photo-row .check{width:42px;height:42px}
 }
+
+/* Love Kid Pro: class schedule and archive form. */
+.class-name-row{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:9px;align-items:center}
+.class-name-row>.input,.class-name-row>.custom-select{min-width:0}
+.class-period-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:11px}
+.class-period-fields label{display:grid;gap:6px;min-width:0;font-size:12px;font-weight:900;color:var(--muted)}
+.class-period-fields .input{width:100%;min-width:0}
+.class-period-fields input[type="date"]{color-scheme:dark}
+.class-date-help{font-size:12px;color:var(--muted);margin:9px 1px;line-height:1.6}
+.class-form-actions{display:flex;gap:9px;justify-content:flex-end;align-items:center}
+.class-form-actions .btn{min-width:110px}
+.class-record-info{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:5px}
+.class-record-info .class-period-text{font-size:12px;font-weight:750;color:var(--muted)}
+.class-state-pill{font-size:11px;font-weight:900;padding:4px 8px;border-radius:999px;border:1px solid rgba(74,222,128,.4);background:rgba(34,197,94,.12);color:#bbf7d0}
+.class-state-pill.archived{border-color:rgba(251,191,36,.32);background:rgba(251,191,36,.10);color:#fde68a}
+/* Summary has only two freestanding dropdown surfaces, not an enclosing panel. */
+#page-summary .summary-filters-standalone{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;
+  padding:0!important;margin:9px 0 12px!important;border:0!important;
+  background:none!important;box-shadow:none!important;backdrop-filter:none!important;
+}
+#page-summary .summary-filters-standalone>.custom-select{min-width:0}
+#page-summary .summary-filters-standalone .custom-select-btn{width:100%}
+@media(max-width:640px){
+  .class-name-row{grid-template-columns:1fr}
+  .class-period-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .class-period-fields label:last-child{grid-column:1/-1}
+  .class-form-actions .btn{min-width:0;flex:1}
+  #page-summary .summary-filters-standalone{gap:8px;margin:8px 0 10px!important}
+}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#172b51">
@@ -511,7 +541,14 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
   <section id="page-classes" class="page">
     <div class="panel glass">
       <h2>Class</h2>
-      <div class="row"><input id="className" class="input" placeholder="Class name"><select id="classChurch" class="input native-select-hidden"></select><div class="custom-select" data-select="classChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div><button id="saveClass" class="btn primary">Save</button></div>
+      <div class="class-name-row"><input id="className" class="input" placeholder="Class name" aria-label="Class name"><select id="classChurch" class="input native-select-hidden" aria-label="Church"></select><div class="custom-select" data-select="classChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div></div>
+      <div class="class-period-fields">
+        <label><span id="classStartLabel">Start Date</span><input id="classStartDate" type="date" class="input" aria-label="Start Date"></label>
+        <label><span id="classEndLabel">End Date (optional)</span><input id="classEndDate" type="date" class="input" aria-label="End Date"></label>
+        <label><span id="classLifecycleLabel">Status</span><select id="classLifecycle" class="input" aria-label="Class status"><option value="active">Active</option><option value="archived">Archived</option></select></label>
+      </div>
+      <p id="classDateHelp" class="class-date-help">Start Date is required for new classes. Leave End Date empty for an ongoing class. Archived classes and their attendance history remain available.</p>
+      <div class="class-form-actions"><button id="saveClass" class="btn primary" type="button">Save</button><button id="cancelClassEdit" class="btn hidden" type="button">Cancel editing</button></div>
       <div id="classStatus" class="status"></div>
     </div>
     <div id="classList" class="list"></div>
@@ -577,11 +614,9 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
   </section>
 
   <section id="page-summary" class="page">
-    <div class="panel glass summary-top-panel">
-      <div class="summary-filters">
+    <div class="summary-filters summary-filters-standalone">
         <select id="summaryChurch" class="input native-select-hidden" aria-label="Church"></select><div class="custom-select" data-select="summaryChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
         <select id="summaryClass" class="input native-select-hidden" aria-label="Filter by class"></select><div class="custom-select" data-select="summaryClass"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
-      </div>
     </div>
     <div id="summaryList" class="list summary-list"></div>
     <div id="summaryTapToast" class="summary-tap-toast hidden" role="status" aria-live="polite"></div>
@@ -808,7 +843,7 @@ const I18N = {
     appTitle:"Sunday School", loginTitle:"Sunday School", email:"Email", key:"Key", remember:"Remember Login",
     home:"Home", attendance:"Attend", summary:"Summary", attendancePage:"Attendance", church:"Church", roles:"Roles", classes:"Class", students:"Student", reports:"Report", dashboard:"Dashboard", activity:"Activity", themes:"Themes", effects:"Effects", compact:"Compact", normal:"Normal", logout:"Logout",
     overview:"Overview", churches:"Churches", present:"Present", copyWeek:"COPY THIS WEEK", churchName:"Church name", save:"Save", assignRole:"Assign Role", name:"Name", firebaseUid:"Firebase UID", pastor:"Pastor", teacher:"Teacher", saveRole:"Save Role",
-    className:"Class name", studentName:"Student name", male:"Male", female:"Female", age:"Age", profilePhoto:"Profile picture file name", searchStudents:"Search students", search:"Search",
+    className:"Class name", classStartDate:"Start Date", classEndDate:"End Date (optional)", classLifecycle:"Status", classActive:"Active", classArchived:"Archived", classDateHelp:"Start Date is required for new classes. Leave End Date empty for an ongoing class. Archived classes and their attendance history remain available.", classDateInvalid:"End Date must be on or after Start Date.", classStartRequired:"Please choose a Start Date for this new class.", classCancel:"Cancel editing", classNotSet:"Date not set", studentName:"Student name", male:"Male", female:"Female", age:"Age", profilePhoto:"Profile picture file name", searchStudents:"Search students", search:"Search",
     total:"Total", absent:"Absent", summaryPresentCount:"Present checks", summaryAbsentCount:"Absent checks", summaryNoRecord:"No record", summaryLoading:"Loading", summaryUnavailable:"Unavailable", summaryHint:"Tap a square to see its date and status.", summary13:"Last 3 months", summary26:"Last 6 months", summary52:"Last 12 months", summaryAllClasses:"All classes", monthlyReport:"Monthly Report", average:"Average", sundays:"Sundays", weekMonths:"Weeks/Months", restore:"Restore", attendanceChecker:"Attendance Checker", emptyTrash:"Empty Trash", clearChecker:"Clear Checker", clearCheckerConfirm:"Clear attendance checker logs permanently?", clearActivity:"Clear Activity", seeAll:"See all", seeLess:"See less", noChecker:"No attendance checks yet",
     loading:"Loading...", enterEmailKey:"Enter email and key", noRole:"No role assigned", saved:"Saved", copied:"Copied", churchSaved:"Church saved", churchUpdated:"Church updated", roleSaved:"Role saved", roleUpdated:"Role updated", classSaved:"Class saved", classUpdated:"Class updated", studentSaved:"Student saved", studentUpdated:"Student updated", attendanceSaved:"Attendance saved",
     addRoleFields:"Add UID, name, church. Create church first.", addStudentFields:"Add name, church, class", deleteConfirm:"Delete?", restoreConfirm:"Restore?", emptyTrashConfirm:"Empty trash permanently?", clearActivityConfirm:"Clear all activity log?", itemNotFound:"Item not found", restoreItemNotFound:"Restore item not found",
@@ -818,7 +853,7 @@ const I18N = {
     appTitle:"សាលាថ្ងៃអាទិត្យ", loginTitle:"គ្រូកុមារ", email:"អ៊ីមែល", key:"លេខសម្ងាត់", remember:"ចងចាំការចូល",
     home:"ទំព័រដើម", attendance:"វត្តមាន", summary:"សង្ខេប", attendancePage:"វត្តមាន", church:"ពួកជំនុំ", roles:"តួនាទី", classes:"ថ្នាក់", students:"សិស្ស", reports:"របាយ", dashboard:"ផ្ទាំងកុមារ", activity:"សកម្មភាព", themes:"រចនាប័ទ្ម", effects:"ចលនា", compact:"តូច", normal:"ធម្មតា", logout:"ចាកចេញ",
     overview:"សង្ខេប", churches:"ពួកជំនុំ", present:"មានវត្តមាន", copyWeek:"ចម្លងសប្តាហ៍នេះ", churchName:"ឈ្មោះពួកជំនុំ", save:"រក្សាទុក", assignRole:"កំណត់តួនាទី", name:"ឈ្មោះ", firebaseUid:"Firebase UID", pastor:"គ្រូគង្វាល", teacher:"គ្រូ", saveRole:"រក្សាទុកតួនាទី",
-    className:"ឈ្មោះថ្នាក់", studentName:"ឈ្មោះសិស្ស", male:"ប្រុស", female:"ស្រី", age:"អាយុ", profilePhoto:"ឈ្មោះឯកសាររូបថត", searchStudents:"ស្វែងរកសិស្ស", search:"ស្វែងរក",
+    className:"ឈ្មោះថ្នាក់", classStartDate:"ថ្ងៃចាប់ផ្ដើម", classEndDate:"ថ្ងៃបញ្ចប់ (មិនបាច់ក៏បាន)", classLifecycle:"ស្ថានភាព", classActive:"កំពុងដំណើរការ", classArchived:"បានបណ្ណសារ", classDateHelp:"ថ្នាក់ថ្មីត្រូវមានថ្ងៃចាប់ផ្ដើម។ ទុកថ្ងៃបញ្ចប់ទទេសម្រាប់ថ្នាក់កំពុងដំណើរការ។ ថ្នាក់ដែលបានបណ្ណសារនៅតែអាចមើលប្រវត្តិវត្តមានបាន។", classDateInvalid:"ថ្ងៃបញ្ចប់ត្រូវស្មើ ឬក្រោយថ្ងៃចាប់ផ្ដើម។", classStartRequired:"សូមជ្រើសរើសថ្ងៃចាប់ផ្ដើមសម្រាប់ថ្នាក់ថ្មី។", classCancel:"បោះបង់ការកែប្រែ", classNotSet:"មិនទាន់កំណត់ថ្ងៃ", studentName:"ឈ្មោះសិស្ស", male:"ប្រុស", female:"ស្រី", age:"អាយុ", profilePhoto:"ឈ្មោះឯកសាររូបថត", searchStudents:"ស្វែងរកសិស្ស", search:"ស្វែងរក",
     total:"សរុប", absent:"អវត្តមាន", summaryPresentCount:"ចំនួនមានវត្តមាន", summaryAbsentCount:"ចំនួនអវត្តមាន", summaryNoRecord:"មិនមានកំណត់ត្រា", summaryLoading:"កំពុងផ្ទុក", summaryUnavailable:"មិនអាចទាញទិន្នន័យ", summaryHint:"ចុចលើប្រអប់ដើម្បីមើលកាលបរិច្ឆេទ និងស្ថានភាព។", summary13:"៣ ខែចុងក្រោយ", summary26:"៦ ខែចុងក្រោយ", summary52:"១២ ខែចុងក្រោយ", summaryAllClasses:"គ្រប់ថ្នាក់", monthlyReport:"របាយការណ៍ប្រចាំខែ", average:"មធ្យម", sundays:"ថ្ងៃអាទិត្យ", weekMonths:"សប្តាហ៍/ខែ", restore:"ស្តារឡើងវិញ", emptyTrash:"លុបធុងសំរាម", clearChecker:"Clear Checker", clearCheckerConfirm:"Clear attendance checker logs permanently?", clearActivity:"សម្អាតសកម្មភាព",
     loading:"កំពុងផ្ទុក...", enterEmailKey:"សូមបញ្ចូលអ៊ីមែល និងលេខសម្ងាត់", noRole:"មិនទាន់បានកំណត់តួនាទី", saved:"បានរក្សាទុក", copied:"បានចម្លង", churchSaved:"បានរក្សាទុកពួកជំនុំ", churchUpdated:"បានកែប្រែពួកជំនុំ", roleSaved:"បានរក្សាទុកតួនាទី", roleUpdated:"បានកែប្រែតួនាទី", classSaved:"បានរក្សាទុកថ្នាក់", classUpdated:"បានកែប្រែថ្នាក់", studentSaved:"បានរក្សាទុកសិស្ស", studentUpdated:"បានកែប្រែសិស្ស", attendanceSaved:"បានរក្សាទុកវត្តមាន",
     addRoleFields:"សូមបន្ថែម UID ឈ្មោះ និងពួកជំនុំ។ បង្កើតពួកជំនុំជាមុនសិន។", addStudentFields:"សូមបន្ថែមឈ្មោះ ពួកជំនុំ និងថ្នាក់", deleteConfirm:"តើលុបមែនទេ?", restoreConfirm:"តើស្តារឡើងវិញមែនទេ?", emptyTrashConfirm:"លុបធុងសំរាមជាអចិន្ត្រៃយ៍មែនទេ?", clearActivityConfirm:"សម្អាតកំណត់ត្រាសកម្មភាពទាំងអស់មែនទេ?", itemNotFound:"រកមិនឃើញធាតុ", restoreItemNotFound:"រកមិនឃើញធាតុសម្រាប់ស្តារ",
@@ -848,7 +883,10 @@ function applyTranslations(){
   if($("userText") && state.profile) $("userText").textContent=state.profile?.name || roleLabel(state.role);
   setPlaceholder("email","email"); setPlaceholder("password","key"); setPlaceholder("churchName","churchName"); setPlaceholder("roleName","name"); setPlaceholder("roleEmail","email"); setPlaceholder("roleUid","firebaseUid"); setPlaceholder("className","className"); setPlaceholder("studentName","studentName"); setPlaceholder("studentAge","age"); setPlaceholder("studentPhoto","profilePhoto"); setPlaceholder("studentSearch","searchStudents"); setPlaceholder("attSearch","search");
   setText("#remember span","remember"); setText("#page-home h2","overview"); setText(".home-stats .stat:nth-child(1) span","churches"); setText(".home-stats .stat:nth-child(2) span","students"); setText(".home-stats .stat:nth-child(3) span","present"); setText("#page-church h2","church"); setText("#page-roles h2","assignRole"); setText("#page-classes h2","classes"); setText("#page-students h2","students"); setText("#page-attendance h2","attendancePage"); setText("#page-reports h2","monthlyReport");
-  setText("#summaryStudentsLabel","students"); setText("#summaryCheckedLabel","summaryPresentCount"); setText("#summaryAbsentLabel","summaryAbsentCount");
+  setText("#classStartLabel","classStartDate"); setText("#classEndLabel","classEndDate");
+  setText("#classLifecycleLabel","classLifecycle"); setText("#classDateHelp","classDateHelp");
+  setText("#cancelClassEdit","classCancel");
+  setSelectLabel("classLifecycle","active","classActive"); setSelectLabel("classLifecycle","archived","classArchived");
   setText("#restoreTitle","restore"); setText("#checkerTitle","attendanceChecker"); setText("#activityTitle","activity"); setText("#page-themes > .panel:nth-of-type(1) h2","themes"); setText("#themeEffectsTitle","effects"); setText(".att-stats .stat:nth-child(1) span","total"); setText(".att-stats .stat:nth-child(2) span","present"); setText(".att-stats .stat:nth-child(3) span","absent"); setText(".report-stats .stat:nth-child(1) span","students"); setText(".report-stats .stat:nth-child(2) span","total"); setText(".report-stats .stat:nth-child(3) span","weekMonths"); setText(".detail-total span","total");
   if($("copyHomeReport")) $("copyHomeReport").innerHTML=`${tr("copyWeek")} <span id="homeReportDate">${$("homeReportDate")?.textContent||""}</span>`;
   [["saveChurch","save"],["saveRole","saveRole"],["saveClass","save"],["saveStudent","save"]].forEach(([id,key])=>{ if($(id)) $(id).textContent=tr(key); });
@@ -1168,13 +1206,48 @@ $("saveRole").onclick=async()=>{
   const data={uid,name,email,role,churchId,active:true,updatedAt:Date.now()};
   if(await write("users/"+uid,data,"roleStatus",editingRoleId?tr("roleUpdated"):tr("roleSaved"))){ await logActivity(action,"users",uid,name); editingRoleId=""; $("roleUid").disabled=false; $("roleUid").value=$("roleName").value=$("roleEmail").value=""; renderRoles(); }
 };
+function classDateValue(value){
+  const v=String(value||"").trim();
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(v))return "";
+  const d=new Date(v+"T12:00:00");
+  return Number.isNaN(d.getTime())||dateKey(d)!==v?"":v;
+}
+function resetClassForm(){
+  editingClassId="";
+  $("className").value="";
+  $("classStartDate").value=today();
+  $("classEndDate").value="";
+  $("classLifecycle").value="active";
+  $("cancelClassEdit").classList.add("hidden");
+  $("classStatus").textContent="";
+  syncCustomSelect("classChurch");
+}
+$("cancelClassEdit").onclick=()=>{resetClassForm();renderClasses();};
+$("classStartDate").value=today();
 $("saveClass").onclick=async()=>{
-  const name=clean($("className").value), churchId=canAdmin()?$("classChurch").value:roleChurch();
-  if(!name||!churchId)return;
-  const action=editingClassId?"updated":"created";
-  const id=editingClassId || push(ref(db,"classes")).key;
-  const old=state.classes[id] || {};
-  if(await write("classes/"+id,{...old,name,churchId,updatedAt:Date.now()},"classStatus",editingClassId?tr("classUpdated"):tr("classSaved"))){ await logActivity(action,"classes",id,name); editingClassId=""; $("className").value=""; renderClasses(); }
+  const name=clean($("className").value),churchId=canAdmin()?$("classChurch").value:roleChurch();
+  if(!name||!churchId){showStatus("classStatus",tr("className"),false);return;}
+  const old=editingClassId?(state.classes[editingClassId]||{}):{};
+  const start=$("classStartDate").value,end=$("classEndDate").value;
+  // Existing undated classes can be edited without imposing a new start date.
+  if(!start&&!editingClassId){showStatus("classStatus",tr("classStartRequired"),false);return;}
+  if((start&&!classDateValue(start))||(end&&!classDateValue(end))){
+    showStatus("classStatus",tr("classDateInvalid"),false);return;
+  }
+  if(start&&end&&end<start){showStatus("classStatus",tr("classDateInvalid"),false);return;}
+  const lifecycle=$("classLifecycle").value==="archived"?"archived":"active";
+  const id=editingClassId||push(ref(db,"classes")).key;
+  const isEditing=!!editingClassId,action=isEditing?"updated":"created";
+  const data={...old,name,churchId,startDate:start||old.startDate||"",endDate:end||"",status:lifecycle,
+    archivedAt:lifecycle==="archived"?(old.archivedAt||Date.now()):null,updatedAt:Date.now()};
+  if(await write("classes/"+id,data,"classStatus",isEditing?tr("classUpdated"):tr("classSaved"))){
+    await logActivity(action,"classes",id,name);
+    resetClassForm();
+    resetSummaryRenderCache();
+    renderSelects();
+    renderClasses();
+    // No student or attendance records are modified.
+  }
 };
 // Cloudinary unsigned upload. The admin-controlled preset must restrict uploads.
 function cloudUpload(file,config,onProgress){
@@ -1476,7 +1549,14 @@ function renderRoles(){
 }
 function renderClasses(){
   const classes=visibleClasses().sort((a,b)=>String(churchName(a.churchId)||"").localeCompare(String(churchName(b.churchId)||""))||String(a.name||"").localeCompare(String(b.name||"")));
-  const row=c=>`<div class="card"><div class="card-main"><div class="card-title"><b>${esc(c.name)}</b><small>${esc(churchName(c.churchId))}</small></div><div class="actions"><button class="btn icon-btn edit-btn" onclick="editClass('${esc(c.id)}')" title="${tr("edit")}"><i class="ri-edit-line"></i></button>${editingClassId===c.id ? `<button class="btn icon-btn danger" onclick="del('classes','${esc(c.id)}')" title="${tr("delete")}"><i class="ri-delete-bin-line"></i></button>` : ""}</div></div></div>`;
+  const row=c=>{
+    const archived=c.status==="archived";
+    const dates=[c.startDate?c.startDate:tr("classNotSet"),c.endDate||"…"].join(" — ");
+    return `<div class="card"><div class="card-main"><div class="card-title">
+      <b>${esc(c.name)}</b><small>${esc(churchName(c.churchId))}</small>
+      <div class="class-record-info"><span class="class-state-pill ${archived?"archived":""}">${esc(tr(archived?"classArchived":"classActive"))}</span><span class="class-period-text">${esc(dates)}</span></div>
+    </div><div class="actions"><button class="btn icon-btn edit-btn" onclick="editClass('${esc(c.id)}')" title="${tr("edit")}"><i class="ri-edit-line"></i></button>${editingClassId===c.id ? `<button class="btn icon-btn danger" onclick="del('classes','${esc(c.id)}')" title="${tr("delete")}"><i class="ri-delete-bin-line"></i></button>` : ""}</div></div></div>`;
+  };
   const churchIds=[...new Set([...visibleChurches().map(c=>c.id),...classes.map(c=>c.churchId).filter(Boolean)])];
   const html=churchIds.map(id=>{
     const group=classes.filter(c=>c.churchId===id);
@@ -1535,6 +1615,10 @@ function editClass(id){
   editingClassId = id;
   $("className").value = c.name || "";
   if($("classChurch")) $("classChurch").value = c.churchId || "";
+  $("classStartDate").value=classDateValue(c.startDate);
+  $("classEndDate").value=classDateValue(c.endDate);
+  $("classLifecycle").value=c.status==="archived"?"archived":"active";
+  $("cancelClassEdit").classList.remove("hidden");
   syncCustomSelects();
   page("classes");
   window.scrollTo({top:0,behavior:"smooth"});
@@ -1972,48 +2056,50 @@ function renderReports(){
   document.querySelectorAll("[data-preview-src]").forEach(btn=>btn.onclick=()=>showPhotoPreview(btn.dataset.previewSrc,btn.dataset.previewName));
 }
 
-/* Summary reads existing scoped student attendance; never writes attendance data.
-   Scan a generous discovery window, then show ONLY the actual first-to-last
-   recorded Sunday for each class, including neutral unrecorded weeks between. */
+/* The Class schedule is authoritative when configured. Existing classes without
+   dates retain the original recorded-week range. No attendance data is changed. */
 let summaryToastTimer=0;
 function summaryCandidateDates(classId){
-  const latest=currentSunday();
-  const nowYear=Number(latest.slice(0,4));
-  let first=`${nowYear-2}-01-01`;
   const cls=state.classes[classId]||{};
-  const raw=cls.startDate||cls.startedAt||cls.createdAt;
-  if(raw){
-    const dt=typeof raw==="number"?new Date(raw<1e12?raw*1000:raw):new Date(raw);
-    if(!Number.isNaN(dt.getTime()) && dt.getFullYear()>=2000){
-      const candidate=dateKey(dt);
-      if(candidate<first) first=candidate;
-    }
-  }
-  const d=new Date(first+"T12:00:00");
-  d.setDate(d.getDate()+(7-d.getDay())%7);
-  const dates=[];
-  for(let date=dateKey(d), i=0;date<=latest && i<780;date=shiftDate(date,7),i++) dates.push(date);
-  return dates;
+  const todaySunday=currentSunday();
+  const earliestLegacy=`${Number(todaySunday.slice(0,4))-2}-01-01`;
+  // Explicit class dates override the legacy history-discovery start.
+  const start=classDateValue(cls.startDate)||earliestLegacy;
+  const configuredEnd=classDateValue(cls.endDate);
+  const last=configuredEnd&&configuredEnd<todaySunday?configuredEnd:todaySunday;
+  if(start>last)return [];
+  const firstSunday=new Date(start+"T12:00:00");
+  firstSunday.setDate(firstSunday.getDate()+(7-firstSunday.getDay())%7);
+  const result=[];
+  for(let d=dateKey(firstSunday),i=0;d<=last&&i<780;d=shiftDate(d,7),i++)result.push(d);
+  return result;
 }
 function summaryClassPeriods(students){
   const byClass=new Map();
   students.forEach(st=>{
-    if(!st.classId) return;
-    if(!byClass.has(st.classId)) byClass.set(st.classId,[]);
+    if(!st.classId)return;
+    if(!byClass.has(st.classId))byClass.set(st.classId,[]);
     byClass.get(st.classId).push(st);
   });
   const periods=new Map();
   byClass.forEach((classStudents,classId)=>{
+    const cls=state.classes[classId]||{};
     const dates=summaryCandidateDates(classId);
-    // Current Firebase rules already authorize scoped /attendance/date/class/student reads.
     classStudents.forEach(st=>dates.forEach(date=>listenAttendance(date,classId,st.id)));
     const recorded=dates.filter(date=>classStudents.some(st=>{
       const value=state.attendance[date]?.[classId]?.[st.id];
       return value==="present"||value==="absent";
     }));
-    const first=recorded[0], last=recorded[recorded.length-1];
-    const within=first&&last?dates.filter(date=>date>=first&&date<=last):[];
-    const loading=!first&&dates.some(date=>classStudents.some(st=>{
+    const first=recorded[0],last=recorded[recorded.length-1];
+    const dated=!!classDateValue(cls.startDate);
+    const fixedEnd=!!classDateValue(cls.endDate);
+    // With an explicit start, display the entire configured period, including
+    // neutral unrecorded Sundays. Archived classes without an end stop at the
+    // last recorded week rather than extending to today indefinitely.
+    const within=dated?(cls.status==="archived"&&!fixedEnd
+      ?(last?dates.filter(date=>date<=last):[]):dates)
+      :(first&&last?dates.filter(date=>date>=first&&date<=last):[]);
+    const loading=dates.some(date=>classStudents.some(st=>{
       const key=`${date}/${classId}/${st.id}`;
       return !attendanceLoaded.has(key)&&!attendanceErrors.has(key);
     }));
