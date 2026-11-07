@@ -2226,7 +2226,7 @@ function summaryClassPeriods(students){
     const dates=summaryCandidateDates(classId);
     listenAttendanceVerification(classId);
     classStudents.forEach(st=>dates.forEach(date=>listenAttendance(date,classId,st.id)));
-    const recorded=dates.filter(date=>classStudents.some(st=>{
+    const recorded=dates.filter(date=>verificationIsConfirmed(classId,date)||classStudents.some(st=>{
       const value=state.attendance[date]?.[classId]?.[st.id];
       return value==="present"||value==="absent";
     }));
