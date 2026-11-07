@@ -294,7 +294,6 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
 
 /* Compact single-line student attendance rows (kid2pro only). */
 #page-summary .summary-top-panel{margin-bottom:10px}
-#page-summary .summary-header{margin-bottom:10px}
 #page-summary .summary-filters{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
 #page-summary .summary-filters>.custom-select{min-width:0;width:100%}
 #page-summary .summary-list{gap:8px}
@@ -579,14 +578,6 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
 
   <section id="page-summary" class="page">
     <div class="panel glass summary-top-panel">
-      <div class="summary-header">
-        <h2>Summary</h2>
-        <div class="summary-legend" aria-label="Attendance legend">
-          <span><i class="summary-legend-box yes">✓</i><span id="summaryLegendPresent">Present</span></span>
-          <span><i class="summary-legend-box no">×</i><span id="summaryLegendAbsent">Absent</span></span>
-          <span><i class="summary-legend-box none"></i><span id="summaryLegendUnknown">No record</span></span>
-        </div>
-      </div>
       <div class="summary-filters">
         <select id="summaryChurch" class="input native-select-hidden" aria-label="Church"></select><div class="custom-select" data-select="summaryChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
         <select id="summaryClass" class="input native-select-hidden" aria-label="Filter by class"></select><div class="custom-select" data-select="summaryClass"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
@@ -856,8 +847,7 @@ function applyTranslations(){
   if($("appTitle")) $("appTitle").textContent=tr("appTitle");
   if($("userText") && state.profile) $("userText").textContent=state.profile?.name || roleLabel(state.role);
   setPlaceholder("email","email"); setPlaceholder("password","key"); setPlaceholder("churchName","churchName"); setPlaceholder("roleName","name"); setPlaceholder("roleEmail","email"); setPlaceholder("roleUid","firebaseUid"); setPlaceholder("className","className"); setPlaceholder("studentName","studentName"); setPlaceholder("studentAge","age"); setPlaceholder("studentPhoto","profilePhoto"); setPlaceholder("studentSearch","searchStudents"); setPlaceholder("attSearch","search");
-  setText("#remember span","remember"); setText("#page-home h2","overview"); setText(".home-stats .stat:nth-child(1) span","churches"); setText(".home-stats .stat:nth-child(2) span","students"); setText(".home-stats .stat:nth-child(3) span","present"); setText("#page-church h2","church"); setText("#page-roles h2","assignRole"); setText("#page-classes h2","classes"); setText("#page-students h2","students"); setText("#page-attendance h2","attendancePage"); setText("#page-summary h2","summary"); setText("#page-reports h2","monthlyReport");
-  setText("#summaryLegendPresent","present"); setText("#summaryLegendAbsent","absent"); setText("#summaryLegendUnknown","summaryNoRecord");
+  setText("#remember span","remember"); setText("#page-home h2","overview"); setText(".home-stats .stat:nth-child(1) span","churches"); setText(".home-stats .stat:nth-child(2) span","students"); setText(".home-stats .stat:nth-child(3) span","present"); setText("#page-church h2","church"); setText("#page-roles h2","assignRole"); setText("#page-classes h2","classes"); setText("#page-students h2","students"); setText("#page-attendance h2","attendancePage"); setText("#page-reports h2","monthlyReport");
   setText("#summaryStudentsLabel","students"); setText("#summaryCheckedLabel","summaryPresentCount"); setText("#summaryAbsentLabel","summaryAbsentCount");
   setText("#restoreTitle","restore"); setText("#checkerTitle","attendanceChecker"); setText("#activityTitle","activity"); setText("#page-themes > .panel:nth-of-type(1) h2","themes"); setText("#themeEffectsTitle","effects"); setText(".att-stats .stat:nth-child(1) span","total"); setText(".att-stats .stat:nth-child(2) span","present"); setText(".att-stats .stat:nth-child(3) span","absent"); setText(".report-stats .stat:nth-child(1) span","students"); setText(".report-stats .stat:nth-child(2) span","total"); setText(".report-stats .stat:nth-child(3) span","weekMonths"); setText(".detail-total span","total");
   if($("copyHomeReport")) $("copyHomeReport").innerHTML=`${tr("copyWeek")} <span id="homeReportDate">${$("homeReportDate")?.textContent||""}</span>`;
