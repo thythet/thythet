@@ -1120,7 +1120,7 @@ function cloudUpload(file,config,onProgress){
       if(request.status<200||request.status>=300){reject(new Error(data.error?.message||"HTTP "+request.status));return;}
       try{
         const url=new URL(data.secure_url);
-        if(url.protocol!=="https:"||!/(^|\\.)cloudinary\\.com$/i.test(url.hostname))throw Error();
+        if(url.protocol!=="https:" || !url.hostname.toLowerCase().endsWith(".cloudinary.com"))throw Error();
         resolve(data.secure_url);
       }catch{reject(new Error("Cloudinary returned an invalid secure URL"))}
     };
