@@ -353,6 +353,41 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
   #page-summary .summary-count{min-width:44px;min-height:43px;padding:6px 7px;border-radius:12px}
   #page-summary .summary-count strong{font-size:19px}
 }
+
+/* kid2pro: Attendance — profile photo | order | name/details | attendance control */
+.att-card.att-photo-row{
+  display:grid;grid-template-columns:46px 32px minmax(0,1fr) 52px;
+  align-items:center;gap:10px;min-width:0;
+}
+.att-photo-row .att-avatar{
+  width:46px;height:46px;min-width:0;padding:0;display:grid;place-items:center;
+  overflow:hidden;border-radius:14px;
+  border:1px solid rgba(147,197,253,.38);
+  background:linear-gradient(135deg,rgba(93,167,255,.22),rgba(122,121,255,.12));
+  color:#dbeafe;font-size:25px;cursor:zoom-in;
+}
+.att-photo-row .att-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.att-photo-row .att-avatar img[hidden]{display:none}
+.att-photo-row .att-avatar:disabled{cursor:default;opacity:1}
+.att-photo-row .att-order{width:32px;height:34px;border-radius:11px;font-size:15px}
+.att-photo-row .att-student-info{min-width:0}
+.att-photo-row .att-student-info b{font-size:19px;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.att-photo-row .att-student-info small{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.att-photo-row .check{justify-self:end;width:48px;height:48px}
+@media(max-width:640px){
+  .att-card.att-photo-row{grid-template-columns:42px 28px minmax(0,1fr) 46px;gap:7px;padding:10px!important}
+  .att-photo-row .att-avatar{width:42px;height:42px;border-radius:12px;font-size:23px}
+  .att-photo-row .att-order{width:28px;height:32px;font-size:14px}
+  .att-photo-row .att-student-info b{font-size:17px}
+  .att-photo-row .att-student-info small{font-size:12px}
+  .att-photo-row .check{width:46px;height:46px}
+}
+@media(max-width:370px){
+  .att-card.att-photo-row{grid-template-columns:38px 25px minmax(0,1fr) 42px;gap:5px;padding:8px!important}
+  .att-photo-row .att-avatar{width:38px;height:38px}
+  .att-photo-row .att-order{width:25px;height:30px}
+  .att-photo-row .check{width:42px;height:42px}
+}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#172b51">
@@ -2110,10 +2145,45 @@ function renderAttendance(useRangeSort=true){
     range:rangeDates.filter(date=>state.attendance[date]?.[s.classId]?.[s.id]==="present").length
   })).sort((a,b)=>Number(b.p)-Number(a.p)||(useRangeSort?b.range-a.range:0)||a.s.name.localeCompare(b.s.name)||a.i-b.i).map(x=>x.s);
   $("attTotal").textContent=students.length; $("attPresent").textContent=present; $("attAbsent").textContent=students.length-present;
-  const nextAttListHtml=ordered.map((s,i)=>{const popKey=`${state.selectedSunday}/${classId}/${s.id}`;return `<div class="card att-card ${state.popAttendanceKey===popKey?"week-pop":""}"><div class="num">${i+1}</div><div><b>${esc(s.name)}</b><small>${esc(genderLabel(s.gender))} &bull; ${esc(className(s.classId))}</small></div><button class="check ${rec[s.id]==='present'?'on':''}" data-stu="${esc(s.id)}">${rec[s.id]==='present'?'&check;':''}</button></div>`}).join("")||`<div class="empty">${tr("noStudents")}</div>`;
+  const nextAttListHtml=ordered.map((s,i)=>{
+    const popKey=`${state.selectedSunday}/${classId}/${s.id}`;
+    const src=studentPhotoSrc(s);
+    const avatar=src
+      ?`<img src="${esc(src)}" data-att-photo="${esc(s.id)}" alt="" loading="lazy"><i class="ri-user-smile-line" hidden aria-hidden="true"></i>`
+      :`<i class="ri-user-smile-line" aria-hidden="true"></i>`;
+    return `<div class="card att-card att-photo-row ${state.popAttendanceKey===popKey?"week-pop":""}">
+      <button type="button" class="att-avatar" data-att-avatar="${esc(s.id)}" aria-label="${esc(tr("previewPhoto"))}: ${esc(s.name)}" ${src?"":"disabled"}>${avatar}</button>
+      <span class="num att-order">${i+1}</span>
+      <div class="att-student-info">
+        <b>${esc(s.name)}</b>
+        <small>${esc([genderLabel(s.gender),className(s.classId)].filter(Boolean).join(" • "))}</small>
+      </div>
+      <button class="check ${rec[s.id]==="present"?"on":""}" data-stu="${esc(s.id)}" aria-label="${esc(s.name)} — ${rec[s.id]==="present"?tr("present"):tr("absent")}">${rec[s.id]==="present"?"&check;":""}</button>
+    </div>`;
+  }).join("")||`<div class="empty">${tr("noStudents")}</div>`;
   if(attListHtml!==nextAttListHtml){
     attListHtml=nextAttListHtml;
     $("attList").innerHTML=nextAttListHtml;
+    // A saved student photo may be a full URL or a filename without an extension.
+    // Try the same set of sources used in the Student and Summary tabs.
+    $("attList").querySelectorAll("[data-att-avatar]").forEach(btn=>{
+      const student=state.students[btn.dataset.attAvatar];
+      const img=btn.querySelector("img[data-att-photo]");
+      if(!img) return;
+      const sources=studentPhotoSources(student);
+      let nextSource=0;
+      img.onerror=()=>{
+        nextSource++;
+        if(nextSource<sources.length){img.src=sources[nextSource];return;}
+        img.hidden=true;
+        const fallback=img.nextElementSibling;
+        if(fallback)fallback.hidden=false;
+        btn.disabled=true;
+      };
+      btn.onclick=()=>{
+        if(!btn.disabled)showPhotoPreview(img.currentSrc||img.src,student?.name||"");
+      };
+    });
   }
   document.querySelectorAll("[data-stu]").forEach(btn=>btn.onclick=async()=>{
     const sid=btn.dataset.stu, path=`attendance/${state.selectedSunday}/${classId}/${sid}`, popKey=`${state.selectedSunday}/${classId}/${sid}`;
