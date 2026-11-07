@@ -861,8 +861,11 @@ function updateVerificationControl(classId,date){
   const verified=chosen&&verificationIsConfirmed(classId,date);
   const loading=chosen&&!verificationLoaded.has(classId)&&!verificationErrors.has(classId);
   const hasError=chosen&&verificationErrors.has(classId);
+  const classStudents=chosen?attendanceStudents(classId):[];
+  const marksReady=chosen&&classStudents.length>0&&classStudents.every(st=>
+    attendanceLoaded.has(`${date}/${classId}/${st.id}`));
   const mayChange=canAdmin()||canPastor()||canTeacher();
-  button.disabled=!chosen||loading||hasError||!mayChange||verificationWritePending;
+  button.disabled=!chosen||loading||hasError||!marksReady||!mayChange||verificationWritePending;
   button.classList.toggle("verified",!!verified);
   button.setAttribute("aria-pressed",verified?"true":"false");
   const icon=button.querySelector("i");
@@ -873,7 +876,7 @@ function updateVerificationControl(classId,date){
   if(hasError)status.textContent=tr("verificationAccessError")+" ("+verificationErrors.get(classId)+")";
   else if(errorForSelected)status.textContent=errorForSelected;
   else if(verificationWritePending)status.textContent=tr("verificationSaving");
-  else if(loading)status.textContent=tr("loading");
+  else if(loading||(chosen&&!marksReady))status.textContent=tr("loading");
   else status.textContent="";
 }
 // This is PUBLIC unsigned-upload configuration, not a secret.
@@ -1909,6 +1912,9 @@ $("attVerifyBtn").onclick=async()=>{
   const churchId=attendanceChurchId();
   if(!date||!classId||!churchId||state.classes[classId]?.churchId!==churchId)return;
   if(!verificationLoaded.has(classId)||verificationErrors.has(classId))return;
+  const classStudents=attendanceStudents(classId);
+  if(!classStudents.length||!classStudents.every(st=>
+    attendanceLoaded.has(`${date}/${classId}/${st.id}`)))return;
   const current=verificationIsConfirmed(classId,date);
   const message=tr(current?"verificationDisableConfirm":"verificationEnableConfirm");
   if(!confirm(message))return;
@@ -2371,8 +2377,8 @@ function renderAttendance(useRangeSort=true){
   const verifiedReady=verificationLoaded.has(classId);
   $("attTotal").textContent=total;
   $("attPresent").textContent=presentTotal;
-  $("attAbsent").textContent=verifiedReady&&markedKnown&&confirmed?total-presentTotal:0;
-  $("attUnmarked").textContent=verifiedReady&&markedKnown&&!confirmed?total-presentTotal:0;
+  $("attAbsent").textContent=!verifiedReady||!markedKnown?"…":confirmed?total-presentTotal:0;
+  $("attUnmarked").textContent=!verifiedReady||!markedKnown?"…":confirmed?0:total-presentTotal;
   updateVerificationControl(classId,state.selectedSunday);
   const nextAttListHtml=ordered.map((s,i)=>{
     const popKey=`${state.selectedSunday}/${classId}/${s.id}`;
@@ -2389,7 +2395,7 @@ function renderAttendance(useRangeSort=true){
       </div>
       <div class="att-result">
         <span class="att-absent-x ${attendanceDisplayStatus(state.selectedSunday,classId,s.id)==="absent"?"":"hidden"}" aria-hidden="true">×</span>
-        <button class="check ${rec[s.id]==="present"?"on":""}" data-stu="${esc(s.id)}" aria-label="${esc(s.name)} — ${tr(attendanceDisplayStatus(state.selectedSunday,classId,s.id)==="none"?"attendanceUnmarked":attendanceDisplayStatus(state.selectedSunday,classId,s.id)==="present"?"present":"absent")}">${rec[s.id]==="present"?"&check;":""}</button>
+        <button class="check ${rec[s.id]==="present"?"on":""}" data-stu="${esc(s.id)}" aria-label="${esc(s.name)} — ${esc(tr(({present:"present",absent:"absent",none:"attendanceUnmarked",pending:"summaryLoading",error:"summaryUnavailable"})[attendanceDisplayStatus(state.selectedSunday,classId,s.id)]||"attendanceUnmarked"))}">${rec[s.id]==="present"?"&check;":""}</button>
       </div>
     </div>`;
   }).join("")||`<div class="empty">${tr("noStudents")}</div>`;
