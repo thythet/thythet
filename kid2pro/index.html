@@ -1417,13 +1417,18 @@ function listenAttendance(date,classId,studentId){
     attendanceErrors.delete(key);
     if(val == null) delete state.attendance[date][classId][studentId];
     else state.attendance[date][classId][studentId]=val;
-    scheduleAttendanceRender();
-    renderHomeReport();
-    scheduleStudentRender();
-    renderStudentDetails();
-    scheduleReportRender();
-    scheduleSummaryRender();
-    renderStats();
+    // Historical Summary scans can open many scoped subscriptions. Avoid
+    // rerendering unrelated pages for each snapshot; they refresh on navigation.
+    if(isPage("summary")){
+      scheduleSummaryRender();
+    }else{
+      scheduleAttendanceRender();
+      if(isPage("home")) renderHomeReport();
+      scheduleStudentRender();
+      if(isPage("students") || !$("studentModal")?.classList.contains("hidden")) renderStudentDetails();
+      scheduleReportRender();
+      renderStats();
+    }
   },err=>{
     attendanceErrors.add(key);
     console.warn(`Unable to load attendance ${key}:`,err.code||err.message);
