@@ -418,19 +418,7 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
   #page-summary .summary-filters-standalone{gap:8px;margin:8px 0 10px!important}
 }
 
-/* Attendance verification: one class and selected Sunday, saved independently. */
-.att-search-verification{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;align-items:center}
-.att-search-verification .att-list-search{min-width:0;margin-top:10px}
-.att-search-verification .att-verify-btn{
-  min-height:50px;min-width:132px;display:flex;gap:8px;align-items:center;justify-content:center;
-  border-radius:16px;font-size:14px;white-space:nowrap;background:rgba(147,197,253,.1);
-  border:1px solid rgba(147,197,253,.3);color:#e2e8f0
-}
-.att-verify-btn i{font-size:22px}
-.att-verify-btn.verified{background:linear-gradient(135deg,rgba(34,197,94,.62),rgba(16,185,129,.4));border-color:rgba(110,231,183,.7);color:white}
-.att-verify-btn:disabled{cursor:not-allowed;opacity:.60}
-.att-verify-status{font-size:12px;font-weight:800;color:#fecaca;margin-top:4px;min-height:0;overflow-wrap:anywhere}
-.att-stats{grid-template-columns:repeat(4,minmax(0,1fr))}
+/* Derived absence indicator next to an unchecked student. */
 .att-photo-row .att-result{display:flex;align-items:center;justify-content:flex-end;gap:7px;min-width:0}
 .att-photo-row .att-absent-x{
   width:32px;height:32px;border-radius:9px;flex:0 0 32px;display:grid;place-items:center;
@@ -441,10 +429,6 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
 .att-card.att-photo-row{grid-template-columns:46px 32px minmax(0,1fr) auto}
 .week-check.unknown{background:rgba(141,163,194,.11);color:var(--muted)}
 @media(max-width:640px){
-  .att-search-verification{grid-template-columns:minmax(0,1fr) auto;gap:7px}
-  .att-search-verification .att-verify-btn{min-width:105px;padding:9px 8px!important;font-size:12px;gap:4px}
-  .att-verify-btn i{font-size:18px}
-  .att-stats{grid-template-columns:repeat(2,minmax(0,1fr))!important}
   .att-card.att-photo-row{grid-template-columns:42px 28px minmax(0,1fr) auto}
   .att-photo-row .att-absent-x{width:25px;height:29px;flex-basis:25px;font-size:22px}
   .att-photo-row .att-result .check{flex-basis:46px}
@@ -639,13 +623,8 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
         <div class="stat"><span>Total</span><b id="attTotal">0</b></div>
         <div class="stat"><span>Present</span><b id="attPresent">0</b></div>
         <div class="stat"><span>Absent</span><b id="attAbsent">0</b></div>
-        <div class="stat"><span id="attUnmarkedLabel">No Record</span><b id="attUnmarked">0</b></div>
       </div>
-      <div class="att-search-verification">
-        <div class="att-list-search"><i class="ri-search-line"></i><input id="attSearch" class="input" placeholder="Search"></div>
-        <button id="attVerifyBtn" class="btn att-verify-btn" type="button" aria-pressed="false" disabled><i class="ri-checkbox-blank-line" aria-hidden="true"></i><span id="attVerifyLabel">បានពិនិត្យ</span></button>
-      </div>
-      <div id="attVerifyStatus" class="att-verify-status" role="status" aria-live="polite"></div>
+      <div class="att-list-search"><i class="ri-search-line"></i><input id="attSearch" class="input" placeholder="Search"></div>
     </div>
     <div id="attList" class="list"></div>
     <div id="attLoading" class="att-loading hidden" aria-live="polite" aria-busy="true">
@@ -817,67 +796,25 @@ const state = { user:null, profile:null, role:"guest", churchId:null, selectedCh
 const attendanceListeners = new Set();
 const attendanceLoaded = new Set();
 const attendanceErrors = new Set();
-// Verification is a separate record per class and Sunday; it never rewrites
-// existing students' attendance values when the teacher finalizes a session.
-state.attendanceVerification={};
-const verificationListeners=new Set();
-const verificationLoaded=new Set();
-const verificationErrors=new Map();
-let verificationWritePending=false;
-let verificationSaveError=null;
-function verificationIsConfirmed(classId,date){
-  return state.attendanceVerification[classId]?.[date]?.verified===true;
+// A Sunday is No Record when no student in the selected class is checked Present.
+function attendanceWeekState(date,classId){
+  if(!date||!classId)return "none";
+  const students=Object.entries(state.students).filter(([id,st])=>
+    st?.classId===classId && (!state.classes[classId]?.churchId||
+      st.churchId===state.classes[classId].churchId));
+  const marks=state.attendance[date]?.[classId]||{};
+  if(students.some(([id])=>marks[id]==="present"))return "recorded";
+  if(students.some(([id])=>attendanceErrors.has(`${date}/${classId}/${id}`)))return "error";
+  if(students.some(([id])=>!attendanceLoaded.has(`${date}/${classId}/${id}`)))return "pending";
+  return "none";
 }
 function attendanceDisplayStatus(date,classId,studentId){
-  const record=state.attendance[date]?.[classId]?.[studentId];
-  if(record==="present")return "present";
-  if(verificationErrors.has(classId))return "error";
-  if(!verificationLoaded.has(classId))return "pending";
-  return verificationIsConfirmed(classId,date)?"absent":"none";
-}
-function listenAttendanceVerification(classId){
-  if(!classId||verificationListeners.has(classId))return;
-  verificationListeners.add(classId);
-  onValue(ref(db,"attendanceVerification/"+classId),snap=>{
-    state.attendanceVerification[classId]=snap.val()||{};
-    verificationLoaded.add(classId);
-    verificationErrors.delete(classId);
-    scheduleAttendanceRender();
-    scheduleSummaryRender();
-    if(selectedDetailStudentId && state.students[selectedDetailStudentId]?.classId===classId
-       && !$("studentModal")?.classList.contains("hidden"))renderStudentDetails();
-  },error=>{
-    verificationErrors.set(classId,error.code||error.message||"Permission denied");
-    verificationLoaded.delete(classId);
-    console.warn("Verification data could not be loaded:",classId,error.code||error.message);
-    scheduleAttendanceRender();
-    scheduleSummaryRender();
-  });
-}
-function updateVerificationControl(classId,date){
-  const button=$("attVerifyBtn"),status=$("attVerifyStatus");
-  if(!button||!status)return;
-  const chosen=!!classId&&!!date;
-  const verified=chosen&&verificationIsConfirmed(classId,date);
-  const loading=chosen&&!verificationLoaded.has(classId)&&!verificationErrors.has(classId);
-  const hasError=chosen&&verificationErrors.has(classId);
-  const classStudents=chosen?attendanceStudents(classId):[];
-  const marksReady=chosen&&classStudents.length>0&&classStudents.every(st=>
-    attendanceLoaded.has(`${date}/${classId}/${st.id}`));
-  const mayChange=canAdmin()||canPastor()||canTeacher();
-  button.disabled=!chosen||loading||hasError||!marksReady||!mayChange||verificationWritePending;
-  button.classList.toggle("verified",!!verified);
-  button.setAttribute("aria-pressed",verified?"true":"false");
-  const icon=button.querySelector("i");
-  if(icon)icon.className=verified?"ri-checkbox-line":"ri-checkbox-blank-line";
-  const label=button.querySelector("span");
-  if(label)label.textContent=tr("attendanceVerified");
-  const errorForSelected=verificationSaveError?.key===classId+"/"+date?verificationSaveError?.message:"";
-  if(hasError)status.textContent=tr("verificationAccessError")+" ("+verificationErrors.get(classId)+")";
-  else if(errorForSelected)status.textContent=errorForSelected;
-  else if(verificationWritePending)status.textContent=tr("verificationSaving");
-  else if(loading||(chosen&&!marksReady))status.textContent=tr("loading");
-  else status.textContent="";
+  const key=`${date}/${classId}/${studentId}`;
+  if(attendanceErrors.has(key))return "error";
+  if(!attendanceLoaded.has(key))return "pending";
+  if(state.attendance[date]?.[classId]?.[studentId]==="present")return "present";
+  const week=attendanceWeekState(date,classId);
+  return week==="recorded"?"absent":week;
 }
 // This is PUBLIC unsigned-upload configuration, not a secret.
 const cloudStorageKey="kid2pro_cloudinary_config_v1";
@@ -949,7 +886,7 @@ const I18N = {
     home:"Home", attendance:"Attend", summary:"Summary", attendancePage:"Attendance", church:"Church", roles:"Roles", classes:"Class", students:"Student", reports:"Report", dashboard:"Dashboard", activity:"Activity", themes:"Themes", effects:"Effects", compact:"Compact", normal:"Normal", logout:"Logout",
     overview:"Overview", churches:"Churches", present:"Present", copyWeek:"COPY THIS WEEK", churchName:"Church name", save:"Save", assignRole:"Assign Role", name:"Name", firebaseUid:"Firebase UID", pastor:"Pastor", teacher:"Teacher", saveRole:"Save Role",
     className:"Class name", classStartDate:"Start Date", classEndDate:"End Date (optional)", classLifecycle:"Status", classActive:"Active", classArchived:"Archived", classDateHelp:"Start Date is required for new classes. Leave End Date empty for an ongoing class. Archived classes and their attendance history remain available.", classDateInvalid:"End Date must be on or after Start Date.", classStartRequired:"Please choose a Start Date for this new class.", classCancel:"Cancel editing", classNotSet:"Date not set", studentName:"Student name", male:"Male", female:"Female", age:"Age", profilePhoto:"Profile picture file name", searchStudents:"Search students", search:"Search",
-    total:"Total", absent:"Absent", attendanceVerified:"Verified", attendanceUnmarked:"No Record", verificationEnableConfirm:"Verify attendance for this Sunday and class? All unchecked students will be treated as absent.", verificationDisableConfirm:"Remove verification for this Sunday and class? Unchecked students will return to No Record.", verificationAccessError:"Verification requires Firebase Realtime Database permission for attendanceVerification. Ask the administrator to update its rules.", verificationSaving:"Saving verification…", summaryPresentCount:"Present checks", summaryAbsentCount:"Absent checks", summaryNoRecord:"No record", summaryLoading:"Loading", summaryUnavailable:"Unavailable", summaryHint:"Tap a square to see its date and status.", summary13:"Last 3 months", summary26:"Last 6 months", summary52:"Last 12 months", summaryAllClasses:"All classes", monthlyReport:"Monthly Report", average:"Average", sundays:"Sundays", weekMonths:"Weeks/Months", restore:"Restore", attendanceChecker:"Attendance Checker", emptyTrash:"Empty Trash", clearChecker:"Clear Checker", clearCheckerConfirm:"Clear attendance checker logs permanently?", clearActivity:"Clear Activity", seeAll:"See all", seeLess:"See less", noChecker:"No attendance checks yet",
+    total:"Total", absent:"Absent", summaryPresentCount:"Present checks", summaryAbsentCount:"Absent checks", summaryNoRecord:"No record", summaryLoading:"Loading", summaryUnavailable:"Unavailable", summaryHint:"Tap a square to see its date and status.", summary13:"Last 3 months", summary26:"Last 6 months", summary52:"Last 12 months", summaryAllClasses:"All classes", monthlyReport:"Monthly Report", average:"Average", sundays:"Sundays", weekMonths:"Weeks/Months", restore:"Restore", attendanceChecker:"Attendance Checker", emptyTrash:"Empty Trash", clearChecker:"Clear Checker", clearCheckerConfirm:"Clear attendance checker logs permanently?", clearActivity:"Clear Activity", seeAll:"See all", seeLess:"See less", noChecker:"No attendance checks yet",
     loading:"Loading...", enterEmailKey:"Enter email and key", noRole:"No role assigned", saved:"Saved", copied:"Copied", churchSaved:"Church saved", churchUpdated:"Church updated", roleSaved:"Role saved", roleUpdated:"Role updated", classSaved:"Class saved", classUpdated:"Class updated", studentSaved:"Student saved", studentUpdated:"Student updated", attendanceSaved:"Attendance saved",
     addRoleFields:"Add UID, name, church. Create church first.", addStudentFields:"Add name, church, class", deleteConfirm:"Delete?", restoreConfirm:"Restore?", emptyTrashConfirm:"Empty trash permanently?", clearActivityConfirm:"Clear all activity log?", itemNotFound:"Item not found", restoreItemNotFound:"Restore item not found",
     noChurch:"No church", selectChurch:"Select church", selectClass:"Select class", noUsers:"No users", noClass:"No class", noStudent:"No student", noStudents:"No students", noDeleted:"No deleted items", noActivity:"No activity yet", noReport:"No report data", noSunday:"No Sunday in this month", sundayAttendance:"Sunday attendance", deleted:"deleted", details:"Details", edit:"Edit", delete:"Delete", previewPhoto:"Preview profile picture", student:"Student", roleAdmin:"BONGTHET", rolePastor:"pastor", roleTeacher:"teacher", week:"W", present:"Present"
@@ -959,7 +896,7 @@ const I18N = {
     home:"ទំព័រដើម", attendance:"វត្តមាន", summary:"សង្ខេប", attendancePage:"វត្តមាន", church:"ពួកជំនុំ", roles:"តួនាទី", classes:"ថ្នាក់", students:"សិស្ស", reports:"របាយ", dashboard:"ផ្ទាំងកុមារ", activity:"សកម្មភាព", themes:"រចនាប័ទ្ម", effects:"ចលនា", compact:"តូច", normal:"ធម្មតា", logout:"ចាកចេញ",
     overview:"សង្ខេប", churches:"ពួកជំនុំ", present:"មានវត្តមាន", copyWeek:"ចម្លងសប្តាហ៍នេះ", churchName:"ឈ្មោះពួកជំនុំ", save:"រក្សាទុក", assignRole:"កំណត់តួនាទី", name:"ឈ្មោះ", firebaseUid:"Firebase UID", pastor:"គ្រូគង្វាល", teacher:"គ្រូ", saveRole:"រក្សាទុកតួនាទី",
     className:"ឈ្មោះថ្នាក់", classStartDate:"ថ្ងៃចាប់ផ្ដើម", classEndDate:"ថ្ងៃបញ្ចប់ (មិនបាច់ក៏បាន)", classLifecycle:"ស្ថានភាព", classActive:"កំពុងដំណើរការ", classArchived:"បានបណ្ណសារ", classDateHelp:"ថ្នាក់ថ្មីត្រូវមានថ្ងៃចាប់ផ្ដើម។ ទុកថ្ងៃបញ្ចប់ទទេសម្រាប់ថ្នាក់កំពុងដំណើរការ។ ថ្នាក់ដែលបានបណ្ណសារនៅតែអាចមើលប្រវត្តិវត្តមានបាន។", classDateInvalid:"ថ្ងៃបញ្ចប់ត្រូវស្មើ ឬក្រោយថ្ងៃចាប់ផ្ដើម។", classStartRequired:"សូមជ្រើសរើសថ្ងៃចាប់ផ្ដើមសម្រាប់ថ្នាក់ថ្មី។", classCancel:"បោះបង់ការកែប្រែ", classNotSet:"មិនទាន់កំណត់ថ្ងៃ", studentName:"ឈ្មោះសិស្ស", male:"ប្រុស", female:"ស្រី", age:"អាយុ", profilePhoto:"ឈ្មោះឯកសាររូបថត", searchStudents:"ស្វែងរកសិស្ស", search:"ស្វែងរក",
-    total:"សរុប", absent:"អវត្តមាន", attendanceVerified:"បានពិនិត្យ", attendanceUnmarked:"មិនមានកំណត់ត្រា", verificationEnableConfirm:"បញ្ជាក់ថាបានពិនិត្យវត្តមានថ្នាក់ និងថ្ងៃអាទិត្យនេះរួចហើយ? សិស្សដែលមិនបានធីក នឹងត្រូវគិតថាអវត្តមាន។", verificationDisableConfirm:"ដកការបញ្ជាក់វត្តមានសម្រាប់ថ្នាក់ និងថ្ងៃអាទិត្យនេះ? សិស្សមិនបានធីកនឹងត្រឡប់ជាមិនមានកំណត់ត្រា។", verificationAccessError:"ត្រូវកំណត់សិទ្ធិ Firebase Realtime Database សម្រាប់ attendanceVerification។ សូមទាក់ទងអ្នកគ្រប់គ្រង។", verificationSaving:"កំពុងរក្សាទុកការបញ្ជាក់…", summaryPresentCount:"ចំនួនមានវត្តមាន", summaryAbsentCount:"ចំនួនអវត្តមាន", summaryNoRecord:"មិនមានកំណត់ត្រា", summaryLoading:"កំពុងផ្ទុក", summaryUnavailable:"មិនអាចទាញទិន្នន័យ", summaryHint:"ចុចលើប្រអប់ដើម្បីមើលកាលបរិច្ឆេទ និងស្ថានភាព។", summary13:"៣ ខែចុងក្រោយ", summary26:"៦ ខែចុងក្រោយ", summary52:"១២ ខែចុងក្រោយ", summaryAllClasses:"គ្រប់ថ្នាក់", monthlyReport:"របាយការណ៍ប្រចាំខែ", average:"មធ្យម", sundays:"ថ្ងៃអាទិត្យ", weekMonths:"សប្តាហ៍/ខែ", restore:"ស្តារឡើងវិញ", emptyTrash:"លុបធុងសំរាម", clearChecker:"Clear Checker", clearCheckerConfirm:"Clear attendance checker logs permanently?", clearActivity:"សម្អាតសកម្មភាព",
+    total:"សរុប", absent:"អវត្តមាន", summaryPresentCount:"ចំនួនមានវត្តមាន", summaryAbsentCount:"ចំនួនអវត្តមាន", summaryNoRecord:"មិនមានកំណត់ត្រា", summaryLoading:"កំពុងផ្ទុក", summaryUnavailable:"មិនអាចទាញទិន្នន័យ", summaryHint:"ចុចលើប្រអប់ដើម្បីមើលកាលបរិច្ឆេទ និងស្ថានភាព។", summary13:"៣ ខែចុងក្រោយ", summary26:"៦ ខែចុងក្រោយ", summary52:"១២ ខែចុងក្រោយ", summaryAllClasses:"គ្រប់ថ្នាក់", monthlyReport:"របាយការណ៍ប្រចាំខែ", average:"មធ្យម", sundays:"ថ្ងៃអាទិត្យ", weekMonths:"សប្តាហ៍/ខែ", restore:"ស្តារឡើងវិញ", emptyTrash:"លុបធុងសំរាម", clearChecker:"Clear Checker", clearCheckerConfirm:"Clear attendance checker logs permanently?", clearActivity:"សម្អាតសកម្មភាព",
     loading:"កំពុងផ្ទុក...", enterEmailKey:"សូមបញ្ចូលអ៊ីមែល និងលេខសម្ងាត់", noRole:"មិនទាន់បានកំណត់តួនាទី", saved:"បានរក្សាទុក", copied:"បានចម្លង", churchSaved:"បានរក្សាទុកពួកជំនុំ", churchUpdated:"បានកែប្រែពួកជំនុំ", roleSaved:"បានរក្សាទុកតួនាទី", roleUpdated:"បានកែប្រែតួនាទី", classSaved:"បានរក្សាទុកថ្នាក់", classUpdated:"បានកែប្រែថ្នាក់", studentSaved:"បានរក្សាទុកសិស្ស", studentUpdated:"បានកែប្រែសិស្ស", attendanceSaved:"បានរក្សាទុកវត្តមាន",
     addRoleFields:"សូមបន្ថែម UID ឈ្មោះ និងពួកជំនុំ។ បង្កើតពួកជំនុំជាមុនសិន។", addStudentFields:"សូមបន្ថែមឈ្មោះ ពួកជំនុំ និងថ្នាក់", deleteConfirm:"តើលុបមែនទេ?", restoreConfirm:"តើស្តារឡើងវិញមែនទេ?", emptyTrashConfirm:"លុបធុងសំរាមជាអចិន្ត្រៃយ៍មែនទេ?", clearActivityConfirm:"សម្អាតកំណត់ត្រាសកម្មភាពទាំងអស់មែនទេ?", itemNotFound:"រកមិនឃើញធាតុ", restoreItemNotFound:"រកមិនឃើញធាតុសម្រាប់ស្តារ",
     noChurch:"មិនទាន់មានពួកជំនុំ", noUsers:"មិនទាន់មានអ្នកប្រើ", noClass:"មិនទាន់មានថ្នាក់", noStudent:"មិនទាន់មានសិស្ស", noStudents:"មិនទាន់មានសិស្ស", noDeleted:"មិនមានធាតុបានលុប", noActivity:"មិនទាន់មានសកម្មភាព", noReport:"មិនទាន់មានទិន្នន័យរបាយការណ៍", noSunday:"ខែនេះមិនមានថ្ងៃអាទិត្យ", sundayAttendance:"វត្តមានថ្ងៃអាទិត្យ", deleted:"បានលុប", details:"លម្អិត", edit:"កែប្រែ", delete:"លុប", previewPhoto:"មើលរូបភាពសិស្ស", student:"សិស្ស", roleAdmin:"បងថេត", rolePastor:"គ្រូគង្វាល", roleTeacher:"គ្រូ", week:"សប្តាហ៍",
@@ -992,7 +929,6 @@ function applyTranslations(){
   setText("#classLifecycleLabel","classLifecycle"); setText("#classDateHelp","classDateHelp");
   setText("#cancelClassEdit","classCancel");
   setSelectLabel("classLifecycle","active","classActive"); setSelectLabel("classLifecycle","archived","classArchived");
-  setText("#attVerifyLabel","attendanceVerified"); setText("#attUnmarkedLabel","attendanceUnmarked");
    setText("#restoreTitle","restore"); setText("#checkerTitle","attendanceChecker"); setText("#activityTitle","activity"); setText("#page-themes > .panel:nth-of-type(1) h2","themes"); setText("#themeEffectsTitle","effects"); setText(".att-stats .stat:nth-child(1) span","total"); setText(".att-stats .stat:nth-child(2) span","present"); setText(".att-stats .stat:nth-child(3) span","absent"); setText(".report-stats .stat:nth-child(1) span","students"); setText(".report-stats .stat:nth-child(2) span","total"); setText(".report-stats .stat:nth-child(3) span","weekMonths"); setText(".detail-total span","total");
   if($("copyHomeReport")) $("copyHomeReport").innerHTML=`${tr("copyWeek")} <span id="homeReportDate">${$("homeReportDate")?.textContent||""}</span>`;
   [["saveChurch","save"],["saveRole","saveRole"],["saveClass","save"],["saveStudent","save"]].forEach(([id,key])=>{ if($(id)) $(id).textContent=tr(key); });
@@ -1781,8 +1717,11 @@ function renderStudentDetails(){
   if(!s) return;
   const month = $("detailMonth").value || monthNow();
   const ss = sundays(month);
-  listenAttendanceVerification(s.classId);
-  ss.forEach(date=>listenAttendance(date,s.classId,id));
+  // Read the whole class for each Sunday so a zero-check week is distinct from
+  // a week where classmates attended but this student was absent.
+  const peers=Object.entries(state.students).filter(([otherId,other])=>
+    other?.classId===s.classId && other?.churchId===s.churchId);
+  ss.forEach(date=>peers.forEach(([otherId])=>listenAttendance(date,s.classId,otherId)));
   let total = 0;
   $("detailWeeks").innerHTML = ss.map((date,i)=>{
     const status=attendanceDisplayStatus(date,s.classId,id);
@@ -1906,44 +1845,6 @@ if($("studentChurch")) $("studentChurch").onchange=()=>{setSelectedChurchId($("s
 if($("studentClass")) $("studentClass").onchange=()=>{resetStudentRenderCache();scheduleStudentRender();};
 if($("studentSearch")) $("studentSearch").oninput=e=>{state.studentQ=e.target.value;resetStudentRenderCache();scheduleStudentRender();};
 if($("attSearch")) $("attSearch").oninput=e=>{state.attQ=e.target.value;resetAttendanceRenderCache();renderAttendance();};
-$("attVerifyBtn").onclick=async()=>{
-  if(verificationWritePending||!(canAdmin()||canPastor()||canTeacher()))return;
-  const date=state.selectedSunday,classId=$("attClass")?.value||"";
-  const churchId=attendanceChurchId();
-  if(!date||!classId||!churchId||state.classes[classId]?.churchId!==churchId)return;
-  if(!verificationLoaded.has(classId)||verificationErrors.has(classId))return;
-  const classStudents=attendanceStudents(classId);
-  if(!classStudents.length||!classStudents.every(st=>
-    attendanceLoaded.has(`${date}/${classId}/${st.id}`)))return;
-  const current=verificationIsConfirmed(classId,date);
-  const message=tr(current?"verificationDisableConfirm":"verificationEnableConfirm");
-  if(!confirm(message))return;
-  const next=!current;
-  const old=state.attendanceVerification[classId]?.[date]||{};
-  verificationSaveError=null;
-  verificationWritePending=true;
-  updateVerificationControl(classId,date);
-  try{
-    await set(ref(db,`attendanceVerification/${classId}/${date}`),{
-      ...old,verified:next,churchId,updatedAt:Date.now(),
-      updatedBy:state.user.uid,updatedByName:state.profile?.name||state.user.email||"",
-      verifiedAt:next?Date.now():null
-    });
-    state.attendanceVerification[classId] ||= {};
-    state.attendanceVerification[classId][date]={...old,verified:next};
-    // Leave existing attendance records untouched; unchecked means absent only when verified.
-    resetAttendanceRenderCache();
-    resetSummaryRenderCache();
-    if(isPage("attendance"))renderAttendance();
-    await logActivity(next?"attendanceVerified":"attendanceReopened",
-      `attendanceVerification/${classId}`,date,className(classId),{date,classId,churchId});
-  }catch(error){
-    verificationSaveError={key:classId+"/"+date,message:"Unable to save verification: "+(error.code||error.message)};
-  }finally{
-    verificationWritePending=false;
-    updateVerificationControl($("attClass")?.value||"",state.selectedSunday);
-  }
-};
 if($("copyHomeReport")) $("copyHomeReport").onclick=copyHomeReport;
 if($("prevHomeReport")) $("prevHomeReport").onclick=prevHomeReport;
 if($("nextHomeReport")) $("nextHomeReport").onclick=nextHomeReport;
@@ -2230,12 +2131,9 @@ function summaryClassPeriods(students){
   byClass.forEach((classStudents,classId)=>{
     const cls=state.classes[classId]||{};
     const dates=summaryCandidateDates(classId);
-    listenAttendanceVerification(classId);
     classStudents.forEach(st=>dates.forEach(date=>listenAttendance(date,classId,st.id)));
-    const recorded=dates.filter(date=>verificationIsConfirmed(classId,date)||classStudents.some(st=>{
-      const value=state.attendance[date]?.[classId]?.[st.id];
-      return value==="present"||value==="absent";
-    }));
+    const recorded=dates.filter(date=>classStudents.some(st=>
+      state.attendance[date]?.[classId]?.[st.id]==="present"));
     const first=recorded[0],last=recorded[recorded.length-1];
     const dated=!!classDateValue(cls.startDate);
     const fixedEnd=!!classDateValue(cls.endDate);
@@ -2346,8 +2244,7 @@ function renderAttendance(useRangeSort=true){
   }
   const churchId=attendanceChurchId(), classId=$("attClass")?.value||"";
   if(!churchId || !classId){
-    $("attTotal").textContent=0; $("attPresent").textContent=0; $("attAbsent").textContent=0; $("attUnmarked").textContent=0;
-    updateVerificationControl("","");
+    $("attTotal").textContent=0; $("attPresent").textContent=0; $("attAbsent").textContent=0;
     const emptyHtml=`<div class="empty">${!churchId?tr("selectChurch"):tr("selectClass")}</div>`;
     if(attListHtml!==emptyHtml){
       attListHtml=emptyHtml;
@@ -2356,7 +2253,6 @@ function renderAttendance(useRangeSort=true){
     hideAttendanceLoadingSoon();
     return;
   }
-  listenAttendanceVerification(classId);
   const students=attendanceStudents(classId).filter(s=>studentMatches(s,state.attQ));
   const rangeDates=reportAllDates();
   const allStudents=attendanceStudents(classId);
@@ -2372,14 +2268,10 @@ function renderAttendance(useRangeSort=true){
   // Counts use the full selected class, not filtered search results.
   const total=allStudents.length;
   const presentTotal=allStudents.filter(st=>rec[st.id]==="present").length;
-  const markedKnown=allStudents.every(st=>attendanceLoaded.has(`${state.selectedSunday}/${classId}/${st.id}`));
-  const confirmed=verificationIsConfirmed(classId,state.selectedSunday);
-  const verifiedReady=verificationLoaded.has(classId);
+  const week=attendanceWeekState(state.selectedSunday,classId);
   $("attTotal").textContent=total;
   $("attPresent").textContent=presentTotal;
-  $("attAbsent").textContent=!verifiedReady||!markedKnown?"…":confirmed?total-presentTotal:0;
-  $("attUnmarked").textContent=!verifiedReady||!markedKnown?"…":confirmed?0:total-presentTotal;
-  updateVerificationControl(classId,state.selectedSunday);
+  $("attAbsent").textContent=week==="recorded"?total-presentTotal:week==="pending"?"…":0;
   const nextAttListHtml=ordered.map((s,i)=>{
     const popKey=`${state.selectedSunday}/${classId}/${s.id}`;
     const src=studentPhotoSrc(s);
@@ -2395,7 +2287,7 @@ function renderAttendance(useRangeSort=true){
       </div>
       <div class="att-result">
         <span class="att-absent-x ${attendanceDisplayStatus(state.selectedSunday,classId,s.id)==="absent"?"":"hidden"}" aria-hidden="true">×</span>
-        <button class="check ${rec[s.id]==="present"?"on":""}" data-stu="${esc(s.id)}" aria-label="${esc(s.name)} — ${esc(tr(({present:"present",absent:"absent",none:"attendanceUnmarked",pending:"summaryLoading",error:"summaryUnavailable"})[attendanceDisplayStatus(state.selectedSunday,classId,s.id)]||"attendanceUnmarked"))}">${rec[s.id]==="present"?"&check;":""}</button>
+        <button class="check ${rec[s.id]==="present"?"on":""}" data-stu="${esc(s.id)}" aria-label="${esc(s.name)} — ${esc(tr(({present:"present",absent:"absent",none:"summaryNoRecord",pending:"summaryLoading",error:"summaryUnavailable"})[attendanceDisplayStatus(state.selectedSunday,classId,s.id)]||"summaryNoRecord"))}">${rec[s.id]==="present"?"&check;":""}</button>
       </div>
     </div>`;
   }).join("")||`<div class="empty">${tr("noStudents")}</div>`;
@@ -2425,8 +2317,8 @@ function renderAttendance(useRangeSort=true){
   }
   document.querySelectorAll("[data-stu]").forEach(btn=>btn.onclick=async()=>{
     const sid=btn.dataset.stu, path=`attendance/${state.selectedSunday}/${classId}/${sid}`, popKey=`${state.selectedSunday}/${classId}/${sid}`;
-    // A blank checkbox has no student record. The verified class/date record
-    // determines whether that blank is "absent" or "no record".
+    // A blank checkbox has no present record. If no one in the class is
+    // checked Present, the whole Sunday automatically becomes No Record.
     const prev=rec[sid], next=prev==="present"?null:"present";
     state.popAttendanceKey=popKey;
     state.attendance[state.selectedSunday] ||= {};
@@ -2443,7 +2335,7 @@ function renderAttendance(useRangeSort=true){
       renderAttendance();
     }else{
       const st=state.students[sid]||{};
-      await logActivity("attendanceChecked",`attendance/${state.selectedSunday}/${classId}`,sid,st.name||sid,{date:state.selectedSunday,classId,churchId:st.churchId||attendanceChurchId(),status:next||"unmarked"});
+      await logActivity("attendanceChecked",`attendance/${state.selectedSunday}/${classId}`,sid,st.name||sid,{date:state.selectedSunday,classId,churchId:st.churchId||attendanceChurchId(),status:next||"unchecked"});
     }
   });
   hideAttendanceLoadingSoon();
