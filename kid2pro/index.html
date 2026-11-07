@@ -291,6 +291,68 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
 .cloud-warning input{flex:0 0 auto;margin-top:3px;width:17px;height:17px;accent-color:#5da7ff}
 #cloudSaveBtn{margin-top:11px}
 @media(max-width:640px){.cloud-fields{grid-template-columns:1fr}.cloud-fields label:last-child{grid-column:auto}}
+
+/* Compact single-line student attendance rows (kid2pro only). */
+#page-summary .summary-top-panel{margin-bottom:10px}
+#page-summary .summary-header{margin-bottom:10px}
+#page-summary .summary-filters{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+#page-summary .summary-filters>.custom-select{min-width:0;width:100%}
+#page-summary .summary-list{gap:8px}
+#page-summary .summary-card{
+  display:grid!important;grid-template-columns:52px minmax(0,1fr) auto;align-items:center;
+  column-gap:11px;min-height:76px;padding:10px 12px!important;
+}
+#page-summary .summary-avatar{
+  width:52px;height:52px;border-radius:15px;flex-shrink:0;cursor:zoom-in
+}
+#page-summary .summary-main{min-width:0;display:flex;flex-direction:column;justify-content:center;gap:7px}
+#page-summary .summary-student-name{
+  display:block;font-size:17px!important;line-height:1.25;white-space:nowrap;
+  text-overflow:ellipsis;overflow:hidden
+}
+#page-summary .summary-strip-wrap{position:relative;min-width:0;overflow:hidden}
+#page-summary .summary-grid-scroll{
+  display:block;max-width:100%;min-width:0;overflow-x:auto;overflow-y:hidden;
+  padding:0 0 3px;touch-action:pan-x;-webkit-overflow-scrolling:touch;
+  overscroll-behavior-x:contain;scrollbar-width:thin
+}
+#page-summary .summary-heatmap{
+  display:flex!important;flex-direction:row!important;align-items:center;gap:4px;
+  width:max-content;min-height:22px;grid-template-rows:none!important;
+  grid-auto-columns:auto!important;grid-auto-flow:row!important
+}
+#page-summary .summary-day{
+  flex:0 0 20px;width:20px;height:20px;border-radius:6px;font-size:13px
+}
+#page-summary .summary-count{
+  min-width:53px;min-height:48px;justify-content:center;gap:4px;
+  padding:7px 9px;margin:0
+}
+#page-summary .summary-count strong{font-size:22px}
+#page-summary .summary-scroll-cue{
+  position:absolute;right:0;top:0;bottom:3px;display:none;place-items:center;
+  width:22px;background:linear-gradient(90deg,transparent,rgba(20,40,69,.94));
+  color:#dbeafe;pointer-events:none;font-size:21px
+}
+#page-summary .summary-strip-wrap.has-overflow .summary-scroll-cue{display:grid}
+#page-summary .summary-no-history{font-size:12px;font-weight:750;color:var(--muted);white-space:nowrap}
+#page-summary .summary-tap-toast{
+  position:fixed;z-index:300;left:50%;bottom:max(28px,env(safe-area-inset-bottom));
+  transform:translateX(-50%);width:max-content;max-width:calc(100vw - 32px);
+  padding:9px 14px;border-radius:14px;background:#203650;color:#fff;
+  border:1px solid rgba(191,219,254,.28);box-shadow:0 12px 36px rgba(0,0,0,.3);
+  font-size:12px;text-align:center;font-weight:850
+}
+@media(max-width:640px){
+  #page-summary .summary-card{grid-template-columns:45px minmax(0,1fr) auto;min-height:66px;padding:9px!important;column-gap:8px}
+  #page-summary .summary-avatar{width:45px;height:45px;border-radius:12px}
+  #page-summary .summary-student-name{font-size:15px!important}
+  #page-summary .summary-main{gap:5px}
+  #page-summary .summary-day{flex-basis:19px;width:19px;height:19px;font-size:12px}
+  #page-summary .summary-heatmap{gap:3px;min-height:20px}
+  #page-summary .summary-count{min-width:44px;min-height:43px;padding:6px 7px;border-radius:12px}
+  #page-summary .summary-count strong{font-size:19px}
+}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#172b51">
@@ -481,7 +543,7 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
   </section>
 
   <section id="page-summary" class="page">
-    <div class="panel glass">
+    <div class="panel glass summary-top-panel">
       <div class="summary-header">
         <h2>Summary</h2>
         <div class="summary-legend" aria-label="Attendance legend">
@@ -493,21 +555,10 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
       <div class="summary-filters">
         <select id="summaryChurch" class="input native-select-hidden" aria-label="Church"></select><div class="custom-select" data-select="summaryChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
         <select id="summaryClass" class="input native-select-hidden" aria-label="Filter by class"></select><div class="custom-select" data-select="summaryClass"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
-        <select id="summaryRange" class="input" aria-label="Attendance history period">
-          <option value="52">Last 12 months</option>
-          <option value="26">Last 6 months</option>
-          <option value="13">Last 3 months</option>
-        </select>
       </div>
-      <div class="summary-stats">
-        <div><span id="summaryStudentsLabel">Students</span><strong id="summaryStudentsTotal">0</strong></div>
-        <div><span id="summaryCheckedLabel">Present checks</span><strong id="summaryCheckedTotal">0</strong></div>
-        <div><span id="summaryAbsentLabel">Absent checks</span><strong id="summaryAbsentTotal">0</strong></div>
-      </div>
-      <div class="att-list-search summary-search"><i class="ri-search-line"></i><input id="summarySearch" class="input" placeholder="Search students" aria-label="Search students"></div>
-      <p id="summaryDateInfo" class="summary-date-info" aria-live="polite">Tap a square to see its date and status.</p>
     </div>
     <div id="summaryList" class="list summary-list"></div>
+    <div id="summaryTapToast" class="summary-tap-toast hidden" role="status" aria-live="polite"></div>
   </section>
 
   <section id="page-reports" class="page">
@@ -769,12 +820,11 @@ function applyTranslations(){
   if($("loginTitle")) $("loginTitle").textContent=tr("loginTitle");
   if($("appTitle")) $("appTitle").textContent=tr("appTitle");
   if($("userText") && state.profile) $("userText").textContent=state.profile?.name || roleLabel(state.role);
-  setPlaceholder("email","email"); setPlaceholder("password","key"); setPlaceholder("churchName","churchName"); setPlaceholder("roleName","name"); setPlaceholder("roleEmail","email"); setPlaceholder("roleUid","firebaseUid"); setPlaceholder("className","className"); setPlaceholder("studentName","studentName"); setPlaceholder("studentAge","age"); setPlaceholder("studentPhoto","profilePhoto"); setPlaceholder("studentSearch","searchStudents"); setPlaceholder("attSearch","search"); setPlaceholder("summarySearch","searchStudents");
+  setPlaceholder("email","email"); setPlaceholder("password","key"); setPlaceholder("churchName","churchName"); setPlaceholder("roleName","name"); setPlaceholder("roleEmail","email"); setPlaceholder("roleUid","firebaseUid"); setPlaceholder("className","className"); setPlaceholder("studentName","studentName"); setPlaceholder("studentAge","age"); setPlaceholder("studentPhoto","profilePhoto"); setPlaceholder("studentSearch","searchStudents"); setPlaceholder("attSearch","search");
   setText("#remember span","remember"); setText("#page-home h2","overview"); setText(".home-stats .stat:nth-child(1) span","churches"); setText(".home-stats .stat:nth-child(2) span","students"); setText(".home-stats .stat:nth-child(3) span","present"); setText("#page-church h2","church"); setText("#page-roles h2","assignRole"); setText("#page-classes h2","classes"); setText("#page-students h2","students"); setText("#page-attendance h2","attendancePage"); setText("#page-summary h2","summary"); setText("#page-reports h2","monthlyReport");
   setText("#summaryLegendPresent","present"); setText("#summaryLegendAbsent","absent"); setText("#summaryLegendUnknown","summaryNoRecord");
   setText("#summaryStudentsLabel","students"); setText("#summaryCheckedLabel","summaryPresentCount"); setText("#summaryAbsentLabel","summaryAbsentCount");
-  setText('#summaryRange option[value="13"]',"summary13"); setText('#summaryRange option[value="26"]',"summary26"); setText('#summaryRange option[value="52"]',"summary52");
-  setText("#summaryDateInfo","summaryHint"); setText("#restoreTitle","restore"); setText("#checkerTitle","attendanceChecker"); setText("#activityTitle","activity"); setText("#page-themes > .panel:nth-of-type(1) h2","themes"); setText("#themeEffectsTitle","effects"); setText(".att-stats .stat:nth-child(1) span","total"); setText(".att-stats .stat:nth-child(2) span","present"); setText(".att-stats .stat:nth-child(3) span","absent"); setText(".report-stats .stat:nth-child(1) span","students"); setText(".report-stats .stat:nth-child(2) span","total"); setText(".report-stats .stat:nth-child(3) span","weekMonths"); setText(".detail-total span","total");
+  setText("#restoreTitle","restore"); setText("#checkerTitle","attendanceChecker"); setText("#activityTitle","activity"); setText("#page-themes > .panel:nth-of-type(1) h2","themes"); setText("#themeEffectsTitle","effects"); setText(".att-stats .stat:nth-child(1) span","total"); setText(".att-stats .stat:nth-child(2) span","present"); setText(".att-stats .stat:nth-child(3) span","absent"); setText(".report-stats .stat:nth-child(1) span","students"); setText(".report-stats .stat:nth-child(2) span","total"); setText(".report-stats .stat:nth-child(3) span","weekMonths"); setText(".detail-total span","total");
   if($("copyHomeReport")) $("copyHomeReport").innerHTML=`${tr("copyWeek")} <span id="homeReportDate">${$("homeReportDate")?.textContent||""}</span>`;
   [["saveChurch","save"],["saveRole","saveRole"],["saveClass","save"],["saveStudent","save"]].forEach(([id,key])=>{ if($(id)) $(id).textContent=tr(key); });
   if($("emptyTrashBtn")) $("emptyTrashBtn").innerHTML=`<i class="ri-delete-bin-6-line"></i> ${tr("emptyTrash")}`;
@@ -1684,11 +1734,16 @@ if($("reportChurch")) $("reportChurch").onchange=()=>{setSelectedChurchId($("rep
 if($("reportClass")) $("reportClass").onchange=()=>{resetReportRenderCache();renderReports();};
 if($("summaryChurch")) $("summaryChurch").onchange=()=>{setSelectedChurchId($("summaryChurch").value);renderSelects();renderSummary();};
 if($("summaryClass")) $("summaryClass").onchange=()=>{resetSummaryRenderCache();renderSummary();};
-if($("summarySearch")) $("summarySearch").oninput=e=>{state.summaryQ=e.target.value;renderSummary();};
-if($("summaryRange")) $("summaryRange").onchange=()=>{resetSummaryRenderCache();$("summaryDateInfo").textContent=tr("summaryHint");renderSummary();};
 if($("summaryList")) $("summaryList").addEventListener("click",e=>{
   const cell=e.target.closest(".summary-day");
-  if(cell){ $("summaryDateInfo").textContent=cell.dataset.label||"";return; }
+  if(cell){
+    const toast=$("summaryTapToast");
+    toast.textContent=cell.dataset.label||"";
+    toast.classList.remove("hidden");
+    clearTimeout(summaryToastTimer);
+    summaryToastTimer=setTimeout(()=>toast.classList.add("hidden"),2500);
+    return;
+  }
   const photo=e.target.closest(".summary-avatar");
   if(photo && photo.dataset.src) showPhotoPreview(photo.dataset.src,photo.dataset.name||"");
 });
@@ -1887,78 +1942,132 @@ function renderReports(){
   document.querySelectorAll("[data-preview-src]").forEach(btn=>btn.onclick=()=>showPhotoPreview(btn.dataset.previewSrc,btn.dataset.previewName));
 }
 
-/* Attendance Summary: existing Firebase attendance is the source of truth; no writes. */
-function summaryDates(){
-  const weeks=Math.max(1,Math.min(52,Number($("summaryRange")?.value)||52));
+/* Summary reads existing scoped student attendance; never writes attendance data.
+   Scan a generous discovery window, then show ONLY the actual first-to-last
+   recorded Sunday for each class, including neutral unrecorded weeks between. */
+let summaryToastTimer=0;
+function summaryCandidateDates(classId){
   const latest=currentSunday();
-  return Array.from({length:weeks},(_,i)=>shiftDate(latest,-7*(weeks-1-i)));
+  const nowYear=Number(latest.slice(0,4));
+  let first=`${nowYear-2}-01-01`;
+  const cls=state.classes[classId]||{};
+  const raw=cls.startDate||cls.startedAt||cls.createdAt;
+  if(raw){
+    const dt=typeof raw==="number"?new Date(raw<1e12?raw*1000:raw):new Date(raw);
+    if(!Number.isNaN(dt.getTime()) && dt.getFullYear()>=2000){
+      const candidate=dateKey(dt);
+      if(candidate<first) first=candidate;
+    }
+  }
+  const d=new Date(first+"T12:00:00");
+  d.setDate(d.getDate()+(7-d.getDay())%7);
+  const dates=[];
+  for(let date=dateKey(d), i=0;date<=latest && i<780;date=shiftDate(date,7),i++) dates.push(date);
+  return dates;
+}
+function summaryClassPeriods(students){
+  const byClass=new Map();
+  students.forEach(st=>{
+    if(!st.classId) return;
+    if(!byClass.has(st.classId)) byClass.set(st.classId,[]);
+    byClass.get(st.classId).push(st);
+  });
+  const periods=new Map();
+  byClass.forEach((classStudents,classId)=>{
+    const dates=summaryCandidateDates(classId);
+    // Current Firebase rules already authorize scoped /attendance/date/class/student reads.
+    classStudents.forEach(st=>dates.forEach(date=>listenAttendance(date,classId,st.id)));
+    const recorded=dates.filter(date=>classStudents.some(st=>{
+      const value=state.attendance[date]?.[classId]?.[st.id];
+      return value==="present"||value==="absent";
+    }));
+    const first=recorded[0], last=recorded[recorded.length-1];
+    const within=first&&last?dates.filter(date=>date>=first&&date<=last):[];
+    const loading=!first&&dates.some(date=>classStudents.some(st=>{
+      const key=`${date}/${classId}/${st.id}`;
+      return !attendanceLoaded.has(key)&&!attendanceErrors.has(key);
+    }));
+    periods.set(classId,{dates:within,loading});
+  });
+  return periods;
+}
+function refreshSummaryScrollCues(list){
+  list.querySelectorAll(".summary-strip-wrap").forEach(wrap=>{
+    const scroll=wrap.querySelector(".summary-grid-scroll");
+    if(!scroll) return;
+    const update=()=>{
+      wrap.classList.toggle("has-overflow",scroll.scrollWidth>scroll.clientWidth+4 &&
+        scroll.scrollLeft+scroll.clientWidth<scroll.scrollWidth-3);
+    };
+    scroll.addEventListener("scroll",update,{passive:true});
+    update();
+  });
 }
 function renderSummary(){
-  if(!isPage("summary")) return;
+  if(!isPage("summary"))return;
   const list=$("summaryList");
-  if(!list) return;
-  const churchId=reportChurchId(), dates=summaryDates();
+  if(!list)return;
+  const churchId=reportChurchId();
   if(!churchId){
-    $("summaryStudentsTotal").textContent="0";
-    $("summaryCheckedTotal").textContent="0";
-    $("summaryAbsentTotal").textContent="0";
     const html=`<div class="empty">${esc(tr("selectChurch"))}</div>`;
     if(summaryListHtml!==html){summaryListHtml=html;list.innerHTML=html;}
     return;
   }
-  const classId=$("summaryClass")?.value||"";
-  const students=reportStudents(classId).filter(st=>studentMatches(st,state.summaryQ||""));
-  students.forEach(st=>dates.forEach(date=>listenAttendance(date,st.classId,st.id)));
-  const rows=students.map(st=>{
-    const statuses=dates.map(date=>{
-      const key=`${date}/${st.classId}/${st.id}`;
-      return attendanceErrors.has(key)?"error":!attendanceLoaded.has(key)?"pending":
-        (state.attendance[date]?.[st.classId]?.[st.id]||"none");
-    });
-    return {st,statuses,present:statuses.filter(v=>v==="present").length,absent:statuses.filter(v=>v==="absent").length};
+  const classFilter=$("summaryClass")?.value||"";
+  const allChurchStudents=reportStudents("");
+  const visible=allChurchStudents.filter(st=>!classFilter||st.classId===classFilter);
+  const periods=summaryClassPeriods(visible);
+  const rows=visible.map(st=>{
+    const dates=periods.get(st.classId)?.dates||[];
+    const present=dates.filter(date=>state.attendance[date]?.[st.classId]?.[st.id]==="present").length;
+    return {st,dates,present,loading:periods.get(st.classId)?.loading||false};
   }).sort((a,b)=>b.present-a.present||String(a.st.name||"").localeCompare(String(b.st.name||"")));
-  $("summaryStudentsTotal").textContent=rows.length;
-  $("summaryCheckedTotal").textContent=rows.reduce((n,r)=>n+r.present,0);
-  $("summaryAbsentTotal").textContent=rows.reduce((n,r)=>n+r.absent,0);
-  const html=rows.map(({st,statuses,present})=>{
+  const next=rows.map(({st,dates,present,loading})=>{
     const sources=studentPhotoSources(st),src=sources[0]||"";
-    const photo=src?`<img data-summary-photo="${esc(st.id)}" src="${esc(src)}" alt="" loading="lazy"><i class="ri-user-smile-line" hidden aria-hidden="true"></i>`:`<i class="ri-user-smile-line" aria-hidden="true"></i>`;
-    const squares=statuses.map((status,i)=>{
-      const date=dates[i];
+    const photo=src
+      ?`<img data-summary-photo="${esc(st.id)}" src="${esc(src)}" alt="" loading="lazy"><i class="ri-user-smile-line" hidden aria-hidden="true"></i>`
+      :`<i class="ri-user-smile-line" aria-hidden="true"></i>`;
+    const squares=dates.map(date=>{
+      const key=`${date}/${st.classId}/${st.id}`;
+      const status=attendanceErrors.has(key)?"error":!attendanceLoaded.has(key)?"pending":
+        (state.attendance[date]?.[st.classId]?.[st.id]||"none");
       const label=status==="present"?tr("present"):status==="absent"?tr("absent"):
         status==="pending"?tr("summaryLoading"):status==="error"?tr("summaryUnavailable"):tr("summaryNoRecord");
       const kind=status==="present"?"yes":status==="absent"?"no":status==="pending"?"pending":"none";
       const mark=status==="present"?"✓":status==="absent"?"×":status==="error"?"!":"";
       const info=`${st.name||tr("student")} · ${date} · ${label}`;
       return `<button type="button" class="summary-day ${kind}" title="${esc(info)}" aria-label="${esc(info)}" data-label="${esc(info)}">${mark}</button>`;
-    }).join("");
+    }).join("")||`<span class="summary-no-history">${esc(loading?tr("summaryLoading"):tr("noReport"))}</span>`;
     return `<div class="card summary-card" data-summary-student="${esc(st.id)}">
-      <div class="summary-student-head">
-        <button type="button" class="summary-avatar" data-src="${esc(src)}" data-name="${esc(st.name||"")}" aria-label="${esc(tr("previewPhoto"))}">${photo}</button>
+      <button type="button" class="summary-avatar" data-src="${esc(src)}" data-name="${esc(st.name||"")}" aria-label="${esc(tr("previewPhoto"))}">${photo}</button>
+      <div class="summary-main">
         <b class="summary-student-name">${esc(st.name||tr("student"))}</b>
-        <div class="summary-count" title="${esc(tr("summaryPresentCount"))}"><i>✓</i><strong>${present}</strong></div>
+        <div class="summary-strip-wrap">
+          <div class="summary-grid-scroll" tabindex="0" aria-label="${esc(st.name||tr("student"))}"><div class="summary-heatmap">${squares}</div></div>
+          <i class="ri-arrow-right-s-line summary-scroll-cue" aria-hidden="true"></i>
+        </div>
       </div>
-      <div class="summary-grid-scroll"><div class="summary-heatmap" role="group" aria-label="${esc(st.name||tr("student"))}">${squares}</div></div>
+      <div class="summary-count" title="${esc(tr("summaryPresentCount"))}"><i>✓</i><strong>${present}</strong></div>
     </div>`;
   }).join("")||`<div class="empty">${esc(tr("noStudents"))}</div>`;
-  if(html===summaryListHtml) return;
+  if(next===summaryListHtml)return;
   const positions=new Map([...list.querySelectorAll("[data-summary-student]")].map(el=>[
     el.dataset.summaryStudent,el.querySelector(".summary-grid-scroll")?.scrollLeft||0
   ]));
-  summaryListHtml=html;
-  list.innerHTML=html;
+  summaryListHtml=next;
+  list.innerHTML=next;
   list.querySelectorAll("[data-summary-student]").forEach(el=>{
     const scroll=el.querySelector(".summary-grid-scroll");
-    if(scroll) scroll.scrollLeft=positions.get(el.dataset.summaryStudent)||0;
+    if(scroll)scroll.scrollLeft=positions.get(el.dataset.summaryStudent)||0;
   });
+  refreshSummaryScrollCues(list);
   list.querySelectorAll("img[data-summary-photo]").forEach(img=>{
-    const st=state.students[img.dataset.summaryPhoto];
-    const sources=studentPhotoSources(st);
-    let n=0;
+    const sources=studentPhotoSources(state.students[img.dataset.summaryPhoto]);
+    let index=0;
     img.onerror=()=>{
-      n++;
-      if(n<sources.length)img.src=sources[n];
-      else { img.hidden=true; const fallback=img.nextElementSibling; if(fallback) fallback.hidden=false; }
+      index++;
+      if(index<sources.length)img.src=sources[index];
+      else{img.hidden=true;const fallback=img.nextElementSibling;if(fallback)fallback.hidden=false;}
     };
   });
 }
