@@ -257,6 +257,23 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
   .summary-count{padding:6px 8px}
   .summary-count strong{font-size:18px}
 }
+
+/* Love Kid Pro — photo thumbnails next to student detail actions */
+.student-list-avatar{width:42px;height:42px;flex:0 0 42px;padding:0;overflow:hidden;
+  border:1px solid rgba(147,197,253,.38);border-radius:13px;
+  background:rgba(93,167,255,.14);display:grid;place-items:center;cursor:zoom-in}
+.student-list-avatar img{display:block;width:100%;height:100%;object-fit:cover}
+.student-list-avatar[hidden]{display:none!important}
+.student-card .card-title{min-width:0}
+.student-card .card-title>b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.student-card .actions{align-items:center;flex-wrap:nowrap;gap:6px}
+@media(max-width:420px){
+  .student-card .card-main{grid-template-columns:36px minmax(0,1fr) auto;gap:7px}
+  .student-card .num{width:32px;height:32px}
+  .student-list-avatar{width:36px;height:38px;flex-basis:36px;border-radius:11px}
+  .student-card .actions{gap:5px}
+  .student-card .actions .icon-btn{width:38px;height:38px;min-width:38px;font-size:19px}
+}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#172b51">
@@ -1353,7 +1370,12 @@ function showStudentDetails(id){
   const s = state.students[id];
   if(!s) return;
   $("modalStudentName").textContent = s.name || tr("student");
-  $("modalStudentMeta").textContent = `${genderLabel(s.gender) || "-"} &bull; ${tr("age")} ${s.age || "-"} &bull; ${className(s.classId)}`;
+  // textContent does not interpret HTML entities. Omit missing age instead of "Age -".
+  $("modalStudentMeta").textContent = [
+    genderLabel(s.gender),
+    clean(String(s.age ?? "")) && clean(String(s.age)) !== "-" ? `${tr("age")} ${clean(String(s.age))}` : "",
+    className(s.classId)
+  ].filter(Boolean).join(" • ");
   setDetailPhoto(s);
   $("detailMonth").value = $("detailMonth").value || monthNow();
   renderStudentDetails();
@@ -1407,11 +1429,28 @@ function renderStudents(useRangeSort=true){
     i,
     range:rangeDates.filter(date=>state.attendance[date]?.[s.classId]?.[s.id]==="present").length
   })).sort((a,b)=>(useRangeSort?b.range-a.range:0)||a.s.name.localeCompare(b.s.name)||a.i-b.i).map(x=>x.s);
-  const studentRowHtml=(s,i)=>`<div class="card student-card"><div class="card-main"><div class="num">${i+1}</div><div class="card-title"><b>${esc(s.name)}</b><small>${esc(genderLabel(s.gender))} &bull; ${esc(className(s.classId))}</small></div><div class="actions"><button class="btn icon-btn details-btn" onclick="showStudentDetails('${esc(s.id)}')" title="${tr("details")}"><i class="ri-list-check-3"></i></button><button class="btn icon-btn edit-btn" onclick="editStudent('${esc(s.id)}')" title="${tr("edit")}"><i class="ri-edit-line"></i></button>${editingStudentId===s.id ? `<button class="btn icon-btn danger" onclick="del('students','${esc(s.id)}')" title="${tr("delete")}"><i class="ri-delete-bin-line"></i></button>` : ""}</div></div></div>`;
+  const studentRowHtml=(s,i)=>{
+    const photo=studentPhotoSrc(s);
+    const preview=photo ? `<button type="button" class="student-list-avatar" data-photo-student="${esc(s.id)}" title="${esc(tr("previewPhoto"))}" aria-label="${esc(tr("previewPhoto"))}: ${esc(s.name)}"><img src="${esc(photo)}" alt="" loading="lazy"></button>` : "";
+    return `<div class="card student-card"><div class="card-main"><div class="num">${i+1}</div><div class="card-title"><b>${esc(s.name)}</b><small>${esc([genderLabel(s.gender),className(s.classId)].filter(Boolean).join(" • "))}</small></div><div class="actions">${preview}<button class="btn icon-btn details-btn" onclick="showStudentDetails('${esc(s.id)}')" title="${tr("details")}"><i class="ri-list-check-3"></i></button><button class="btn icon-btn edit-btn" onclick="editStudent('${esc(s.id)}')" title="${tr("edit")}"><i class="ri-edit-line"></i></button>${editingStudentId===s.id ? `<button class="btn icon-btn danger" onclick="del('students','${esc(s.id)}')" title="${tr("delete")}"><i class="ri-delete-bin-line"></i></button>` : ""}</div></div></div>`;
+  };
   const nextStudentListHtml=ordered.map(studentRowHtml).join("")||`<div class="empty">${tr("noStudent")}</div>`;
   if(studentListHtml===nextStudentListHtml) return;
   studentListHtml=nextStudentListHtml;
   $("studentList").innerHTML=nextStudentListHtml;
+  // Keep the existing photo filename resolution and try each supported extension.
+  $("studentList").querySelectorAll("[data-photo-student]").forEach(btn=>{
+    const st=state.students[btn.dataset.photoStudent];
+    const sources=studentPhotoSources(st);
+    const img=btn.querySelector("img");
+    let photoIndex=0;
+    img.onerror=()=>{
+      photoIndex++;
+      if(photoIndex<sources.length) img.src=sources[photoIndex];
+      else btn.hidden=true;
+    };
+    btn.onclick=()=>{if(!btn.hidden)showPhotoPreview(img.currentSrc||img.src,st?.name||"");};
+  });
   return;
   $("studentList").innerHTML=ordered.map((s,i)=>`<div class="card student-card"><div class="card-main"><div class="num">${i+1}</div><div class="card-title"><b>${esc(s.name)}</b><small>${esc(genderLabel(s.gender))} &bull; ${esc(className(s.classId))}</small></div><div class="actions"><button class="btn icon-btn details-btn" onclick="showStudentDetails('${esc(s.id)}')" title="${tr("details")}"><i class="ri-list-check-3"></i></button><button class="btn icon-btn edit-btn" onclick="editStudent('${esc(s.id)}')" title="${tr("edit")}"><i class="ri-edit-line"></i></button>${editingStudentId===s.id ? `<button class="btn icon-btn danger" onclick="del('students','${esc(s.id)}')" title="${tr("delete")}"><i class="ri-delete-bin-line"></i></button>` : ""}</div></div></div>`).join("")||`<div class="empty">${tr("noStudent")}</div>`; 
 }
