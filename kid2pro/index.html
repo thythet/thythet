@@ -207,6 +207,56 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
 .month-field-display{z-index:2!important}
 .month-icon{z-index:3!important}
 .month-field .week-swipe-wipe{border-radius:inherit}
+
+/* Love Kid Pro: read-only, compact attendance history */
+.summary-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px}
+.summary-header h2{margin:0!important}
+.summary-legend{display:flex;align-items:center;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:11px;font-weight:850}
+.summary-legend>span{display:inline-flex;gap:5px;align-items:center;white-space:nowrap}
+.summary-legend-box{font-style:normal;width:15px;height:15px;display:grid;place-items:center;border-radius:4px;font-size:11px;font-weight:900}
+.summary-legend-box.yes,.summary-day.yes{background:linear-gradient(135deg,#19b75b,#57d990);border-color:rgba(110,231,161,.58);color:#fff}
+.summary-legend-box.no,.summary-day.no{background:linear-gradient(135deg,rgba(170,56,81,.70),rgba(116,38,60,.68));border-color:rgba(251,113,133,.28);color:#ffe4e6}
+.summary-legend-box.none,.summary-day.none{background:rgba(141,163,194,.14);border:1px solid rgba(177,197,224,.2);color:rgba(219,234,254,.65)}
+.summary-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.summary-filters>.input,.summary-filters>.custom-select{min-width:0;width:100%}
+.summary-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:12px}
+.summary-stats>div{padding:11px 12px;border-radius:17px;background:rgba(255,255,255,.065);border:1px solid var(--line);min-width:0}
+.summary-stats span{display:block;color:var(--muted);font-size:12px;font-weight:850}
+.summary-stats strong{font-size:24px;display:block;margin-top:2px;font-variant-numeric:tabular-nums}
+.summary-search{margin-top:11px}
+.summary-date-info{margin:9px 2px 0;min-height:20px;color:var(--muted);font-size:12px;font-weight:800}
+.summary-list{gap:10px}
+.summary-card{display:block;padding:13px 14px}
+.summary-student-head{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:11px}
+.summary-avatar{width:44px;height:44px;padding:0;overflow:hidden;display:grid;place-items:center;border:1px solid rgba(147,197,253,.32);border-radius:14px;background:linear-gradient(135deg,rgba(93,167,255,.22),rgba(122,121,255,.13));color:#dbeafe;font-size:22px}
+.summary-avatar img{display:block;width:100%;height:100%;object-fit:cover}
+.summary-avatar img[hidden]{display:none}
+.summary-avatar:not(:has(img)){cursor:default}
+.summary-student-name{min-width:0;font-size:18px!important;line-height:1.25;overflow-wrap:anywhere}
+.summary-count{display:inline-flex;align-items:center;gap:6px;justify-content:flex-end;white-space:nowrap;border-radius:13px;padding:7px 10px;border:1px solid rgba(111,224,151,.32);background:rgba(34,197,94,.13);font-variant-numeric:tabular-nums;font-weight:1000}
+.summary-count i{color:#72e7a8;font-size:16px;font-style:normal}
+.summary-count strong{font-size:20px}
+.summary-grid-scroll{max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;padding:9px 2px 5px;scrollbar-width:thin}
+.summary-heatmap{display:grid;grid-template-rows:repeat(4,17px);grid-auto-columns:17px;grid-auto-flow:column;gap:4px;width:max-content}
+.summary-day{width:17px;height:17px;border:1px solid transparent;padding:0;border-radius:5px;font-family:inherit;font-size:12px;font-weight:900;display:grid;place-items:center;cursor:pointer;line-height:1}
+.summary-day.pending{background:rgba(141,163,194,.08);border-color:rgba(177,197,224,.11);color:rgba(219,234,254,.35)}
+.summary-day:focus-visible{outline:2px solid #93c5fd;outline-offset:2px}
+@media(max-width:640px){
+  .summary-header{align-items:flex-start}
+  .summary-filters{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .summary-filters>.input:last-child{grid-column:1/-1}
+  .summary-stats>div{padding:9px 8px}
+  .summary-stats strong{font-size:21px}
+  .summary-stats span{font-size:11px}
+  .summary-card{padding:11px!important}
+  .summary-heatmap{grid-template-rows:repeat(4,16px);grid-auto-columns:16px;gap:4px}
+  .summary-day{width:16px;height:16px;font-size:11px}
+  .summary-avatar{width:40px;height:40px}
+  .summary-student-head{grid-template-columns:40px minmax(0,1fr) auto;gap:9px}
+  .summary-student-name{font-size:16px!important}
+  .summary-count{padding:6px 8px}
+  .summary-count strong{font-size:18px}
+}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#172b51">
@@ -267,6 +317,7 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
     <div class="nav">
       <button class="nav-btn active" data-page="home"><i class="ri-home-5-line"></i>Home</button>
       <button class="nav-btn attend-tab" data-page="attendance"><i class="ri-checkbox-circle-line"></i>Attend</button>
+      <button class="nav-btn" data-page="summary"><i class="ri-calendar-check-line"></i>Summary</button>
       <button class="nav-btn" data-page="church"><i class="ri-building-4-line"></i>Church</button>
       <button class="nav-btn" data-page="roles"><i class="ri-shield-user-line"></i>Roles</button>
       <button class="nav-btn" data-page="classes"><i class="ri-folder-line"></i>Class</button>
@@ -378,6 +429,36 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
         <div id="attLoadingText">Loading...</div>
       </div>
     </div>
+  </section>
+
+  <section id="page-summary" class="page">
+    <div class="panel glass">
+      <div class="summary-header">
+        <h2>Summary</h2>
+        <div class="summary-legend" aria-label="Attendance legend">
+          <span><i class="summary-legend-box yes">✓</i><span id="summaryLegendPresent">Present</span></span>
+          <span><i class="summary-legend-box no">×</i><span id="summaryLegendAbsent">Absent</span></span>
+          <span><i class="summary-legend-box none"></i><span id="summaryLegendUnknown">No record</span></span>
+        </div>
+      </div>
+      <div class="summary-filters">
+        <select id="summaryChurch" class="input native-select-hidden" aria-label="Church"></select><div class="custom-select" data-select="summaryChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
+        <select id="summaryClass" class="input native-select-hidden" aria-label="Filter by class"></select><div class="custom-select" data-select="summaryClass"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
+        <select id="summaryRange" class="input" aria-label="Attendance history period">
+          <option value="52">Last 12 months</option>
+          <option value="26">Last 6 months</option>
+          <option value="13">Last 3 months</option>
+        </select>
+      </div>
+      <div class="summary-stats">
+        <div><span id="summaryStudentsLabel">Students</span><strong id="summaryStudentsTotal">0</strong></div>
+        <div><span id="summaryCheckedLabel">Present checks</span><strong id="summaryCheckedTotal">0</strong></div>
+        <div><span id="summaryAbsentLabel">Absent checks</span><strong id="summaryAbsentTotal">0</strong></div>
+      </div>
+      <div class="att-list-search summary-search"><i class="ri-search-line"></i><input id="summarySearch" class="input" placeholder="Search students" aria-label="Search students"></div>
+      <p id="summaryDateInfo" class="summary-date-info" aria-live="polite">Tap a square to see its date and status.</p>
+    </div>
+    <div id="summaryList" class="list summary-list"></div>
   </section>
 
   <section id="page-reports" class="page">
@@ -531,23 +612,25 @@ if(!navigator.onLine) updateConnectionStatus();
 const adminSelectedChurchKey = "ss_admin_selected_church";
 const state = { user:null, profile:null, role:"guest", churchId:null, selectedChurchId:localStorage.getItem(adminSelectedChurchKey)||"", churches:{}, users:{}, classes:{}, students:{}, attendance:{}, trash:{}, activities:{}, themeBackgrounds:{}, themeOptions:{}, selectedSunday:"", homeReportDate:"", studentQ:"", attQ:"", popAttendanceKey:"", activityExpanded:{trash:false,checker:false,activity:false}, checkerCleanupAt:0 };
 const attendanceListeners = new Set();
+const attendanceLoaded = new Set();
+const attendanceErrors = new Set();
 const I18N = {
   en: {
     appTitle:"Sunday School", loginTitle:"Sunday School", email:"Email", key:"Key", remember:"Remember Login",
-    home:"Home", attendance:"Attend", attendancePage:"Attendance", church:"Church", roles:"Roles", classes:"Class", students:"Student", reports:"Report", dashboard:"Dashboard", activity:"Activity", themes:"Themes", effects:"Effects", compact:"Compact", normal:"Normal", logout:"Logout",
+    home:"Home", attendance:"Attend", summary:"Summary", attendancePage:"Attendance", church:"Church", roles:"Roles", classes:"Class", students:"Student", reports:"Report", dashboard:"Dashboard", activity:"Activity", themes:"Themes", effects:"Effects", compact:"Compact", normal:"Normal", logout:"Logout",
     overview:"Overview", churches:"Churches", present:"Present", copyWeek:"COPY THIS WEEK", churchName:"Church name", save:"Save", assignRole:"Assign Role", name:"Name", firebaseUid:"Firebase UID", pastor:"Pastor", teacher:"Teacher", saveRole:"Save Role",
     className:"Class name", studentName:"Student name", male:"Male", female:"Female", age:"Age", profilePhoto:"Profile picture file name", searchStudents:"Search students", search:"Search",
-    total:"Total", absent:"Absent", monthlyReport:"Monthly Report", average:"Average", sundays:"Sundays", weekMonths:"Weeks/Months", restore:"Restore", attendanceChecker:"Attendance Checker", emptyTrash:"Empty Trash", clearChecker:"Clear Checker", clearCheckerConfirm:"Clear attendance checker logs permanently?", clearActivity:"Clear Activity", seeAll:"See all", seeLess:"See less", noChecker:"No attendance checks yet",
+    total:"Total", absent:"Absent", summaryPresentCount:"Present checks", summaryAbsentCount:"Absent checks", summaryNoRecord:"No record", summaryLoading:"Loading", summaryUnavailable:"Unavailable", summaryHint:"Tap a square to see its date and status.", summary13:"Last 3 months", summary26:"Last 6 months", summary52:"Last 12 months", summaryAllClasses:"All classes", monthlyReport:"Monthly Report", average:"Average", sundays:"Sundays", weekMonths:"Weeks/Months", restore:"Restore", attendanceChecker:"Attendance Checker", emptyTrash:"Empty Trash", clearChecker:"Clear Checker", clearCheckerConfirm:"Clear attendance checker logs permanently?", clearActivity:"Clear Activity", seeAll:"See all", seeLess:"See less", noChecker:"No attendance checks yet",
     loading:"Loading...", enterEmailKey:"Enter email and key", noRole:"No role assigned", saved:"Saved", copied:"Copied", churchSaved:"Church saved", churchUpdated:"Church updated", roleSaved:"Role saved", roleUpdated:"Role updated", classSaved:"Class saved", classUpdated:"Class updated", studentSaved:"Student saved", studentUpdated:"Student updated", attendanceSaved:"Attendance saved",
     addRoleFields:"Add UID, name, church. Create church first.", addStudentFields:"Add name, church, class", deleteConfirm:"Delete?", restoreConfirm:"Restore?", emptyTrashConfirm:"Empty trash permanently?", clearActivityConfirm:"Clear all activity log?", itemNotFound:"Item not found", restoreItemNotFound:"Restore item not found",
     noChurch:"No church", selectChurch:"Select church", selectClass:"Select class", noUsers:"No users", noClass:"No class", noStudent:"No student", noStudents:"No students", noDeleted:"No deleted items", noActivity:"No activity yet", noReport:"No report data", noSunday:"No Sunday in this month", sundayAttendance:"Sunday attendance", deleted:"deleted", details:"Details", edit:"Edit", delete:"Delete", previewPhoto:"Preview profile picture", student:"Student", roleAdmin:"BONGTHET", rolePastor:"pastor", roleTeacher:"teacher", week:"W", present:"Present"
   },
   kh: {
     appTitle:"សាលាថ្ងៃអាទិត្យ", loginTitle:"គ្រូកុមារ", email:"អ៊ីមែល", key:"លេខសម្ងាត់", remember:"ចងចាំការចូល",
-    home:"ទំព័រដើម", attendance:"វត្តមាន", attendancePage:"វត្តមាន", church:"ពួកជំនុំ", roles:"តួនាទី", classes:"ថ្នាក់", students:"សិស្ស", reports:"របាយ", dashboard:"ផ្ទាំងកុមារ", activity:"សកម្មភាព", themes:"រចនាប័ទ្ម", effects:"ចលនា", compact:"តូច", normal:"ធម្មតា", logout:"ចាកចេញ",
+    home:"ទំព័រដើម", attendance:"វត្តមាន", summary:"សង្ខេប", attendancePage:"វត្តមាន", church:"ពួកជំនុំ", roles:"តួនាទី", classes:"ថ្នាក់", students:"សិស្ស", reports:"របាយ", dashboard:"ផ្ទាំងកុមារ", activity:"សកម្មភាព", themes:"រចនាប័ទ្ម", effects:"ចលនា", compact:"តូច", normal:"ធម្មតា", logout:"ចាកចេញ",
     overview:"សង្ខេប", churches:"ពួកជំនុំ", present:"មានវត្តមាន", copyWeek:"ចម្លងសប្តាហ៍នេះ", churchName:"ឈ្មោះពួកជំនុំ", save:"រក្សាទុក", assignRole:"កំណត់តួនាទី", name:"ឈ្មោះ", firebaseUid:"Firebase UID", pastor:"គ្រូគង្វាល", teacher:"គ្រូ", saveRole:"រក្សាទុកតួនាទី",
     className:"ឈ្មោះថ្នាក់", studentName:"ឈ្មោះសិស្ស", male:"ប្រុស", female:"ស្រី", age:"អាយុ", profilePhoto:"ឈ្មោះឯកសាររូបថត", searchStudents:"ស្វែងរកសិស្ស", search:"ស្វែងរក",
-    total:"សរុប", absent:"អវត្តមាន", monthlyReport:"របាយការណ៍ប្រចាំខែ", average:"មធ្យម", sundays:"ថ្ងៃអាទិត្យ", weekMonths:"សប្តាហ៍/ខែ", restore:"ស្តារឡើងវិញ", emptyTrash:"លុបធុងសំរាម", clearChecker:"Clear Checker", clearCheckerConfirm:"Clear attendance checker logs permanently?", clearActivity:"សម្អាតសកម្មភាព",
+    total:"សរុប", absent:"អវត្តមាន", summaryPresentCount:"ចំនួនមានវត្តមាន", summaryAbsentCount:"ចំនួនអវត្តមាន", summaryNoRecord:"មិនមានកំណត់ត្រា", summaryLoading:"កំពុងផ្ទុក", summaryUnavailable:"មិនអាចទាញទិន្នន័យ", summaryHint:"ចុចលើប្រអប់ដើម្បីមើលកាលបរិច្ឆេទ និងស្ថានភាព។", summary13:"៣ ខែចុងក្រោយ", summary26:"៦ ខែចុងក្រោយ", summary52:"១២ ខែចុងក្រោយ", summaryAllClasses:"គ្រប់ថ្នាក់", monthlyReport:"របាយការណ៍ប្រចាំខែ", average:"មធ្យម", sundays:"ថ្ងៃអាទិត្យ", weekMonths:"សប្តាហ៍/ខែ", restore:"ស្តារឡើងវិញ", emptyTrash:"លុបធុងសំរាម", clearChecker:"Clear Checker", clearCheckerConfirm:"Clear attendance checker logs permanently?", clearActivity:"សម្អាតសកម្មភាព",
     loading:"កំពុងផ្ទុក...", enterEmailKey:"សូមបញ្ចូលអ៊ីមែល និងលេខសម្ងាត់", noRole:"មិនទាន់បានកំណត់តួនាទី", saved:"បានរក្សាទុក", copied:"បានចម្លង", churchSaved:"បានរក្សាទុកពួកជំនុំ", churchUpdated:"បានកែប្រែពួកជំនុំ", roleSaved:"បានរក្សាទុកតួនាទី", roleUpdated:"បានកែប្រែតួនាទី", classSaved:"បានរក្សាទុកថ្នាក់", classUpdated:"បានកែប្រែថ្នាក់", studentSaved:"បានរក្សាទុកសិស្ស", studentUpdated:"បានកែប្រែសិស្ស", attendanceSaved:"បានរក្សាទុកវត្តមាន",
     addRoleFields:"សូមបន្ថែម UID ឈ្មោះ និងពួកជំនុំ។ បង្កើតពួកជំនុំជាមុនសិន។", addStudentFields:"សូមបន្ថែមឈ្មោះ ពួកជំនុំ និងថ្នាក់", deleteConfirm:"តើលុបមែនទេ?", restoreConfirm:"តើស្តារឡើងវិញមែនទេ?", emptyTrashConfirm:"លុបធុងសំរាមជាអចិន្ត្រៃយ៍មែនទេ?", clearActivityConfirm:"សម្អាតកំណត់ត្រាសកម្មភាពទាំងអស់មែនទេ?", itemNotFound:"រកមិនឃើញធាតុ", restoreItemNotFound:"រកមិនឃើញធាតុសម្រាប់ស្តារ",
     noChurch:"មិនទាន់មានពួកជំនុំ", noUsers:"មិនទាន់មានអ្នកប្រើ", noClass:"មិនទាន់មានថ្នាក់", noStudent:"មិនទាន់មានសិស្ស", noStudents:"មិនទាន់មានសិស្ស", noDeleted:"មិនមានធាតុបានលុប", noActivity:"មិនទាន់មានសកម្មភាព", noReport:"មិនទាន់មានទិន្នន័យរបាយការណ៍", noSunday:"ខែនេះមិនមានថ្ងៃអាទិត្យ", sundayAttendance:"វត្តមានថ្ងៃអាទិត្យ", deleted:"បានលុប", details:"លម្អិត", edit:"កែប្រែ", delete:"លុប", previewPhoto:"មើលរូបភាពសិស្ស", student:"សិស្ស", roleAdmin:"បងថេត", rolePastor:"គ្រូគង្វាល", roleTeacher:"គ្រូ", week:"សប្តាហ៍",
@@ -574,8 +657,12 @@ function applyTranslations(){
   if($("loginTitle")) $("loginTitle").textContent=tr("loginTitle");
   if($("appTitle")) $("appTitle").textContent=tr("appTitle");
   if($("userText") && state.profile) $("userText").textContent=state.profile?.name || roleLabel(state.role);
-  setPlaceholder("email","email"); setPlaceholder("password","key"); setPlaceholder("churchName","churchName"); setPlaceholder("roleName","name"); setPlaceholder("roleEmail","email"); setPlaceholder("roleUid","firebaseUid"); setPlaceholder("className","className"); setPlaceholder("studentName","studentName"); setPlaceholder("studentAge","age"); setPlaceholder("studentPhoto","profilePhoto"); setPlaceholder("studentSearch","searchStudents"); setPlaceholder("attSearch","search");
-  setText("#remember span","remember"); setText("#page-home h2","overview"); setText(".home-stats .stat:nth-child(1) span","churches"); setText(".home-stats .stat:nth-child(2) span","students"); setText(".home-stats .stat:nth-child(3) span","present"); setText("#page-church h2","church"); setText("#page-roles h2","assignRole"); setText("#page-classes h2","classes"); setText("#page-students h2","students"); setText("#page-attendance h2","attendancePage"); setText("#page-reports h2","monthlyReport"); setText("#restoreTitle","restore"); setText("#checkerTitle","attendanceChecker"); setText("#activityTitle","activity"); setText("#page-themes > .panel:nth-of-type(1) h2","themes"); setText("#themeEffectsTitle","effects"); setText(".att-stats .stat:nth-child(1) span","total"); setText(".att-stats .stat:nth-child(2) span","present"); setText(".att-stats .stat:nth-child(3) span","absent"); setText(".report-stats .stat:nth-child(1) span","students"); setText(".report-stats .stat:nth-child(2) span","total"); setText(".report-stats .stat:nth-child(3) span","weekMonths"); setText(".detail-total span","total");
+  setPlaceholder("email","email"); setPlaceholder("password","key"); setPlaceholder("churchName","churchName"); setPlaceholder("roleName","name"); setPlaceholder("roleEmail","email"); setPlaceholder("roleUid","firebaseUid"); setPlaceholder("className","className"); setPlaceholder("studentName","studentName"); setPlaceholder("studentAge","age"); setPlaceholder("studentPhoto","profilePhoto"); setPlaceholder("studentSearch","searchStudents"); setPlaceholder("attSearch","search"); setPlaceholder("summarySearch","searchStudents");
+  setText("#remember span","remember"); setText("#page-home h2","overview"); setText(".home-stats .stat:nth-child(1) span","churches"); setText(".home-stats .stat:nth-child(2) span","students"); setText(".home-stats .stat:nth-child(3) span","present"); setText("#page-church h2","church"); setText("#page-roles h2","assignRole"); setText("#page-classes h2","classes"); setText("#page-students h2","students"); setText("#page-attendance h2","attendancePage"); setText("#page-summary h2","summary"); setText("#page-reports h2","monthlyReport");
+  setText("#summaryLegendPresent","present"); setText("#summaryLegendAbsent","absent"); setText("#summaryLegendUnknown","summaryNoRecord");
+  setText("#summaryStudentsLabel","students"); setText("#summaryCheckedLabel","summaryPresentCount"); setText("#summaryAbsentLabel","summaryAbsentCount");
+  setText('#summaryRange option[value="13"]',"summary13"); setText('#summaryRange option[value="26"]',"summary26"); setText('#summaryRange option[value="52"]',"summary52");
+  setText("#summaryDateInfo","summaryHint"); setText("#restoreTitle","restore"); setText("#checkerTitle","attendanceChecker"); setText("#activityTitle","activity"); setText("#page-themes > .panel:nth-of-type(1) h2","themes"); setText("#themeEffectsTitle","effects"); setText(".att-stats .stat:nth-child(1) span","total"); setText(".att-stats .stat:nth-child(2) span","present"); setText(".att-stats .stat:nth-child(3) span","absent"); setText(".report-stats .stat:nth-child(1) span","students"); setText(".report-stats .stat:nth-child(2) span","total"); setText(".report-stats .stat:nth-child(3) span","weekMonths"); setText(".detail-total span","total");
   if($("copyHomeReport")) $("copyHomeReport").innerHTML=`${tr("copyWeek")} <span id="homeReportDate">${$("homeReportDate")?.textContent||""}</span>`;
   [["saveChurch","save"],["saveRole","saveRole"],["saveClass","save"],["saveStudent","save"]].forEach(([id,key])=>{ if($(id)) $(id).textContent=tr(key); });
   if($("emptyTrashBtn")) $("emptyTrashBtn").innerHTML=`<i class="ri-delete-bin-6-line"></i> ${tr("emptyTrash")}`;
@@ -780,9 +867,9 @@ function setSelectedChurchId(churchId){
   const next=canAdmin() ? (churchId||"") : roleChurch();
   state.selectedChurchId=next||"";
   if(canAdmin()) localStorage.setItem(adminSelectedChurchKey,state.selectedChurchId);
-  ["homeChurch","studentChurch","attChurch","reportChurch"].forEach(id=>{if($(id) && $(id).value!==state.selectedChurchId) $(id).value=state.selectedChurchId;});
-  ["studentClass","attClass","reportClass"].forEach(id=>{if($(id)) $(id).value="";});
-  resetStudentRenderCache(); resetAttendanceRenderCache(); resetReportRenderCache();
+  ["homeChurch","studentChurch","attChurch","reportChurch","summaryChurch"].forEach(id=>{if($(id) && $(id).value!==state.selectedChurchId) $(id).value=state.selectedChurchId;});
+  ["studentClass","attClass","reportClass","summaryClass"].forEach(id=>{if($(id)) $(id).value="";});
+  resetStudentRenderCache(); resetAttendanceRenderCache(); resetReportRenderCache(); resetSummaryRenderCache();
 }
 const scopedStudents = () => visibleStudents().filter(s=>selectedChurchId() && s.churchId===selectedChurchId());
 const scopedClasses = () => visibleClasses().filter(c=>selectedChurchId() && c.churchId===selectedChurchId());
@@ -811,7 +898,7 @@ const attendanceStudents = classId => {
 const studentMatches = (s,q) => !q || includes([s.name,s.gender,s.age,className(s.classId)].join(" "),q);
 const labelFor = (path,item,id) => item?.name || item?.email || item?.uid || id;
 const fmtTime = ts => ts ? new Date(ts).toLocaleString() : "";
-let attRenderTimer=0, attLoadingTimer=0, attRangeSortTimer=0, attWeekbarHtml="", attListHtml="", studentRenderTimer=0, studentRangeSortTimer=0, studentListHtml="", reportRenderTimer=0, reportListHtml="";
+let attRenderTimer=0, attLoadingTimer=0, attRangeSortTimer=0, attWeekbarHtml="", attListHtml="", studentRenderTimer=0, studentRangeSortTimer=0, studentListHtml="", reportRenderTimer=0, reportListHtml="", summaryRenderTimer=0, summaryListHtml="";
 function showAttendanceLoading(){
   if(!isPage("attendance")) return;
   const list=$("attList");
@@ -871,6 +958,12 @@ function scheduleReportRender(){
 function resetReportRenderCache(){
   reportListHtml="";
 }
+function scheduleSummaryRender(){
+  if(!isPage("summary")) return;
+  clearTimeout(summaryRenderTimer);
+  summaryRenderTimer=setTimeout(renderSummary,100);
+}
+function resetSummaryRenderCache(){ summaryListHtml=""; }
 function resetStudentForm(){ editingStudentId=""; ["studentName","studentAge","studentPhoto"].forEach(id=>{if($(id)) $(id).value="";}); if($("studentGender")) $("studentGender").value="Male"; syncCustomSelects(); }
 $("saveChurch").onclick=async()=>{
   const name=clean($("churchName").value); if(!name)return;
@@ -1032,12 +1125,15 @@ function renderSelects(){
   setOptions("reportChurch",(canAdmin()?`<option value="">${esc(tr("selectChurch"))}</option>`:"")+ch);
   if($("reportChurch") && selectedChurchId()) $("reportChurch").value=selectedChurchId();
   setOptions("reportClass",`<option value="">${esc(tr("selectClass"))}</option>`+reportClasses().map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join(""));
+  setOptions("summaryChurch",(canAdmin()?`<option value="">${esc(tr("selectChurch"))}</option>`:"")+ch);
+  if($("summaryChurch") && selectedChurchId()) $("summaryChurch").value=selectedChurchId();
+  setOptions("summaryClass",`<option value="">${esc(tr("summaryAllClasses"))}</option>`+reportClasses().map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join(""));
   const attChurchOptions=(canAdmin()?`<option value="">${esc(tr("selectChurch"))}</option>`:"")+visibleChurches().map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join("");
   setOptions("attChurch",attChurchOptions);
   if($("attChurch") && selectedChurchId()) $("attChurch").value=selectedChurchId();
   const attClassOptions=`<option value="">${esc(tr("selectClass"))}</option>`+attendanceClasses().map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join("");
   setOptions("attClass",attClassOptions);
-  ["homeChurch","studentChurch","attChurch","reportChurch","studentClass","attClass","reportClass"].forEach(syncCustomSelect);
+  ["homeChurch","studentChurch","attChurch","reportChurch","summaryChurch","studentClass","attClass","reportClass","summaryClass"].forEach(syncCustomSelect);
   renderThemeBackgroundAdmin();
 }
 const themeChoices=()=>window.SSTheme?.themes || [];
@@ -1126,6 +1222,8 @@ function listenAttendance(date,classId,studentId){
     state.attendance[date] ||= {};
     state.attendance[date][classId] ||= {};
     const val=snap.val();
+    attendanceLoaded.add(key);
+    attendanceErrors.delete(key);
     if(val == null) delete state.attendance[date][classId][studentId];
     else state.attendance[date][classId][studentId]=val;
     scheduleAttendanceRender();
@@ -1133,10 +1231,15 @@ function listenAttendance(date,classId,studentId){
     scheduleStudentRender();
     renderStudentDetails();
     scheduleReportRender();
+    scheduleSummaryRender();
     renderStats();
-  },err=>console.warn(`Unable to load attendance ${key}:`,err.code||err.message));
+  },err=>{
+    attendanceErrors.add(key);
+    console.warn(`Unable to load attendance ${key}:`,err.code||err.message);
+    scheduleSummaryRender();
+  });
 }
-function renderPage(name){ ({home:renderHomeReport,church:renderChurches,roles:renderRoles,classes:renderClasses,students:renderStudents,attendance:renderAttendance,reports:renderReports,activity:renderActivity}[name]||(()=>{}))(); }
+function renderPage(name){ ({home:renderHomeReport,church:renderChurches,roles:renderRoles,classes:renderClasses,students:renderStudents,attendance:renderAttendance,summary:renderSummary,reports:renderReports,activity:renderActivity}[name]||(()=>{}))(); }
 function renderAll(){ renderSelects(); renderStats(); renderPage(activePage()); }
 function renderChurches(){ $("churchList").innerHTML=visibleChurches().map(c=>`<div class="card"><div class="card-main"><div class="card-title"><b>${esc(c.name)}</b></div><div class="actions"><button class="btn icon-btn edit-btn" onclick="editChurch('${esc(c.id)}')" title="${tr("edit")}"><i class="ri-edit-line"></i></button>${editingChurchId===c.id ? `<button class="btn icon-btn danger" onclick="del('churches','${esc(c.id)}')" title="${tr("delete")}"><i class="ri-delete-bin-line"></i></button>` : ""}</div></div></div>`).join("")||`<div class="empty">${tr("noChurch")}</div>`; }
 function renderRoles(){
@@ -1416,6 +1519,16 @@ bindSwipe($("weekbar"),moveSunday);
 bindSwipe($("copyHomeReport")?.closest(".report-copy-head"),moveHomeReport,true);
 if($("reportChurch")) $("reportChurch").onchange=()=>{setSelectedChurchId($("reportChurch").value);renderSelects();renderReports();};
 if($("reportClass")) $("reportClass").onchange=()=>{resetReportRenderCache();renderReports();};
+if($("summaryChurch")) $("summaryChurch").onchange=()=>{setSelectedChurchId($("summaryChurch").value);renderSelects();renderSummary();};
+if($("summaryClass")) $("summaryClass").onchange=()=>{resetSummaryRenderCache();renderSummary();};
+if($("summarySearch")) $("summarySearch").oninput=e=>{state.summaryQ=e.target.value;renderSummary();};
+if($("summaryRange")) $("summaryRange").onchange=()=>{resetSummaryRenderCache();$("summaryDateInfo").textContent=tr("summaryHint");renderSummary();};
+if($("summaryList")) $("summaryList").addEventListener("click",e=>{
+  const cell=e.target.closest(".summary-day");
+  if(cell){ $("summaryDateInfo").textContent=cell.dataset.label||"";return; }
+  const photo=e.target.closest(".summary-avatar");
+  if(photo && photo.dataset.src) showPhotoPreview(photo.dataset.src,photo.dataset.name||"");
+});
 async function saveThemeBackgroundData(next,statusText=tr("saved")){
   next=normalizeThemeBackgrounds(next);
   window.SSTheme?.clearLocalThemeBackgrounds?.();
@@ -1610,6 +1723,83 @@ function renderReports(){
   }
   document.querySelectorAll("[data-preview-src]").forEach(btn=>btn.onclick=()=>showPhotoPreview(btn.dataset.previewSrc,btn.dataset.previewName));
 }
+
+/* Attendance Summary: existing Firebase attendance is the source of truth; no writes. */
+function summaryDates(){
+  const weeks=Math.max(1,Math.min(52,Number($("summaryRange")?.value)||52));
+  const latest=currentSunday();
+  return Array.from({length:weeks},(_,i)=>shiftDate(latest,-7*(weeks-1-i)));
+}
+function renderSummary(){
+  if(!isPage("summary")) return;
+  const list=$("summaryList");
+  if(!list) return;
+  const churchId=reportChurchId(), dates=summaryDates();
+  if(!churchId){
+    $("summaryStudentsTotal").textContent="0";
+    $("summaryCheckedTotal").textContent="0";
+    $("summaryAbsentTotal").textContent="0";
+    const html=`<div class="empty">${esc(tr("selectChurch"))}</div>`;
+    if(summaryListHtml!==html){summaryListHtml=html;list.innerHTML=html;}
+    return;
+  }
+  const classId=$("summaryClass")?.value||"";
+  const students=reportStudents(classId).filter(st=>studentMatches(st,state.summaryQ||""));
+  students.forEach(st=>dates.forEach(date=>listenAttendance(date,st.classId,st.id)));
+  const rows=students.map(st=>{
+    const statuses=dates.map(date=>{
+      const key=`${date}/${st.classId}/${st.id}`;
+      return attendanceErrors.has(key)?"error":!attendanceLoaded.has(key)?"pending":
+        (state.attendance[date]?.[st.classId]?.[st.id]||"none");
+    });
+    return {st,statuses,present:statuses.filter(v=>v==="present").length,absent:statuses.filter(v=>v==="absent").length};
+  }).sort((a,b)=>b.present-a.present||String(a.st.name||"").localeCompare(String(b.st.name||"")));
+  $("summaryStudentsTotal").textContent=rows.length;
+  $("summaryCheckedTotal").textContent=rows.reduce((n,r)=>n+r.present,0);
+  $("summaryAbsentTotal").textContent=rows.reduce((n,r)=>n+r.absent,0);
+  const html=rows.map(({st,statuses,present})=>{
+    const sources=studentPhotoSources(st),src=sources[0]||"";
+    const photo=src?`<img data-summary-photo="${esc(st.id)}" src="${esc(src)}" alt="" loading="lazy"><i class="ri-user-smile-line" hidden aria-hidden="true"></i>`:`<i class="ri-user-smile-line" aria-hidden="true"></i>`;
+    const squares=statuses.map((status,i)=>{
+      const date=dates[i];
+      const label=status==="present"?tr("present"):status==="absent"?tr("absent"):
+        status==="pending"?tr("summaryLoading"):status==="error"?tr("summaryUnavailable"):tr("summaryNoRecord");
+      const kind=status==="present"?"yes":status==="absent"?"no":status==="pending"?"pending":"none";
+      const mark=status==="present"?"✓":status==="absent"?"×":status==="error"?"!":"";
+      const info=`${st.name||tr("student")} · ${date} · ${label}`;
+      return `<button type="button" class="summary-day ${kind}" title="${esc(info)}" aria-label="${esc(info)}" data-label="${esc(info)}">${mark}</button>`;
+    }).join("");
+    return `<div class="card summary-card" data-summary-student="${esc(st.id)}">
+      <div class="summary-student-head">
+        <button type="button" class="summary-avatar" data-src="${esc(src)}" data-name="${esc(st.name||"")}" aria-label="${esc(tr("previewPhoto"))}">${photo}</button>
+        <b class="summary-student-name">${esc(st.name||tr("student"))}</b>
+        <div class="summary-count" title="${esc(tr("summaryPresentCount"))}"><i>✓</i><strong>${present}</strong></div>
+      </div>
+      <div class="summary-grid-scroll"><div class="summary-heatmap" role="group" aria-label="${esc(st.name||tr("student"))}">${squares}</div></div>
+    </div>`;
+  }).join("")||`<div class="empty">${esc(tr("noStudents"))}</div>`;
+  if(html===summaryListHtml) return;
+  const positions=new Map([...list.querySelectorAll("[data-summary-student]")].map(el=>[
+    el.dataset.summaryStudent,el.querySelector(".summary-grid-scroll")?.scrollLeft||0
+  ]));
+  summaryListHtml=html;
+  list.innerHTML=html;
+  list.querySelectorAll("[data-summary-student]").forEach(el=>{
+    const scroll=el.querySelector(".summary-grid-scroll");
+    if(scroll) scroll.scrollLeft=positions.get(el.dataset.summaryStudent)||0;
+  });
+  list.querySelectorAll("img[data-summary-photo]").forEach(img=>{
+    const st=state.students[img.dataset.summaryPhoto];
+    const sources=studentPhotoSources(st);
+    let n=0;
+    img.onerror=()=>{
+      n++;
+      if(n<sources.length)img.src=sources[n];
+      else { img.hidden=true; const fallback=img.nextElementSibling; if(fallback) fallback.hidden=false; }
+    };
+  });
+}
+
 function renderAttendance(useRangeSort=true){
   if(!isPage("attendance")) return;
   showAttendanceLoading();
