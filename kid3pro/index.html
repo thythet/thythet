@@ -88,20 +88,19 @@ select.input{appearance:none;background-image:linear-gradient(45deg,transparent 
 .report-copy-head{position:relative;display:grid;grid-template-columns:48px minmax(0,1fr) 48px;gap:0;margin-bottom:10px;border:1px solid rgba(147,197,253,.28);border-radius:18px;overflow:hidden;background:rgba(255,255,255,.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.14);touch-action:pan-y;user-select:none}.report-nav{height:50px;padding:0!important;border-radius:0!important;border:0!important;background:rgba(255,255,255,.06);font-size:26px;box-shadow:none!important;display:grid!important;place-items:center!important;line-height:1}.report-nav i{display:block;line-height:1}.report-nav[disabled]{opacity:.35;filter:saturate(.6);pointer-events:none}.report-copy-btn{min-height:50px;border-radius:0!important;border-top:0!important;border-bottom:0!important;background:linear-gradient(135deg,rgba(93,167,255,.56),rgba(122,121,255,.42));border-color:rgba(147,197,253,.28);box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 12px 28px rgba(37,99,235,.18);letter-spacing:0;min-width:0;display:flex;align-items:center;justify-content:center;gap:.35em;white-space:nowrap;overflow:hidden;text-overflow:clip;font-size:clamp(13px,3.6vw,20px);line-height:1}.report-copy-btn span{white-space:nowrap;flex:0 1 auto}.copy-report{display:block}.report-text{min-height:120px;resize:none;overflow:hidden;line-height:1.72;white-space:pre-wrap}
 
 /* Kid3Pro Admin-only user approvals: compact, responsive, no manual UIDs. */
-#page-users .um-admin-tag{display:inline-flex;align-items:center;gap:5px;border:1px solid rgba(147,197,253,.28);
-  border-radius:999px;padding:6px 10px;color:#cde2ff;font-size:11px;font-weight:900;white-space:nowrap}
-#page-users .um-help{margin:0 0 12px;color:var(--muted);font-size:12px;line-height:1.55}
-#page-users .um-stat-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-#page-users .um-stat-row>div{display:flex;flex-direction:column;gap:3px;padding:10px 12px;
-  border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.06)}
-#page-users .um-stat-row strong{font-size:23px;font-variant-numeric:tabular-nums}
-#page-users .um-stat-row span{color:var(--muted);font-size:11px;font-weight:800}
-#page-users .um-tabs{display:flex;gap:7px;margin:13px 0 10px}
-#page-users .um-tabs button{flex:1;min-width:0;padding:10px 6px;border-radius:12px;
+/* Counters and filters sit directly on the page, with no enclosing glass panel. */
+#page-users .um-stat-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+#page-users .um-stat-row>div{display:flex;flex-direction:column;justify-content:center;
+  min-width:0;min-height:60px;gap:2px;padding:8px;
+  border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.06)}
+#page-users .um-stat-row strong{font-size:20px;line-height:1.1;font-variant-numeric:tabular-nums}
+#page-users .um-stat-row span{color:var(--muted);font-size:10px;line-height:1.25;font-weight:800}
+#page-users .um-tabs{display:flex;gap:6px;margin:9px 0 11px}
+#page-users .um-tabs button{flex:1;min-width:0;min-height:37px;padding:8px 6px;border-radius:12px;
   color:var(--text);font-size:12px;font-weight:900;border:1px solid var(--line);
   background:rgba(255,255,255,.07);cursor:pointer}
 #page-users .um-tabs button.active{background:linear-gradient(135deg,rgba(93,167,255,.34),rgba(122,121,255,.3));border-color:rgba(147,197,253,.56)}
-#page-users #umSearch{min-height:42px;padding:9px 12px}
+#page-users #umStatus:empty{display:none}
 #page-users .um-list{display:flex;flex-direction:column;gap:8px}
 #page-users .um-user-row{display:flex;align-items:center;gap:10px;padding:11px 12px;
   border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.065)}
@@ -839,22 +838,17 @@ body.summary-popup-open{overflow:hidden}
   </section>
 
   <section id="page-users" class="page">
-    <div class="panel glass">
-      <div class="panel-head"><h2 id="umTitle">Users</h2><span class="um-admin-tag"><i class="ri-shield-check-line"></i> Admin</span></div>
-      <p class="um-help" id="umHelp">Review Google sign-ins, assign roles and churches, and manage access. Firebase UIDs are handled automatically.</p>
-      <div class="um-stat-row">
-        <div><strong id="umPendingCount">0</strong><span id="umPendingLabel">Pending</span></div>
-        <div><strong id="umActiveCount">0</strong><span id="umActiveLabel">Active</span></div>
-        <div><strong id="umBlockedCount">0</strong><span id="umBlockedLabel">Blocked</span></div>
-      </div>
-      <div class="um-tabs" role="group" aria-label="User status">
-        <button type="button" data-um-tab="pending" class="active">Pending</button>
-        <button type="button" data-um-tab="active">Active</button>
-        <button type="button" data-um-tab="blocked">Blocked</button>
-      </div>
-      <input id="umSearch" class="input" type="search" placeholder="Search by name or email" autocomplete="off">
-      <div id="umStatus" class="status" role="status" aria-live="polite"></div>
+    <div class="um-stat-row">
+      <div><strong id="umPendingCount">0</strong><span id="umPendingLabel">Pending</span></div>
+      <div><strong id="umActiveCount">0</strong><span id="umActiveLabel">Active</span></div>
+      <div><strong id="umBlockedCount">0</strong><span id="umBlockedLabel">Blocked</span></div>
     </div>
+    <div class="um-tabs" role="group" aria-label="User status">
+      <button type="button" data-um-tab="pending" class="active">Pending</button>
+      <button type="button" data-um-tab="active">Active</button>
+      <button type="button" data-um-tab="blocked">Blocked</button>
+    </div>
+    <div id="umStatus" class="status" role="status" aria-live="polite"></div>
     <div id="umEditor" class="um-editor"></div>
     <div id="umList" class="um-list"></div>
   </section>
@@ -1254,9 +1248,6 @@ function applyTranslations(){
   setPlaceholder("email","email"); setPlaceholder("password","key"); setPlaceholder("churchName","churchName"); setPlaceholder("roleName","name"); setPlaceholder("roleEmail","email"); setPlaceholder("roleUid","firebaseUid"); setPlaceholder("className","className"); setPlaceholder("studentName","studentName"); setPlaceholder("studentAge","age"); setPlaceholder("studentPhoto","profilePhoto"); setPlaceholder("studentSearch","searchStudents"); setPlaceholder("attSearch","search");
   setText("#remember span","remember"); setText("#page-home h2","overview"); setText(".home-stats .stat:nth-child(1) span","churches"); setText(".home-stats .stat:nth-child(2) span","students"); setText(".home-stats .stat:nth-child(3) span","present"); setText("#page-church h2","church"); setText("#page-roles h2","assignRole"); setText("#page-classes h2","classes"); setText("#page-students h2","students"); setText("#page-attendance h2","attendancePage"); setText("#page-reports h2","monthlyReport");
   setText("#homeClassLabel","homeClassCopy");
-  if($("umTitle"))$("umTitle").textContent=currentLang==="km"?"គ្រប់គ្រងអ្នកប្រើ":"Manage Users";
-  if($("umHelp"))$("umHelp").textContent=currentLang==="km"?"អនុម័តគណនី Google កំណត់តួនាទី និងពួកជំនុំ ដោយមិនចាំបាច់ចម្លង UID។":"Approve Google sign-ins, assign roles and churches, and block access without copying UIDs.";
-  if($("umSearch"))$("umSearch").placeholder=currentLang==="km"?"ស្វែងរកឈ្មោះ ឬអ៊ីមែល":"Search by name or email";
   setText("#classStartLabel","classStartDate"); setText("#classEndLabel","classEndDate");
   setText("#classLifecycleLabel","classLifecycle"); setText("#classDateHelp","classDateHelp");
   if($("classInfoTitle"))$("classInfoTitle").textContent=currentLang==="km"?"ព័ត៌មានថ្នាក់":"Class information";
@@ -2226,8 +2217,7 @@ function renderUsers(){
     b.setAttribute("aria-pressed",String(b.dataset.umTab===umTab));
   });
   const pool=umTab==="pending"?pending:umTab==="blocked"?blocked:active;
-  const search=String($("umSearch")?.value||"").trim().toLowerCase();
-  const items=pool.filter(u=>!search||[u.name,u.email,u.role,churchName(u.churchId)].join(" ").toLowerCase().includes(search))
+  const items=pool.slice()
     .sort((a,b)=>String(a.name||a.email||"").localeCompare(String(b.name||b.email||"")));
   $("umList").innerHTML=items.map(u=>{
     const role=u.pending?(currentLang==="km"?"រង់ចាំ":"Pending"):roleLabel(u.role);
@@ -2338,7 +2328,6 @@ $("page-users").querySelector(".um-tabs").addEventListener("click",e=>{
   if(!btn||!umIsAdmin())return;
   umTab=btn.dataset.umTab;umSelected="";renderUsers();
 });
-$("umSearch").addEventListener("input",()=>renderUsers());
 $("umList").addEventListener("click",e=>{
   const btn=e.target.closest("[data-um-select]");if(btn)umSelect(btn.dataset.umSelect);
 });
