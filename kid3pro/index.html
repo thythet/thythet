@@ -1524,17 +1524,42 @@ async function logActivity(type, path, id, label, extra={}){
   }catch(e){ console.warn("Activity log failed:", e.code||e.message); }
 }
 async function del(path,id){
-  if(!confirm(tr("deleteConfirm"))) return;
+  const admin=canAdmin();
+  const teacherStudentDelete=path==="students"&&(canTeacher()||canPastor());
+  if(!state.user||(!admin&&!teacherStudentDelete)){
+    alert("Permission denied.");
+    return;
+  }
+  // Teachers and pastors may delete only students from their own church.
+  // The Firebase student-level rules independently enforce this boundary.
+  if(!admin&&(!roleChurch()||state.students[id]?.churchId!==roleChurch())){
+    alert("You can only delete students from your own church.");
+    return;
+  }
+  const message=admin?tr("deleteConfirm"):
+    (currentLang==="km"
+      ?"លុបសិស្សនេះជាអចិន្ត្រៃយ៍មែនទេ? មិនអាចស្ដារពីធុងសំរាមបានទេ។"
+      :"Permanently delete this student? It cannot be restored from Trash.");
+  if(!confirm(message))return;
   try{
     const snap=await get(ref(db,path+"/"+id));
     const data=snap.val();
-    if(!data) return alert(tr("itemNotFound"));
+    if(!data)return alert(tr("itemNotFound"));
+    if(!admin&&data.churchId!==roleChurch()){
+      alert("You can only delete students from your own church.");
+      return;
+    }
     const label=labelFor(path,data,id);
-    await set(ref(db,"trash/"+path+"/"+id),{path,id,label,data,deletedAt:Date.now(),deletedBy:state.profile?.name||state.user?.email||state.user?.uid||""});
+    if(admin){
+      // Preserve the existing recoverable admin deletion workflow.
+      await set(ref(db,"trash/"+path+"/"+id),{path,id,label,data,deletedAt:Date.now(),deletedBy:state.profile?.name||state.user?.email||state.user?.uid||""});
+    }
+    // Teachers/pastors skip admin-only Trash; students/$id already allows
+    // deletion in their assigned church under the current Firebase rules.
     await remove(ref(db,path+"/"+id));
     await logActivity("deleted",path,id,label);
-  }
-  catch(e){ alert(e.code||e.message); }
+    if(path==="students"&&editingStudentId===id)resetStudentForm();
+  }catch(e){alert(e.code||e.message)}
 }
 async function restoreItem(path,id){
   if(!confirm(tr("restoreConfirm"))) return;
