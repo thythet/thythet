@@ -1178,7 +1178,7 @@ onAuthStateChanged(auth, async user=>{
 function applyRole(){
   document.querySelectorAll(".nav-btn[data-page='church'],.nav-btn[data-page='roles'],.nav-btn[data-page='activity']").forEach(b=>b.classList.toggle("hidden",!canAdmin()));
   if($("dashboardBtn")) $("dashboardBtn").classList.toggle("hidden",!(canAdmin()||canTeacher()));
-  document.querySelector(".nav-btn[data-page='classes']").classList.toggle("hidden",!(canAdmin()||canPastor()));
+  document.querySelector(".nav-btn[data-page='classes']").classList.toggle("hidden",!(canAdmin()||canPastor()||canTeacher()));
   cloudDisplay();
 }
 document.querySelectorAll(".nav-btn[data-page]").forEach(b=>b.onclick=()=>{ if(b.classList.contains("attend-tab")) playWeekPop(b); page(b.dataset.page); });
@@ -1398,6 +1398,13 @@ function resetClassForm(){
 $("cancelClassEdit").onclick=()=>{resetClassForm();renderClasses();};
 $("classStartDate").value=today();
 $("saveClass").onclick=async()=>{
+  // Teacher access is create-only. Existing classes remain editable by
+  // admins and pastors, with Firebase enforcing the same restriction.
+  if(!(canAdmin()||canPastor()||canTeacher())||
+      (canTeacher()&&editingClassId)){
+    showStatus("classStatus","You can create classes, but cannot edit existing classes.",false);
+    return;
+  }
   const name=clean($("className").value),churchId=canAdmin()?$("classChurch").value:roleChurch();
   if(!name||!churchId){showStatus("classStatus",tr("className"),false);return;}
   const old=editingClassId?(state.classes[editingClassId]||{}):{};
@@ -1783,10 +1790,13 @@ function renderClasses(){
   const row=c=>{
     const archived=c.status==="archived";
     const dates=[c.startDate?c.startDate:tr("classNotSet"),c.endDate||"…"].join(" — ");
+    const editTools=(canAdmin()||canPastor())
+      ?`<button class="btn icon-btn edit-btn" onclick="editClass('${esc(c.id)}')" title="${tr("edit")}"><i class="ri-edit-line"></i></button>${editingClassId===c.id ? `<button class="btn icon-btn danger" onclick="del('classes','${esc(c.id)}')" title="${tr("delete")}"><i class="ri-delete-bin-line"></i></button>` : ""}`
+      :"";
     return `<div class="card"><div class="card-main"><div class="card-title">
       <b>${esc(c.name)}</b><small>${esc(churchName(c.churchId))}</small>
       <div class="class-record-info"><span class="class-state-pill ${archived?"archived":""}">${esc(tr(archived?"classArchived":"classActive"))}</span><span class="class-period-text">${esc(dates)}</span></div>
-    </div><div class="actions"><button class="btn icon-btn edit-btn" onclick="editClass('${esc(c.id)}')" title="${tr("edit")}"><i class="ri-edit-line"></i></button>${editingClassId===c.id ? `<button class="btn icon-btn danger" onclick="del('classes','${esc(c.id)}')" title="${tr("delete")}"><i class="ri-delete-bin-line"></i></button>` : ""}</div></div></div>`;
+    </div><div class="actions">${editTools}</div></div></div>`;
   };
   const churchIds=[...new Set([...visibleChurches().map(c=>c.id),...classes.map(c=>c.churchId).filter(Boolean)])];
   const html=churchIds.map(id=>{
@@ -1841,6 +1851,7 @@ function editRole(id){
   window.scrollTo({top:0,behavior:"smooth"});
 }
 function editClass(id){
+  if(!(canAdmin()||canPastor()))return;
   const c = state.classes[id];
   if(!c) return;
   editingClassId = id;
