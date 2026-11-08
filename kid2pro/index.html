@@ -279,6 +279,29 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
   .student-card .actions .icon-btn{width:38px;height:38px;min-width:38px;font-size:19px}
 }
 
+
+/* Student photos: compact Remix camera upload button and live green progress. */
+#page-students .student-photo-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:9px}
+#page-students .student-photo-row #studentPhoto{flex:1 1 200px;min-width:0}
+#page-students .student-upload-btn{display:inline-flex;align-items:center;justify-content:center;
+  gap:7px;flex:0 0 auto;min-height:46px;white-space:nowrap;cursor:pointer}
+#page-students .student-upload-btn i{display:inline-block;font-size:20px;line-height:1}
+#page-students .student-upload-btn:has(input:disabled){opacity:.55;pointer-events:none;cursor:wait}
+#page-students .student-upload-progress{width:100%;height:9px;margin:9px 0 0;overflow:hidden;
+  border:1px solid rgba(74,222,128,.35);border-radius:999px;background:rgba(16,75,44,.36)}
+#page-students .student-upload-progress-fill{height:100%;width:0%;border-radius:inherit;
+  background:linear-gradient(90deg,#16a34a,#4ade80);box-shadow:0 0 12px rgba(74,222,128,.35);
+  transition:width .16s ease-out}
+#page-students .student-upload-progress.failed{border-color:rgba(251,113,133,.52);
+  background:rgba(127,29,29,.18)}
+#page-students .student-upload-progress.failed .student-upload-progress-fill{
+  background:#fb7185;box-shadow:none}
+#page-students .student-upload-status{font-size:12px;font-weight:800;color:#bbf7d0;line-height:1.5}
+#page-students .student-upload-status:not(:empty){margin-top:5px}
+#page-students .student-upload-status.error{color:#fecaca}
+@media(max-width:400px){#page-students .student-photo-row #studentPhoto{flex-basis:100%}
+  #page-students .student-upload-btn{flex:1 1 100%;width:100%}}
+
 /* Love Kid Pro Cloudinary admin settings */
 .cloud-note{font-size:12px;font-weight:750;color:#ffe6ae;background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.25);border-radius:12px;margin:8px 0;padding:9px 11px;line-height:1.6}
 .cloud-panel{border:1px solid var(--line);border-radius:17px;margin:11px 0;background:rgba(255,255,255,.055)}
@@ -686,13 +709,15 @@ body.summary-popup-open{overflow:hidden}
         <select id="studentChurch" class="input native-select-hidden"></select><div class="custom-select" data-select="studentChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
         <select id="studentClass" class="input native-select-hidden"></select><div class="custom-select" data-select="studentClass"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
       </div>
-      <div class="student-photo-row" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
- <input id="studentPhoto" class="input" placeholder="Photo file name or uploaded URL" style="flex:1;min-width:200px">
- <label class="btn" style="cursor:pointer">📷 Upload Photo<input type="file" id="studentPhotoUpload" accept="image/jpeg,image/png,image/webp" style="display:none"></label>
- <span id="studentUploadStatus" style="font-size:12px"></span>
- </div>
- <p id="cloudinaryUploadNote" class="cloud-note">Cloudinary setup required before uploading student photos.</p>
- <details id="cloudinarySettingsPanel" class="cloud-panel hidden">
+      <div class="student-photo-row">
+        <input id="studentPhoto" class="input" placeholder="Photo file name or uploaded URL">
+        <label class="btn student-upload-btn"><i class="ri-camera-4-line" aria-hidden="true"></i><span>Upload Photo</span><input type="file" id="studentPhotoUpload" accept="image/jpeg,image/png,image/webp" hidden></label>
+      </div>
+      <div id="studentUploadProgress" class="student-upload-progress hidden" role="progressbar" aria-label="Photo upload progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div id="studentUploadProgressFill" class="student-upload-progress-fill"></div>
+      </div>
+      <div id="studentUploadStatus" class="student-upload-status" aria-live="polite"></div>
+  <details id="cloudinarySettingsPanel" class="cloud-panel hidden">
    <summary><i class="ri-cloud-line"></i> Cloudinary Settings <span id="cloudinaryBadge">Not configured</span></summary>
    <div class="cloud-form">
      <div class="cloud-fields">
@@ -947,9 +972,6 @@ function cloudDisplay(){
   const cfg=state.cloudinary,ok=cloudValid(cfg);
   $("cloudinarySettingsPanel").classList.toggle("hidden",!canAdmin());
   $("cloudinaryBadge").textContent=ok?"Configured":"Not configured";
-  $("cloudinaryUploadNote").textContent=ok
-    ?"Cloudinary ready. Image URLs are public; upload a photo, then press Save to link it to the student."
-    :"Cloudinary not configured. An administrator must set Cloud Name and Unsigned Upload Preset.";
   if(canAdmin()&&!cloudDirty){
     $("cloudNameInput").value=cfg.cloudName;
     $("cloudPresetInput").value=cfg.preset;
@@ -1348,7 +1370,13 @@ function scheduleSummaryRender(){
   summaryRenderTimer=setTimeout(renderSummary,100);
 }
 function resetSummaryRenderCache(){ summaryListHtml=""; }
-function resetStudentForm(){ editingStudentId=""; ["studentName","studentAge","studentPhoto"].forEach(id=>{if($(id)) $(id).value="";}); if($("studentGender")) $("studentGender").value="Male"; syncCustomSelects(); }
+function resetStudentForm(){
+  editingStudentId="";
+  ["studentName","studentAge","studentPhoto"].forEach(id=>{if($(id)) $(id).value="";});
+  if($("studentGender")) $("studentGender").value="Male";
+  resetStudentUploadProgress();
+  syncCustomSelects();
+}
 $("saveChurch").onclick=async()=>{
   const name=clean($("churchName").value); if(!name)return;
   const action=editingChurchId?"updated":"created";
@@ -1432,26 +1460,59 @@ function cloudUpload(file,config,onProgress){
     request.send(form);
   });
 }
+function resetStudentUploadProgress(){
+  const track=$("studentUploadProgress"),fill=$("studentUploadProgressFill"),status=$("studentUploadStatus");
+  track.classList.add("hidden");
+  track.classList.remove("failed");
+  track.setAttribute("aria-valuenow","0");
+  fill.style.width="0%";
+  status.textContent="";
+  status.classList.remove("error");
+}
+function setStudentUploadProgress(value){
+  const percent=Math.max(0,Math.min(100,Number(value)||0));
+  const track=$("studentUploadProgress"),fill=$("studentUploadProgressFill");
+  track.classList.remove("hidden","failed");
+  track.setAttribute("aria-valuenow",String(percent));
+  fill.style.width=percent+"%";
+}
 $("studentPhotoUpload").addEventListener("change",async e=>{
   const input=e.target,file=input.files?.[0],status=$("studentUploadStatus");
   if(!file)return;
   input.value="";
+  resetStudentUploadProgress();
+  const fail=message=>{status.textContent=message;status.classList.add("error");};
   if(!["image/jpeg","image/png","image/webp"].includes(file.type)||file.size>5*1024*1024){
-    status.textContent="Use JPG, PNG or WebP under 5 MB.";return;
+    fail("Use JPG, PNG or WebP under 5 MB.");return;
   }
-  if(!state.user||!["admin","teacher","pastor"].includes(state.role)){status.textContent="Permission denied.";return;}
+  if(!state.user||!["admin","teacher","pastor"].includes(state.role)){
+    fail("Permission denied.");return;
+  }
   const church=canAdmin()?$("studentChurch").value:roleChurch();
-  if(!church){status.textContent="Choose a church first.";return;}
+  if(!church){fail("Choose a church first.");return;}
   const cfg=cloudNormalize(state.cloudinary);
-  if(!cloudValid(cfg)){status.textContent="Cloudinary not configured. Ask the admin to open Cloudinary Settings.";return;}
+  if(!cloudValid(cfg)){
+    fail("Cloudinary not configured. Ask the admin to open Cloudinary Settings.");return;
+  }
   const save=$("saveStudent");
-  input.disabled=true;save.disabled=true;status.textContent="Uploading 0%";
+  input.disabled=true;save.disabled=true;
+  setStudentUploadProgress(0);
+  status.textContent="Uploading 0%";
   try{
-    const url=await cloudUpload(file,cfg,n=>{status.textContent="Uploading "+n+"%"});
+    const url=await cloudUpload(file,cfg,n=>{
+      setStudentUploadProgress(n);
+      status.textContent="Uploading "+n+"%";
+    });
+    setStudentUploadProgress(100);
     $("studentPhoto").value=url;
     status.textContent="Uploaded! Click Save to link this photo to the student.";
-  }catch(err){status.textContent="Upload failed: "+err.message}
-  finally{input.disabled=false;save.disabled=false;}
+  }catch(err){
+    $("studentUploadProgress").classList.add("failed");
+    fail("Upload failed: "+err.message);
+  }finally{
+    input.disabled=false;
+    save.disabled=false;
+  }
 });
 $("saveStudent").onclick=async()=>{ 
   const name=clean($("studentName").value), churchId=canAdmin()?$("studentChurch").value:roleChurch(), classId=$("studentClass").value; 
