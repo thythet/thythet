@@ -552,6 +552,29 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
 #page-classes .class-row-actions .icon-btn i::before{
   display:block;font-size:inherit;line-height:1!important;margin:0;padding:0;
 }
+#page-classes .class-row-actions .class-inline-toggle{
+  display:flex;align-items:center;justify-content:center;flex:0 0 40px;
+  width:40px;height:34px;min-height:34px;padding:0;border:0;border-radius:9px;
+  background:transparent;box-shadow:none;cursor:pointer;touch-action:manipulation
+}
+#page-classes .class-inline-track{display:block;position:relative;flex:0 0 36px;
+  width:36px;height:21px;border-radius:999px;background:#16a34a;transition:background .18s}
+#page-classes .class-inline-thumb{position:absolute;top:3px;left:3px;width:15px;height:15px;
+  border-radius:50%;background:#fff;transform:translateX(15px);transition:transform .18s}
+#page-classes .class-inline-toggle[aria-checked="false"] .class-inline-track{background:#64748b}
+#page-classes .class-inline-toggle[aria-checked="false"] .class-inline-thumb{transform:translateX(0)}
+#page-classes .class-row-actions .class-inline-save{color:#86efac}
+#page-classes .class-row-actions .class-inline-cancel{color:#fda4af}
+#page-classes .class-row-actions button:disabled{opacity:.55;cursor:wait}
+#page-classes .class-inline-toggle:focus-visible{outline:2px solid #93c5fd;outline-offset:2px}
+@media(max-width:640px){
+  #page-classes .class-row.is-editing{flex-wrap:wrap;row-gap:4px}
+  #page-classes .class-row.is-editing .class-row-main{flex:1 1 100%;width:100%}
+  #page-classes .class-row.is-editing .class-row-actions{width:100%;justify-content:flex-end}
+}
+@media(prefers-reduced-motion:reduce){
+  #page-classes .class-inline-track,#page-classes .class-inline-thumb{transition:none}
+}
 #page-classes .class-row-actions .icon-btn:focus-visible{outline:2px solid #93c5fd;outline-offset:2px}
 @media(max-width:520px){
   #page-classes .class-row{gap:5px;padding:6px 12px 6px 10px}
@@ -1675,6 +1698,18 @@ function syncClassLifecycleSwitch(){
   const active=input.value!=="archived";
   button.setAttribute("aria-checked",String(active));
   text.textContent=tr(active?"classActive":"classArchived");
+  // The top switch and the inline switch edit the same pending status.
+  if(editingClassId){
+    const row=[...document.querySelectorAll("#classList .class-row[data-class-id]")]
+      .find(item=>item.dataset.classId===editingClassId);
+    const toggle=row?.querySelector(".class-inline-toggle");
+    if(toggle){
+      toggle.setAttribute("aria-checked",String(active));
+      toggle.setAttribute("aria-label",tr("classLifecycle")+": "+tr(active?"classActive":"classArchived"));
+      toggle.title=tr(active?"classActive":"classArchived");
+      row.querySelector(".class-row-state")?.classList.toggle("archived",!active);
+    }
+  }
 }
 $("classLifecycleSwitch").addEventListener("click",()=>{
   const input=$("classLifecycle");
@@ -1698,48 +1733,61 @@ function resetClassForm(){
   $("classStatus").textContent="";
   syncCustomSelect("classChurch");
 }
-$("cancelClassEdit").onclick=()=>{resetClassForm();renderClasses();};
+function cancelClassEditing(){
+  if(classSaving)return;
+  resetClassForm();
+  renderClasses();
+}
+$("cancelClassEdit").onclick=cancelClassEditing;
 $("classStartDate").value=today();
 $("saveClass").onclick=async()=>{
-  // Teachers may create and fully edit only their own classes in their
-  // assigned church. Firebase independently checks immutable ownership.
+  if(classSaving)return false;
+  // Teachers can save only classes they own; Firebase independently checks UID.
   if(!(canAdmin()||canPastor()||canTeacher())){
     showStatus("classStatus","Permission denied.",false);
-    return;
+    return false;
   }
-  if(canTeacher()&&editingClassId){
-    const owned=state.classes[editingClassId];
-    if(!owned||!state.user||owned.createdByUid!==state.user.uid||
-        !roleChurch()||owned.churchId!==roleChurch()){
-      showStatus("classStatus","You can edit only classes you created in your own church.",false);
-      return;
-    }
+  if(editingClassId&&!canEditClass(state.classes[editingClassId])){
+    showStatus("classStatus","You can edit only classes you created in your own church.",false);
+    return false;
   }
   const name=clean($("className").value),churchId=canAdmin()?$("classChurch").value:roleChurch();
-  if(!name||!churchId){showStatus("classStatus",tr("className"),false);return;}
+  if(!name||!churchId){showStatus("classStatus",tr("className"),false);return false;}
   const old=editingClassId?(state.classes[editingClassId]||{}):{};
   const start=$("classStartDate").value,end=$("classEndDate").value;
-  // Existing undated classes can be edited without imposing a new start date.
-  if(!start&&!editingClassId){showStatus("classStatus",tr("classStartRequired"),false);return;}
+  // Existing undated classes may still be edited without supplying a new date.
+  if(!start&&!editingClassId){showStatus("classStatus",tr("classStartRequired"),false);return false;}
   if((start&&!classDateValue(start))||(end&&!classDateValue(end))){
-    showStatus("classStatus",tr("classDateInvalid"),false);return;
+    showStatus("classStatus",tr("classDateInvalid"),false);return false;
   }
-  if(start&&end&&end<start){showStatus("classStatus",tr("classDateInvalid"),false);return;}
+  if(start&&end&&end<start){showStatus("classStatus",tr("classDateInvalid"),false);return false;}
   const lifecycle=$("classLifecycle").value==="archived"?"archived":"active";
   const id=editingClassId||push(ref(db,"classes")).key;
   const isEditing=!!editingClassId,action=isEditing?"updated":"created";
   const data={...old,name,churchId,startDate:start||old.startDate||"",endDate:end||"",status:lifecycle,
     archivedAt:lifecycle==="archived"?(old.archivedAt||Date.now()):null,
-    // Record ownership at creation; Firebase UID, not email, controls deletion.
+    // Keep creator identity immutable on updates.
     ...(isEditing?{}:{createdByUid:state.user.uid,createdByEmail:state.user.email||"",createdAt:Date.now()}),
     updatedAt:Date.now()};
-  if(await write("classes/"+id,data,"classStatus",isEditing?tr("classUpdated"):tr("classSaved"))){
+  classSaving=true;
+  $("saveClass").disabled=true;
+  renderClasses();
+  try{
+    const saved=await write("classes/"+id,data,"classStatus",isEditing?tr("classUpdated"):tr("classSaved"));
+    if(!saved)return false; // Keep Edit mode and all pending values on Firebase error.
     await logActivity(action,"classes",id,name);
     resetClassForm();
     resetSummaryRenderCache();
     renderSelects();
+    // The class observer updates the list when the new record arrives.
+    return true;
+  }catch(error){
+    showStatus("classStatus",error.code||error.message,false);
+    return false;
+  }finally{
+    classSaving=false;
+    $("saveClass").disabled=false;
     renderClasses();
-    // No student or attendance records are modified.
   }
 };
 // Cloudinary unsigned upload. The admin-controlled preset must restrict uploads.
@@ -2342,23 +2390,40 @@ function renderClasses(){
     ...classes.map(c=>c.churchId).filter(Boolean)])];
   loadClassGroupExpanded();
   const row=c=>{
-    const archived=c.status==="archived";
+    const editing=editingClassId===c.id&&canEditClass(c);
+    const archived=editing?$("classLifecycle").value==="archived":c.status==="archived";
     const own=canTeacher()&&state.user?.uid===c.createdByUid&&c.churchId===roleChurch();
-    const editable=canAdmin()||canPastor()||own;
-    const editBtn=editable
-      ?`<button class="btn icon-btn edit-btn" onclick="editClass('${esc(c.id)}')" title="${tr("edit")}" aria-label="${tr("edit")}: ${esc(c.name)}"><i class="ri-edit-line"></i></button>`
+    const editable=canEditClass(c);
+    const editBtn=editable&&!editing
+      ?`<button type="button" class="btn icon-btn edit-btn" onclick="editClass('${esc(c.id)}')" title="${tr("edit")}" aria-label="${tr("edit")}: ${esc(c.name)}"><i class="ri-edit-line"></i></button>`
       :"";
-    const deleteBtn=(canAdmin()||canPastor())&&editingClassId===c.id
-      ?`<button class="btn icon-btn danger" onclick="del('classes','${esc(c.id)}')" title="${tr("delete")}" aria-label="${tr("delete")}: ${esc(c.name)}"><i class="ri-delete-bin-line"></i></button>`
-      :own?`<button class="btn icon-btn danger" onclick="deleteOwnedClass('${esc(c.id)}')" title="${tr("delete")}" aria-label="${tr("delete")}: ${esc(c.name)}"><i class="ri-delete-bin-line"></i></button>`:"";
+    const disabled=classSaving?" disabled":"";
+    const switchBtn=editing
+      ?`<button type="button" class="class-inline-toggle" role="switch" aria-checked="${!archived}"
+          aria-label="${esc(tr("classLifecycle")+": "+tr(archived?"classArchived":"classActive"))}"
+          title="${esc(tr(archived?"classArchived":"classActive"))}" onclick="toggleClassRowStatus('${esc(c.id)}')"${disabled}>
+          <span class="class-inline-track" aria-hidden="true"><span class="class-inline-thumb"></span></span></button>`
+      :"";
+    const deleteBtn=editing
+      ?(canAdmin()||canPastor()
+        ?`<button type="button" class="btn icon-btn danger" onclick="del('classes','${esc(c.id)}')" title="${tr("delete")}" aria-label="${tr("delete")}: ${esc(c.name)}"${disabled}><i class="ri-delete-bin-line"></i></button>`
+        :own?`<button type="button" class="btn icon-btn danger" onclick="deleteOwnedClass('${esc(c.id)}')" title="${tr("delete")}" aria-label="${tr("delete")}: ${esc(c.name)}"${disabled}><i class="ri-delete-bin-line"></i></button>`:"")
+      :"";
+    const saveBtn=editing
+      ?`<button type="button" class="btn icon-btn class-inline-save" onclick="saveClassRow('${esc(c.id)}')" title="${esc(tr("save"))}" aria-label="${esc(tr("save"))}: ${esc(c.name)}"${disabled}><i class="ri-check-line"></i></button>`
+      :"";
+    const cancelBtn=editing
+      ?`<button type="button" class="btn icon-btn class-inline-cancel" onclick="cancelClassRow('${esc(c.id)}')" title="${esc(tr("classCancel"))}" aria-label="${esc(tr("classCancel"))}: ${esc(c.name)}"${disabled}><i class="ri-close-line"></i></button>`
+      :"";
     const dateLabel=(c.startDate||tr("classNotSet"))+" – "+(c.endDate||"…");
-    return `<div class="class-row" data-class-id="${esc(c.id)}">
+    return `<div class="class-row${editing?" is-editing":""}${classSaving&&editing?" is-saving":""}"
+        data-class-id="${esc(c.id)}"${classSaving&&editing?' aria-busy="true"':""}>
       <div class="class-row-main">
         <span class="class-row-state ${archived?"archived":""}" title="${esc(tr(archived?"classArchived":"classActive"))}"></span>
         <i class="ri-folder-line class-row-folder" aria-hidden="true"></i>
         <strong class="class-row-title" title="${esc(c.name)}">${esc(c.name)}</strong>
         <span class="class-row-dates" title="${esc(dateLabel)}">${esc(dateLabel)}</span>
-      </div><div class="class-row-actions">${editBtn}${deleteBtn}</div>
+      </div><div class="class-row-actions">${editBtn}${switchBtn}${deleteBtn}${saveBtn}${cancelBtn}</div>
     </div>`;
   };
   const list=$("classList");
@@ -2385,6 +2450,7 @@ $("classList").addEventListener("toggle",e=>{
 let editingChurchId = "";
 let editingRoleId = "";
 let editingClassId = "";
+let classSaving = false;
 let editingStudentId = "";
 let selectedDetailStudentId = "";
 
@@ -2425,15 +2491,19 @@ function editRole(id){
   page("roles");
   window.scrollTo({top:0,behavior:"smooth"});
 }
+function canEditClass(c){
+  return !!c&&(canAdmin()||
+    (canPastor()&&c.churchId===roleChurch())||
+    (canTeacher()&&!!state.user?.uid&&c.createdByUid===state.user.uid&&
+      !!roleChurch()&&c.churchId===roleChurch()));
+}
 function editClass(id){
+  if(classSaving)return;
   const c=state.classes[id];
-  if(!c)return;
-  if(!(canAdmin()||canPastor())&&
-      !(canTeacher()&&state.user&&c.createdByUid===state.user.uid&&
-        !!roleChurch()&&c.churchId===roleChurch()))return;
-  editingClassId = id;
-  $("className").value = c.name || "";
-  if($("classChurch")) $("classChurch").value = c.churchId || "";
+  if(!canEditClass(c))return;
+  editingClassId=id;
+  $("className").value=c.name||"";
+  if($("classChurch"))$("classChurch").value=c.churchId||"";
   $("classStartDate").value=classDateValue(c.startDate);
   $("classEndDate").value=classDateValue(c.endDate);
   $("classLifecycle").value=c.status==="archived"?"archived":"active";
@@ -2441,9 +2511,26 @@ function editClass(id){
   if($("classInfoMenu"))$("classInfoMenu").open=false;
   $("cancelClassEdit").classList.remove("hidden");
   syncCustomSelects();
-  page("classes");
-  window.scrollTo({top:0,behavior:"smooth"});
+  // Stay on the selected row when editing from the Class page on mobile.
+  if(!isPage("classes"))page("classes");
+  else renderClasses();
 }
+function toggleClassRowStatus(id){
+  if(classSaving||editingClassId!==id||!canEditClass(state.classes[id]))return;
+  $("classLifecycle").value=$("classLifecycle").value==="archived"?"active":"archived";
+  syncClassLifecycleSwitch();
+}
+async function saveClassRow(id){
+  if(classSaving||editingClassId!==id||!canEditClass(state.classes[id]))return false;
+  return await $("saveClass").onclick(); // Identical validation and Firebase write.
+}
+function cancelClassRow(id){
+  if(classSaving||editingClassId!==id||!canEditClass(state.classes[id]))return;
+  cancelClassEditing();
+}
+window.toggleClassRowStatus=toggleClassRowStatus;
+window.saveClassRow=saveClassRow;
+window.cancelClassRow=cancelClassRow;
 function editStudent(id){
   const s = state.students[id];
   if(!s) return;
