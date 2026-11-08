@@ -1987,7 +1987,8 @@ function umRecords(tab){
     .filter(([id,r])=>r&&r.status==="pending"&&r.uid===id&&!state.users?.[id])
     .map(([id,r])=>({id,...r,pending:true}));
   return all.filter(([id,u])=>u&&u.role!=="admin"&&id!==state.user.uid&&
-    (tab==="blocked"?u.status==="disabled":u.status!=="disabled"&&u.status!=="pending"))
+    (tab==="blocked"?u.status==="disabled"||u.status==="pending"||u.active===false:
+      u.status!=="disabled"&&u.status!=="pending"&&u.active!==false))
     .map(([id,u])=>({id,...u,pending:false}));
 }
 function umSelectedRecord(){
@@ -2033,7 +2034,8 @@ function renderUsers(){
   }).join("")||'<div class="um-no-users">'+(currentLang==="km"?"មិនមានអ្នកប្រើប្រាស់":"No matching users")+'</div>';
   const selected=umSelectedRecord();
   if(!selected){umSelected="";$("umEditor").textContent="";return;}
-  const existingTab=selected.pending?"pending":selected.status==="disabled"?"blocked":"active";
+  const existingTab=selected.pending?"pending":
+    (selected.status==="disabled"||selected.status==="pending"||selected.active===false)?"blocked":"active";
   if(existingTab!==umTab){umSelected="";$("umEditor").textContent="";return;}
   const choices=visibleChurches().map(c=>'<option value="'+esc(c.id)+'" '+(umDraftChurch===c.id?"selected":"")+'>'+esc(c.name)+'</option>').join("");
   const kh=currentLang==="km";
