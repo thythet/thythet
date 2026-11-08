@@ -1010,34 +1010,56 @@ function stopAttendanceSubscriptions(){
   for(const unsub of attendanceWeekListeners.values())try{unsub()}catch{}
   attendanceWeekListeners.clear();
 }
-let summaryLoadEpoch=0,summaryHistoryWeeks=16,summaryHistoryTimer=0,summaryHistoryIdle=0;
+let summaryLoadEpoch=0,summaryHistoryWeeks=8,summaryHistoryTimer=0,summaryHistoryIdle=0;
 let summaryLastUserScrollAt=0;
 let summaryWeekQueue=[],summaryWeekActive=0;
 const summaryWeekRequested=new Set();
-const SUMMARY_WEEK_CONCURRENCY=4;
-const SUMMARY_HISTORY_BATCH=16;
-const SUMMARY_RECENT_LIVE_WEEKS=3;
+let summaryDrainScheduled=false;
+const summaryPermissionProbes=new Map();
+const summaryFallbackLocks=new Map();
+const SUMMARY_WEEK_CONCURRENCY=3;
+const SUMMARY_HISTORY_BATCH=8;
+const SUMMARY_RECENT_LIVE_WEEKS=1;
+const SUMMARY_IDLE_DELAY=2000;
 function stopSummaryLoads(){
   summaryLoadEpoch++;
+  // Old pending requests belong to the previous view. They must not block
+  // the newly selected church/class or reuse outdated permission probes.
+  summaryWeekActive=0;
+  summaryPermissionProbes.clear();
+  summaryFallbackLocks.clear();
   clearTimeout(summaryHistoryTimer);
   summaryHistoryTimer=0;
   if(summaryHistoryIdle&&typeof cancelIdleCallback==="function")cancelIdleCallback(summaryHistoryIdle);
   summaryHistoryIdle=0;
   summaryWeekQueue.length=0;
+  summaryDrainScheduled=false;
   summaryWeekRequested.clear();
 }
 function startSummaryLoads(){
   stopSummaryLoads();
-  summaryHistoryWeeks=16;
+  summaryHistoryWeeks=8;
   resetSummaryRenderCache();
 }
 function queueSummaryWeek(date,classId,live){
   if(!isPage("summary"))return;
   const key=attendanceWeekKey(date,classId);
   if(summaryWeekRequested.has(key))return;
+  // Reuse data already loaded in this session. Live weeks resubscribe so their
+  // status stays fresh when the user returns from Attendance.
+  if(attendanceWeekComplete(date,classId)&&!live)return;
   summaryWeekRequested.add(key);
   summaryWeekQueue.push({date,classId,live,epoch:summaryLoadEpoch});
-  drainSummaryWeekQueue();
+  // Schedule one queue drain after all classes enqueue their weeks, so the
+  // newest dates across every class are served first (not just the first class).
+  summaryWeekQueue.sort((a,b)=>b.date.localeCompare(a.date));
+  if(!summaryDrainScheduled){
+    summaryDrainScheduled=true;
+    Promise.resolve().then(()=>{
+      summaryDrainScheduled=false;
+      drainSummaryWeekQueue();
+    });
+  }
 }
 function recordSummaryWeekError(date,classId,error){
   attendanceWeekErrors.add(attendanceWeekKey(date,classId));
@@ -1046,50 +1068,94 @@ function recordSummaryWeekError(date,classId,error){
   scheduleSummaryRender();
 }
 async function summaryFallbackGet(date,classId,epoch){
-  const ids=attendanceClassStudents(classId);
-  // Small batches avoid hundreds of simultaneous child reads if class-level
-  // reads are blocked by existing Firebase Security Rules.
-  for(let i=0;i<ids.length;i+=6){
-    if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
-    await Promise.all(ids.slice(i,i+6).map(async id=>{
-      const key=attendanceStudentKey(date,classId,id);
-      try{
-        const snap=await get(ref(db,"attendance/"+key));
-        if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
-        state.attendance[date] ||= {};
-        state.attendance[date][classId] ||= {};
-        const value=snap.val();
-        if(value==null)delete state.attendance[date][classId][id];
-        else state.attendance[date][classId][id]=value;
-        attendanceLoaded.add(key);
-        attendanceErrors.delete(key);
-      }catch(error){
-        if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
-        attendanceErrors.add(key);
-        console.warn("Attendance fallback read failed",key,error.code||error.message);
-      }
-    }));
-    invalidateAttendanceWeek(date,classId);
-    scheduleSummaryRender();
+  // Only one class fallback scan at a time. Too many simultaneous child GETs
+  // were saturating the browser and delaying the visible newest-week rows.
+  const previous=summaryFallbackLocks.get(classId)||Promise.resolve();
+  let release;
+  const turn=new Promise(resolve=>{release=resolve});
+  const tail=previous.catch(()=>{}).then(()=>turn);
+  summaryFallbackLocks.set(classId,tail);
+  await previous.catch(()=>{});
+  try{
+    const ids=attendanceClassStudents(classId).filter(id=>
+      !attendanceLoaded.has(attendanceStudentKey(date,classId,id)) &&
+      !attendanceErrors.has(attendanceStudentKey(date,classId,id)));
+    for(let i=0;i<ids.length;i+=8){
+      if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
+      await Promise.all(ids.slice(i,i+8).map(async id=>{
+        const key=attendanceStudentKey(date,classId,id);
+        try{
+          const snap=await get(ref(db,"attendance/"+key));
+          if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
+          state.attendance[date] ||= {};
+          state.attendance[date][classId] ||= {};
+          const value=snap.val();
+          if(value==null)delete state.attendance[date][classId][id];
+          else state.attendance[date][classId][id]=value;
+          attendanceLoaded.add(key);
+          attendanceErrors.delete(key);
+        }catch(error){
+          if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
+          attendanceErrors.add(key);
+          console.warn("Attendance fallback read failed",key,error.code||error.message);
+        }
+      }));
+      invalidateAttendanceWeek(date,classId);
+      scheduleSummaryRender();
+    }
+  }finally{
+    release();
+    if(summaryFallbackLocks.get(classId)===tail)summaryFallbackLocks.delete(classId);
   }
 }
 function summaryFallbackLive(date,classId,epoch){
   if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
   for(const id of attendanceClassStudents(classId))listenAttendance(date,classId,id);
 }
+async function summaryClassBatchAllowed(date,classId,epoch){
+  if(attendanceBatchAllowed.has(classId))return attendanceBatchAllowed.get(classId);
+  let probe=summaryPermissionProbes.get(classId);
+  if(!probe){
+    // One permission probe per class (not one denied request per Sunday).
+    probe=(async()=>{
+      const key=attendanceWeekKey(date,classId);
+      try{
+        const snap=await get(ref(db,"attendance/"+key));
+        if(epoch!==summaryLoadEpoch||!isPage("summary"))return null;
+        attendanceBatchAllowed.set(classId,true);
+        applyAttendanceWeek(date,classId,snap.val());
+        return true;
+      }catch(error){
+        if(epoch!==summaryLoadEpoch||!isPage("summary"))return null;
+        if(error.code==="PERMISSION_DENIED"||error.code==="permission_denied"){
+          attendanceBatchAllowed.set(classId,false);
+          return false;
+        }
+        recordSummaryWeekError(date,classId,error);
+        return null;
+      }
+    })();
+    summaryPermissionProbes.set(classId,probe);
+    probe.finally(()=>{
+      if(summaryPermissionProbes.get(classId)===probe)summaryPermissionProbes.delete(classId);
+    });
+  }
+  return probe;
+}
 async function executeSummaryWeek(task){
   const {date,classId,live,epoch}=task,key=attendanceWeekKey(date,classId);
   if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
-  if(attendanceBatchAllowed.get(classId)===false){
+  const allowed=await summaryClassBatchAllowed(date,classId,epoch);
+  if(allowed===null||epoch!==summaryLoadEpoch||!isPage("summary"))return;
+  if(!allowed){
     if(live)summaryFallbackLive(date,classId,epoch);
-    else await summaryFallbackGet(date,classId,epoch);
+    else if(!attendanceWeekComplete(date,classId))await summaryFallbackGet(date,classId,epoch);
     return;
   }
   if(live){
     if(attendanceWeekListeners.has(key))return;
     const unsubscribe=onValue(ref(db,"attendance/"+key),snap=>{
       if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
-      attendanceBatchAllowed.set(classId,true);
       applyAttendanceWeek(date,classId,snap.val());
     },error=>{
       attendanceWeekListeners.delete(key);
@@ -1102,10 +1168,10 @@ async function executeSummaryWeek(task){
     attendanceWeekListeners.set(key,unsubscribe);
     return;
   }
+  if(attendanceWeekComplete(date,classId))return;
   try{
     const snapshot=await get(ref(db,"attendance/"+key));
     if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
-    attendanceBatchAllowed.set(classId,true);
     applyAttendanceWeek(date,classId,snapshot.val());
   }catch(error){
     if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
@@ -1123,27 +1189,39 @@ function drainSummaryWeekQueue(){
     Promise.resolve().then(()=>executeSummaryWeek(task)).catch(error=>{
       if(task.epoch===summaryLoadEpoch)recordSummaryWeekError(task.date,task.classId,error);
     }).finally(()=>{
-      summaryWeekActive--;
+      if(task.epoch!==summaryLoadEpoch)return;
+      summaryWeekActive=Math.max(0,summaryWeekActive-1);
       drainSummaryWeekQueue();
     });
   }
+}
+function summaryVisibleHistoryReady(){
+  if(summaryWeekActive||summaryWeekQueue.length)return false;
+  // A historical expansion must not outrun the completed visible window.
+  // The next window is requested only when the newest records have settled.
+  const classId=$("summaryClass")?.value||"";
+  const visible=reportStudents("").filter(st=>!classId||st.classId===classId);
+  return [...new Set(visible.map(st=>st.classId).filter(Boolean))].every(id=>{
+    if(!state.classes[id])return false;
+    const dates=summaryCandidateDates(id).slice(-summaryHistoryWeeks);
+    return dates.every(date=>attendanceWeekComplete(date,id));
+  });
 }
 function scheduleMoreSummaryHistory(hasMore){
   if(!hasMore||!isPage("summary")||summaryHistoryTimer||summaryHistoryIdle)return;
   summaryHistoryTimer=setTimeout(()=>{
     summaryHistoryTimer=0;
     if(!isPage("summary"))return;
-    if(summaryWeekQueue.length>8||summaryWeekActive>2||
-      Date.now()-summaryLastUserScrollAt<500||
-      !$("summaryDayOverlay")?.classList.contains("hidden")){
+    const busy=Date.now()-summaryLastUserScrollAt<700||
+      !$("summaryDayOverlay")?.classList.contains("hidden");
+    if(busy||!summaryVisibleHistoryReady()){
       scheduleMoreSummaryHistory(true);
       return;
     }
     const grow=()=>{
       summaryHistoryIdle=0;
       if(!isPage("summary"))return;
-      if(Date.now()-summaryLastUserScrollAt<500||
-        !$("summaryDayOverlay")?.classList.contains("hidden")){
+      if(Date.now()-summaryLastUserScrollAt<700||!summaryVisibleHistoryReady()){
         scheduleMoreSummaryHistory(true);
         return;
       }
@@ -1151,9 +1229,9 @@ function scheduleMoreSummaryHistory(hasMore){
       resetSummaryRenderCache();
       renderSummary();
     };
-    if(typeof requestIdleCallback==="function")summaryHistoryIdle=requestIdleCallback(grow,{timeout:1200});
+    if(typeof requestIdleCallback==="function")summaryHistoryIdle=requestIdleCallback(grow,{timeout:1600});
     else grow();
-  },420);
+  },SUMMARY_IDLE_DELAY);
 }
 // This is PUBLIC unsigned-upload configuration, not a secret.
 const cloudStorageKey="kid2pro_cloudinary_config_v1";
