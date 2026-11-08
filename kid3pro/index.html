@@ -477,16 +477,17 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
 #page-classes .class-switch-control{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
 #page-classes #classLifecycleLabel{font-size:12px;color:var(--muted);font-weight:900}
 #page-classes .class-lifecycle-switch{display:inline-flex;align-items:center;gap:9px;min-height:40px;
-  padding:7px 12px 7px 8px;border-radius:13px;border:1px solid rgba(74,222,128,.36);
-  background:rgba(34,197,94,.10);color:#bbf7d0;font-size:13px;font-weight:900;
+  padding:5px 2px;border-radius:0;border:0;box-shadow:none;
+  background:transparent;color:#bbf7d0;font-size:13px;font-weight:900;
   cursor:pointer;touch-action:manipulation}
 #page-classes .class-switch-track{position:relative;display:inline-block;width:38px;height:22px;
   border-radius:999px;background:#16a34a;transition:background .18s;flex:0 0 38px}
 #page-classes .class-switch-thumb{position:absolute;top:3px;left:3px;width:16px;height:16px;
   border-radius:50%;background:#fff;transform:translateX(16px);transition:transform .18s;
   box-shadow:0 2px 5px rgba(0,0,0,.25)}
-#page-classes .class-lifecycle-switch[aria-checked="false"]{border-color:rgba(251,191,36,.38);
-  background:rgba(251,191,36,.10);color:#fde68a}
+#page-classes .class-lifecycle-switch[aria-checked="false"]{background:transparent;border-color:transparent;color:#fde68a}
+#page-classes .class-lifecycle-switch>i{font-size:18px;line-height:1;flex-shrink:0}
+#page-classes .class-lifecycle-switch:hover{background:transparent;border-color:transparent}
 #page-classes .class-lifecycle-switch[aria-checked="false"] .class-switch-track{background:#64748b}
 #page-classes .class-lifecycle-switch[aria-checked="false"] .class-switch-thumb{transform:translateX(0)}
 #page-classes .class-lifecycle-switch:focus-visible,
@@ -517,12 +518,12 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
   padding:10px 12px;cursor:pointer;list-style:none;user-select:none;font-weight:900}
 #page-classes .class-church-header::-webkit-details-marker{display:none}
 #page-classes .class-church-header:focus-visible{outline:2px solid #93c5fd;outline-offset:-3px}
-#page-classes .class-church-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+#page-classes .class-church-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:16px;line-height:1.35}
 #page-classes .class-church-count{font-size:11px;color:var(--muted);white-space:nowrap}
 #page-classes .class-church-arrow{font-size:16px;transition:transform .2s}
 #page-classes .class-church-group[open] .class-church-arrow{transform:rotate(180deg)}
-#page-classes .class-row{min-height:45px;padding:7px 10px 7px 12px;
-  display:flex;align-items:center;gap:8px;border-top:1px solid var(--line)}
+#page-classes .class-row{min-height:45px;padding:6px 12px;
+  display:flex;align-items:center;gap:8px;border-top:1px solid var(--line);box-sizing:border-box}
 #page-classes .class-row-main{min-width:0;flex:1;display:flex;align-items:center;gap:8px;overflow:hidden}
 #page-classes .class-row-title{font-size:13px;min-width:0;flex:0 1 auto;overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap;font-weight:900}
@@ -531,15 +532,21 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
 #page-classes .class-row-state{display:inline-block;width:7px;height:7px;border-radius:50%;
   flex:0 0 7px;background:#4ade80}
 #page-classes .class-row-state.archived{background:#fbbf24}
-#page-classes .class-row-actions{display:flex;align-items:center;gap:5px;flex:0 0 auto}
-#page-classes .class-row-actions .icon-btn{width:33px;height:33px;min-width:33px;
-  padding:0;border-radius:10px;font-size:16px}
+#page-classes .class-row-actions{display:flex;align-items:center;justify-content:flex-end;
+  gap:5px;flex:0 0 auto;align-self:center;min-height:34px;margin:0}
+#page-classes .class-row-actions .icon-btn{display:inline-grid;place-items:center;
+  width:34px;height:34px;min-width:34px;min-height:34px;
+  margin:0;box-sizing:border-box;flex:0 0 34px;line-height:1;
+  padding:0;border-radius:10px;font-size:16px;vertical-align:middle}
+#page-classes .class-row-actions .icon-btn i{display:block;line-height:1}
+#page-classes .class-row-actions .icon-btn:focus-visible{outline:2px solid #93c5fd;outline-offset:2px}
 @media(max-width:520px){
-  #page-classes .class-row{gap:5px;padding:6px 8px 6px 10px}
+  #page-classes .class-row{gap:5px;padding:6px 12px 6px 10px}
   #page-classes .class-row-main{gap:5px}
   #page-classes .class-row-title{font-size:12px}
   #page-classes .class-row-dates{font-size:10px}
-  #page-classes .class-row-actions .icon-btn{width:30px;height:30px;min-width:30px}
+  #page-classes .class-row-actions{min-height:32px}
+  #page-classes .class-row-actions .icon-btn{width:32px;height:32px;min-width:32px;min-height:32px;flex-basis:32px}
 }
 /* Home copy filter: independent class selection, no Firebase writes. */
 #page-home .home-class-filter{display:flex;align-items:center;gap:9px;margin-bottom:11px}
@@ -731,7 +738,7 @@ body.summary-popup-open{overflow:hidden}
       <button class="nav-btn" data-page="summary"><i class="ri-calendar-check-line"></i>Summary</button>
       <button class="nav-btn" data-page="church"><i class="ri-building-4-line"></i>Church</button>
       <button class="nav-btn" data-page="roles"><i class="ri-shield-user-line"></i>Roles</button>
-       <button class="nav-btn" data-page="users"><i class="ri-user-settings-line"></i>Users</button>
+       <button class="nav-btn" data-page="users"><i class="ri-google-fill"></i>Users</button>
       <button class="nav-btn" data-page="classes"><i class="ri-folder-line"></i>Class</button>
       <button class="nav-btn" data-page="students"><i class="ri-group-line"></i>Student</button>
       <button class="nav-btn" data-page="reports"><i class="ri-bar-chart-box-line"></i>Report</button>
@@ -829,6 +836,7 @@ body.summary-popup-open{overflow:hidden}
           <span id="classLifecycleLabel">Status</span>
           <button id="classLifecycleSwitch" class="class-lifecycle-switch" type="button" role="switch" aria-checked="true" aria-labelledby="classLifecycleLabel classLifecycleValue">
             <span class="class-switch-track" aria-hidden="true"><span class="class-switch-thumb"></span></span>
+            <i class="ri-folder-line" aria-hidden="true"></i>
             <span id="classLifecycleValue">Active</span>
           </button>
           <select id="classLifecycle" class="native-select-hidden" tabindex="-1" aria-hidden="true"><option value="active">Active</option><option value="archived">Archived</option></select>
@@ -2347,7 +2355,6 @@ function renderClasses(){
     const open=classGroupExpanded.has(id)?classGroupExpanded.get(id):i===0;
     return `<details class="class-church-group" data-church-id="${esc(id)}" ${open?"open":""}>
       <summary class="class-church-header">
-        <i class="ri-community-line" aria-hidden="true"></i>
         <span class="class-church-title">${esc(churchName(id)||tr("noChurch"))}</span>
         <span class="class-church-count">${group.length} ${currentLang==="km"?"ថ្នាក់":group.length===1?"class":"classes"}</span>
         <i class="ri-arrow-down-s-line class-church-arrow" aria-hidden="true"></i>
