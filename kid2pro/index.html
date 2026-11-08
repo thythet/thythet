@@ -2534,49 +2534,96 @@ function layoutSummarySyncSpacers(list){
     });
   });
 }
-function refreshSummaryScrollCues(list){
-  layoutSummarySyncSpacers(list);
-  const scrollers=[...list.querySelectorAll(".summary-grid-scroll")];
-  scrollers.forEach(scroll=>{
-    const wrap=scroll.closest(".summary-strip-wrap");
-    if(!wrap)return;
-    const update=()=>{
-      wrap.classList.toggle("has-overflow",scroll.scrollWidth>scroll.clientWidth+4 &&
-        scroll.scrollLeft+scroll.clientWidth<scroll.scrollWidth-3);
-    };
-    if(summarySyncEnabled&&scroll.querySelector(".summary-day")){
-      scroll.scrollLeft=summarySyncWeek*summaryScrollStep(scroll);
-    }
-    scroll.addEventListener("scroll",()=>{
-      update();
-      if(!summarySyncEnabled||!scroll.querySelector(".summary-day"))return;
-      const expected=summarySyncProgrammed.get(scroll);
-      if(expected!==undefined&&Math.abs(scroll.scrollLeft-expected)<2){
-        summarySyncProgrammed.delete(scroll);return;
-      }
-      summarySyncProgrammed.delete(scroll);
-      summarySyncWeek=scroll.scrollLeft/summaryScrollStep(scroll);
-      scrollers.forEach(other=>{
-        if(other===scroll||!other.querySelector(".summary-day"))return;
-        const target=summarySyncWeek*summaryScrollStep(other);
-        if(Math.abs(other.scrollLeft-target)>1){
-          summarySyncProgrammed.set(other,target);
-          other.scrollLeft=target;
-        }
-      });
-    },{passive:true});
-    update();
+// Fast synced scrolling: cached geometry and one write batch per animation frame.
+let summarySyncRows=[];
+let summarySyncFrame=0;
+let summarySyncLeader=null;
+let summarySyncResizeFrame=0;
+let summaryCueFrame=0;
+function summaryUpdateScrollCues(){
+  summaryCueFrame=0;
+  summarySyncRows.forEach(({scroll,wrap,max})=>{
+    const atEdge=max>3&&scroll.scrollLeft<max-3;
+    wrap.classList.toggle("has-overflow",atEdge);
   });
 }
-window.addEventListener("resize",()=>{
-  if(!isPage("summary"))return;
-  const list=$("summaryList");
-  layoutSummarySyncSpacers(list);
-  if(summarySyncEnabled){
-    list.querySelectorAll(".summary-grid-scroll").forEach(sc=>{
-      if(sc.querySelector(".summary-day"))sc.scrollLeft=summarySyncWeek*summaryScrollStep(sc);
-    });
+function summaryQueueScrollCues(){
+  if(!summaryCueFrame)summaryCueFrame=requestAnimationFrame(summaryUpdateScrollCues);
+}
+function summaryApplySyncedFrame(){
+  summarySyncFrame=0;
+  const source=summarySyncLeader;
+  if(!summarySyncEnabled||!source)return;
+  const driver=summarySyncRows.find(row=>row.scroll===source);
+  if(!driver)return;
+  const offset=source.scrollLeft;
+  summarySyncWeek=offset/driver.step;
+  for(const row of summarySyncRows){
+    if(row.scroll===source)continue;
+    const target=Math.min(row.max,Math.max(0,summarySyncWeek*row.step));
+    if(Math.abs(row.scroll.scrollLeft-target)>0.75){
+      summarySyncProgrammed.set(row.scroll,target);
+      row.scroll.scrollLeft=target;
+    }
   }
+  summaryQueueScrollCues();
+}
+function summaryOnNativeScroll(scroll){
+  const programmed=summarySyncProgrammed.get(scroll);
+  if(programmed!==undefined){
+    summarySyncProgrammed.delete(scroll);
+    if(Math.abs(scroll.scrollLeft-programmed)<2){
+      summaryQueueScrollCues();
+      return;
+    }
+  }
+  if(summarySyncEnabled){
+    summarySyncLeader=scroll;
+    if(!summarySyncFrame)summarySyncFrame=requestAnimationFrame(summaryApplySyncedFrame);
+  }
+  summaryQueueScrollCues();
+}
+function summaryMeasureScrollRows(list){
+  layoutSummarySyncSpacers(list);
+  summarySyncRows=[...list.querySelectorAll(".summary-grid-scroll")].map(scroll=>{
+    const wrap=scroll.closest(".summary-strip-wrap");
+    const first=scroll.querySelector(".summary-day");
+    if(!wrap||!first)return null;
+    return {scroll,wrap,step:summaryScrollStep(scroll),
+      max:Math.max(0,scroll.scrollWidth-scroll.clientWidth)};
+  }).filter(Boolean);
+}
+function refreshSummaryScrollCues(list){
+  if(summarySyncFrame){cancelAnimationFrame(summarySyncFrame);summarySyncFrame=0;}
+  if(summaryCueFrame){cancelAnimationFrame(summaryCueFrame);summaryCueFrame=0;}
+  summarySyncLeader=null;
+  summaryMeasureScrollRows(list);
+  // Event handlers are attached only when the row DOM is created.
+  for(const row of summarySyncRows){
+    row.scroll.addEventListener("scroll",()=>summaryOnNativeScroll(row.scroll),{passive:true});
+    if(summarySyncEnabled){
+      const target=Math.min(row.max,Math.max(0,summarySyncWeek*row.step));
+      summarySyncProgrammed.set(row.scroll,target);
+      row.scroll.scrollLeft=target;
+    }
+  }
+  summaryQueueScrollCues();
+}
+window.addEventListener("resize",()=>{
+  if(!isPage("summary")||summarySyncResizeFrame)return;
+  summarySyncResizeFrame=requestAnimationFrame(()=>{
+    summarySyncResizeFrame=0;
+    if(!isPage("summary"))return;
+    summaryMeasureScrollRows($("summaryList"));
+    if(summarySyncEnabled){
+      for(const row of summarySyncRows){
+        const target=Math.min(row.max,Math.max(0,summarySyncWeek*row.step));
+        summarySyncProgrammed.set(row.scroll,target);
+        row.scroll.scrollLeft=target;
+      }
+    }
+    summaryQueueScrollCues();
+  });
 });
 function renderSummary(){
   if(!isPage("summary"))return;
