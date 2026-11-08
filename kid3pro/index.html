@@ -486,7 +486,6 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
   border-radius:50%;background:#fff;transform:translateX(16px);transition:transform .18s;
   box-shadow:0 2px 5px rgba(0,0,0,.25)}
 #page-classes .class-lifecycle-switch[aria-checked="false"]{background:transparent;border-color:transparent;color:#fde68a}
-#page-classes .class-lifecycle-switch>i{font-size:18px;line-height:1;flex-shrink:0}
 #page-classes .class-lifecycle-switch:hover{background:transparent;border-color:transparent}
 #page-classes .class-lifecycle-switch[aria-checked="false"] .class-switch-track{background:#64748b}
 #page-classes .class-lifecycle-switch[aria-checked="false"] .class-switch-thumb{transform:translateX(0)}
@@ -532,6 +531,8 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
 #page-classes .class-row-state{display:inline-block;width:7px;height:7px;border-radius:50%;
   flex:0 0 7px;background:#4ade80}
 #page-classes .class-row-state.archived{background:#fbbf24}
+#page-classes .class-row-folder{display:inline-block;flex:0 0 auto;font-size:15px;line-height:1;
+  color:var(--muted);vertical-align:middle}
 #page-classes .class-row-actions{display:flex;align-items:center;justify-content:flex-end;
   gap:5px;flex:0 0 auto;align-self:center;min-height:34px;margin:0}
 #page-classes .class-row-actions .icon-btn{display:inline-grid;place-items:center;
@@ -836,7 +837,6 @@ body.summary-popup-open{overflow:hidden}
           <span id="classLifecycleLabel">Status</span>
           <button id="classLifecycleSwitch" class="class-lifecycle-switch" type="button" role="switch" aria-checked="true" aria-labelledby="classLifecycleLabel classLifecycleValue">
             <span class="class-switch-track" aria-hidden="true"><span class="class-switch-thumb"></span></span>
-            <i class="ri-folder-line" aria-hidden="true"></i>
             <span id="classLifecycleValue">Active</span>
           </button>
           <select id="classLifecycle" class="native-select-hidden" tabindex="-1" aria-hidden="true"><option value="active">Active</option><option value="archived">Archived</option></select>
@@ -2343,6 +2343,7 @@ function renderClasses(){
     return `<div class="class-row" data-class-id="${esc(c.id)}">
       <div class="class-row-main">
         <span class="class-row-state ${archived?"archived":""}" title="${esc(tr(archived?"classArchived":"classActive"))}"></span>
+        <i class="ri-folder-line class-row-folder" aria-hidden="true"></i>
         <strong class="class-row-title" title="${esc(c.name)}">${esc(c.name)}</strong>
         <span class="class-row-dates" title="${esc(dateLabel)}">${esc(dateLabel)}</span>
       </div><div class="class-row-actions">${editBtn}${deleteBtn}</div>
