@@ -968,6 +968,11 @@ function attendanceWeekComplete(date,classId){
     return attendanceLoaded.has(key)||attendanceErrors.has(key);
   });
 }
+function attendanceWeekFullyRead(date,classId){
+  if(attendanceWeekLoaded.has(attendanceWeekKey(date,classId)))return true;
+  const ids=attendanceClassStudents(classId);
+  return ids.length>0&&ids.every(id=>attendanceLoaded.has(attendanceStudentKey(date,classId,id)));
+}
 function attendanceWeekState(date,classId){
   if(!date||!classId)return "none";
   const key=attendanceWeekKey(date,classId);
@@ -984,9 +989,11 @@ function attendanceWeekState(date,classId){
 }
 function attendanceDisplayStatus(date,classId,id){
   const key=attendanceStudentKey(date,classId,id);
+  // Preserve successfully loaded Present marks even if a later refresh fails.
+  if(attendanceMarkLoaded(date,classId,id)&&
+    state.attendance[date]?.[classId]?.[id]==="present")return "present";
   if(attendanceErrors.has(key)||attendanceWeekErrors.has(attendanceWeekKey(date,classId)))return "error";
   if(!attendanceMarkLoaded(date,classId,id))return "pending";
-  if(state.attendance[date]?.[classId]?.[id]==="present")return "present";
   const week=attendanceWeekState(date,classId);
   return week==="recorded"?"absent":week;
 }
@@ -1047,7 +1054,12 @@ function queueSummaryWeek(date,classId,live){
   if(summaryWeekRequested.has(key))return;
   // Reuse data already loaded in this session. Live weeks resubscribe so their
   // status stays fresh when the user returns from Attendance.
-  if(attendanceWeekComplete(date,classId)&&!live)return;
+  if(attendanceWeekFullyRead(date,classId)&&!live)return;
+  if(!live&&attendanceClassStudents(classId).every(id=>{
+    const key=attendanceStudentKey(date,classId,id);
+    return attendanceLoaded.has(key)||(attendanceErrors.has(key)&&
+      Date.now()<(summaryRetryAfter.get(key)||0));
+  }))return;
   summaryWeekRequested.add(key);
   summaryWeekQueue.push({date,classId,live,epoch:summaryLoadEpoch});
   // Schedule one queue drain after all classes enqueue their weeks, so the
@@ -1059,6 +1071,48 @@ function queueSummaryWeek(date,classId,live){
       summaryDrainScheduled=false;
       drainSummaryWeekQueue();
     });
+  }
+}
+
+// Read through the Realtime Database socket rather than issuing thousands
+// of independent server-first get() requests. onValue({onlyOnce:true}) can use
+// existing synchronized client data and automatically releases its listener.
+// Permission errors are still enforced by Firebase; these are never bypassed.
+function summaryReadOnce(path){
+  return new Promise((resolve,reject)=>{
+    let finished=false,unsubscribe=null;
+    const timer=setTimeout(()=>{
+      finish(new Error("ATTENDANCE_READ_TIMEOUT"));
+    },15000);
+    function finish(error,snapshot){
+      if(finished)return;
+      finished=true;
+      clearTimeout(timer);
+      if(unsubscribe){try{unsubscribe()}catch{}}
+      if(error)reject(error);
+      else resolve(snapshot);
+    }
+    try{
+      unsubscribe=onValue(ref(db,path),snapshot=>finish(null,snapshot),error=>finish(error),{onlyOnce:true});
+      // The SDK can deliver cached data synchronously before returning unsubscribe.
+      if(finished&&unsubscribe){try{unsubscribe()}catch{}}
+    }catch(error){finish(error)}
+  });
+}
+function summaryIsDenied(error){
+  return /permission[_ -]?denied/i.test(String(error?.code||error?.message||""));
+}
+const summaryTransientRetry=new Set();
+const summaryRetryAfter=new Map();
+async function summaryReadStudent(path,key){
+  try{
+    return await summaryReadOnce(path);
+  }catch(error){
+    // Brief retry only for transient failures, never for authorization failures.
+    if(summaryIsDenied(error)||summaryTransientRetry.has(key))throw error;
+    summaryTransientRetry.add(key);
+    await new Promise(resolve=>setTimeout(resolve,350));
+    return summaryReadOnce(path);
   }
 }
 function recordSummaryWeekError(date,classId,error){
@@ -1077,15 +1131,16 @@ async function summaryFallbackGet(date,classId,epoch){
   summaryFallbackLocks.set(classId,tail);
   await previous.catch(()=>{});
   try{
-    const ids=attendanceClassStudents(classId).filter(id=>
-      !attendanceLoaded.has(attendanceStudentKey(date,classId,id)) &&
-      !attendanceErrors.has(attendanceStudentKey(date,classId,id)));
+    const ids=attendanceClassStudents(classId).filter(id=>{
+      const key=attendanceStudentKey(date,classId,id);
+      return !attendanceLoaded.has(key)&&Date.now()>=(summaryRetryAfter.get(key)||0);
+    });
     for(let i=0;i<ids.length;i+=8){
       if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
       await Promise.all(ids.slice(i,i+8).map(async id=>{
         const key=attendanceStudentKey(date,classId,id);
         try{
-          const snap=await get(ref(db,"attendance/"+key));
+          const snap=await summaryReadStudent("attendance/"+key,key);
           if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
           state.attendance[date] ||= {};
           state.attendance[date][classId] ||= {};
@@ -1094,9 +1149,15 @@ async function summaryFallbackGet(date,classId,epoch){
           else state.attendance[date][classId][id]=value;
           attendanceLoaded.add(key);
           attendanceErrors.delete(key);
+          summaryTransientRetry.delete(key);
+          summaryRetryAfter.delete(key);
         }catch(error){
           if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
-          attendanceErrors.add(key);
+          // Keep known-successful records visible after a failed refresh.
+          if(!attendanceLoaded.has(key)){
+            attendanceErrors.add(key);
+            summaryRetryAfter.set(key,Date.now()+(summaryIsDenied(error)?120000:12000));
+          }
           console.warn("Attendance fallback read failed",key,error.code||error.message);
         }
       }));
@@ -1120,7 +1181,7 @@ async function summaryClassBatchAllowed(date,classId,epoch){
     probe=(async()=>{
       const key=attendanceWeekKey(date,classId);
       try{
-        const snap=await get(ref(db,"attendance/"+key));
+        const snap=await summaryReadOnce("attendance/"+key);
         if(epoch!==summaryLoadEpoch||!isPage("summary"))return null;
         attendanceBatchAllowed.set(classId,true);
         applyAttendanceWeek(date,classId,snap.val());
@@ -1170,7 +1231,7 @@ async function executeSummaryWeek(task){
   }
   if(attendanceWeekComplete(date,classId))return;
   try{
-    const snapshot=await get(ref(db,"attendance/"+key));
+    const snapshot=await summaryReadOnce("attendance/"+key);
     if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
     applyAttendanceWeek(date,classId,snapshot.val());
   }catch(error){
@@ -1198,10 +1259,19 @@ function drainSummaryWeekQueue(){
 function summaryVisibleHistoryReady(){
   if(summaryWeekActive||summaryWeekQueue.length)return false;
   // A historical expansion must not outrun the completed visible window.
-  // The next window is requested only when the newest records have settled.
   const classId=$("summaryClass")?.value||"";
   const visible=reportStudents("").filter(st=>!classId||st.classId===classId);
-  return [...new Set(visible.map(st=>st.classId).filter(Boolean))].every(id=>{
+  const classIds=[...new Set(visible.map(st=>st.classId).filter(Boolean))];
+  const windows=new Map(classIds.map(id=>[id,
+    new Set(summaryCandidateDates(id).slice(-summaryHistoryWeeks))]));
+  if([...attendanceWeekErrors].some(key=>{
+    const [date,id]=key.split("/");
+    return windows.get(id)?.has(date);
+  })||[...attendanceErrors].some(key=>{
+    const [date,id]=key.split("/");
+    return windows.get(id)?.has(date);
+  }))return false;
+  return classIds.every(id=>{
     if(!state.classes[id])return false;
     const dates=summaryCandidateDates(id).slice(-summaryHistoryWeeks);
     return dates.every(date=>attendanceWeekComplete(date,id));
