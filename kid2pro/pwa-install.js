@@ -22,8 +22,14 @@
         min-height:34px;box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
       .lk-install-action:hover{background:rgba(93,167,255,.27)}
       .lk-install-action:focus-visible,.lk-install-close:focus-visible{outline:2px solid #93c5fd;outline-offset:2px}
-      .lk-install-action svg{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-      .lk-install-action.lk-login{margin:10px 0 2px;align-self:center}
+      .lk-install-action svg{width:18px;height:18px;flex:none;display:block;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+      /* Both icon-only buttons use the same 48 × 32px footprint as .lang-btn. */
+      .lk-install-action.lk-main,.lk-install-action.lk-login{
+        flex:0 0 48px;min-width:48px;width:48px;max-width:48px;height:32px;min-height:32px;
+        padding:0;margin:0;gap:0;border-radius:13px;align-self:center;
+      }
+      .lk-install-action.lk-main .lk-install-label,
+      .lk-install-action.lk-login .lk-install-label{display:none}
       .lk-install-action.lk-dashboard{min-height:39px}
       .lk-install-backdrop{position:fixed;inset:0;z-index:2147483600;display:flex;align-items:center;justify-content:center;
         padding:18px;background:rgba(5,14,33,.75);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
@@ -37,13 +43,10 @@
       .lk-install-dialog strong{color:#fff}
       .lk-install-dialog .lk-install-steps{border:1px solid rgba(167,198,243,.23);border-radius:13px;
         padding:12px 14px;background:rgba(255,255,255,.07);line-height:1.8;margin-top:15px;font-size:14px}
-      @media(max-width:620px){.lk-install-action.lk-main{padding:8px;min-width:36px}
-        .lk-install-action.lk-main .lk-install-label{display:none}
-        .lk-install-action.lk-dashboard{padding:7px 9px}
-      }`;
+      @media(max-width:620px){.lk-install-action.lk-dashboard{padding:7px 9px}}`;
     document.head.append(st);
   }
-  const icon='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 17v3h16v-3"/></svg>';
+  const icon='<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>';
   function addButton(parent,className,prepend=false){
     if(!parent)return;
     const b=document.createElement("button");
