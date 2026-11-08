@@ -535,11 +535,23 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
   color:var(--muted);vertical-align:middle}
 #page-classes .class-row-actions{display:flex;align-items:center;justify-content:flex-end;
   gap:5px;flex:0 0 auto;align-self:center;min-height:34px;margin:0}
-#page-classes .class-row-actions .icon-btn{display:inline-grid;place-items:center;
+/* Center the actual Remixicon glyph, not just its inline-font baseline. */
+#page-classes .class-row-actions .icon-btn{
+  display:flex!important;align-items:center!important;justify-content:center!important;
   width:34px;height:34px;min-width:34px;min-height:34px;
-  margin:0;box-sizing:border-box;flex:0 0 34px;line-height:1;
-  padding:0;border-radius:10px;font-size:16px;vertical-align:middle}
-#page-classes .class-row-actions .icon-btn i{display:block;line-height:1}
+  margin:0;box-sizing:border-box;flex:0 0 34px;
+  padding:0!important;border-radius:10px;font-size:18px;line-height:1!important;
+  text-align:center;vertical-align:middle;
+}
+#page-classes .class-row-actions .icon-btn i{
+  display:flex;align-items:center;justify-content:center;flex:0 0 20px;
+  width:20px;height:20px;margin:0;padding:0;
+  font-size:18px;line-height:1!important;
+  transform:translateY(-1px);
+}
+#page-classes .class-row-actions .icon-btn i::before{
+  display:block;font-size:inherit;line-height:1!important;margin:0;padding:0;
+}
 #page-classes .class-row-actions .icon-btn:focus-visible{outline:2px solid #93c5fd;outline-offset:2px}
 @media(max-width:520px){
   #page-classes .class-row{gap:5px;padding:6px 12px 6px 10px}
