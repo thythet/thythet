@@ -316,8 +316,12 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
 #page-summary .summary-strip-wrap{position:relative;min-width:0;overflow:hidden}
 #page-summary .summary-grid-scroll{
   display:block;max-width:100%;min-width:0;overflow-x:auto;overflow-y:hidden;
-  padding:0 0 3px;touch-action:pan-x;-webkit-overflow-scrolling:touch;
+  padding:5px 5px 6px;touch-action:pan-x;-webkit-overflow-scrolling:touch;
   overscroll-behavior-x:contain;scrollbar-width:thin
+}
+#page-summary .summary-strip-wrap.has-overflow .summary-grid-scroll{
+  -webkit-mask-image:linear-gradient(to right,#000 0%,#000 calc(100% - 20px),transparent 100%);
+  mask-image:linear-gradient(to right,#000 0%,#000 calc(100% - 20px),transparent 100%)
 }
 #page-summary .summary-heatmap{
   display:flex!important;flex-direction:row!important;align-items:center;gap:4px;
@@ -332,12 +336,7 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
   padding:7px 9px;margin:0
 }
 #page-summary .summary-count strong{font-size:22px}
-#page-summary .summary-scroll-cue{
-  position:absolute;right:0;top:0;bottom:3px;display:none;place-items:center;
-  width:22px;background:linear-gradient(90deg,transparent,rgba(20,40,69,.94));
-  color:#dbeafe;pointer-events:none;font-size:21px
-}
-#page-summary .summary-strip-wrap.has-overflow .summary-scroll-cue{display:grid}
+#page-summary .summary-sync-spacer{flex:0 0 auto;width:0;height:1px;pointer-events:none;visibility:hidden}
 #page-summary .summary-no-history{font-size:12px;font-weight:750;color:var(--muted);white-space:nowrap}
 #page-summary .summary-tap-toast{
   position:fixed;z-index:300;left:50%;bottom:max(28px,env(safe-area-inset-bottom));
@@ -444,31 +443,55 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
   .att-photo-row .att-result .check{flex-basis:42px}
 }
 
-/* Summary → Attendance date jump; fixed popup escapes horizontal scroll clipping. */
-.summary-day-popup{position:fixed;left:12px;top:12px;z-index:1150;
-  width:min(295px,calc(100vw - 24px));padding:14px;
-  color:#f8fafc;border-radius:17px;border:1px solid rgba(156,189,238,.43);
+/* Centered mobile-safe attendance popup and persistent synchronized scrolling. */
+.summary-popup-overlay{position:fixed;inset:0;z-index:1150;display:flex;
+  align-items:center;justify-content:center;padding:16px;
+  padding-top:max(16px,env(safe-area-inset-top));
+  padding-bottom:max(16px,env(safe-area-inset-bottom));
+  background:rgba(5,14,33,.70);backdrop-filter:blur(5px);
+  -webkit-backdrop-filter:blur(5px)}
+body.summary-popup-open{overflow:hidden}
+.summary-day-popup{position:relative!important;left:auto!important;top:auto!important;
+  width:min(390px,100%);max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);
+  overflow-y:auto;overscroll-behavior:contain;padding:18px;
+  color:#f8fafc;border-radius:18px;border:1px solid rgba(156,189,238,.43);
   background:linear-gradient(150deg,#324864,#1d2c47);
   box-shadow:0 18px 55px rgba(0,0,0,.52),inset 0 1px 0 rgba(255,255,255,.12);
-  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
   overflow-wrap:anywhere}
 .summary-popup-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.summary-popup-top strong{font-size:15px;line-height:1.4}
-.summary-popup-close{display:grid;place-items:center;flex:none;width:30px;height:30px;
-  padding:0;background:rgba(255,255,255,.10);border:1px solid rgba(191,219,254,.2);
-  border-radius:9px;font-size:23px;color:#fff;cursor:pointer}
+.summary-popup-top strong{font-size:16px;line-height:1.4}
+.summary-popup-close{display:flex;align-items:center;justify-content:center;
+  flex:0 0 35px;width:35px;height:35px;padding:0!important;line-height:1;
+  background:rgba(255,255,255,.10);border:1px solid rgba(191,219,254,.2);
+  border-radius:10px;color:#fff;cursor:pointer}
+.summary-popup-close i{display:block;line-height:1;font-size:23px}
 .summary-popup-student{font-size:17px;font-weight:950;margin:10px 0 9px}
 .summary-popup-info{display:flex;align-items:center;justify-content:space-between;gap:8px;
   font-size:13px;margin:6px 0;color:#cbd5e1}
 .summary-popup-info b{color:#f8fafc;font-weight:900;text-align:right}
+.summary-popup-sync{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:13px 0 7px;margin-top:12px;border-top:1px solid rgba(191,219,254,.22)}
+.summary-popup-sync-text{display:flex;flex-direction:column;gap:4px;min-width:0}
+.summary-popup-sync-text strong{font-size:13px;line-height:1.45}
+.summary-popup-sync-text small{font-size:11px;line-height:1.5;color:#cbd5e1}
+.summary-sync-switch{position:relative;display:flex;align-items:center;flex:0 0 52px;
+  width:52px;height:31px;padding:3px;border-radius:99px;
+  background:#56657e;border:1px solid rgba(203,213,225,.34);
+  cursor:pointer;transition:background .15s ease}
+.summary-sync-switch[aria-checked="true"]{background:#59bfe8}
+.summary-sync-knob{display:block;width:23px;height:23px;border-radius:50%;background:#fff;
+  box-shadow:0 2px 5px rgba(0,0,0,.18);transform:translateX(0);transition:transform .15s ease}
+.summary-sync-switch[aria-checked="true"] .summary-sync-knob{transform:translateX(20px)}
 .summary-popup-go{margin-top:12px;width:100%;display:flex;align-items:center;
-  justify-content:center;gap:8px;min-height:41px}
-.summary-popup-go i{font-size:19px}
-.summary-day[aria-expanded="true"]{outline:2px solid #93c5fd;outline-offset:2px}
+  justify-content:center;gap:8px;min-height:43px}
+.summary-popup-go i{font-size:20px}
+.summary-day[aria-expanded="true"]{box-shadow:0 0 0 2px #93c5fd;outline:none}
+.summary-popup-close:focus-visible,.summary-sync-switch:focus-visible,
+.summary-popup-go:focus-visible{outline:2px solid #93c5fd;outline-offset:2px}
 .att-card.att-photo-row.att-jump-highlight{border-color:rgba(147,197,253,.95)!important;
   box-shadow:0 0 0 2px rgba(96,165,250,.42),0 0 28px rgba(59,130,246,.25)!important;
   background:linear-gradient(115deg,rgba(59,130,246,.21),rgba(255,255,255,.07))!important}
-@media(max-width:640px){.summary-day-popup{padding:13px;width:min(285px,calc(100vw - 24px))}}
+@media(max-width:640px){.summary-day-popup{padding:16px;width:min(390px,100%)}}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#172b51">
@@ -671,15 +694,26 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
         <select id="summaryClass" class="input native-select-hidden" aria-label="Filter by class"></select><div class="custom-select" data-select="summaryClass"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
     </div>
     <div id="summaryList" class="list summary-list"></div>
-    <div id="summaryDayPopup" class="summary-day-popup hidden" role="dialog" aria-labelledby="summaryPopupTitle">
-      <div class="summary-popup-top">
-        <strong id="summaryPopupTitle">Attendance details</strong>
-        <button type="button" id="summaryPopupClose" class="summary-popup-close" aria-label="Close">×</button>
+    <div id="summaryDayOverlay" class="summary-popup-overlay hidden">
+      <div id="summaryDayPopup" class="summary-day-popup" role="dialog" aria-modal="true" aria-labelledby="summaryPopupTitle">
+        <div class="summary-popup-top">
+          <strong id="summaryPopupTitle">Attendance details</strong>
+          <button type="button" id="summaryPopupClose" class="summary-popup-close" aria-label="Close"><i class="ri-close-line" aria-hidden="true"></i></button>
+        </div>
+        <div id="summaryPopupStudent" class="summary-popup-student"></div>
+        <div class="summary-popup-info"><span id="summaryPopupDateLabel">Date</span><b id="summaryPopupDate"></b></div>
+        <div class="summary-popup-info"><span id="summaryPopupStatusLabel">Status</span><b id="summaryPopupStatus"></b></div>
+        <div class="summary-popup-sync">
+          <div class="summary-popup-sync-text">
+            <strong id="summarySyncLabel">Sync horizontal scrolling</strong>
+            <small id="summarySyncDescription">OFF — rows scroll individually</small>
+          </div>
+          <button type="button" id="summarySyncSwitch" class="summary-sync-switch" role="switch" aria-checked="false" aria-labelledby="summarySyncLabel" aria-describedby="summarySyncDescription">
+            <span class="summary-sync-knob"></span>
+          </button>
+        </div>
+        <button id="summaryPopupGo" type="button" class="btn primary summary-popup-go"><i class="ri-arrow-right-line" aria-hidden="true"></i><span>Go to that day</span></button>
       </div>
-      <div id="summaryPopupStudent" class="summary-popup-student"></div>
-      <div class="summary-popup-info"><span id="summaryPopupDateLabel">Date</span><b id="summaryPopupDate"></b></div>
-      <div class="summary-popup-info"><span id="summaryPopupStatusLabel">Status</span><b id="summaryPopupStatus"></b></div>
-      <button id="summaryPopupGo" type="button" class="btn primary summary-popup-go"><i class="ri-calendar-check-line" aria-hidden="true"></i><span>Go to this day</span></button>
     </div>
   </section>
 
@@ -925,7 +959,7 @@ const I18N = {
     home:"Home", attendance:"Attend", summary:"Summary", attendancePage:"Attendance", church:"Church", roles:"Roles", classes:"Class", students:"Student", reports:"Report", dashboard:"Dashboard", activity:"Activity", themes:"Themes", effects:"Effects", compact:"Compact", normal:"Normal", logout:"Logout",
     overview:"Overview", churches:"Churches", present:"Present", copyWeek:"COPY THIS WEEK", churchName:"Church name", save:"Save", assignRole:"Assign Role", name:"Name", firebaseUid:"Firebase UID", pastor:"Pastor", teacher:"Teacher", saveRole:"Save Role",
     className:"Class name", classStartDate:"Start Date", classEndDate:"End Date (optional)", classLifecycle:"Status", classActive:"Active", classArchived:"Archived", classDateHelp:"Start Date is required for new classes. Leave End Date empty for an ongoing class. Archived classes and their attendance history remain available.", classDateInvalid:"End Date must be on or after Start Date.", classStartRequired:"Please choose a Start Date for this new class.", classCancel:"Cancel editing", classNotSet:"Date not set", studentName:"Student name", male:"Male", female:"Female", age:"Age", profilePhoto:"Profile picture file name", searchStudents:"Search students", search:"Search",
-    total:"Total", absent:"Absent", summaryPresentCount:"Present checks", summaryAbsentCount:"Absent checks", summaryNoRecord:"No record", summaryLoading:"Loading", summaryUnavailable:"Unavailable", summaryHint:"Tap a square to see its date and status.", summary13:"Last 3 months", summary26:"Last 6 months", summary52:"Last 12 months", summaryAllClasses:"All classes", summaryDayPopupTitle:"Attendance details", summaryGoDay:"Go to this day", summaryPopupDate:"Date", summaryPopupStatus:"Status", monthlyReport:"Monthly Report", average:"Average", sundays:"Sundays", weekMonths:"Weeks/Months", restore:"Restore", attendanceChecker:"Attendance Checker", emptyTrash:"Empty Trash", clearChecker:"Clear Checker", clearCheckerConfirm:"Clear attendance checker logs permanently?", clearActivity:"Clear Activity", seeAll:"See all", seeLess:"See less", noChecker:"No attendance checks yet",
+    total:"Total", absent:"Absent", summaryPresentCount:"Present checks", summaryAbsentCount:"Absent checks", summaryNoRecord:"No record", summaryLoading:"Loading", summaryUnavailable:"Unavailable", summaryHint:"Tap a square to see its date and status.", summary13:"Last 3 months", summary26:"Last 6 months", summary52:"Last 12 months", summaryAllClasses:"All classes", summaryDayPopupTitle:"Attendance details", summaryGoDay:"Go to that day", summarySyncLabel:"Sync horizontal scrolling", summarySyncOn:"ON — rows show the same dates", summarySyncOff:"OFF — rows scroll individually", summaryPopupDate:"Date", summaryPopupStatus:"Status", monthlyReport:"Monthly Report", average:"Average", sundays:"Sundays", weekMonths:"Weeks/Months", restore:"Restore", attendanceChecker:"Attendance Checker", emptyTrash:"Empty Trash", clearChecker:"Clear Checker", clearCheckerConfirm:"Clear attendance checker logs permanently?", clearActivity:"Clear Activity", seeAll:"See all", seeLess:"See less", noChecker:"No attendance checks yet",
     loading:"Loading...", enterEmailKey:"Enter email and key", noRole:"No role assigned", saved:"Saved", copied:"Copied", churchSaved:"Church saved", churchUpdated:"Church updated", roleSaved:"Role saved", roleUpdated:"Role updated", classSaved:"Class saved", classUpdated:"Class updated", studentSaved:"Student saved", studentUpdated:"Student updated", attendanceSaved:"Attendance saved",
     addRoleFields:"Add UID, name, church. Create church first.", addStudentFields:"Add name, church, class", deleteConfirm:"Delete?", restoreConfirm:"Restore?", emptyTrashConfirm:"Empty trash permanently?", clearActivityConfirm:"Clear all activity log?", itemNotFound:"Item not found", restoreItemNotFound:"Restore item not found",
     noChurch:"No church", selectChurch:"Select church", selectClass:"Select class", noUsers:"No users", noClass:"No class", noStudent:"No student", noStudents:"No students", noDeleted:"No deleted items", noActivity:"No activity yet", noReport:"No report data", noSunday:"No Sunday in this month", sundayAttendance:"Sunday attendance", deleted:"deleted", details:"Details", edit:"Edit", delete:"Delete", previewPhoto:"Preview profile picture", student:"Student", roleAdmin:"BONGTHET", rolePastor:"pastor", roleTeacher:"teacher", week:"W", present:"Present"
@@ -935,7 +969,7 @@ const I18N = {
     home:"ទំព័រដើម", attendance:"វត្តមាន", summary:"សង្ខេប", attendancePage:"វត្តមាន", church:"ពួកជំនុំ", roles:"តួនាទី", classes:"ថ្នាក់", students:"សិស្ស", reports:"របាយ", dashboard:"ផ្ទាំងកុមារ", activity:"សកម្មភាព", themes:"រចនាប័ទ្ម", effects:"ចលនា", compact:"តូច", normal:"ធម្មតា", logout:"ចាកចេញ",
     overview:"សង្ខេប", churches:"ពួកជំនុំ", present:"មានវត្តមាន", copyWeek:"ចម្លងសប្តាហ៍នេះ", churchName:"ឈ្មោះពួកជំនុំ", save:"រក្សាទុក", assignRole:"កំណត់តួនាទី", name:"ឈ្មោះ", firebaseUid:"Firebase UID", pastor:"គ្រូគង្វាល", teacher:"គ្រូ", saveRole:"រក្សាទុកតួនាទី",
     className:"ឈ្មោះថ្នាក់", classStartDate:"ថ្ងៃចាប់ផ្ដើម", classEndDate:"ថ្ងៃបញ្ចប់ (មិនបាច់ក៏បាន)", classLifecycle:"ស្ថានភាព", classActive:"កំពុងដំណើរការ", classArchived:"បានបណ្ណសារ", classDateHelp:"ថ្នាក់ថ្មីត្រូវមានថ្ងៃចាប់ផ្ដើម។ ទុកថ្ងៃបញ្ចប់ទទេសម្រាប់ថ្នាក់កំពុងដំណើរការ។ ថ្នាក់ដែលបានបណ្ណសារនៅតែអាចមើលប្រវត្តិវត្តមានបាន។", classDateInvalid:"ថ្ងៃបញ្ចប់ត្រូវស្មើ ឬក្រោយថ្ងៃចាប់ផ្ដើម។", classStartRequired:"សូមជ្រើសរើសថ្ងៃចាប់ផ្ដើមសម្រាប់ថ្នាក់ថ្មី។", classCancel:"បោះបង់ការកែប្រែ", classNotSet:"មិនទាន់កំណត់ថ្ងៃ", studentName:"ឈ្មោះសិស្ស", male:"ប្រុស", female:"ស្រី", age:"អាយុ", profilePhoto:"ឈ្មោះឯកសាររូបថត", searchStudents:"ស្វែងរកសិស្ស", search:"ស្វែងរក",
-    total:"សរុប", absent:"អវត្តមាន", summaryPresentCount:"ចំនួនមានវត្តមាន", summaryAbsentCount:"ចំនួនអវត្តមាន", summaryNoRecord:"មិនមានកំណត់ត្រា", summaryLoading:"កំពុងផ្ទុក", summaryUnavailable:"មិនអាចទាញទិន្នន័យ", summaryHint:"ចុចលើប្រអប់ដើម្បីមើលកាលបរិច្ឆេទ និងស្ថានភាព។", summary13:"៣ ខែចុងក្រោយ", summary26:"៦ ខែចុងក្រោយ", summary52:"១២ ខែចុងក្រោយ", summaryAllClasses:"គ្រប់ថ្នាក់", summaryDayPopupTitle:"ព័ត៌មានវត្តមាន", summaryGoDay:"ទៅកាន់ថ្ងៃនេះ", summaryPopupDate:"កាលបរិច្ឆេទ", summaryPopupStatus:"ស្ថានភាព", monthlyReport:"របាយការណ៍ប្រចាំខែ", average:"មធ្យម", sundays:"ថ្ងៃអាទិត្យ", weekMonths:"សប្តាហ៍/ខែ", restore:"ស្តារឡើងវិញ", emptyTrash:"លុបធុងសំរាម", clearChecker:"Clear Checker", clearCheckerConfirm:"Clear attendance checker logs permanently?", clearActivity:"សម្អាតសកម្មភាព",
+    total:"សរុប", absent:"អវត្តមាន", summaryPresentCount:"ចំនួនមានវត្តមាន", summaryAbsentCount:"ចំនួនអវត្តមាន", summaryNoRecord:"មិនមានកំណត់ត្រា", summaryLoading:"កំពុងផ្ទុក", summaryUnavailable:"មិនអាចទាញទិន្នន័យ", summaryHint:"ចុចលើប្រអប់ដើម្បីមើលកាលបរិច្ឆេទ និងស្ថានភាព។", summary13:"៣ ខែចុងក្រោយ", summary26:"៦ ខែចុងក្រោយ", summary52:"១២ ខែចុងក្រោយ", summaryAllClasses:"គ្រប់ថ្នាក់", summaryDayPopupTitle:"ព័ត៌មានវត្តមាន", summaryGoDay:"ទៅកាន់ថ្ងៃនោះ", summarySyncLabel:"រំកិលផ្ដេកព្រមគ្នា", summarySyncOn:"បើក — រំកិលតាមថ្ងៃដូចគ្នា", summarySyncOff:"បិទ — រំកិលតាមសិស្សនីមួយៗ", summaryPopupDate:"កាលបរិច្ឆេទ", summaryPopupStatus:"ស្ថានភាព", monthlyReport:"របាយការណ៍ប្រចាំខែ", average:"មធ្យម", sundays:"ថ្ងៃអាទិត្យ", weekMonths:"សប្តាហ៍/ខែ", restore:"ស្តារឡើងវិញ", emptyTrash:"លុបធុងសំរាម", clearChecker:"Clear Checker", clearCheckerConfirm:"Clear attendance checker logs permanently?", clearActivity:"សម្អាតសកម្មភាព",
     loading:"កំពុងផ្ទុក...", enterEmailKey:"សូមបញ្ចូលអ៊ីមែល និងលេខសម្ងាត់", noRole:"មិនទាន់បានកំណត់តួនាទី", saved:"បានរក្សាទុក", copied:"បានចម្លង", churchSaved:"បានរក្សាទុកពួកជំនុំ", churchUpdated:"បានកែប្រែពួកជំនុំ", roleSaved:"បានរក្សាទុកតួនាទី", roleUpdated:"បានកែប្រែតួនាទី", classSaved:"បានរក្សាទុកថ្នាក់", classUpdated:"បានកែប្រែថ្នាក់", studentSaved:"បានរក្សាទុកសិស្ស", studentUpdated:"បានកែប្រែសិស្ស", attendanceSaved:"បានរក្សាទុកវត្តមាន",
     addRoleFields:"សូមបន្ថែម UID ឈ្មោះ និងពួកជំនុំ។ បង្កើតពួកជំនុំជាមុនសិន។", addStudentFields:"សូមបន្ថែមឈ្មោះ ពួកជំនុំ និងថ្នាក់", deleteConfirm:"តើលុបមែនទេ?", restoreConfirm:"តើស្តារឡើងវិញមែនទេ?", emptyTrashConfirm:"លុបធុងសំរាមជាអចិន្ត្រៃយ៍មែនទេ?", clearActivityConfirm:"សម្អាតកំណត់ត្រាសកម្មភាពទាំងអស់មែនទេ?", itemNotFound:"រកមិនឃើញធាតុ", restoreItemNotFound:"រកមិនឃើញធាតុសម្រាប់ស្តារ",
     noChurch:"មិនទាន់មានពួកជំនុំ", noUsers:"មិនទាន់មានអ្នកប្រើ", noClass:"មិនទាន់មានថ្នាក់", noStudent:"មិនទាន់មានសិស្ស", noStudents:"មិនទាន់មានសិស្ស", noDeleted:"មិនមានធាតុបានលុប", noActivity:"មិនទាន់មានសកម្មភាព", noReport:"មិនទាន់មានទិន្នន័យរបាយការណ៍", noSunday:"ខែនេះមិនមានថ្ងៃអាទិត្យ", sundayAttendance:"វត្តមានថ្ងៃអាទិត្យ", deleted:"បានលុប", details:"លម្អិត", edit:"កែប្រែ", delete:"លុប", previewPhoto:"មើលរូបភាពសិស្ស", student:"សិស្ស", roleAdmin:"បងថេត", rolePastor:"គ្រូគង្វាល", roleTeacher:"គ្រូ", week:"សប្តាហ៍",
@@ -2140,13 +2174,63 @@ function renderReports(){
 
 /* The Class schedule is authoritative when configured. Existing classes without
    dates retain the original recorded-week range. No attendance data is changed. */
+const summarySyncStorageKey="kid2pro_summary_sync_scroll";
+let summarySyncEnabled=false;
+try{summarySyncEnabled=localStorage.getItem(summarySyncStorageKey)==="1"}catch{}
+let summarySyncWeek=0;
+let summaryScrollRestore=null;
+const summarySyncProgrammed=new WeakMap();
+function summaryWeekGap(start,end){
+  const utc=d=>{const [year,month,day]=d.split("-").map(Number);return Date.UTC(year,month-1,day)};
+  return Math.max(0,Math.round((utc(end)-utc(start))/(7*86400000)));
+}
+function summaryScrollStep(scroller){
+  const heatmap=scroller?.querySelector(".summary-heatmap");
+  const cell=heatmap?.querySelector(".summary-day");
+  return cell ? cell.getBoundingClientRect().width+
+    (parseFloat(getComputedStyle(heatmap).columnGap)||0):24;
+}
+function updateSummarySyncSwitch(){
+  const toggle=$("summarySyncSwitch");
+  if(!toggle)return;
+  toggle.setAttribute("aria-checked",summarySyncEnabled?"true":"false");
+  $("summarySyncLabel").textContent=tr("summarySyncLabel");
+  $("summarySyncDescription").textContent=tr(summarySyncEnabled?"summarySyncOn":"summarySyncOff");
+}
+function summarySetSyncEnabled(next){
+  if(next===summarySyncEnabled)return;
+  const list=$("summaryList");
+  const scrollers=[...list.querySelectorAll(".summary-grid-scroll")];
+  if(next){
+    const firstDates=scrollers.map(sc=>sc.querySelector(".summary-day")?.dataset.date).filter(Boolean);
+    const globalFirst=firstDates.sort()[0]||"";
+    const selectedScroller=scrollers.find(sc=>
+      sc.closest("[data-summary-student]")?.dataset.summaryStudent===selectedSummaryDay?.studentId) ||
+      scrollers.find(sc=>sc.querySelector(".summary-day"));
+    const first=selectedScroller?.querySelector(".summary-day")?.dataset.date||globalFirst;
+    const step=summaryScrollStep(selectedScroller);
+    summarySyncWeek=globalFirst&&first?summaryWeekGap(globalFirst,first)+(selectedScroller?.scrollLeft||0)/step:0;
+  }else{
+    summaryScrollRestore=new Map(scrollers.map(sc=>{
+      const rowId=sc.closest("[data-summary-student]")?.dataset.summaryStudent;
+      const leading=Number(sc.querySelector(".summary-sync-spacer.leading")?.dataset.weeks||0);
+      return [rowId,Math.max(0,sc.scrollLeft-leading*summaryScrollStep(sc))];
+    }));
+  }
+  summarySyncEnabled=next;
+  try{localStorage.setItem(summarySyncStorageKey,next?"1":"0")}catch{}
+  updateSummarySyncSwitch();
+  summaryListHtml="";
+  renderSummary();
+}
 let selectedSummaryDay=null;
 let attendanceJumpStudentId="";
 let attendanceJumpScrollPending=false;
 let attendanceJumpClearTimer=0;
 function closeSummaryDayPopup(){
-  const popup=$("summaryDayPopup");
-  if(popup)popup.classList.add("hidden");
+  const overlay=$("summaryDayOverlay");
+  if(overlay)overlay.classList.add("hidden");
+  document.body.classList.remove("summary-popup-open");
   document.querySelectorAll('.summary-day[aria-expanded="true"]').forEach(cell=>cell.setAttribute("aria-expanded","false"));
   selectedSummaryDay=null;
 }
@@ -2172,15 +2256,10 @@ function openSummaryDayPopup(cell){
   $("summaryPopupStatusLabel").textContent=tr("summaryPopupStatus");
   $("summaryPopupStatus").textContent=tr(statusKey);
   $("summaryPopupGo").querySelector("span").textContent=tr("summaryGoDay");
-  popup.classList.remove("hidden");
+  updateSummarySyncSwitch();
+  $("summaryDayOverlay").classList.remove("hidden");
+  document.body.classList.add("summary-popup-open");
   cell.setAttribute("aria-expanded","true");
-  const rect=cell.getBoundingClientRect();
-  const {width,height}=popup.getBoundingClientRect();
-  const x=Math.max(12,Math.min(window.innerWidth-width-12,rect.left+rect.width/2-width/2));
-  const below=rect.bottom+10;
-  const y=below+height<=window.innerHeight-10?below:Math.max(12,rect.top-height-10);
-  popup.style.left=x+"px";
-  popup.style.top=y+"px";
   $("summaryPopupGo").focus({preventScroll:true});
 }
 function goToSelectedSummaryDay(){
@@ -2214,19 +2293,17 @@ function goToSelectedSummaryDay(){
     document.querySelectorAll(".att-jump-highlight").forEach(row=>row.classList.remove("att-jump-highlight"));
   },6500);
 }
+// Moving the dialog to <body> avoids transforms/filters clipping a fixed modal.
+document.body.appendChild($("summaryDayOverlay"));
 $("summaryPopupClose").onclick=closeSummaryDayPopup;
 $("summaryPopupGo").onclick=goToSelectedSummaryDay;
-document.addEventListener("pointerdown",e=>{
-  const popup=$("summaryDayPopup");
-  if(!popup?.classList.contains("hidden") &&
-     !popup.contains(e.target) && !e.target.closest(".summary-day"))closeSummaryDayPopup();
+$("summarySyncSwitch").onclick=()=>summarySetSyncEnabled(!summarySyncEnabled);
+$("summaryDayOverlay").addEventListener("click",event=>{
+  if(event.target===$("summaryDayOverlay"))closeSummaryDayPopup();
 });
-document.addEventListener("keydown",e=>{
-  if(e.key==="Escape" && !$("summaryDayPopup")?.classList.contains("hidden"))closeSummaryDayPopup();
+document.addEventListener("keydown",event=>{
+  if(event.key==="Escape" && !$("summaryDayOverlay").classList.contains("hidden"))closeSummaryDayPopup();
 });
-window.addEventListener("scroll",()=>{
-  if(!$("summaryDayPopup")?.classList.contains("hidden"))closeSummaryDayPopup();
-},true);
 function summaryCandidateDates(classId){
   const cls=state.classes[classId]||{};
   const todaySunday=currentSunday();
@@ -2273,18 +2350,63 @@ function summaryClassPeriods(students){
   });
   return periods;
 }
+function layoutSummarySyncSpacers(list){
+  list.querySelectorAll(".summary-grid-scroll").forEach(scroller=>{
+    const heatmap=scroller.querySelector(".summary-heatmap");
+    const cell=heatmap?.querySelector(".summary-day");
+    if(!cell)return;
+    const gap=parseFloat(getComputedStyle(heatmap).columnGap)||0;
+    const step=cell.getBoundingClientRect().width+gap;
+    heatmap.querySelectorAll(".summary-sync-spacer").forEach(spacer=>{
+      const count=Number(spacer.dataset.weeks)||0;
+      spacer.style.width=Math.max(0,Math.round(count*step-gap))+"px";
+    });
+  });
+}
 function refreshSummaryScrollCues(list){
-  list.querySelectorAll(".summary-strip-wrap").forEach(wrap=>{
-    const scroll=wrap.querySelector(".summary-grid-scroll");
-    if(!scroll) return;
+  layoutSummarySyncSpacers(list);
+  const scrollers=[...list.querySelectorAll(".summary-grid-scroll")];
+  scrollers.forEach(scroll=>{
+    const wrap=scroll.closest(".summary-strip-wrap");
+    if(!wrap)return;
     const update=()=>{
       wrap.classList.toggle("has-overflow",scroll.scrollWidth>scroll.clientWidth+4 &&
         scroll.scrollLeft+scroll.clientWidth<scroll.scrollWidth-3);
     };
-    scroll.addEventListener("scroll",update,{passive:true});
+    if(summarySyncEnabled&&scroll.querySelector(".summary-day")){
+      scroll.scrollLeft=summarySyncWeek*summaryScrollStep(scroll);
+    }
+    scroll.addEventListener("scroll",()=>{
+      update();
+      if(!summarySyncEnabled||!scroll.querySelector(".summary-day"))return;
+      const expected=summarySyncProgrammed.get(scroll);
+      if(expected!==undefined&&Math.abs(scroll.scrollLeft-expected)<2){
+        summarySyncProgrammed.delete(scroll);return;
+      }
+      summarySyncProgrammed.delete(scroll);
+      summarySyncWeek=scroll.scrollLeft/summaryScrollStep(scroll);
+      scrollers.forEach(other=>{
+        if(other===scroll||!other.querySelector(".summary-day"))return;
+        const target=summarySyncWeek*summaryScrollStep(other);
+        if(Math.abs(other.scrollLeft-target)>1){
+          summarySyncProgrammed.set(other,target);
+          other.scrollLeft=target;
+        }
+      });
+    },{passive:true});
     update();
   });
 }
+window.addEventListener("resize",()=>{
+  if(!isPage("summary"))return;
+  const list=$("summaryList");
+  layoutSummarySyncSpacers(list);
+  if(summarySyncEnabled){
+    list.querySelectorAll(".summary-grid-scroll").forEach(sc=>{
+      if(sc.querySelector(".summary-day"))sc.scrollLeft=summarySyncWeek*summaryScrollStep(sc);
+    });
+  }
+});
 function renderSummary(){
   if(!isPage("summary"))return;
   const list=$("summaryList");
@@ -2304,6 +2426,11 @@ function renderSummary(){
     const present=dates.filter(date=>state.attendance[date]?.[st.classId]?.[st.id]==="present").length;
     return {st,dates,present,loading:periods.get(st.classId)?.loading||false};
   }).sort((a,b)=>b.present-a.present||String(a.st.name||"").localeCompare(String(b.st.name||"")));
+  const available=rows.filter(r=>r.dates.length);
+  const globalStart=summarySyncEnabled&&available.length?
+    available.reduce((d,r)=>!d||r.dates[0]<d?r.dates[0]:d,""):"";
+  const globalEnd=summarySyncEnabled&&available.length?
+    available.reduce((d,r)=>!d||r.dates[r.dates.length-1]>d?r.dates[r.dates.length-1]:d,""):"";
   const next=rows.map(({st,dates,present,loading})=>{
     const sources=studentPhotoSources(st),src=sources[0]||"";
     const photo=src
@@ -2320,29 +2447,40 @@ function renderSummary(){
       const info=`${st.name||tr("student")} · ${date} · ${label}`;
       return `<button type="button" class="summary-day ${kind}" title="${esc(info)}" aria-label="${esc(info)}" data-date="${esc(date)}" aria-haspopup="dialog" aria-controls="summaryDayPopup" aria-expanded="false">${mark}</button>`;
     }).join("")||`<span class="summary-no-history">${esc(loading?tr("summaryLoading"):tr("noReport"))}</span>`;
+    const leadingWeeks=summarySyncEnabled&&dates.length?summaryWeekGap(globalStart,dates[0]):0;
+    const trailingWeeks=summarySyncEnabled&&dates.length?summaryWeekGap(dates[dates.length-1],globalEnd):0;
+    const leadingSpacer=leadingWeeks?`<span class="summary-sync-spacer leading" data-weeks="${leadingWeeks}" aria-hidden="true"></span>`:"";
+    const trailingSpacer=trailingWeeks?`<span class="summary-sync-spacer trailing" data-weeks="${trailingWeeks}" aria-hidden="true"></span>`:"";
     return `<div class="card summary-card" data-summary-student="${esc(st.id)}">
       <button type="button" class="summary-avatar" data-src="${esc(src)}" data-name="${esc(st.name||"")}" aria-label="${esc(tr("previewPhoto"))}">${photo}</button>
       <div class="summary-main">
         <b class="summary-student-name">${esc(st.name||tr("student"))}</b>
         <div class="summary-strip-wrap">
-          <div class="summary-grid-scroll" tabindex="0" aria-label="${esc(st.name||tr("student"))}"><div class="summary-heatmap">${squares}</div></div>
-          <i class="ri-arrow-right-s-line summary-scroll-cue" aria-hidden="true"></i>
+          <div class="summary-grid-scroll" tabindex="0" aria-label="${esc(st.name||tr("student"))}"><div class="summary-heatmap">${leadingSpacer}${squares}${trailingSpacer}</div></div>
         </div>
       </div>
       <div class="summary-count" title="${esc(tr("summaryPresentCount"))}"><i>✓</i><strong>${present}</strong></div>
     </div>`;
   }).join("")||`<div class="empty">${esc(tr("noStudents"))}</div>`;
   if(next===summaryListHtml)return;
-  const positions=new Map([...list.querySelectorAll("[data-summary-student]")].map(el=>[
+  const positions=summaryScrollRestore||new Map([...list.querySelectorAll("[data-summary-student]")].map(el=>[
     el.dataset.summaryStudent,el.querySelector(".summary-grid-scroll")?.scrollLeft||0
   ]));
+  summaryScrollRestore=null;
   summaryListHtml=next;
   list.innerHTML=next;
   list.querySelectorAll("[data-summary-student]").forEach(el=>{
     const scroll=el.querySelector(".summary-grid-scroll");
-    if(scroll)scroll.scrollLeft=positions.get(el.dataset.summaryStudent)||0;
+    if(scroll&&!summarySyncEnabled)scroll.scrollLeft=positions.get(el.dataset.summaryStudent)||0;
   });
   refreshSummaryScrollCues(list);
+  if(selectedSummaryDay){
+    const activeRow=[...list.querySelectorAll("[data-summary-student]")]
+      .find(el=>el.dataset.summaryStudent===selectedSummaryDay.studentId);
+    const chosen=[...(activeRow?.querySelectorAll(".summary-day")||[])]
+      .find(el=>el.dataset.date===selectedSummaryDay.date);
+    if(chosen)chosen.setAttribute("aria-expanded","true");
+  }
   list.querySelectorAll("img[data-summary-photo]").forEach(img=>{
     const sources=studentPhotoSources(state.students[img.dataset.summaryPhoto]);
     let index=0;
