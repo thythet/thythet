@@ -106,7 +106,11 @@ select.input{appearance:none;background-image:linear-gradient(45deg,transparent 
 #page-users .um-user-row{display:flex;align-items:center;gap:10px;padding:11px 12px;
   border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.065)}
 #page-users .um-avatar{display:grid;place-items:center;flex:0 0 39px;width:39px;height:39px;
-  border-radius:13px;background:rgba(93,167,255,.17);font-size:18px}
+  border-radius:13px;background:rgba(93,167,255,.17);font-size:18px;overflow:hidden}
+#page-users .um-avatar img{display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit}
+#page-users .um-avatar img[hidden]{display:none}
+#page-users .um-avatar>i[hidden]{display:none}
+#page-users .um-edit-top .um-avatar{flex:0 0 44px;width:44px;height:44px}
 #page-users .um-user-text{min-width:0;flex:1}
 #page-users .um-user-text strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
 #page-users .um-user-text small{display:block;color:var(--muted);font-size:11px;overflow-wrap:anywhere}
@@ -1174,7 +1178,7 @@ const I18N = {
   },
   kh: {
     appTitle:"សាលាថ្ងៃអាទិត្យ", loginTitle:"គ្រូកុមារ", email:"អ៊ីមែល", key:"លេខសម្ងាត់", remember:"ចងចាំការចូល",
-    home:"ទំព័រដើម", attendance:"វត្តមាន", summary:"សង្ខេប", attendancePage:"វត្តមាន", church:"ពួកជំនុំ", roles:"តួនាទី", users:"អ្នកប្រើប្រាស់", classes:"ថ្នាក់", students:"សិស្ស", reports:"របាយ", dashboard:"ផ្ទាំងកុមារ", activity:"សកម្មភាព", themes:"រចនាប័ទ្ម", effects:"ចលនា", compact:"តូច", normal:"ធម្មតា", logout:"ចាកចេញ",
+    home:"ទំព័រដើម", attendance:"វត្តមាន", summary:"សង្ខេប", attendancePage:"វត្តមាន", church:"ពួកជំនុំ", roles:"តួនាទី", users:"អ្នកប្រើ", classes:"ថ្នាក់", students:"សិស្ស", reports:"របាយ", dashboard:"ផ្ទាំងកុមារ", activity:"សកម្មភាព", themes:"រចនាប័ទ្ម", effects:"ចលនា", compact:"តូច", normal:"ធម្មតា", logout:"ចាកចេញ",
     overview:"សង្ខេប", churches:"ពួកជំនុំ", present:"មានវត្តមាន", copyWeek:"ចម្លងសប្តាហ៍នេះ", homeClassCopy:"ជ្រើសរើសថ្នាក់សម្រាប់ចម្លង", churchName:"ឈ្មោះពួកជំនុំ", save:"រក្សាទុក", assignRole:"កំណត់តួនាទី", name:"ឈ្មោះ", firebaseUid:"Firebase UID", pastor:"គ្រូគង្វាល", teacher:"គ្រូ", saveRole:"រក្សាទុកតួនាទី",
     className:"ឈ្មោះថ្នាក់", classStartDate:"ថ្ងៃចាប់ផ្ដើម", classEndDate:"ថ្ងៃបញ្ចប់ (មិនបាច់ក៏បាន)", classLifecycle:"ស្ថានភាព", classActive:"កំពុងដំណើរការ", classArchived:"បានបណ្ណសារ", classDateHelp:"ថ្នាក់ថ្មីត្រូវមានថ្ងៃចាប់ផ្ដើម។ ទុកថ្ងៃបញ្ចប់ទទេសម្រាប់ថ្នាក់កំពុងដំណើរការ។ ថ្នាក់ដែលបានបណ្ណសារនៅតែអាចមើលប្រវត្តិវត្តមានបាន។", classDateInvalid:"ថ្ងៃបញ្ចប់ត្រូវស្មើ ឬក្រោយថ្ងៃចាប់ផ្ដើម។", classStartRequired:"សូមជ្រើសរើសថ្ងៃចាប់ផ្ដើមសម្រាប់ថ្នាក់ថ្មី។", classCancel:"បោះបង់ការកែប្រែ", classNotSet:"មិនទាន់កំណត់ថ្ងៃ", studentName:"ឈ្មោះសិស្ស", male:"ប្រុស", female:"ស្រី", age:"អាយុ", profilePhoto:"ឈ្មោះឯកសាររូបថត", searchStudents:"ស្វែងរកសិស្ស", search:"ស្វែងរក",
     total:"សរុប", absent:"អវត្តមាន", summaryPresentCount:"ចំនួនមានវត្តមាន", summaryAbsentCount:"ចំនួនអវត្តមាន", summaryNoRecord:"មិនមានកំណត់ត្រា", summaryLoading:"កំពុងផ្ទុក", summaryUnavailable:"មិនអាចទាញទិន្នន័យ", summaryHint:"ចុចលើប្រអប់ដើម្បីមើលកាលបរិច្ឆេទ និងស្ថានភាព។", summary13:"៣ ខែចុងក្រោយ", summary26:"៦ ខែចុងក្រោយ", summary52:"១២ ខែចុងក្រោយ", summaryAllClasses:"គ្រប់ថ្នាក់", summaryDayPopupTitle:"ព័ត៌មានវត្តមាន", summaryGoDay:"ទៅកាន់ថ្ងៃនោះ", summarySyncLabel:"រំកិលផ្ដេកព្រមគ្នា", summarySyncOn:"បើក — រំកិលតាមថ្ងៃដូចគ្នា", summarySyncOff:"បិទ — រំកិលតាមសិស្សនីមួយៗ", summaryPopupDate:"កាលបរិច្ឆេទ", summaryPopupStatus:"ស្ថានភាព", monthlyReport:"របាយការណ៍ប្រចាំខែ", average:"មធ្យម", sundays:"ថ្ងៃអាទិត្យ", weekMonths:"សប្តាហ៍/ខែ", restore:"ស្តារឡើងវិញ", emptyTrash:"លុបធុងសំរាម", clearChecker:"Clear Checker", clearCheckerConfirm:"Clear attendance checker logs permanently?", clearActivity:"សម្អាតសកម្មភាព",
@@ -1207,7 +1211,7 @@ function applyTranslations(){
   setPlaceholder("email","email"); setPlaceholder("password","key"); setPlaceholder("churchName","churchName"); setPlaceholder("roleName","name"); setPlaceholder("roleEmail","email"); setPlaceholder("roleUid","firebaseUid"); setPlaceholder("className","className"); setPlaceholder("studentName","studentName"); setPlaceholder("studentAge","age"); setPlaceholder("studentPhoto","profilePhoto"); setPlaceholder("studentSearch","searchStudents"); setPlaceholder("attSearch","search");
   setText("#remember span","remember"); setText("#page-home h2","overview"); setText(".home-stats .stat:nth-child(1) span","churches"); setText(".home-stats .stat:nth-child(2) span","students"); setText(".home-stats .stat:nth-child(3) span","present"); setText("#page-church h2","church"); setText("#page-roles h2","assignRole"); setText("#page-classes h2","classes"); setText("#page-students h2","students"); setText("#page-attendance h2","attendancePage"); setText("#page-reports h2","monthlyReport");
   setText("#homeClassLabel","homeClassCopy");
-  if($("umTitle"))$("umTitle").textContent=currentLang==="km"?"គ្រប់គ្រងអ្នកប្រើប្រាស់":"Manage Users";
+  if($("umTitle"))$("umTitle").textContent=currentLang==="km"?"គ្រប់គ្រងអ្នកប្រើ":"Manage Users";
   if($("umHelp"))$("umHelp").textContent=currentLang==="km"?"អនុម័តគណនី Google កំណត់តួនាទី និងពួកជំនុំ ដោយមិនចាំបាច់ចម្លង UID។":"Approve Google sign-ins, assign roles and churches, and block access without copying UIDs.";
   if($("umSearch"))$("umSearch").placeholder=currentLang==="km"?"ស្វែងរកឈ្មោះ ឬអ៊ីមែល":"Search by name or email";
   setText("#classStartLabel","classStartDate"); setText("#classEndLabel","classEndDate");
@@ -1318,6 +1322,67 @@ async function login(){
 $("logoutBtn").onclick=()=>signOut(auth);
 $("openChatBtn").onclick=()=>{window.location.href='./chat/index.html';};
 
+// Google sign-in avatar URLs come from Firebase Authentication, not from
+// a guessed Gmail URL. Accept only Google-hosted HTTPS image URLs for display.
+function googleProfilePhotoURL(value){
+  const url=String(value||"").trim();
+  if(!url||url.length>2048)return "";
+  try{
+    const target=new URL(url);
+    return target.protocol==="https:"&&
+      (target.hostname==="googleusercontent.com"||
+       target.hostname.endsWith(".googleusercontent.com"))?target.href:"";
+  }catch{return "";}
+}
+function authGooglePhotoURL(user){
+  return googleProfilePhotoURL(user?.photoURL||
+    user?.providerData?.find(p=>p?.providerId==="google.com")?.photoURL);
+}
+function umPhotoHtml(user){
+  const url=googleProfilePhotoURL(user?.photoURL);
+  return '<span class="um-avatar">'+
+    (url?'<img src="'+esc(url)+'" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">':'')+
+    '<i class="ri-user-3-line"'+(url?' hidden':'')+' aria-hidden="true"></i></span>';
+}
+function umBindPhotoFallbacks(container){
+  container?.querySelectorAll(".um-avatar img").forEach(img=>{
+    img.addEventListener("error",()=>{
+      img.hidden=true;
+      const icon=img.nextElementSibling;
+      if(icon)icon.hidden=false;
+    },{once:true});
+  });
+}
+async function saveGoogleProfilePhotoForRequest(user){
+  const path="accountRequests/"+user.uid,photoURL=authGooglePhotoURL(user);
+  const basic={uid:user.uid,name:user.displayName||"",email:user.email||"",
+    provider:user.providerData?.[0]?.providerId||"password",
+    status:"pending",requestedAt:Date.now()};
+  let existing=null;
+  try{existing=(await get(ref(db,path))).val();}catch(error){
+    console.warn("Unable to check pending Google request:",error.code||error.message);
+  }
+  if(existing){
+    if(existing.status==="pending"&&photoURL&&existing.photoURL!==photoURL){
+      try{await update(ref(db,path),{photoURL});}
+      catch(error){console.warn("Google photo URL requires the optional photo-only Firebase rules:",error.code||error.message);}
+    }
+    return;
+  }
+  if(photoURL){
+    try{await set(ref(db,path),{...basic,photoURL});return;}
+    catch(error){console.warn("Google profile photo not permitted by current Firebase rules; retrying the original request.",error.code||error.message);}
+  }
+  // Backward-compatible fallback: old RTDB rules reject extra request fields.
+  await set(ref(db,path),basic);
+}
+async function syncApprovedGooglePhoto(user,profile){
+  const photoURL=authGooglePhotoURL(user);
+  if(!photoURL||!profile||profile.photoURL===photoURL)return;
+  try{await set(ref(db,"users/"+user.uid+"/photoURL"),photoURL);}
+  catch(error){console.warn("Updating approved user photo needs photo-only Firebase rules:",error.code||error.message);}
+}
+
 let stopCurrentProfileWatch=null;
 function clearCurrentProfileWatch(){
   if(stopCurrentProfileWatch){stopCurrentProfileWatch();stopCurrentProfileWatch=null;}
@@ -1335,8 +1400,8 @@ onAuthStateChanged(auth, async user=>{
   }else{
     const s=await get(ref(db,"users/"+user.uid)); state.profile=s.val();
     if(!state.profile){
-      try{await set(ref(db,'accountRequests/'+user.uid),{uid:user.uid,name:user.displayName||'',email:user.email||'',provider:user.providerData?.[0]?.providerId||'password',status:'pending',requestedAt:Date.now()});}
-      catch(err){console.warn('Account request requires the optional Firebase accountRequests rules.',err);}
+      try{await saveGoogleProfilePhotoForRequest(user);}
+      catch(err){console.warn('Account request requires the Firebase accountRequests rules.',err);}
       await signOut(auth);
       return showStatus('loginStatus','Access pending: ask the administrator to approve your account. Existing users retain access.',false);
     }
@@ -1344,6 +1409,9 @@ onAuthStateChanged(auth, async user=>{
       await signOut(auth);return showStatus('loginStatus','Account pending or disabled. Contact administrator.',false);
     }
     state.role=state.profile.role; state.churchId=state.profile.churchId;
+    // Best effort: users may refresh their own Google photo without access to
+    // role/church/status fields. Fails safely until photo-only rules are published.
+    syncApprovedGooglePhoto(user,state.profile);
   }
   hideAuthLoading();
   $("loginView").classList.add("hidden"); $("appView").classList.remove("hidden");
@@ -2097,11 +2165,12 @@ function renderUsers(){
     const role=u.pending?(currentLang==="km"?"រង់ចាំ":"Pending"):roleLabel(u.role);
     const info=u.pending?role:[role,churchName(u.churchId)].filter(Boolean).join(" • ");
     const title=u.pending?(currentLang==="km"?"ពិនិត្យ":"Review"):(currentLang==="km"?"គ្រប់គ្រង":"Manage");
-    return '<div class="um-user-row"><div class="um-avatar"><i class="ri-user-3-line"></i></div>'+
+    return '<div class="um-user-row">'+umPhotoHtml(u)+
       '<div class="um-user-text"><strong>'+esc(u.name||u.email||"Google User")+'</strong>'+
       '<small>'+esc(u.email||"")+'</small><small>'+esc(info)+'</small></div>'+
       '<button type="button" class="btn um-manage" data-um-select="'+esc((u.pending?"pending:":"user:")+u.id)+'">'+title+'</button></div>';
-  }).join("")||'<div class="um-no-users">'+(currentLang==="km"?"មិនមានអ្នកប្រើប្រាស់":"No matching users")+'</div>';
+  }).join("")||'<div class="um-no-users">'+(currentLang==="km"?"មិនមានអ្នកប្រើ":"No matching users")+'</div>';
+  umBindPhotoFallbacks($("umList"));
   const selected=umSelectedRecord();
   if(!selected){umSelected="";$("umEditor").textContent="";return;}
   const existingTab=selected.pending?"pending":
@@ -2118,7 +2187,7 @@ function renderUsers(){
   const primary=selected.pending?
     '<button class="btn primary" type="button" data-um-action="approve">'+(kh?"អនុម័ត":"Approve")+'</button>':
     '<button class="btn primary" type="button" data-um-action="save">'+(kh?"រក្សាទុកការកែប្រែ":"Save changes")+'</button>';
-  $("umEditor").innerHTML='<div class="um-edit-card"><div class="um-edit-top"><div><strong>'+esc(selected.name||selected.email||"Google User")+'</strong>'+
+  $("umEditor").innerHTML='<div class="um-edit-card"><div class="um-edit-top">'+umPhotoHtml(selected)+'<div style="min-width:0;flex:1"><strong>'+esc(selected.name||selected.email||"Google User")+'</strong>'+
     '<small>'+esc(selected.email||"")+'</small></div><button type="button" class="btn icon-btn" data-um-action="close" aria-label="Close"><i class="ri-close-line"></i></button></div>'+
     '<div class="um-edit-fields"><label class="um-name-field">'+(kh?"ឈ្មោះ":"Name")+
     '<input id="umName" class="input" maxlength="120" value="'+esc(umDraftName)+'"></label>'+
@@ -2126,6 +2195,7 @@ function renderUsers(){
     '<option value="pastor" '+(umDraftRole==="pastor"?"selected":"")+'>Pastor</option></select></label>'+
     '<label>'+(kh?"ពួកជំនុំ":"Church")+'<select id="umChurch" class="input">'+options+'</select></label></div>'+
     '<div class="um-edit-actions">'+primary+secondary+'</div></div>';
+  umBindPhotoFallbacks($("umEditor"));
   $("umEditor").querySelectorAll("[data-um-action]").forEach(b=>b.disabled=umSaving);
 }
 function umSelect(key){
@@ -2164,13 +2234,13 @@ async function umPerform(action){
     if(pending&&chosen.uid!==uid)throw Error("Account request UID mismatch.");
     if(action==="approve"){
       const record={...old,uid,name:umDraftName.trim(),email:chosen.email||"",role:umDraftRole,
-        churchId:umDraftChurch,status:"active",active:true,accountDecision:"approved",
+        churchId:umDraftChurch,photoURL:googleProfilePhotoURL(chosen.photoURL),status:"active",active:true,accountDecision:"approved",
         approvedAt:now,approvedBy:state.user.uid,updatedAt:now};
       await update(ref(db),{["users/"+uid]:record,["accountRequests/"+uid]:null});
     }else if(action==="reject"){
       // Keep a disabled record so the rejected Google account cannot request access again.
       const record={uid,name:chosen.name||chosen.email||"Google User",email:chosen.email||"",
-        role:"teacher",churchId:"",status:"disabled",active:false,accountDecision:"rejected",
+        role:"teacher",churchId:"",photoURL:googleProfilePhotoURL(chosen.photoURL),status:"disabled",active:false,accountDecision:"rejected",
         blockedAt:now,blockedBy:state.user.uid,updatedAt:now};
       await update(ref(db),{["users/"+uid]:record,["accountRequests/"+uid]:null});
     }else{
