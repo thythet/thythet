@@ -1,9 +1,9 @@
 /* Love Kid Pro PWA app shell. Never cache Firebase responses or student data. */
-const CACHE="lovekid-3pro-shell-v1";
+const CACHE="lovekid-3pro-shell-v2";
 const SHELL=[
   "./","./index.html","./dashboard.html",
   "./themes.css","./effects.css","./theme-switcher.js","./effect-switcher.js",
-  "./pwa-install.js","./app-info-launcher.js",
+  "./pwa-install.js","./app-info-launcher.js","./app-info.html",
   "./manifest.webmanifest","./icons/icon-192.png","./icons/icon-512.png",
   "./assets/img/siteicon.png","./vendor/remixicon/remixicon.css",
   "./vendor/remixicon/remixicon.woff2","./fonts/Krasar-Regular.woff"
