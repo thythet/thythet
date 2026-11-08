@@ -492,6 +492,40 @@ body.summary-popup-open{overflow:hidden}
   box-shadow:0 0 0 2px rgba(96,165,250,.42),0 0 28px rgba(59,130,246,.25)!important;
   background:linear-gradient(115deg,rgba(59,130,246,.21),rgba(255,255,255,.07))!important}
 @media(max-width:640px){.summary-day-popup{padding:16px;width:min(390px,100%)}}
+
+/* Compact quick-view: transparent backdrop, centered, mobile-friendly. */
+.summary-popup-overlay{
+  background:transparent!important;backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;padding:12px;
+  padding-top:max(12px,env(safe-area-inset-top));
+  padding-bottom:max(12px,env(safe-area-inset-bottom))
+}
+.summary-day-popup{
+  width:min(324px,100%)!important;max-height:calc(100dvh - 24px);
+  padding:12px 13px 13px!important;border-radius:16px;
+  box-shadow:0 12px 28px rgba(2,6,23,.30),inset 0 1px 0 rgba(255,255,255,.12);
+  transform-origin:center center;will-change:transform,opacity
+}
+.summary-popup-top{gap:8px}
+.summary-popup-top strong{font-size:14px;line-height:1.35}
+.summary-popup-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.summary-popup-close{
+  flex:0 0 29px;width:29px;height:29px;border-radius:9px
+}
+.summary-popup-close i{font-size:19px}
+.summary-popup-person{display:flex;align-items:center;justify-content:space-between;
+  gap:8px;margin-top:10px;min-width:0;line-height:1.35}
+.summary-popup-student{margin:0;min-width:0;font-size:15px;font-weight:950;overflow-wrap:anywhere}
+.summary-popup-date{font-size:12px;font-weight:850;color:#d9e7fa;white-space:nowrap}
+.summary-popup-info{font-size:12px;margin-top:7px}
+.summary-sync-switch{flex:0 0 43px;width:43px;height:25px;padding:2px}
+.summary-sync-knob{width:19px;height:19px}
+.summary-sync-switch[aria-checked="true"] .summary-sync-knob{transform:translateX(18px)}
+.summary-popup-go{margin-top:11px;min-height:37px;padding:8px 10px!important;
+  border-radius:12px!important;font-size:13px;gap:7px}
+.summary-popup-go i{font-size:17px}
+@media(max-width:375px){.summary-day-popup{width:min(308px,100%)!important;padding:11px 12px!important}}
+@media(prefers-reduced-motion:reduce){.summary-day-popup{will-change:auto}}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#172b51">
@@ -698,20 +732,16 @@ body.summary-popup-open{overflow:hidden}
       <div id="summaryDayPopup" class="summary-day-popup" role="dialog" aria-modal="true" aria-labelledby="summaryPopupTitle">
         <div class="summary-popup-top">
           <strong id="summaryPopupTitle">Attendance details</strong>
-          <button type="button" id="summaryPopupClose" class="summary-popup-close" aria-label="Close"><i class="ri-close-line" aria-hidden="true"></i></button>
-        </div>
-        <div id="summaryPopupStudent" class="summary-popup-student"></div>
-        <div class="summary-popup-info"><span id="summaryPopupDateLabel">Date</span><b id="summaryPopupDate"></b></div>
-        <div class="summary-popup-info"><span id="summaryPopupStatusLabel">Status</span><b id="summaryPopupStatus"></b></div>
-        <div class="summary-popup-sync">
-          <div class="summary-popup-sync-text">
-            <strong id="summarySyncLabel">Sync horizontal scrolling</strong>
-            <small id="summarySyncDescription">OFF — rows scroll individually</small>
+          <div class="summary-popup-actions">
+            <button type="button" id="summarySyncSwitch" class="summary-sync-switch" role="switch" aria-checked="false" aria-label="Sync horizontal scrolling" title="Sync horizontal scrolling"><span class="summary-sync-knob"></span></button>
+            <button type="button" id="summaryPopupClose" class="summary-popup-close" aria-label="Close"><i class="ri-close-line" aria-hidden="true"></i></button>
           </div>
-          <button type="button" id="summarySyncSwitch" class="summary-sync-switch" role="switch" aria-checked="false" aria-labelledby="summarySyncLabel" aria-describedby="summarySyncDescription">
-            <span class="summary-sync-knob"></span>
-          </button>
         </div>
+        <div class="summary-popup-person">
+          <b id="summaryPopupStudent" class="summary-popup-student"></b>
+          <span id="summaryPopupDate" class="summary-popup-date"></span>
+        </div>
+        <div class="summary-popup-info"><span id="summaryPopupStatusLabel">Status</span><b id="summaryPopupStatus"></b></div>
         <button id="summaryPopupGo" type="button" class="btn primary summary-popup-go"><i class="ri-arrow-right-line" aria-hidden="true"></i><span>Go to that day</span></button>
       </div>
     </div>
@@ -1133,7 +1163,7 @@ function applyRole(){
 document.querySelectorAll(".nav-btn[data-page]").forEach(b=>b.onclick=()=>{ if(b.classList.contains("attend-tab")) playWeekPop(b); page(b.dataset.page); });
 if($("dashboardBtn")) $("dashboardBtn").onclick=()=>{ localStorage.setItem("dashboardLang", currentLang); location.href="./dashboard.html"; };
 function page(name){
-  if(name!=="summary")closeSummaryDayPopup();
+  if(name!=="summary")closeSummaryDayPopup(true);
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
   $("page-"+name).classList.add("active");
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.page===name));
@@ -2194,8 +2224,9 @@ function updateSummarySyncSwitch(){
   const toggle=$("summarySyncSwitch");
   if(!toggle)return;
   toggle.setAttribute("aria-checked",summarySyncEnabled?"true":"false");
-  $("summarySyncLabel").textContent=tr("summarySyncLabel");
-  $("summarySyncDescription").textContent=tr(summarySyncEnabled?"summarySyncOn":"summarySyncOff");
+  const label=tr("summarySyncLabel");
+  toggle.setAttribute("aria-label",label);
+  toggle.title=label+" — "+tr(summarySyncEnabled?"summarySyncOn":"summarySyncOff");
 }
 function summarySetSyncEnabled(next){
   if(next===summarySyncEnabled)return;
@@ -2227,12 +2258,75 @@ let selectedSummaryDay=null;
 let attendanceJumpStudentId="";
 let attendanceJumpScrollPending=false;
 let attendanceJumpClearTimer=0;
-function closeSummaryDayPopup(){
+let summaryPopupAnimation=null;
+let summaryPopupAnchorRect=null;
+let summaryPopupCloseId=0;
+function summaryPopupSourceRect(){
+  if(selectedSummaryDay){
+    const cell=[...$("summaryList").querySelectorAll(".summary-day[data-date]")].find(item=>
+      item.dataset.date===selectedSummaryDay.date &&
+      item.closest("[data-summary-student]")?.dataset.summaryStudent===selectedSummaryDay.studentId);
+    if(cell){
+      const rect=cell.getBoundingClientRect();
+      if(rect.width&&rect.height&&rect.bottom>0&&rect.top<innerHeight &&
+         rect.right>0&&rect.left<innerWidth)return rect;
+    }
+  }
+  return summaryPopupAnchorRect;
+}
+function summaryAnimatePopup(opening){
+  const popup=$("summaryDayPopup"),square=summaryPopupSourceRect();
+  if(summaryPopupAnimation){
+    const prev=summaryPopupAnimation;
+    summaryPopupAnimation=null;
+    prev.onfinish=null;
+    prev.oncancel=null;
+    prev.cancel();
+  }
+  if(!square||typeof popup.animate!=="function"||
+     matchMedia("(prefers-reduced-motion: reduce)").matches)return null;
+  const box=popup.getBoundingClientRect();
+  if(!box.width||!box.height)return null;
+  const dx=square.left+square.width/2-box.left-box.width/2;
+  const dy=square.top+square.height/2-box.top-box.height/2;
+  const sx=Math.max(.06,Math.min(.24,square.width/box.width));
+  const sy=Math.max(.06,Math.min(.24,square.height/box.height));
+  const mini={transform:`translate(${dx}px,${dy}px) scale(${sx},${sy})`,opacity:.18};
+  const full={transform:"translate(0px,0px) scale(1,1)",opacity:1};
+  const anim=popup.animate(opening?[mini,full]:[full,mini],{
+    duration:opening?230:175,
+    easing:opening?"cubic-bezier(.18,.82,.22,1)":"cubic-bezier(.45,0,.8,.25)",
+    fill:"both"
+  });
+  summaryPopupAnimation=anim;
+  return anim;
+}
+function summaryStopPopupAnimation(){
+  if(!summaryPopupAnimation)return;
+  const anim=summaryPopupAnimation;
+  summaryPopupAnimation=null;
+  anim.onfinish=null;
+  anim.oncancel=null;
+  anim.cancel();
+}
+function closeSummaryDayPopup(immediate=false){
   const overlay=$("summaryDayOverlay");
-  if(overlay)overlay.classList.add("hidden");
-  document.body.classList.remove("summary-popup-open");
-  document.querySelectorAll('.summary-day[aria-expanded="true"]').forEach(cell=>cell.setAttribute("aria-expanded","false"));
-  selectedSummaryDay=null;
+  if(!overlay)return;
+  const id=++summaryPopupCloseId;
+  const finish=()=>{
+    if(id!==summaryPopupCloseId)return;
+    summaryStopPopupAnimation();
+    overlay.classList.add("hidden");
+    document.body.classList.remove("summary-popup-open");
+    document.querySelectorAll('.summary-day[aria-expanded="true"]').forEach(cell=>
+      cell.setAttribute("aria-expanded","false"));
+    selectedSummaryDay=null;
+    summaryPopupAnchorRect=null;
+  };
+  if(immediate||overlay.classList.contains("hidden")){finish();return;}
+  const anim=summaryAnimatePopup(false);
+  if(anim)anim.onfinish=finish;
+  else finish();
 }
 function openSummaryDayPopup(cell){
   const studentId=cell.closest("[data-summary-student]")?.dataset.summaryStudent||"";
@@ -2244,14 +2338,15 @@ function openSummaryDayPopup(cell){
     !/^\d{4}-\d{2}-\d{2}$/.test(date)||
     !sundays(date.slice(0,7)).includes(date))return;
   const popup=$("summaryDayPopup");
+  const rect=cell.getBoundingClientRect();
   const kind=attendanceDisplayStatus(date,classId,studentId);
   const statusKey={present:"present",absent:"absent",none:"summaryNoRecord",
     pending:"summaryLoading",error:"summaryUnavailable"}[kind]||"summaryNoRecord";
-  closeSummaryDayPopup();
+  closeSummaryDayPopup(true);
+  summaryPopupAnchorRect=rect;
   selectedSummaryDay={studentId,date,classId,churchId};
   $("summaryPopupTitle").textContent=tr("summaryDayPopupTitle");
   $("summaryPopupStudent").textContent=student.name||tr("student");
-  $("summaryPopupDateLabel").textContent=tr("summaryPopupDate");
   $("summaryPopupDate").textContent=date;
   $("summaryPopupStatusLabel").textContent=tr("summaryPopupStatus");
   $("summaryPopupStatus").textContent=tr(statusKey);
@@ -2260,6 +2355,10 @@ function openSummaryDayPopup(cell){
   $("summaryDayOverlay").classList.remove("hidden");
   document.body.classList.add("summary-popup-open");
   cell.setAttribute("aria-expanded","true");
+  const opening=summaryAnimatePopup(true);
+  if(opening)opening.onfinish=()=>{
+    if(summaryPopupAnimation===opening)summaryStopPopupAnimation();
+  };
   $("summaryPopupGo").focus({preventScroll:true});
 }
 function goToSelectedSummaryDay(){
@@ -2295,7 +2394,7 @@ function goToSelectedSummaryDay(){
 }
 // Moving the dialog to <body> avoids transforms/filters clipping a fixed modal.
 document.body.appendChild($("summaryDayOverlay"));
-$("summaryPopupClose").onclick=closeSummaryDayPopup;
+$("summaryPopupClose").onclick=()=>closeSummaryDayPopup();
 $("summaryPopupGo").onclick=goToSelectedSummaryDay;
 $("summarySyncSwitch").onclick=()=>summarySetSyncEnabled(!summarySyncEnabled);
 $("summaryDayOverlay").addEventListener("click",event=>{
