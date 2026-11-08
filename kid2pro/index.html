@@ -567,6 +567,27 @@ body.summary-popup-open{overflow:hidden}
 @media(max-width:800px){
   #appView .top{position:relative;top:auto}
 }
+
+/* Session-prepared Summary: never display incomplete attendance rankings. */
+#page-summary .summary-preparation{
+  max-width:600px;margin:14px auto;padding:18px 20px;
+  border-radius:20px;border:1px solid rgba(180,207,245,.28);
+  background:linear-gradient(150deg,rgba(53,75,110,.66),rgba(28,43,72,.84));
+  color:#f8fafc;text-align:center;
+}
+#page-summary .summary-prep-heading{font-weight:900;font-size:16px}
+#page-summary .summary-prep-description{color:#ccd9eb;font-size:13px;margin-top:7px;line-height:1.5}
+#page-summary .summary-prep-meter{
+  width:100%;height:7px;border-radius:999px;overflow:hidden;
+  margin-top:13px;background:rgba(170,195,230,.17)
+}
+#page-summary .summary-prep-meter-fill{
+  height:100%;border-radius:inherit;
+  background:linear-gradient(90deg,#34d399,#60a5fa);
+  transition:width .20s ease
+}
+#page-summary .summary-prep-count{font-size:12px;margin-top:9px;color:#cbd5e1}
+#page-summary .summary-prep-retry{margin-top:14px}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#172b51">
@@ -1014,6 +1035,7 @@ function applyAttendanceWeek(date,classId,records){
     attendanceErrors.delete(attendanceStudentKey(date,classId,id));
   }
   invalidateAttendanceWeek(date,classId);
+  summaryUpdateReadyCounts(classId);
   if(isPage("summary"))scheduleSummaryRender();
   else scheduleAttendanceRender();
 }
@@ -1393,7 +1415,7 @@ const I18N = {
     home:"Home", attendance:"Attend", summary:"Summary", attendancePage:"Attendance", church:"Church", roles:"Roles", classes:"Class", students:"Student", reports:"Report", dashboard:"Dashboard", activity:"Activity", themes:"Themes", effects:"Effects", compact:"Compact", normal:"Normal", logout:"Logout",
     overview:"Overview", churches:"Churches", present:"Present", copyWeek:"COPY THIS WEEK", churchName:"Church name", save:"Save", assignRole:"Assign Role", name:"Name", firebaseUid:"Firebase UID", pastor:"Pastor", teacher:"Teacher", saveRole:"Save Role",
     className:"Class name", classStartDate:"Start Date", classEndDate:"End Date (optional)", classLifecycle:"Status", classActive:"Active", classArchived:"Archived", classDateHelp:"Start Date is required for new classes. Leave End Date empty for an ongoing class. Archived classes and their attendance history remain available.", classDateInvalid:"End Date must be on or after Start Date.", classStartRequired:"Please choose a Start Date for this new class.", classCancel:"Cancel editing", classNotSet:"Date not set", studentName:"Student name", male:"Male", female:"Female", age:"Age", profilePhoto:"Profile picture file name", searchStudents:"Search students", search:"Search",
-    total:"Total", absent:"Absent", summaryPresentCount:"Present checks", summaryAbsentCount:"Absent checks", summaryNoRecord:"No record", summaryLoading:"Loading", summaryUnavailable:"Unavailable", summaryHint:"Tap a square to see its date and status.", summary13:"Last 3 months", summary26:"Last 6 months", summary52:"Last 12 months", summaryAllClasses:"All classes", summaryChooseClass:"Select a class to view attendance summary", summaryPartialCount:"Confirmed so far — loading the full history", summaryIncompleteCount:"Confirmed so far — some attendance could not be loaded", summaryDayPopupTitle:"Attendance details", summaryGoDay:"Go to that day", summarySyncLabel:"Sync horizontal scrolling", summarySyncOn:"ON — rows show the same dates", summarySyncOff:"OFF — rows scroll individually", summaryPopupDate:"Date", summaryPopupStatus:"Status", monthlyReport:"Monthly Report", average:"Average", sundays:"Sundays", weekMonths:"Weeks/Months", restore:"Restore", attendanceChecker:"Attendance Checker", emptyTrash:"Empty Trash", clearChecker:"Clear Checker", clearCheckerConfirm:"Clear attendance checker logs permanently?", clearActivity:"Clear Activity", seeAll:"See all", seeLess:"See less", noChecker:"No attendance checks yet",
+    total:"Total", absent:"Absent", summaryPresentCount:"Present checks", summaryAbsentCount:"Absent checks", summaryNoRecord:"No record", summaryLoading:"Loading", summaryUnavailable:"Unavailable", summaryHint:"Tap a square to see its date and status.", summary13:"Last 3 months", summary26:"Last 6 months", summary52:"Last 12 months", summaryAllClasses:"All classes", summaryChooseClass:"Select a class to view attendance summary", summaryPrepareTitle:"Preparing complete attendance history", summaryPrepareSub:"Summary totals and ranking will appear after every Sunday is verified.", summaryPrepareProgress:"Sundays verified", summaryPrepareFailed:"Complete attendance could not be loaded. Check the connection or Firebase permissions and retry.", summaryPrepareRetry:"Retry loading", summaryPartialCount:"Confirmed so far — loading the full history", summaryIncompleteCount:"Confirmed so far — some attendance could not be loaded", summaryDayPopupTitle:"Attendance details", summaryGoDay:"Go to that day", summarySyncLabel:"Sync horizontal scrolling", summarySyncOn:"ON — rows show the same dates", summarySyncOff:"OFF — rows scroll individually", summaryPopupDate:"Date", summaryPopupStatus:"Status", monthlyReport:"Monthly Report", average:"Average", sundays:"Sundays", weekMonths:"Weeks/Months", restore:"Restore", attendanceChecker:"Attendance Checker", emptyTrash:"Empty Trash", clearChecker:"Clear Checker", clearCheckerConfirm:"Clear attendance checker logs permanently?", clearActivity:"Clear Activity", seeAll:"See all", seeLess:"See less", noChecker:"No attendance checks yet",
     loading:"Loading...", enterEmailKey:"Enter email and key", noRole:"No role assigned", saved:"Saved", copied:"Copied", churchSaved:"Church saved", churchUpdated:"Church updated", roleSaved:"Role saved", roleUpdated:"Role updated", classSaved:"Class saved", classUpdated:"Class updated", studentSaved:"Student saved", studentUpdated:"Student updated", attendanceSaved:"Attendance saved",
     addRoleFields:"Add UID, name, church. Create church first.", addStudentFields:"Add name, church, class", deleteConfirm:"Delete?", restoreConfirm:"Restore?", emptyTrashConfirm:"Empty trash permanently?", clearActivityConfirm:"Clear all activity log?", itemNotFound:"Item not found", restoreItemNotFound:"Restore item not found",
     noChurch:"No church", selectChurch:"Select church", selectClass:"Select class", noUsers:"No users", noClass:"No class", noStudent:"No student", noStudents:"No students", noDeleted:"No deleted items", noActivity:"No activity yet", noReport:"No report data", noSunday:"No Sunday in this month", sundayAttendance:"Sunday attendance", deleted:"deleted", details:"Details", edit:"Edit", delete:"Delete", previewPhoto:"Preview profile picture", student:"Student", roleAdmin:"BONGTHET", rolePastor:"pastor", roleTeacher:"teacher", week:"W", present:"Present"
@@ -1403,7 +1425,7 @@ const I18N = {
     home:"ទំព័រដើម", attendance:"វត្តមាន", summary:"សង្ខេប", attendancePage:"វត្តមាន", church:"ពួកជំនុំ", roles:"តួនាទី", classes:"ថ្នាក់", students:"សិស្ស", reports:"របាយ", dashboard:"ផ្ទាំងកុមារ", activity:"សកម្មភាព", themes:"រចនាប័ទ្ម", effects:"ចលនា", compact:"តូច", normal:"ធម្មតា", logout:"ចាកចេញ",
     overview:"សង្ខេប", churches:"ពួកជំនុំ", present:"មានវត្តមាន", copyWeek:"ចម្លងសប្តាហ៍នេះ", churchName:"ឈ្មោះពួកជំនុំ", save:"រក្សាទុក", assignRole:"កំណត់តួនាទី", name:"ឈ្មោះ", firebaseUid:"Firebase UID", pastor:"គ្រូគង្វាល", teacher:"គ្រូ", saveRole:"រក្សាទុកតួនាទី",
     className:"ឈ្មោះថ្នាក់", classStartDate:"ថ្ងៃចាប់ផ្ដើម", classEndDate:"ថ្ងៃបញ្ចប់ (មិនបាច់ក៏បាន)", classLifecycle:"ស្ថានភាព", classActive:"កំពុងដំណើរការ", classArchived:"បានបណ្ណសារ", classDateHelp:"ថ្នាក់ថ្មីត្រូវមានថ្ងៃចាប់ផ្ដើម។ ទុកថ្ងៃបញ្ចប់ទទេសម្រាប់ថ្នាក់កំពុងដំណើរការ។ ថ្នាក់ដែលបានបណ្ណសារនៅតែអាចមើលប្រវត្តិវត្តមានបាន។", classDateInvalid:"ថ្ងៃបញ្ចប់ត្រូវស្មើ ឬក្រោយថ្ងៃចាប់ផ្ដើម។", classStartRequired:"សូមជ្រើសរើសថ្ងៃចាប់ផ្ដើមសម្រាប់ថ្នាក់ថ្មី។", classCancel:"បោះបង់ការកែប្រែ", classNotSet:"មិនទាន់កំណត់ថ្ងៃ", studentName:"ឈ្មោះសិស្ស", male:"ប្រុស", female:"ស្រី", age:"អាយុ", profilePhoto:"ឈ្មោះឯកសាររូបថត", searchStudents:"ស្វែងរកសិស្ស", search:"ស្វែងរក",
-    total:"សរុប", absent:"អវត្តមាន", summaryPresentCount:"ចំនួនមានវត្តមាន", summaryAbsentCount:"ចំនួនអវត្តមាន", summaryNoRecord:"មិនមានកំណត់ត្រា", summaryLoading:"កំពុងផ្ទុក", summaryUnavailable:"មិនអាចទាញទិន្នន័យ", summaryHint:"ចុចលើប្រអប់ដើម្បីមើលកាលបរិច្ឆេទ និងស្ថានភាព។", summary13:"៣ ខែចុងក្រោយ", summary26:"៦ ខែចុងក្រោយ", summary52:"១២ ខែចុងក្រោយ", summaryAllClasses:"គ្រប់ថ្នាក់", summaryChooseClass:"សូមជ្រើសរើសថ្នាក់ ដើម្បីមើលសង្ខេបវត្តមាន", summaryPartialCount:"បានបញ្ជាក់បណ្ដោះអាសន្ន — កំពុងទាញប្រវត្តិសរុប", summaryIncompleteCount:"បានបញ្ជាក់បណ្ដោះអាសន្ន — មានទិន្នន័យមិនអាចទាញបាន", summaryDayPopupTitle:"ព័ត៌មានវត្តមាន", summaryGoDay:"ទៅកាន់ថ្ងៃនោះ", summarySyncLabel:"រំកិលផ្ដេកព្រមគ្នា", summarySyncOn:"បើក — រំកិលតាមថ្ងៃដូចគ្នា", summarySyncOff:"បិទ — រំកិលតាមសិស្សនីមួយៗ", summaryPopupDate:"កាលបរិច្ឆេទ", summaryPopupStatus:"ស្ថានភាព", monthlyReport:"របាយការណ៍ប្រចាំខែ", average:"មធ្យម", sundays:"ថ្ងៃអាទិត្យ", weekMonths:"សប្តាហ៍/ខែ", restore:"ស្តារឡើងវិញ", emptyTrash:"លុបធុងសំរាម", clearChecker:"Clear Checker", clearCheckerConfirm:"Clear attendance checker logs permanently?", clearActivity:"សម្អាតសកម្មភាព",
+    total:"សរុប", absent:"អវត្តមាន", summaryPresentCount:"ចំនួនមានវត្តមាន", summaryAbsentCount:"ចំនួនអវត្តមាន", summaryNoRecord:"មិនមានកំណត់ត្រា", summaryLoading:"កំពុងផ្ទុក", summaryUnavailable:"មិនអាចទាញទិន្នន័យ", summaryHint:"ចុចលើប្រអប់ដើម្បីមើលកាលបរិច្ឆេទ និងស្ថានភាព។", summary13:"៣ ខែចុងក្រោយ", summary26:"៦ ខែចុងក្រោយ", summary52:"១២ ខែចុងក្រោយ", summaryAllClasses:"គ្រប់ថ្នាក់", summaryChooseClass:"សូមជ្រើសរើសថ្នាក់ ដើម្បីមើលសង្ខេបវត្តមាន", summaryPrepareTitle:"កំពុងរៀបចំប្រវត្តិវត្តមានទាំងអស់", summaryPrepareSub:"ចំនួនសរុប និងលំដាប់សិស្សនឹងបង្ហាញ បន្ទាប់ពីផ្ទៀងផ្ទាត់ទិន្នន័យគ្រប់ថ្ងៃអាទិត្យ។", summaryPrepareProgress:"ថ្ងៃអាទិត្យបានផ្ទៀងផ្ទាត់", summaryPrepareFailed:"មិនអាចទាញប្រវត្តិវត្តមានបានគ្រប់គ្រាន់។ សូមពិនិត្យបណ្ដាញ ឬសិទ្ធិ Firebase ហើយសាកម្តងទៀត។", summaryPrepareRetry:"ទាញទិន្នន័យម្ដងទៀត", summaryPartialCount:"បានបញ្ជាក់បណ្ដោះអាសន្ន — កំពុងទាញប្រវត្តិសរុប", summaryIncompleteCount:"បានបញ្ជាក់បណ្ដោះអាសន្ន — មានទិន្នន័យមិនអាចទាញបាន", summaryDayPopupTitle:"ព័ត៌មានវត្តមាន", summaryGoDay:"ទៅកាន់ថ្ងៃនោះ", summarySyncLabel:"រំកិលផ្ដេកព្រមគ្នា", summarySyncOn:"បើក — រំកិលតាមថ្ងៃដូចគ្នា", summarySyncOff:"បិទ — រំកិលតាមសិស្សនីមួយៗ", summaryPopupDate:"កាលបរិច្ឆេទ", summaryPopupStatus:"ស្ថានភាព", monthlyReport:"របាយការណ៍ប្រចាំខែ", average:"មធ្យម", sundays:"ថ្ងៃអាទិត្យ", weekMonths:"សប្តាហ៍/ខែ", restore:"ស្តារឡើងវិញ", emptyTrash:"លុបធុងសំរាម", clearChecker:"Clear Checker", clearCheckerConfirm:"Clear attendance checker logs permanently?", clearActivity:"សម្អាតសកម្មភាព",
     loading:"កំពុងផ្ទុក...", enterEmailKey:"សូមបញ្ចូលអ៊ីមែល និងលេខសម្ងាត់", noRole:"មិនទាន់បានកំណត់តួនាទី", saved:"បានរក្សាទុក", copied:"បានចម្លង", churchSaved:"បានរក្សាទុកពួកជំនុំ", churchUpdated:"បានកែប្រែពួកជំនុំ", roleSaved:"បានរក្សាទុកតួនាទី", roleUpdated:"បានកែប្រែតួនាទី", classSaved:"បានរក្សាទុកថ្នាក់", classUpdated:"បានកែប្រែថ្នាក់", studentSaved:"បានរក្សាទុកសិស្ស", studentUpdated:"បានកែប្រែសិស្ស", attendanceSaved:"បានរក្សាទុកវត្តមាន",
     addRoleFields:"សូមបន្ថែម UID ឈ្មោះ និងពួកជំនុំ។ បង្កើតពួកជំនុំជាមុនសិន។", addStudentFields:"សូមបន្ថែមឈ្មោះ ពួកជំនុំ និងថ្នាក់", deleteConfirm:"តើលុបមែនទេ?", restoreConfirm:"តើស្តារឡើងវិញមែនទេ?", emptyTrashConfirm:"លុបធុងសំរាមជាអចិន្ត្រៃយ៍មែនទេ?", clearActivityConfirm:"សម្អាតកំណត់ត្រាសកម្មភាពទាំងអស់មែនទេ?", itemNotFound:"រកមិនឃើញធាតុ", restoreItemNotFound:"រកមិនឃើញធាតុសម្រាប់ស្តារ",
     noChurch:"មិនទាន់មានពួកជំនុំ", noUsers:"មិនទាន់មានអ្នកប្រើ", noClass:"មិនទាន់មានថ្នាក់", noStudent:"មិនទាន់មានសិស្ស", noStudents:"មិនទាន់មានសិស្ស", noDeleted:"មិនមានធាតុបានលុប", noActivity:"មិនទាន់មានសកម្មភាព", noReport:"មិនទាន់មានទិន្នន័យរបាយការណ៍", noSunday:"ខែនេះមិនមានថ្ងៃអាទិត្យ", sundayAttendance:"វត្តមានថ្ងៃអាទិត្យ", deleted:"បានលុប", details:"លម្អិត", edit:"កែប្រែ", delete:"លុប", previewPhoto:"មើលរូបភាពសិស្ស", student:"សិស្ស", roleAdmin:"បងថេត", rolePastor:"គ្រូគង្វាល", roleTeacher:"គ្រូ", week:"សប្តាហ៍",
@@ -1536,7 +1558,7 @@ $("openChatBtn").onclick=()=>{window.location.href='./chat/index.html';};
 onAuthStateChanged(auth, async user=>{
   if(!user){
     stopSummaryLoads();
-    stopSummaryPrefetch();
+    stopSummaryPrefetch(true);
     summaryWatchReady.clear();
     summaryManualClass=false;
     summarySelectionChurch="";
@@ -1589,7 +1611,7 @@ function page(name){
   if(previous!==name){
     if(previous==="summary")stopSummaryLoads();
     stopAttendanceSubscriptions();
-    if(name==="summary"||name==="attendance")stopSummaryPrefetch();
+    if(name==="attendance")stopSummaryPrefetch();
     if(name==="summary")startSummaryLoads();
   }
   if(name!=="summary")closeSummaryDayPopup(true);
@@ -1598,7 +1620,7 @@ function page(name){
   $("page-"+name).classList.add("active");
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.page===name));
   renderAll();
-  if(name==="home")scheduleSummaryPrefetch();
+  if(name==="home"||name==="summary")scheduleSummaryPrefetch();
 }
 const activePage = () => document.querySelector(".page.active")?.id.replace("page-","") || "home";
 const isPage = name => activePage() === name;
@@ -1656,12 +1678,24 @@ function watch(path,target,sourceRef=ref(db,path)){
   const epoch=baseWatchEpoch;
   const unsubscribe=onValue(sourceRef, snap=>{
     if(epoch!==baseWatchEpoch||!state.user)return;
+    const previousRecords=(target==="students"||target==="classes")?state[target]:null;
     state[target]=snap.val()||{};
     if(target==="students"||target==="classes"){
+      // Any ongoing class scan used the old roster/class metadata.
+      stopSummaryPrefetch();
+      if(target==="students")invalidateChangedSummaryRosters(previousRecords,state.students);
+      if(target==="classes"){
+        for(const id of new Set([...Object.keys(previousRecords||{}),...Object.keys(state.classes)])){
+          if((previousRecords?.[id]?.churchId||"")!==(state.classes[id]?.churchId||"")){
+            invalidateSummaryRosterClass(id);
+          }
+        }
+      }
       attendanceRosterVersion++;
       attendanceRosterCache.clear();
       attendanceWeekStateCache.clear();
       summaryStableOrderCache.clear();
+      summarySignatureCache.clear();
       summaryWatchReady.add(target);
       scheduleSummaryPrefetch();
     }
@@ -1775,91 +1809,302 @@ function selectedSummaryClassId(){
   return "";
 }
 
-/* Passive attendance prefetch after login. Never prefetch every class: choose
-   the sole church class, or last-used class for a multi-class church. */
+/* Full-period, session-scoped Summary preparation.
+   Downloading is asynchronous; display only complete, verified class totals.
+   Firebase paths and security rules are unchanged. */
 const summaryWatchReady=new Set();
-let summaryPrefetchEpoch=0,summaryPrefetchTimer=0,summaryPrefetchTarget="";
-const SUMMARY_PREFETCH_WEEKS=8;
-function stopSummaryPrefetch(){
-  summaryPrefetchEpoch++;
-  clearTimeout(summaryPrefetchTimer);
-  summaryPrefetchTimer=0;
-  summaryPrefetchTarget="";
+const summaryPrepared=new Map();
+const summarySignatureCache=new Map();
+function invalidateSummaryRosterClass(classId){
+  if(!classId)return;
+  for(const key of [...attendanceWeekLoaded]){
+    if(key.endsWith("/"+classId))attendanceWeekLoaded.delete(key);
+  }
+  for(const key of [...attendanceWeekStateCache.keys()]){
+    if(key.endsWith("/"+classId))attendanceWeekStateCache.delete(key);
+  }
+  summaryPrepared.delete(classId);
+  summarySignatureCache.delete(classId);
+  summaryStableOrderCache.delete(classId);
 }
-function scheduleSummaryPrefetch(){
-  if(!state.user||!summaryWatchReady.has("classes")||!summaryWatchReady.has("students")||
-    !isPage("home"))return;
-  const church=selectedChurchId(),classId=summaryRememberedClass(church);
-  if(!church||!classId)return;
-  const target=state.user.uid+"|"+church+"|"+classId;
-  if(summaryPrefetchTarget===target)return;
-  stopSummaryPrefetch();
-  summaryPrefetchTarget=target;
-  const epoch=summaryPrefetchEpoch,userId=state.user.uid;
-  summaryPrefetchTimer=setTimeout(()=>{
-    summaryPrefetchTimer=0;
-    runSummaryPrefetch(classId,epoch,userId).catch(err=>
-      console.warn("Background attendance prefetch failed",err.code||err.message));
-  },450);
+function invalidateChangedSummaryRosters(before,after){
+  const ids=new Set([...Object.keys(before||{}),...Object.keys(after||{})]);
+  let changed=false;
+  for(const id of ids){
+    const old=before?.[id],fresh=after?.[id];
+    if((old?.classId||"")!==(fresh?.classId||"")||
+      (old?.churchId||"")!==(fresh?.churchId||"")){
+      invalidateSummaryRosterClass(old?.classId);
+      invalidateSummaryRosterClass(fresh?.classId);
+      changed=true;
+    }
+  }
+  return changed;
 }
-async function runSummaryPrefetch(classId,epoch,userId){
-  const allowed=()=>epoch===summaryPrefetchEpoch&&state.user?.uid===userId&&
-    isPage("home")&&summaryChurchClasses(selectedChurchId()).some(c=>c.id===classId);
-  if(!allowed())return;
-  const dates=summaryCandidateDates(classId).slice(-SUMMARY_PREFETCH_WEEKS).reverse();
-  for(const date of dates){
-    if(!allowed())return;
-    if(attendanceWeekFullyRead(date,classId))continue;
-    const path="attendance/"+attendanceWeekKey(date,classId);
-    if(attendanceBatchAllowed.get(classId)!==false){
-      try{
-        const snap=await summaryReadOnce(path);
-        if(!allowed())return;
-        attendanceBatchAllowed.set(classId,true);
-        applyAttendanceWeek(date,classId,snap.val());
-        continue;
-      }catch(error){
-        if(!allowed())return;
-        if(!summaryIsDenied(error)){
-          console.warn("Background attendance week read failed",date,classId,error.code||error.message);
-          continue;
-        }
-        attendanceBatchAllowed.set(classId,false);
+let summaryPrepEpoch=0,summaryPrepTimer=0,summaryPrepWorking=false,summaryPrepActiveClass="";
+let summaryPrepQueue=[];
+const SUMMARY_PREP_GROUP_CONCURRENCY=3;
+const SUMMARY_PREP_STUDENT_CONCURRENCY=6;
+function summaryPrepSignature(classId){
+  const cls=state.classes[classId];
+  if(!cls)return "";
+  const lastSunday=summaryCandidateDates(classId).at(-1)||"";
+  const cached=summarySignatureCache.get(classId);
+  if(cached?.version===attendanceRosterVersion&&cached.lastSunday===lastSunday){
+    return cached.signature;
+  }
+  const ids=attendanceClassStudents(classId).slice().sort();
+  const signature=JSON.stringify([
+    cls.churchId||"",cls.startDate||"",cls.endDate||"",cls.status||"",
+    lastSunday,ids.map(id=>[id,state.students[id]?.name||""])
+  ]);
+  summarySignatureCache.set(classId,{version:attendanceRosterVersion,lastSunday,signature});
+  return signature;
+}
+function summaryPreparedFor(classId){
+  const record=summaryPrepared.get(classId);
+  if(record&&record.signature!==summaryPrepSignature(classId)){
+    summaryPrepared.delete(classId);
+    return null;
+  }
+  return record||null;
+}
+function summaryPreparationProgress(classId){
+  const record=summaryPreparedFor(classId);
+  if(!record)return {status:"idle",done:0,total:summaryCandidateDates(classId).length,error:""};
+  return record;
+}
+function summaryBuildReady(classId,record){
+  if(!record||record.signature!==summaryPrepSignature(classId))return false;
+  const ids=attendanceClassStudents(classId);
+  if(!record.dates.every(date=>attendanceWeekFullyRead(date,classId)))return false;
+  const counts=new Map(ids.map(id=>[id,0]));
+  const recordedDates=[];
+  for(const date of record.dates){
+    const marks=state.attendance[date]?.[classId]||{};
+    let anyPresent=false;
+    for(const id of ids){
+      if(marks[id]==="present"){
+        counts.set(id,counts.get(id)+1);
+        anyPresent=true;
       }
     }
-    // Existing Firebase rules may require student-level reads. Limit the
-    // background fan-out so login and other pages remain responsive.
-    const ids=attendanceClassStudents(classId).filter(id=>
-      !attendanceLoaded.has(attendanceStudentKey(date,classId,id)));
-    for(let start=0;start<ids.length;start+=4){
-      if(!allowed())return;
-      await Promise.all(ids.slice(start,start+4).map(async id=>{
-        const key=attendanceStudentKey(date,classId,id);
-        try{
-          const snapshot=await summaryReadStudent("attendance/"+key,key);
-          if(!allowed())return;
-          state.attendance[date] ||= {};
-          state.attendance[date][classId] ||= {};
-          const value=snapshot.val();
-          if(value==null)delete state.attendance[date][classId][id];
-          else state.attendance[date][classId][id]=value;
-          attendanceLoaded.add(key);
-          attendanceErrors.delete(key);
-          summaryTransientRetry.delete(key);
-          summaryRetryAfter.delete(key);
-        }catch(error){
-          if(!allowed())return;
-          if(!attendanceLoaded.has(key)){
-            attendanceErrors.add(key);
-            summaryRetryAfter.set(key,Date.now()+(summaryIsDenied(error)?120000:12000));
-          }
-        }
-      }));
-      invalidateAttendanceWeek(date,classId);
+    if(anyPresent)recordedDates.push(date);
+  }
+  const order=ids.slice().sort((a,b)=>
+    (counts.get(b)||0)-(counts.get(a)||0)||
+    String(state.students[a]?.name||"").localeCompare(String(state.students[b]?.name||""))||
+    String(a).localeCompare(String(b)));
+  record.counts=counts;
+  record.order=order;
+  record.recordedFirst=recordedDates[0]||"";
+  record.recordedLast=recordedDates.at(-1)||"";
+  record.done=record.total;
+  record.status="ready";
+  record.error="";
+  summaryStableOrderCache.delete(classId);
+  if(isPage("summary")&&selectedSummaryClassId()===classId)scheduleSummaryRender();
+  return true;
+}
+function summaryUpdateReadyCounts(classId){
+  const record=summaryPreparedFor(classId);
+  if(!record||record.status!=="ready")return;
+  if(!summaryBuildReady(classId,record)){
+    summaryPrepared.delete(classId);
+    if(isPage("summary")&&selectedSummaryClassId()===classId){
+      queueSummaryPreparation(classId,true);
+      scheduleSummaryRender();
     }
   }
 }
-
+function stopSummaryPrefetch(clearCache=false){
+  summaryPrepEpoch++;
+  clearTimeout(summaryPrepTimer);
+  summaryPrepTimer=0;
+  summaryPrepQueue=[];
+  summaryPrepWorking=false;
+  const interrupted=summaryPrepActiveClass;
+  summaryPrepActiveClass="";
+  const record=summaryPrepared.get(interrupted);
+  if(record?.status==="preparing")record.status="idle";
+  if(clearCache){
+    summaryPrepared.clear();
+    summarySignatureCache.clear();
+  }
+}
+function summaryQueueRemainingClasses(){
+  const church=selectedChurchId();
+  const choices=summaryChurchClasses(church);
+  if(!choices.length)return [];
+  const remembered=summaryRememberedClass(church);
+  return choices.map(c=>c.id).sort((a,b)=>
+    (a===remembered?-1:b===remembered?1:0)||
+    String(state.classes[a]?.name||"").localeCompare(String(state.classes[b]?.name||"")));
+}
+function queueSummaryPreparation(classId,priority=false,retry=false){
+  if(!state.user||!classId||isPage("attendance")||
+     !summaryWatchReady.has("classes")||!summaryWatchReady.has("students"))return;
+  if(!summaryChurchClasses(selectedChurchId()).some(c=>c.id===classId))return;
+  const current=summaryPreparedFor(classId);
+  if(current?.status==="ready"&&!retry)return;
+  if(current?.status==="error"&&!retry)return;
+  if(retry){
+    summaryPrepared.delete(classId);
+    attendanceBatchAllowed.delete(classId); // recheck rules if permissions changed
+    for(const date of summaryCandidateDates(classId)){
+      attendanceWeekErrors.delete(attendanceWeekKey(date,classId));
+      for(const id of attendanceClassStudents(classId)){
+        const key=attendanceStudentKey(date,classId,id);
+        attendanceErrors.delete(key);
+        summaryRetryAfter.delete(key);
+        summaryTransientRetry.delete(key);
+      }
+    }
+  }
+  if(priority&&summaryPrepActiveClass&&summaryPrepActiveClass!==classId){
+    stopSummaryPrefetch(); // foreground selection preempts background classes
+  }
+  if(summaryPrepActiveClass===classId||summaryPrepQueue.includes(classId))return;
+  if(priority)summaryPrepQueue.unshift(classId);
+  else summaryPrepQueue.push(classId);
+  pumpSummaryPreparation();
+}
+function scheduleSummaryPrefetch(){
+  if(!state.user||!summaryWatchReady.has("classes")||!summaryWatchReady.has("students")||
+     isPage("attendance"))return;
+  clearTimeout(summaryPrepTimer);
+  summaryPrepTimer=setTimeout(()=>{
+    summaryPrepTimer=0;
+    for(const classId of summaryQueueRemainingClasses())queueSummaryPreparation(classId);
+  },300);
+}
+function summaryPrepStillValid(epoch,userId,classId,signature){
+  return epoch===summaryPrepEpoch&&state.user?.uid===userId&&!isPage("attendance")&&
+    summaryChurchClasses(selectedChurchId()).some(c=>c.id===classId)&&
+    summaryPrepSignature(classId)===signature;
+}
+async function summaryReadPreparedWeek(date,classId,valid){
+  if(attendanceWeekFullyRead(date,classId))return;
+  const key=attendanceWeekKey(date,classId);
+  if(attendanceBatchAllowed.get(classId)!==false){
+    try{
+      const snapshot=await summaryReadOnce("attendance/"+key);
+      if(!valid())return;
+      attendanceBatchAllowed.set(classId,true);
+      applyAttendanceWeek(date,classId,snapshot.val());
+      return;
+    }catch(error){
+      if(!valid())return;
+      if(!summaryIsDenied(error))throw error;
+      attendanceBatchAllowed.set(classId,false);
+    }
+  }
+  const ids=attendanceClassStudents(classId).filter(id=>
+    !attendanceLoaded.has(attendanceStudentKey(date,classId,id)));
+  let firstError=null;
+  for(let i=0;i<ids.length;i+=SUMMARY_PREP_STUDENT_CONCURRENCY){
+    if(!valid())return;
+    const results=await Promise.allSettled(ids.slice(i,i+SUMMARY_PREP_STUDENT_CONCURRENCY).map(async id=>{
+      const path=attendanceStudentKey(date,classId,id);
+      const snapshot=await summaryReadStudent("attendance/"+path,path);
+      if(!valid())return;
+      state.attendance[date] ||= {};
+      state.attendance[date][classId] ||= {};
+      const mark=snapshot.val();
+      if(mark==null)delete state.attendance[date][classId][id];
+      else state.attendance[date][classId][id]=mark;
+      attendanceLoaded.add(path);
+      attendanceErrors.delete(path);
+      summaryRetryAfter.delete(path);
+      summaryTransientRetry.delete(path);
+    }));
+    if(!valid())return;
+    results.forEach((item,index)=>{
+      if(item.status==="rejected"){
+        const path=attendanceStudentKey(date,classId,ids[i+index]);
+        attendanceErrors.add(path);
+        firstError ||= item.reason;
+      }
+    });
+    invalidateAttendanceWeek(date,classId);
+  }
+  if(firstError)throw firstError;
+  if(!attendanceWeekFullyRead(date,classId))throw Error("INCOMPLETE_ATTENDANCE_WEEK");
+}
+async function prepareSummaryClass(classId,epoch,userId){
+  const signature=summaryPrepSignature(classId);
+  const dates=summaryCandidateDates(classId);
+  const valid=()=>summaryPrepStillValid(epoch,userId,classId,signature);
+  if(!valid())return;
+  const previous=summaryPreparedFor(classId);
+  if(previous?.status==="ready")return;
+  const record={signature,dates,status:"preparing",done:0,total:dates.length,
+    error:"",counts:null,order:null};
+  summaryPrepared.set(classId,record);
+  const update=()=>{
+    if(!valid())return;
+    record.done=dates.filter(date=>attendanceWeekFullyRead(date,classId)).length;
+    if(isPage("summary")&&selectedSummaryClassId()===classId)scheduleSummaryRender();
+  };
+  update();
+  if(!attendanceClassStudents(classId).length){
+    record.total=0;record.dates=[];
+    summaryBuildReady(classId,record);
+    return;
+  }
+  const pending=dates.slice().reverse().filter(date=>!attendanceWeekFullyRead(date,classId));
+  try{
+    // One initial permission probe prevents a burst of rejected group reads.
+    if(pending.length&&attendanceBatchAllowed.get(classId)===undefined){
+      await summaryReadPreparedWeek(pending.shift(),classId,valid);
+      if(!valid())return;
+      update();
+    }
+    while(pending.length&&valid()){
+      const size=attendanceBatchAllowed.get(classId)===false?1:SUMMARY_PREP_GROUP_CONCURRENCY;
+      const batch=pending.splice(0,size);
+      const results=await Promise.allSettled(batch.map(date=>summaryReadPreparedWeek(date,classId,valid)));
+      if(!valid())return;
+      update();
+      const failed=results.find(x=>x.status==="rejected");
+      if(failed)throw failed.reason;
+      // Yield between batches so attendance and UI interactions stay responsive.
+      await new Promise(resolve=>setTimeout(resolve,0));
+    }
+    if(!valid())return;
+    if(!summaryBuildReady(classId,record))throw Error("INCOMPLETE_ATTENDANCE_HISTORY");
+  }catch(error){
+    if(!valid())return;
+    record.status="error";
+    record.error=summaryIsDenied(error)?"PERMISSION_DENIED":
+      String(error?.code||error?.message||"ATTENDANCE_READ_FAILED");
+    console.warn("Summary preparation incomplete",classId,record.error);
+    update();
+  }
+}
+function pumpSummaryPreparation(){
+  if(summaryPrepWorking||!state.user)return;
+  const epoch=summaryPrepEpoch,userId=state.user.uid;
+  summaryPrepWorking=true;
+  (async()=>{
+    while(epoch===summaryPrepEpoch&&summaryPrepQueue.length){
+      const classId=summaryPrepQueue.shift();
+      summaryPrepActiveClass=classId;
+      await prepareSummaryClass(classId,epoch,userId);
+    }
+  })().catch(error=>console.warn("Summary preparation failed",error))
+    .finally(()=>{
+      if(epoch!==summaryPrepEpoch)return;
+      summaryPrepWorking=false;
+      summaryPrepActiveClass="";
+      if(summaryPrepQueue.length)pumpSummaryPreparation();
+    });
+}
+function retrySummaryPreparation(classId){
+  if(classId!==selectedSummaryClassId())return;
+  queueSummaryPreparation(classId,true,true);
+  scheduleSummaryRender();
+}
 // Rank by total confirmed Present checks. Cache the rendered order so
 // individual Firebase updates change counts/squares without shuffling rows.
 // Re-rank only after the current week window settles, then once more when
@@ -2352,6 +2597,7 @@ function listenAttendance(date,classId,studentId){
     attendanceLoaded.add(key);
     attendanceErrors.delete(key);
     invalidateAttendanceWeek(date,classId);
+    summaryUpdateReadyCounts(classId);
     if(isPage("summary"))scheduleSummaryRender();
     else{
       scheduleAttendanceRender();
@@ -2701,9 +2947,15 @@ if($("summaryClass")) $("summaryClass").onchange=()=>{
   }
   stopSummaryLoads();stopAttendanceSubscriptions();startSummaryLoads();
   syncSummaryClassSelection();
+  if(classId)queueSummaryPreparation(classId,true);
   renderSummary();
 };
 if($("summaryList")) $("summaryList").addEventListener("click",e=>{
+  const retry=e.target.closest("[data-summary-retry]");
+  if(retry){
+    retrySummaryPreparation(retry.dataset.summaryRetry);
+    return;
+  }
   const cell=e.target.closest(".summary-day");
   if(cell){
     openSummaryDayPopup(cell);
@@ -3352,32 +3604,45 @@ function renderSummary(){
     if(summaryListHtml!==html){summaryListHtml=html;list.innerHTML=html;}
     return;
   }
-  const classStudents=reportStudents(classFilter);
-  const periods=summaryClassPeriods(classStudents);
-  const period=periods.get(classFilter);
-  const allDates=period?.allDates||[];
-  // Full-period counts include confirmed records already fetched or prefetched,
-  // even when the visible squares are still showing only the newest weeks.
-  // A "+" explicitly means the total is not final.
-  const fullCounts=new Map(classStudents.map(st=>[st.id,0]));
-  for(const date of allDates){
-    const marks=state.attendance[date]?.[classFilter]||{};
-    for(const [id,value] of Object.entries(marks)){
-      if(value==="present"&&fullCounts.has(id))fullCounts.set(id,fullCounts.get(id)+1);
-    }
+  const prepared=summaryPreparedFor(classFilter);
+  if(prepared?.status!=="ready"){
+    if(!prepared||prepared.status==="idle")queueSummaryPreparation(classFilter,true);
+    const progress=summaryPreparationProgress(classFilter);
+    const failed=progress.status==="error";
+    const total=progress.total||0,done=progress.done||0;
+    const percent=total?Math.round(Math.min(100,100*done/total)):0;
+    const html=`<div class="summary-preparation" role="status" aria-live="polite">
+      <div class="summary-prep-heading">${esc(tr(failed?"summaryPrepareFailed":"summaryPrepareTitle"))}</div>
+      ${failed?"":`<div class="summary-prep-description">${esc(tr("summaryPrepareSub"))}</div>`}
+      <div class="summary-prep-meter" role="progressbar" aria-label="${esc(tr("summaryPrepareProgress"))}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}">
+        <div class="summary-prep-meter-fill" style="width:${percent}%"></div>
+      </div>
+      <div class="summary-prep-count">${esc(tr("summaryPrepareProgress"))}: ${done}/${total}</div>
+      ${failed?`<div class="summary-prep-description">${esc(progress.error||"ATTENDANCE_READ_FAILED")}</div>
+        <button class="btn primary summary-prep-retry" type="button" data-summary-retry="${esc(classFilter)}">${esc(tr("summaryPrepareRetry"))}</button>`:""}
+    </div>`;
+    if(summaryListHtml!==html){summaryListHtml=html;list.innerHTML=html;}
+    return;
   }
-  const countComplete=allDates.every(date=>attendanceWeekFullyRead(date,classFilter));
-  const countErrors=!countComplete&&allDates.some(date=>
-    attendanceWeekErrors.has(attendanceWeekKey(date,classFilter))||
-    classStudents.some(st=>attendanceErrors.has(attendanceStudentKey(date,classFilter,st.id))));
-  const countLabel=tr(countComplete?"summaryPresentCount":countErrors?
-    "summaryIncompleteCount":"summaryPartialCount");
-  const recentSettled=(period?.dates||[]).every(date=>attendanceWeekComplete(date,classFilter));
-  const visible=summaryStableStudents(classStudents,classFilter,fullCounts,recentSettled,countComplete);
+  // Counts and order are computed once, from the full verified date range.
+  const allDates=prepared.dates;
+  const fullCounts=prepared.counts;
+  const cls=state.classes[classFilter]||{};
+  const first=prepared.recordedFirst,last=prepared.recordedLast;
+  let shownDates=allDates;
+  if(cls.status==="archived"&&!classDateValue(cls.endDate)&&last){
+    shownDates=shownDates.filter(date=>date<=last);
+  }
+  if(!classDateValue(cls.startDate)&&first&&last){
+    shownDates=shownDates.filter(date=>date>=first&&date<=last);
+  }
+  const byId=new Map(reportStudents(classFilter).map(st=>[st.id,st]));
+  const visible=prepared.order.map(id=>byId.get(id)).filter(Boolean);
+  const countLabel=tr("summaryPresentCount");
   const rows=visible.map(st=>({
-    st,dates:period?.dates||[],present:fullCounts.get(st.id)||0,
-    loading:period?.loading||false
+    st,dates:shownDates,present:fullCounts.get(st.id)||0,loading:false
   }));
+  if(allDates.length)queueSummaryWeek(allDates.at(-1),classFilter,true);
   const available=rows.filter(r=>r.dates.length);
   const globalStart=summarySyncEnabled&&available.length?
     available.reduce((d,r)=>!d||r.dates[0]<d?r.dates[0]:d,""):"";
@@ -3414,7 +3679,7 @@ function renderSummary(){
           <div class="summary-grid-scroll" tabindex="0" aria-label="${esc(st.name||tr("student"))}"><div class="summary-heatmap">${leadingSpacer}${squares}${trailingSpacer}</div></div>
         </div>
       </div>
-      <div class="summary-count" title="${esc(countLabel)}" aria-label="${esc(countLabel)}"><i>✓</i><strong>${present}${countComplete?"":"+"}</strong></div>
+      <div class="summary-count" title="${esc(countLabel)}" aria-label="${esc(countLabel)}"><i>✓</i><strong>${present}</strong></div>
     </div>`;
   }).join("")||`<div class="empty">${esc(tr("noStudents"))}</div>`;
   if(next===summaryListHtml)return;
@@ -3561,6 +3826,7 @@ function renderAttendance(useRangeSort=true){
     if(next===null) delete state.attendance[state.selectedSunday][classId][sid];
     else state.attendance[state.selectedSunday][classId][sid]=next;
     invalidateAttendanceWeek(state.selectedSunday,classId);
+    summaryUpdateReadyCounts(classId);
     playWeekPop(btn.closest(".att-card"));
     renderAttendance();
     setTimeout(()=>{if(state.popAttendanceKey===popKey){state.popAttendanceKey=""; renderAttendance();}},420);
@@ -3569,6 +3835,7 @@ function renderAttendance(useRangeSort=true){
       if(prev==null) delete state.attendance[state.selectedSunday]?.[classId]?.[sid];
       else state.attendance[state.selectedSunday][classId][sid]=prev;
       invalidateAttendanceWeek(state.selectedSunday,classId);
+      summaryUpdateReadyCounts(classId);
       renderAttendance();
     }else{
       const st=state.students[sid]||{};
