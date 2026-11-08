@@ -1179,14 +1179,19 @@ function cloudDisplay(){
     $("cloudPublicAck").checked=ok;
   }
 }
+let cloudWatchStop=null;
 function cloudWatch(){
-  onValue(ref(db,"settings/cloudinary"),snapshot=>{
+  if(cloudWatchStop)cloudWatchStop();
+  const epoch=baseWatchEpoch;
+  cloudWatchStop=onValue(ref(db,"settings/cloudinary"),snapshot=>{
+    if(epoch!==baseWatchEpoch)return;
     if(snapshot.exists()){
       state.cloudinary=cloudNormalize(snapshot.val());
       localStorage.setItem(cloudStorageKey,JSON.stringify(state.cloudinary));
     }
     cloudDisplay();
   },err=>{
+    if(epoch!==baseWatchEpoch)return;
     console.warn("Cloudinary settings not shared:",err.code||err.message);
     cloudDisplay();
     if(canAdmin()) $("cloudSaveStatus").textContent="Cannot read shared settings; local settings may still work on this device.";
@@ -1366,7 +1371,10 @@ onAuthStateChanged(auth, async user=>{
   if(!user){
     stopSummaryLoads();
     stopAttendanceSubscriptions();
+    stopBaseWatchers();
     state.user=null;state.profile=null;state.role="guest";
+    state.churches={};state.users={};state.classes={};state.students={};
+    state.trash={};state.activities={};
     state.attendance={};
     attendanceLoaded.clear();attendanceErrors.clear();
     attendanceWeekLoaded.clear();attendanceWeekErrors.clear();
@@ -1412,6 +1420,7 @@ function page(name){
     if(name==="summary")startSummaryLoads();
   }
   if(name!=="summary")closeSummaryDayPopup(true);
+  if(name==="activity")ensureAdminActivityWatchers();
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
   $("page-"+name).classList.add("active");
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.page===name));
@@ -1448,11 +1457,31 @@ function scheduleBaseRender(){
   if(baseRenderFrame)return;
   baseRenderFrame=requestAnimationFrame(()=>{
     baseRenderFrame=0;
-    renderAll();
+    if(state.user)renderAll();
   });
 }
-function watch(path, target, sourceRef=ref(db,path)){
-  onValue(sourceRef, snap=>{
+const baseWatchers=new Map();
+let baseWatchEpoch=0;
+let adminActivityWatchStarted=false;
+function stopBaseWatchers(){
+  baseWatchEpoch++;
+  for(const unsub of baseWatchers.values())try{unsub()}catch{}
+  baseWatchers.clear();
+  if(cloudWatchStop){try{cloudWatchStop()}catch{}cloudWatchStop=null;}
+  adminActivityWatchStarted=false;
+}
+function ensureAdminActivityWatchers(){
+  if(!canAdmin()||adminActivityWatchStarted||!state.user)return;
+  adminActivityWatchStarted=true;
+  watch("trash","trash");
+  watch("activities","activities");
+}
+function watch(path,target,sourceRef=ref(db,path)){
+  const key=target+"|"+path;
+  if(baseWatchers.has(key))return;
+  const epoch=baseWatchEpoch;
+  const unsubscribe=onValue(sourceRef, snap=>{
+    if(epoch!==baseWatchEpoch||!state.user)return;
     state[target]=snap.val()||{};
     if(target==="students"||target==="classes"){
       attendanceRosterVersion++;
@@ -1464,10 +1493,13 @@ function watch(path, target, sourceRef=ref(db,path)){
     if(target==="themeOptions") applyThemeOptionSettings();
     scheduleBaseRender();
   }, err=>{
+    if(epoch!==baseWatchEpoch)return;
     console.warn(`Unable to load ${path}:`, err.code || err.message);
   });
+  baseWatchers.set(key,unsubscribe);
 }
 function loadData(){
+  stopBaseWatchers();
   cloudWatch();
   watch("settings/themeBackgrounds","themeBackgroundsSettings");
   if(state.user) watch(`users/${state.user.uid}/appSettings/themeBackgrounds`,"themeBackgroundsUser");
@@ -1477,8 +1509,8 @@ function loadData(){
     watch("users","users");
     watch("classes","classes");
     watch("students","students");
-    watch("trash","trash");
-    watch("activities","activities");
+    // Activity/Trash can contain large histories. Read only when opened.
+    if(isPage("activity"))ensureAdminActivityWatchers();
     return;
   }
   const churchId = roleChurch();
