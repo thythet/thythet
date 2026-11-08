@@ -87,6 +87,53 @@ select.input{appearance:none;background-image:linear-gradient(45deg,transparent 
 .status{min-height:20px;margin-top:8px;color:#bfdbfe;font-weight:850}.err{color:#fecaca}.ok{color:#bbf7d0}
 .report-copy-head{position:relative;display:grid;grid-template-columns:48px minmax(0,1fr) 48px;gap:0;margin-bottom:10px;border:1px solid rgba(147,197,253,.28);border-radius:18px;overflow:hidden;background:rgba(255,255,255,.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.14);touch-action:pan-y;user-select:none}.report-nav{height:50px;padding:0!important;border-radius:0!important;border:0!important;background:rgba(255,255,255,.06);font-size:26px;box-shadow:none!important;display:grid!important;place-items:center!important;line-height:1}.report-nav i{display:block;line-height:1}.report-nav[disabled]{opacity:.35;filter:saturate(.6);pointer-events:none}.report-copy-btn{min-height:50px;border-radius:0!important;border-top:0!important;border-bottom:0!important;background:linear-gradient(135deg,rgba(93,167,255,.56),rgba(122,121,255,.42));border-color:rgba(147,197,253,.28);box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 12px 28px rgba(37,99,235,.18);letter-spacing:0;min-width:0;display:flex;align-items:center;justify-content:center;gap:.35em;white-space:nowrap;overflow:hidden;text-overflow:clip;font-size:clamp(13px,3.6vw,20px);line-height:1}.report-copy-btn span{white-space:nowrap;flex:0 1 auto}.copy-report{display:block}.report-text{min-height:120px;resize:none;overflow:hidden;line-height:1.72;white-space:pre-wrap}
 
+/* Kid3Pro Admin-only user approvals: compact, responsive, no manual UIDs. */
+#page-users .um-admin-tag{display:inline-flex;align-items:center;gap:5px;border:1px solid rgba(147,197,253,.28);
+  border-radius:999px;padding:6px 10px;color:#cde2ff;font-size:11px;font-weight:900;white-space:nowrap}
+#page-users .um-help{margin:0 0 12px;color:var(--muted);font-size:12px;line-height:1.55}
+#page-users .um-stat-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+#page-users .um-stat-row>div{display:flex;flex-direction:column;gap:3px;padding:10px 12px;
+  border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.06)}
+#page-users .um-stat-row strong{font-size:23px;font-variant-numeric:tabular-nums}
+#page-users .um-stat-row span{color:var(--muted);font-size:11px;font-weight:800}
+#page-users .um-tabs{display:flex;gap:7px;margin:13px 0 10px}
+#page-users .um-tabs button{flex:1;min-width:0;padding:10px 6px;border-radius:12px;
+  color:var(--text);font-size:12px;font-weight:900;border:1px solid var(--line);
+  background:rgba(255,255,255,.07);cursor:pointer}
+#page-users .um-tabs button.active{background:linear-gradient(135deg,rgba(93,167,255,.34),rgba(122,121,255,.3));border-color:rgba(147,197,253,.56)}
+#page-users #umSearch{min-height:42px;padding:9px 12px}
+#page-users .um-list{display:flex;flex-direction:column;gap:8px}
+#page-users .um-user-row{display:flex;align-items:center;gap:10px;padding:11px 12px;
+  border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.065)}
+#page-users .um-avatar{display:grid;place-items:center;flex:0 0 39px;width:39px;height:39px;
+  border-radius:13px;background:rgba(93,167,255,.17);font-size:18px}
+#page-users .um-user-text{min-width:0;flex:1}
+#page-users .um-user-text strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
+#page-users .um-user-text small{display:block;color:var(--muted);font-size:11px;overflow-wrap:anywhere}
+#page-users .um-user-row .um-manage{min-width:68px;padding:8px 10px;border-radius:10px;font-size:12px}
+#page-users .um-editor{display:block;margin:12px 0}
+#page-users .um-editor:empty{display:none}
+#page-users .um-edit-card{padding:15px;border:1px solid rgba(147,197,253,.28);
+  border-radius:18px;background:linear-gradient(145deg,rgba(76,124,201,.18),rgba(255,255,255,.055))}
+#page-users .um-edit-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+#page-users .um-edit-top strong{font-size:15px;overflow-wrap:anywhere}
+#page-users .um-edit-top small{display:block;font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+#page-users .um-edit-fields{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+#page-users .um-edit-fields label{display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:850;color:var(--muted)}
+#page-users .um-edit-fields .input{min-height:43px;padding:10px;font-size:13px}
+#page-users .um-edit-fields .um-name-field{grid-column:1/-1}
+#page-users .um-edit-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
+#page-users .um-edit-actions .btn{flex:1;min-width:110px;padding:10px;font-size:12px;border-radius:12px}
+#page-users .um-no-users{padding:20px;text-align:center;color:var(--muted);
+  border:1px dashed var(--line);border-radius:15px;font-size:13px}
+@media(max-width:480px){
+  #page-users .um-edit-fields{grid-template-columns:1fr}
+  #page-users .um-edit-fields .um-name-field{grid-column:auto}
+  #page-users .um-edit-actions .btn{min-width:90px}
+  #page-users .um-user-row{gap:8px;padding:10px}
+  #page-users .um-user-row .um-manage{min-width:56px;padding:8px}
+}
+
 /* Login */
 .login-wrap{min-height:calc(100vh - 32px);display:grid;place-items:start center;padding-top:clamp(54px,14vh,150px)}
 .login-card{width:min(92vw,520px);padding:34px}
@@ -650,6 +697,7 @@ body.summary-popup-open{overflow:hidden}
       <button class="nav-btn" data-page="summary"><i class="ri-calendar-check-line"></i>Summary</button>
       <button class="nav-btn" data-page="church"><i class="ri-building-4-line"></i>Church</button>
       <button class="nav-btn" data-page="roles"><i class="ri-shield-user-line"></i>Roles</button>
+       <button class="nav-btn" data-page="users"><i class="ri-user-settings-line"></i>Users</button>
       <button class="nav-btn" data-page="classes"><i class="ri-folder-line"></i>Class</button>
       <button class="nav-btn" data-page="students"><i class="ri-group-line"></i>Student</button>
       <button class="nav-btn" data-page="reports"><i class="ri-bar-chart-box-line"></i>Report</button>
@@ -711,6 +759,27 @@ body.summary-popup-open{overflow:hidden}
       <div id="roleStatus" class="status"></div>
     </div>
     <div id="roleList" class="list"></div>
+  </section>
+
+  <section id="page-users" class="page">
+    <div class="panel glass">
+      <div class="panel-head"><h2 id="umTitle">Users</h2><span class="um-admin-tag"><i class="ri-shield-check-line"></i> Admin</span></div>
+      <p class="um-help" id="umHelp">Review Google sign-ins, assign roles and churches, and manage access. Firebase UIDs are handled automatically.</p>
+      <div class="um-stat-row">
+        <div><strong id="umPendingCount">0</strong><span id="umPendingLabel">Pending</span></div>
+        <div><strong id="umActiveCount">0</strong><span id="umActiveLabel">Active</span></div>
+        <div><strong id="umBlockedCount">0</strong><span id="umBlockedLabel">Blocked</span></div>
+      </div>
+      <div class="um-tabs" role="group" aria-label="User status">
+        <button type="button" data-um-tab="pending" class="active">Pending</button>
+        <button type="button" data-um-tab="active">Active</button>
+        <button type="button" data-um-tab="blocked">Blocked</button>
+      </div>
+      <input id="umSearch" class="input" type="search" placeholder="Search by name or email" autocomplete="off">
+      <div id="umStatus" class="status" role="status" aria-live="polite"></div>
+    </div>
+    <div id="umEditor" class="um-editor"></div>
+    <div id="umList" class="um-list"></div>
   </section>
 
   <section id="page-classes" class="page">
@@ -910,7 +979,7 @@ body.summary-popup-open{overflow:hidden}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signInWithEmailAndPassword, setPersistence, browserLocalPersistence, browserSessionPersistence, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getDatabase, ref, set, push, onValue, remove, get, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, set, update, push, onValue, remove, get, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 // Student images upload directly to Cloudinary; no upload API secret in the client.
 
 const firebaseConfig = {
@@ -963,7 +1032,7 @@ window.addEventListener("offline",()=>showConnectionStatus("waiting for connecti
 window.addEventListener("online",()=>showConnectionStatus("back online","online",true));
 if(!navigator.onLine) updateConnectionStatus();
 const adminSelectedChurchKey = "ss_admin_selected_church";
-const state = { user:null, profile:null, role:"guest", churchId:null, selectedChurchId:localStorage.getItem(adminSelectedChurchKey)||"", churches:{}, users:{}, classes:{}, students:{}, attendance:{}, trash:{}, activities:{}, themeBackgrounds:{}, themeOptions:{}, selectedSunday:"", homeReportDate:"", studentQ:"", attQ:"", popAttendanceKey:"", activityExpanded:{trash:false,checker:false,activity:false}, checkerCleanupAt:0 };
+const state = { user:null, profile:null, role:"guest", churchId:null, selectedChurchId:localStorage.getItem(adminSelectedChurchKey)||"", churches:{}, users:{}, accountRequests:{}, classes:{}, students:{}, attendance:{}, trash:{}, activities:{}, themeBackgrounds:{}, themeOptions:{}, selectedSunday:"", homeReportDate:"", studentQ:"", attQ:"", popAttendanceKey:"", activityExpanded:{trash:false,checker:false,activity:false}, checkerCleanupAt:0 };
 const attendanceListeners = new Set();
 const attendanceLoaded = new Set();
 const attendanceErrors = new Set();
@@ -1051,7 +1120,7 @@ $("cloudSaveBtn").onclick=async()=>{
 const I18N = {
   en: {
     appTitle:"Sunday School", loginTitle:"Sunday School", email:"Email", key:"Key", remember:"Remember Login",
-    home:"Home", attendance:"Attend", summary:"Summary", attendancePage:"Attendance", church:"Church", roles:"Roles", classes:"Class", students:"Student", reports:"Report", dashboard:"Dashboard", activity:"Activity", themes:"Themes", effects:"Effects", compact:"Compact", normal:"Normal", logout:"Logout",
+    home:"Home", attendance:"Attend", summary:"Summary", attendancePage:"Attendance", church:"Church", roles:"Roles", users:"Users", classes:"Class", students:"Student", reports:"Report", dashboard:"Dashboard", activity:"Activity", themes:"Themes", effects:"Effects", compact:"Compact", normal:"Normal", logout:"Logout",
     overview:"Overview", churches:"Churches", present:"Present", copyWeek:"COPY THIS WEEK", homeClassCopy:"Class for weekly copy", churchName:"Church name", save:"Save", assignRole:"Assign Role", name:"Name", firebaseUid:"Firebase UID", pastor:"Pastor", teacher:"Teacher", saveRole:"Save Role",
     className:"Class name", classStartDate:"Start Date", classEndDate:"End Date (optional)", classLifecycle:"Status", classActive:"Active", classArchived:"Archived", classDateHelp:"Start Date is required for new classes. Leave End Date empty for an ongoing class. Archived classes and their attendance history remain available.", classDateInvalid:"End Date must be on or after Start Date.", classStartRequired:"Please choose a Start Date for this new class.", classCancel:"Cancel editing", classNotSet:"Date not set", studentName:"Student name", male:"Male", female:"Female", age:"Age", profilePhoto:"Profile picture file name", searchStudents:"Search students", search:"Search",
     total:"Total", absent:"Absent", summaryPresentCount:"Present checks", summaryAbsentCount:"Absent checks", summaryNoRecord:"No record", summaryLoading:"Loading", summaryUnavailable:"Unavailable", summaryHint:"Tap a square to see its date and status.", summary13:"Last 3 months", summary26:"Last 6 months", summary52:"Last 12 months", summaryAllClasses:"All classes", summaryDayPopupTitle:"Attendance details", summaryGoDay:"Go to that day", summarySyncLabel:"Sync horizontal scrolling", summarySyncOn:"ON — rows show the same dates", summarySyncOff:"OFF — rows scroll individually", summaryPopupDate:"Date", summaryPopupStatus:"Status", monthlyReport:"Monthly Report", average:"Average", sundays:"Sundays", weekMonths:"Weeks/Months", restore:"Restore", attendanceChecker:"Attendance Checker", emptyTrash:"Empty Trash", clearChecker:"Clear Checker", clearCheckerConfirm:"Clear attendance checker logs permanently?", clearActivity:"Clear Activity", seeAll:"See all", seeLess:"See less", noChecker:"No attendance checks yet",
@@ -1061,7 +1130,7 @@ const I18N = {
   },
   kh: {
     appTitle:"សាលាថ្ងៃអាទិត្យ", loginTitle:"គ្រូកុមារ", email:"អ៊ីមែល", key:"លេខសម្ងាត់", remember:"ចងចាំការចូល",
-    home:"ទំព័រដើម", attendance:"វត្តមាន", summary:"សង្ខេប", attendancePage:"វត្តមាន", church:"ពួកជំនុំ", roles:"តួនាទី", classes:"ថ្នាក់", students:"សិស្ស", reports:"របាយ", dashboard:"ផ្ទាំងកុមារ", activity:"សកម្មភាព", themes:"រចនាប័ទ្ម", effects:"ចលនា", compact:"តូច", normal:"ធម្មតា", logout:"ចាកចេញ",
+    home:"ទំព័រដើម", attendance:"វត្តមាន", summary:"សង្ខេប", attendancePage:"វត្តមាន", church:"ពួកជំនុំ", roles:"តួនាទី", users:"អ្នកប្រើប្រាស់", classes:"ថ្នាក់", students:"សិស្ស", reports:"របាយ", dashboard:"ផ្ទាំងកុមារ", activity:"សកម្មភាព", themes:"រចនាប័ទ្ម", effects:"ចលនា", compact:"តូច", normal:"ធម្មតា", logout:"ចាកចេញ",
     overview:"សង្ខេប", churches:"ពួកជំនុំ", present:"មានវត្តមាន", copyWeek:"ចម្លងសប្តាហ៍នេះ", homeClassCopy:"ជ្រើសរើសថ្នាក់សម្រាប់ចម្លង", churchName:"ឈ្មោះពួកជំនុំ", save:"រក្សាទុក", assignRole:"កំណត់តួនាទី", name:"ឈ្មោះ", firebaseUid:"Firebase UID", pastor:"គ្រូគង្វាល", teacher:"គ្រូ", saveRole:"រក្សាទុកតួនាទី",
     className:"ឈ្មោះថ្នាក់", classStartDate:"ថ្ងៃចាប់ផ្ដើម", classEndDate:"ថ្ងៃបញ្ចប់ (មិនបាច់ក៏បាន)", classLifecycle:"ស្ថានភាព", classActive:"កំពុងដំណើរការ", classArchived:"បានបណ្ណសារ", classDateHelp:"ថ្នាក់ថ្មីត្រូវមានថ្ងៃចាប់ផ្ដើម។ ទុកថ្ងៃបញ្ចប់ទទេសម្រាប់ថ្នាក់កំពុងដំណើរការ។ ថ្នាក់ដែលបានបណ្ណសារនៅតែអាចមើលប្រវត្តិវត្តមានបាន។", classDateInvalid:"ថ្ងៃបញ្ចប់ត្រូវស្មើ ឬក្រោយថ្ងៃចាប់ផ្ដើម។", classStartRequired:"សូមជ្រើសរើសថ្ងៃចាប់ផ្ដើមសម្រាប់ថ្នាក់ថ្មី។", classCancel:"បោះបង់ការកែប្រែ", classNotSet:"មិនទាន់កំណត់ថ្ងៃ", studentName:"ឈ្មោះសិស្ស", male:"ប្រុស", female:"ស្រី", age:"អាយុ", profilePhoto:"ឈ្មោះឯកសាររូបថត", searchStudents:"ស្វែងរកសិស្ស", search:"ស្វែងរក",
     total:"សរុប", absent:"អវត្តមាន", summaryPresentCount:"ចំនួនមានវត្តមាន", summaryAbsentCount:"ចំនួនអវត្តមាន", summaryNoRecord:"មិនមានកំណត់ត្រា", summaryLoading:"កំពុងផ្ទុក", summaryUnavailable:"មិនអាចទាញទិន្នន័យ", summaryHint:"ចុចលើប្រអប់ដើម្បីមើលកាលបរិច្ឆេទ និងស្ថានភាព។", summary13:"៣ ខែចុងក្រោយ", summary26:"៦ ខែចុងក្រោយ", summary52:"១២ ខែចុងក្រោយ", summaryAllClasses:"គ្រប់ថ្នាក់", summaryDayPopupTitle:"ព័ត៌មានវត្តមាន", summaryGoDay:"ទៅកាន់ថ្ងៃនោះ", summarySyncLabel:"រំកិលផ្ដេកព្រមគ្នា", summarySyncOn:"បើក — រំកិលតាមថ្ងៃដូចគ្នា", summarySyncOff:"បិទ — រំកិលតាមសិស្សនីមួយៗ", summaryPopupDate:"កាលបរិច្ឆេទ", summaryPopupStatus:"ស្ថានភាព", monthlyReport:"របាយការណ៍ប្រចាំខែ", average:"មធ្យម", sundays:"ថ្ងៃអាទិត្យ", weekMonths:"សប្តាហ៍/ខែ", restore:"ស្តារឡើងវិញ", emptyTrash:"លុបធុងសំរាម", clearChecker:"Clear Checker", clearCheckerConfirm:"Clear attendance checker logs permanently?", clearActivity:"សម្អាតសកម្មភាព",
@@ -1094,6 +1163,9 @@ function applyTranslations(){
   setPlaceholder("email","email"); setPlaceholder("password","key"); setPlaceholder("churchName","churchName"); setPlaceholder("roleName","name"); setPlaceholder("roleEmail","email"); setPlaceholder("roleUid","firebaseUid"); setPlaceholder("className","className"); setPlaceholder("studentName","studentName"); setPlaceholder("studentAge","age"); setPlaceholder("studentPhoto","profilePhoto"); setPlaceholder("studentSearch","searchStudents"); setPlaceholder("attSearch","search");
   setText("#remember span","remember"); setText("#page-home h2","overview"); setText(".home-stats .stat:nth-child(1) span","churches"); setText(".home-stats .stat:nth-child(2) span","students"); setText(".home-stats .stat:nth-child(3) span","present"); setText("#page-church h2","church"); setText("#page-roles h2","assignRole"); setText("#page-classes h2","classes"); setText("#page-students h2","students"); setText("#page-attendance h2","attendancePage"); setText("#page-reports h2","monthlyReport");
   setText("#homeClassLabel","homeClassCopy");
+  if($("umTitle"))$("umTitle").textContent=currentLang==="km"?"គ្រប់គ្រងអ្នកប្រើប្រាស់":"Manage Users";
+  if($("umHelp"))$("umHelp").textContent=currentLang==="km"?"អនុម័តគណនី Google កំណត់តួនាទី និងពួកជំនុំ ដោយមិនចាំបាច់ចម្លង UID។":"Approve Google sign-ins, assign roles and churches, and block access without copying UIDs.";
+  if($("umSearch"))$("umSearch").placeholder=currentLang==="km"?"ស្វែងរកឈ្មោះ ឬអ៊ីមែល":"Search by name or email";
   setText("#classStartLabel","classStartDate"); setText("#classEndLabel","classEndDate");
   setText("#classLifecycleLabel","classLifecycle"); setText("#classDateHelp","classDateHelp");
   setText("#cancelClassEdit","classCancel");
@@ -1195,8 +1267,16 @@ async function login(){
 $("logoutBtn").onclick=()=>signOut(auth);
 $("openChatBtn").onclick=()=>{window.location.href='./chat/index.html';};
 
+let stopCurrentProfileWatch=null;
+function clearCurrentProfileWatch(){
+  if(stopCurrentProfileWatch){stopCurrentProfileWatch();stopCurrentProfileWatch=null;}
+}
 onAuthStateChanged(auth, async user=>{
-  if(!user){ hideAuthLoading(); $("loginView").classList.remove("hidden"); $("appView").classList.add("hidden"); return; }
+  clearCurrentProfileWatch();
+  if(!user){
+    state.user=null;state.profile=null;state.role="guest";state.churchId=null;
+    hideAuthLoading();$("loginView").classList.remove("hidden");$("appView").classList.add("hidden");return;
+  }
   state.user=user;
   const adminSnap=await get(ref(db,"admins/"+user.uid));
   if(adminSnap.exists()){
@@ -1217,11 +1297,27 @@ onAuthStateChanged(auth, async user=>{
   hideAuthLoading();
   $("loginView").classList.add("hidden"); $("appView").classList.remove("hidden");
   $("userText").textContent=state.profile?.name || roleLabel(state.role);
-  applyRole(); loadData();
+  applyRole();loadData();
+  if(!canAdmin()){
+    const expectedRole=state.role,expectedChurch=state.profile?.churchId;
+    stopCurrentProfileWatch=onValue(ref(db,"users/"+user.uid),snap=>{
+      if(auth.currentUser?.uid!==user.uid)return;
+      const live=snap.val();
+      if(!live||live.status==="disabled"||live.status==="pending"||
+          live.active===false||live.role!==expectedRole||live.churchId!==expectedChurch){
+        clearCurrentProfileWatch();
+        signOut(auth).then(()=>showStatus("loginStatus",
+          live?.status==="disabled"||live?.active===false
+            ?"Your account has been blocked. Contact the administrator."
+            :"Account access changed. Please sign in again.",false))
+          .catch(error=>showStatus("loginStatus",error.code||error.message,false));
+      }
+    },error=>console.warn("Unable to monitor account status:",error.code||error.message));
+  }
 });
 
 function applyRole(){
-  document.querySelectorAll(".nav-btn[data-page='church'],.nav-btn[data-page='roles'],.nav-btn[data-page='activity']").forEach(b=>b.classList.toggle("hidden",!canAdmin()));
+  document.querySelectorAll(".nav-btn[data-page='church'],.nav-btn[data-page='roles'],.nav-btn[data-page='users'],.nav-btn[data-page='activity']").forEach(b=>b.classList.toggle("hidden",!canAdmin()));
   if($("dashboardBtn")) $("dashboardBtn").classList.toggle("hidden",!(canAdmin()||canTeacher()));
   document.querySelector(".nav-btn[data-page='classes']").classList.toggle("hidden",!(canAdmin()||canPastor()||canTeacher()));
   cloudDisplay();
@@ -1280,6 +1376,7 @@ function loadData(){
   if(canAdmin()){
     watch("churches","churches");
     watch("users","users");
+    watch("accountRequests","accountRequests");
     watch("classes","classes");
     watch("students","students");
     watch("trash","trash");
@@ -1423,7 +1520,8 @@ $("saveRole").onclick=async()=>{
   const uid=clean($("roleUid").value), name=clean($("roleName").value), email=clean($("roleEmail").value), role=$("roleType").value, churchId=$("roleChurch").value;
   if(!uid||!name||!churchId)return showStatus("roleStatus",tr("addRoleFields"),false);
   const action=editingRoleId?"updated":"created";
-  const data={uid,name,email,role,churchId,active:true,updatedAt:Date.now()};
+  const existing=state.users[uid]||{};
+  const data={...existing,uid,name,email,role,churchId,active:existing.status!=="disabled",updatedAt:Date.now()};
   if(await write("users/"+uid,data,"roleStatus",editingRoleId?tr("roleUpdated"):tr("roleSaved"))){ await logActivity(action,"users",uid,name); editingRoleId=""; $("roleUid").disabled=false; $("roleUid").value=$("roleName").value=$("roleEmail").value=""; renderRoles(); }
 };
 function classDateValue(value){
@@ -1875,9 +1973,173 @@ function listenAttendance(date,classId,studentId){
     scheduleSummaryRender();
   });
 }
-function renderPage(name){ ({home:renderHomeReport,church:renderChurches,roles:renderRoles,classes:renderClasses,students:renderStudents,attendance:renderAttendance,summary:renderSummary,reports:renderReports,activity:renderActivity}[name]||(()=>{}))(); }
+function renderPage(name){ ({home:renderHomeReport,church:renderChurches,roles:renderRoles,users:renderUsers,classes:renderClasses,students:renderStudents,attendance:renderAttendance,summary:renderSummary,reports:renderReports,activity:renderActivity}[name]||(()=>{}))(); }
 function renderAll(){ renderSelects(); renderStats(); renderPage(activePage()); }
 function renderChurches(){ $("churchList").innerHTML=visibleChurches().map(c=>`<div class="card"><div class="card-main"><div class="card-title"><b>${esc(c.name)}</b></div><div class="actions"><button class="btn icon-btn edit-btn" onclick="editChurch('${esc(c.id)}')" title="${tr("edit")}"><i class="ri-edit-line"></i></button>${editingChurchId===c.id ? `<button class="btn icon-btn danger" onclick="del('churches','${esc(c.id)}')" title="${tr("delete")}"><i class="ri-delete-bin-line"></i></button>` : ""}</div></div></div>`).join("")||`<div class="empty">${tr("noChurch")}</div>`; }
+
+/* Admin Users: Google request UIDs are taken from Firebase keys, never entered manually. */
+let umTab="pending",umSelected="",umDraftRole="teacher",umDraftChurch="",umDraftName="",umSaving=false;
+function umIsAdmin(){return !!state.user&&canAdmin()}
+function umRecords(tab){
+  if(!umIsAdmin())return [];
+  const all=Object.entries(state.users||{});
+  if(tab==="pending")return Object.entries(state.accountRequests||{})
+    .filter(([id,r])=>r&&r.status==="pending"&&r.uid===id&&!state.users?.[id])
+    .map(([id,r])=>({id,...r,pending:true}));
+  return all.filter(([id,u])=>u&&u.role!=="admin"&&id!==state.user.uid&&
+    (tab==="blocked"?u.status==="disabled":u.status!=="disabled"&&u.status!=="pending"))
+    .map(([id,u])=>({id,...u,pending:false}));
+}
+function umSelectedRecord(){
+  if(!umSelected)return null;
+  const pending=umSelected.startsWith("pending:");
+  const id=umSelected.slice(pending?8:5);
+  const r=pending?state.accountRequests?.[id]:state.users?.[id];
+  if(!r||(!pending&&r.role==="admin")||(pending&&(r.status!=="pending"||r.uid!==id||state.users?.[id])))return null;
+  return {id,...r,pending};
+}
+function renderUsers(){
+  if(!$("umList"))return;
+  if(!umIsAdmin()){
+    $("umList").textContent="";
+    $("umEditor").textContent="";
+    return;
+  }
+  const pending=umRecords("pending"),active=umRecords("active"),blocked=umRecords("blocked");
+  $("umPendingCount").textContent=pending.length;
+  $("umActiveCount").textContent=active.length;
+  $("umBlockedCount").textContent=blocked.length;
+  $("umPendingLabel").textContent=currentLang==="km"?"រង់ចាំ":"Pending";
+  $("umActiveLabel").textContent=currentLang==="km"?"សកម្ម":"Active";
+  $("umBlockedLabel").textContent=currentLang==="km"?"បានបិទ":"Blocked";
+  const tabs={pending:currentLang==="km"?"រង់ចាំ":"Pending",active:currentLang==="km"?"សកម្ម":"Active",blocked:currentLang==="km"?"បានបិទ":"Blocked"};
+  document.querySelectorAll("[data-um-tab]").forEach(b=>{
+    b.textContent=tabs[b.dataset.umTab]||b.dataset.umTab;
+    b.classList.toggle("active",b.dataset.umTab===umTab);
+    b.setAttribute("aria-pressed",String(b.dataset.umTab===umTab));
+  });
+  const pool=umTab==="pending"?pending:umTab==="blocked"?blocked:active;
+  const search=String($("umSearch")?.value||"").trim().toLowerCase();
+  const items=pool.filter(u=>!search||[u.name,u.email,u.role,churchName(u.churchId)].join(" ").toLowerCase().includes(search))
+    .sort((a,b)=>String(a.name||a.email||"").localeCompare(String(b.name||b.email||"")));
+  $("umList").innerHTML=items.map(u=>{
+    const role=u.pending?(currentLang==="km"?"រង់ចាំ":"Pending"):roleLabel(u.role);
+    const info=u.pending?role:[role,churchName(u.churchId)].filter(Boolean).join(" • ");
+    const title=u.pending?(currentLang==="km"?"ពិនិត្យ":"Review"):(currentLang==="km"?"គ្រប់គ្រង":"Manage");
+    return '<div class="um-user-row"><div class="um-avatar"><i class="ri-user-3-line"></i></div>'+
+      '<div class="um-user-text"><strong>'+esc(u.name||u.email||"Google User")+'</strong>'+
+      '<small>'+esc(u.email||"")+'</small><small>'+esc(info)+'</small></div>'+
+      '<button type="button" class="btn um-manage" data-um-select="'+esc((u.pending?"pending:":"user:")+u.id)+'">'+title+'</button></div>';
+  }).join("")||'<div class="um-no-users">'+(currentLang==="km"?"មិនមានអ្នកប្រើប្រាស់":"No matching users")+'</div>';
+  const selected=umSelectedRecord();
+  if(!selected){umSelected="";$("umEditor").textContent="";return;}
+  const existingTab=selected.pending?"pending":selected.status==="disabled"?"blocked":"active";
+  if(existingTab!==umTab){umSelected="";$("umEditor").textContent="";return;}
+  const choices=visibleChurches().map(c=>'<option value="'+esc(c.id)+'" '+(umDraftChurch===c.id?"selected":"")+'>'+esc(c.name)+'</option>').join("");
+  const kh=currentLang==="km";
+  const options='<option value="">'+(kh?"ជ្រើសរើសពួកជំនុំ":"Select church")+'</option>'+choices;
+  const secondary=selected.pending?
+    '<button class="btn danger" type="button" data-um-action="reject">'+(kh?"បដិសេធ":"Reject")+'</button>':
+    selected.status==="disabled"?
+    '<button class="btn primary" type="button" data-um-action="reactivate">'+(kh?"បើកឡើងវិញ":"Reactivate")+'</button>':
+    '<button class="btn danger" type="button" data-um-action="block">'+(kh?"បិទគណនី":"Block")+'</button>';
+  const primary=selected.pending?
+    '<button class="btn primary" type="button" data-um-action="approve">'+(kh?"អនុម័ត":"Approve")+'</button>':
+    '<button class="btn primary" type="button" data-um-action="save">'+(kh?"រក្សាទុកការកែប្រែ":"Save changes")+'</button>';
+  $("umEditor").innerHTML='<div class="um-edit-card"><div class="um-edit-top"><div><strong>'+esc(selected.name||selected.email||"Google User")+'</strong>'+
+    '<small>'+esc(selected.email||"")+'</small></div><button type="button" class="btn icon-btn" data-um-action="close" aria-label="Close"><i class="ri-close-line"></i></button></div>'+
+    '<div class="um-edit-fields"><label class="um-name-field">'+(kh?"ឈ្មោះ":"Name")+
+    '<input id="umName" class="input" maxlength="120" value="'+esc(umDraftName)+'"></label>'+
+    '<label>'+(kh?"តួនាទី":"Role")+'<select id="umRole" class="input"><option value="teacher" '+(umDraftRole==="teacher"?"selected":"")+'>Teacher</option>'+
+    '<option value="pastor" '+(umDraftRole==="pastor"?"selected":"")+'>Pastor</option></select></label>'+
+    '<label>'+(kh?"ពួកជំនុំ":"Church")+'<select id="umChurch" class="input">'+options+'</select></label></div>'+
+    '<div class="um-edit-actions">'+primary+secondary+'</div></div>';
+  $("umEditor").querySelectorAll("[data-um-action]").forEach(b=>b.disabled=umSaving);
+}
+function umSelect(key){
+  if(!umIsAdmin())return;
+  umSelected=key;
+  const item=umSelectedRecord();
+  if(!item){umSelected="";renderUsers();return;}
+  umDraftRole=item.role==="pastor"?"pastor":"teacher";
+  umDraftChurch=item.churchId||"";
+  umDraftName=item.name||item.email||"";
+  renderUsers();
+  $("umEditor")?.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+async function umPerform(action){
+  if(!umIsAdmin()||umSaving)return;
+  if(action==="close"){umSelected="";renderUsers();return;}
+  const chosen=umSelectedRecord();
+  if(!chosen)return;
+  const uid=chosen.id;
+  if(uid===state.user.uid||chosen.role==="admin")return showStatus("umStatus","Administrator accounts are protected.",false);
+  const pending=chosen.pending;
+  if((action==="approve"||action==="reject")!==pending&&(action==="approve"||action==="reject"||pending))return;
+  if(!["approve","reject","save","block","reactivate"].includes(action))return;
+  if(!pending&&!state.users?.[uid])return;
+  if(action==="block"&&!confirm(currentLang==="km"?"បិទការចូលប្រើប្រាស់គណនីនេះមែនទេ?":"Block this user's access?"))return;
+  if(action==="reject"&&!confirm(currentLang==="km"?"បដិសេធសំណើចូលប្រើនេះមែនទេ?":"Reject this Google access request?"))return;
+  if(action==="reactivate"&&!confirm(currentLang==="km"?"បើកគណនីនេះឡើងវិញមែនទេ?":"Reactivate this account?"))return;
+  const needsDetails=["approve","save","reactivate"].includes(action);
+  if(needsDetails&&(!umDraftName.trim()||!["teacher","pastor"].includes(umDraftRole)||
+      !Object.hasOwn(state.churches||{},umDraftChurch))){
+    return showStatus("umStatus",currentLang==="km"?"សូមបញ្ចូលឈ្មោះ តួនាទី និងពួកជំនុំ។":"Choose a name, role, and existing church.",false);
+  }
+  umSaving=true;renderUsers();
+  try{
+    const now=Date.now(),old=state.users?.[uid]||{};
+    if(pending&&chosen.uid!==uid)throw Error("Account request UID mismatch.");
+    if(action==="approve"){
+      const record={...old,uid,name:umDraftName.trim(),email:chosen.email||"",role:umDraftRole,
+        churchId:umDraftChurch,status:"active",active:true,accountDecision:"approved",
+        approvedAt:now,approvedBy:state.user.uid,updatedAt:now};
+      await update(ref(db),{["users/"+uid]:record,["accountRequests/"+uid]:null});
+    }else if(action==="reject"){
+      // Keep a disabled record so the rejected Google account cannot request access again.
+      const record={uid,name:chosen.name||chosen.email||"Google User",email:chosen.email||"",
+        role:"teacher",churchId:"",status:"disabled",active:false,accountDecision:"rejected",
+        blockedAt:now,blockedBy:state.user.uid,updatedAt:now};
+      await update(ref(db),{["users/"+uid]:record,["accountRequests/"+uid]:null});
+    }else{
+      const record={...old,uid};
+      if(action==="save"||action==="reactivate"){
+        record.name=umDraftName.trim();record.role=umDraftRole;record.churchId=umDraftChurch;
+      }
+      if(action==="block"){
+        record.status="disabled";record.active=false;record.accountDecision="blocked";
+        record.blockedAt=now;record.blockedBy=state.user.uid;
+      }else if(action==="reactivate"){
+        record.status="active";record.active=true;record.accountDecision="approved";
+        record.reactivatedAt=now;record.reactivatedBy=state.user.uid;
+      }
+      record.updatedAt=now;
+      await set(ref(db,"users/"+uid),record);
+    }
+    await logActivity("updated","users",uid,chosen.email||chosen.name||uid,{managementAction:action});
+    umSelected="";showStatus("umStatus",currentLang==="km"?"បានរក្សាទុកជោគជ័យ។":"User access updated.",true);
+  }catch(error){
+    showStatus("umStatus",error.code||error.message,false);
+  }finally{umSaving=false;renderUsers();}
+}
+$("page-users").querySelector(".um-tabs").addEventListener("click",e=>{
+  const btn=e.target.closest("[data-um-tab]");
+  if(!btn||!umIsAdmin())return;
+  umTab=btn.dataset.umTab;umSelected="";renderUsers();
+});
+$("umSearch").addEventListener("input",()=>renderUsers());
+$("umList").addEventListener("click",e=>{
+  const btn=e.target.closest("[data-um-select]");if(btn)umSelect(btn.dataset.umSelect);
+});
+$("umEditor").addEventListener("input",e=>{if(e.target.id==="umName")umDraftName=e.target.value;});
+$("umEditor").addEventListener("change",e=>{
+  if(e.target.id==="umRole")umDraftRole=e.target.value;
+  if(e.target.id==="umChurch")umDraftChurch=e.target.value;
+});
+$("umEditor").addEventListener("click",e=>{
+  const btn=e.target.closest("[data-um-action]");if(btn)umPerform(btn.dataset.umAction);
+});
+
 function renderRoles(){
   const users=Object.entries(state.users).map(([id,u])=>({id,...u})).filter(u=>canAdmin()&&u.role!=="admin");
   const row=u=>`<div class="card"><div class="card-main"><div class="card-title"><b>${esc(u.name)}</b><small>${esc(roleLabel(u.role))}${u.email ? " &bull; "+esc(u.email) : ""}</small></div><div class="actions"><button class="btn icon-btn edit-btn" onclick="editRole('${esc(u.id)}')" title="${tr("edit")}"><i class="ri-edit-line"></i></button>${editingRoleId===u.id ? `<button class="btn icon-btn danger" onclick="del('users','${esc(u.id)}')" title="${tr("delete")}"><i class="ri-delete-bin-line"></i></button>` : ""}</div></div></div>`;
