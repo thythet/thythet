@@ -1970,13 +1970,8 @@ function queueSummaryPreparation(classId,priority=false,retry=false){
   pumpSummaryPreparation();
 }
 function scheduleSummaryPrefetch(){
-  if(!state.user||!summaryWatchReady.has("classes")||!summaryWatchReady.has("students")||
-     isPage("attendance"))return;
-  clearTimeout(summaryPrepTimer);
-  summaryPrepTimer=setTimeout(()=>{
-    summaryPrepTimer=0;
-    for(const classId of summaryQueueRemainingClasses())queueSummaryPreparation(classId);
-  },300);
+  // Full-history background preparation is disabled for the fast Summary.
+  // Progressive on-demand history loads only while the Summary page is open.
 }
 function summaryPrepStillValid(epoch,userId,classId,signature){
   return epoch===summaryPrepEpoch&&state.user?.uid===userId&&!isPage("attendance")&&
@@ -2947,15 +2942,9 @@ if($("summaryClass")) $("summaryClass").onchange=()=>{
   }
   stopSummaryLoads();stopAttendanceSubscriptions();startSummaryLoads();
   syncSummaryClassSelection();
-  if(classId)queueSummaryPreparation(classId,true);
   renderSummary();
 };
 if($("summaryList")) $("summaryList").addEventListener("click",e=>{
-  const retry=e.target.closest("[data-summary-retry]");
-  if(retry){
-    retrySummaryPreparation(retry.dataset.summaryRetry);
-    return;
-  }
   const cell=e.target.closest(".summary-day");
   if(cell){
     openSummaryDayPopup(cell);
@@ -3604,45 +3593,21 @@ function renderSummary(){
     if(summaryListHtml!==html){summaryListHtml=html;list.innerHTML=html;}
     return;
   }
-  const prepared=summaryPreparedFor(classFilter);
-  if(prepared?.status!=="ready"){
-    if(!prepared||prepared.status==="idle")queueSummaryPreparation(classFilter,true);
-    const progress=summaryPreparationProgress(classFilter);
-    const failed=progress.status==="error";
-    const total=progress.total||0,done=progress.done||0;
-    const percent=total?Math.round(Math.min(100,100*done/total)):0;
-    const html=`<div class="summary-preparation" role="status" aria-live="polite">
-      <div class="summary-prep-heading">${esc(tr(failed?"summaryPrepareFailed":"summaryPrepareTitle"))}</div>
-      ${failed?"":`<div class="summary-prep-description">${esc(tr("summaryPrepareSub"))}</div>`}
-      <div class="summary-prep-meter" role="progressbar" aria-label="${esc(tr("summaryPrepareProgress"))}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}">
-        <div class="summary-prep-meter-fill" style="width:${percent}%"></div>
-      </div>
-      <div class="summary-prep-count">${esc(tr("summaryPrepareProgress"))}: ${done}/${total}</div>
-      ${failed?`<div class="summary-prep-description">${esc(progress.error||"ATTENDANCE_READ_FAILED")}</div>
-        <button class="btn primary summary-prep-retry" type="button" data-summary-retry="${esc(classFilter)}">${esc(tr("summaryPrepareRetry"))}</button>`:""}
-    </div>`;
-    if(summaryListHtml!==html){summaryListHtml=html;list.innerHTML=html;}
-    return;
-  }
-  // Counts and order are computed once, from the full verified date range.
-  const allDates=prepared.dates;
-  const fullCounts=prepared.counts;
-  const cls=state.classes[classFilter]||{};
-  const first=prepared.recordedFirst,last=prepared.recordedLast;
-  let shownDates=allDates;
-  if(cls.status==="archived"&&!classDateValue(cls.endDate)&&last){
-    shownDates=shownDates.filter(date=>date<=last);
-  }
-  if(!classDateValue(cls.startDate)&&first&&last){
-    shownDates=shownDates.filter(date=>date>=first&&date<=last);
-  }
-  const byId=new Map(reportStudents(classFilter).map(st=>[st.id,st]));
-  const visible=prepared.order.map(id=>byId.get(id)).filter(Boolean);
+  // Restore Kid3Pro's progressive Summary behavior: render student rows as
+  // attendance arrives, rather than blocking until the full history is read.
+  // Keep Kid2Pro's bounded newest-first week reads, scroll sync and popup UI.
+  const visible=reportStudents(classFilter);
+  const periods=summaryClassPeriods(visible);
+  const rows=visible.map(st=>{
+    const period=periods.get(st.classId);
+    const dates=period?.dates||[];
+    const present=dates.reduce((count,date)=>
+      count+(state.attendance[date]?.[st.classId]?.[st.id]==="present"?1:0),0);
+    return {st,dates,present,loading:period?.loading||false};
+  }).sort((a,b)=>b.present-a.present||
+    String(a.st.name||"").localeCompare(String(b.st.name||""))||
+    String(a.st.id).localeCompare(String(b.st.id)));
   const countLabel=tr("summaryPresentCount");
-  const rows=visible.map(st=>({
-    st,dates:shownDates,present:fullCounts.get(st.id)||0,loading:false
-  }));
-  if(allDates.length)queueSummaryWeek(allDates.at(-1),classFilter,true);
   const available=rows.filter(r=>r.dates.length);
   const globalStart=summarySyncEnabled&&available.length?
     available.reduce((d,r)=>!d||r.dates[0]<d?r.dates[0]:d,""):"";
