@@ -314,10 +314,21 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
   text-overflow:ellipsis;overflow:hidden
 }
 #page-summary .summary-strip-wrap{position:relative;min-width:0;overflow:hidden}
+/* Keep all attendance histories horizontally scrollable, but never show
+   the browser's native (including hover-triggered) horizontal scrollbar. */
 #page-summary .summary-grid-scroll{
   display:block;max-width:100%;min-width:0;overflow-x:auto;overflow-y:hidden;
   padding:5px 5px 6px;touch-action:pan-x;-webkit-overflow-scrolling:touch;
-  overscroll-behavior-x:contain;scrollbar-width:thin
+  overscroll-behavior-x:contain;
+  scrollbar-width:none!important;/* Firefox and modern Chromium */
+  -ms-overflow-style:none;/* Legacy Edge */
+}
+#page-summary .summary-grid-scroll::-webkit-scrollbar{
+  display:none!important;width:0!important;height:0!important;
+}
+#page-summary .summary-grid-scroll::-webkit-scrollbar-thumb,
+#page-summary .summary-grid-scroll::-webkit-scrollbar-track{
+  background:transparent!important;
 }
 #page-summary .summary-strip-wrap.has-overflow .summary-grid-scroll{
   -webkit-mask-image:linear-gradient(to right,#000 0%,#000 calc(100% - 20px),transparent 100%);
