@@ -908,11 +908,9 @@ document.getElementById('googleLoginBtn').addEventListener('click',async()=>{
 
 
 const $ = id => document.getElementById(id);
-const authLoadingStarted = Date.now();
 function hideAuthLoading(){
-  const el = $("authLoading");
-  if(!el) return;
-  setTimeout(()=>el.classList.add("hidden"), Math.max(0, 900 - (Date.now() - authLoadingStarted)));
+  // The authenticated view is ready: avoid an artificial 900 ms splash delay.
+  $("authLoading")?.classList.add("hidden");
 }
 let connectionStatusTimer=0;
 function showConnectionStatus(message,type,autoHide=false){
@@ -932,28 +930,230 @@ window.addEventListener("online",()=>showConnectionStatus("back online","online"
 if(!navigator.onLine) updateConnectionStatus();
 const adminSelectedChurchKey = "ss_admin_selected_church";
 const state = { user:null, profile:null, role:"guest", churchId:null, selectedChurchId:localStorage.getItem(adminSelectedChurchKey)||"", churches:{}, users:{}, classes:{}, students:{}, attendance:{}, trash:{}, activities:{}, themeBackgrounds:{}, themeOptions:{}, selectedSunday:"", homeReportDate:"", studentQ:"", attQ:"", popAttendanceKey:"", activityExpanded:{trash:false,checker:false,activity:false}, checkerCleanupAt:0 };
-const attendanceListeners = new Set();
-const attendanceLoaded = new Set();
-const attendanceErrors = new Set();
-// A Sunday is No Record when no student in the selected class is checked Present.
+// Existing RTDB paths are unchanged. Grouped class/week reads are optional;
+// fall back to permitted individual student paths if a parent read is denied.
+const attendanceListeners=new Map();
+const attendanceWeekListeners=new Map();
+const attendanceLoaded=new Set();
+const attendanceErrors=new Set();
+const attendanceWeekLoaded=new Set();
+const attendanceWeekErrors=new Set();
+const attendanceBatchAllowed=new Map();
+const attendanceRosterCache=new Map();
+const attendanceWeekStateCache=new Map();
+let attendanceSubscriptionEpoch=0;
+let attendanceRosterVersion=0;
+function attendanceClassStudents(classId){
+  const cached=attendanceRosterCache.get(classId);
+  if(cached&&cached.version===attendanceRosterVersion)return cached.ids;
+  const church=state.classes[classId]?.churchId;
+  const ids=Object.entries(state.students).filter(([id,student])=>student?.classId===classId&&
+    (!church||student.churchId===church)).map(([id])=>id);
+  attendanceRosterCache.set(classId,{ids,version:attendanceRosterVersion});
+  return ids;
+}
+function attendanceWeekKey(date,classId){return date+"/"+classId}
+function attendanceStudentKey(date,classId,id){return date+"/"+classId+"/"+id}
+function invalidateAttendanceWeek(date,classId){
+  attendanceWeekStateCache.delete(attendanceWeekKey(date,classId));
+}
+function attendanceMarkLoaded(date,classId,id){
+  return attendanceWeekLoaded.has(attendanceWeekKey(date,classId))||
+    attendanceLoaded.has(attendanceStudentKey(date,classId,id));
+}
+function attendanceWeekComplete(date,classId){
+  if(attendanceWeekLoaded.has(attendanceWeekKey(date,classId)))return true;
+  return attendanceClassStudents(classId).every(id=>{
+    const key=attendanceStudentKey(date,classId,id);
+    return attendanceLoaded.has(key)||attendanceErrors.has(key);
+  });
+}
 function attendanceWeekState(date,classId){
   if(!date||!classId)return "none";
-  const students=Object.entries(state.students).filter(([id,st])=>
-    st?.classId===classId && (!state.classes[classId]?.churchId||
-      st.churchId===state.classes[classId].churchId));
-  const marks=state.attendance[date]?.[classId]||{};
-  if(students.some(([id])=>marks[id]==="present"))return "recorded";
-  if(students.some(([id])=>attendanceErrors.has(`${date}/${classId}/${id}`)))return "error";
-  if(students.some(([id])=>!attendanceLoaded.has(`${date}/${classId}/${id}`)))return "pending";
-  return "none";
+  const key=attendanceWeekKey(date,classId);
+  if(attendanceWeekStateCache.has(key))return attendanceWeekStateCache.get(key);
+  const students=attendanceClassStudents(classId);
+  const records=state.attendance[date]?.[classId]||{};
+  let status="none";
+  if(students.some(id=>records[id]==="present"))status="recorded";
+  else if(attendanceWeekErrors.has(key)||students.some(id=>
+    attendanceErrors.has(attendanceStudentKey(date,classId,id))))status="error";
+  else if(!attendanceWeekComplete(date,classId))status="pending";
+  attendanceWeekStateCache.set(key,status);
+  return status;
 }
-function attendanceDisplayStatus(date,classId,studentId){
-  const key=`${date}/${classId}/${studentId}`;
-  if(attendanceErrors.has(key))return "error";
-  if(!attendanceLoaded.has(key))return "pending";
-  if(state.attendance[date]?.[classId]?.[studentId]==="present")return "present";
+function attendanceDisplayStatus(date,classId,id){
+  const key=attendanceStudentKey(date,classId,id);
+  if(attendanceErrors.has(key)||attendanceWeekErrors.has(attendanceWeekKey(date,classId)))return "error";
+  if(!attendanceMarkLoaded(date,classId,id))return "pending";
+  if(state.attendance[date]?.[classId]?.[id]==="present")return "present";
   const week=attendanceWeekState(date,classId);
   return week==="recorded"?"absent":week;
+}
+function applyAttendanceWeek(date,classId,records){
+  state.attendance[date] ||= {};
+  state.attendance[date][classId]=records&&typeof records==="object"?records:{};
+  const key=attendanceWeekKey(date,classId);
+  attendanceWeekLoaded.add(key);
+  attendanceWeekErrors.delete(key);
+  for(const id of attendanceClassStudents(classId)){
+    attendanceErrors.delete(attendanceStudentKey(date,classId,id));
+  }
+  invalidateAttendanceWeek(date,classId);
+  if(isPage("summary"))scheduleSummaryRender();
+  else scheduleAttendanceRender();
+}
+function stopAttendanceSubscriptions(){
+  attendanceSubscriptionEpoch++;
+  for(const unsub of attendanceListeners.values())try{unsub()}catch{}
+  attendanceListeners.clear();
+  for(const unsub of attendanceWeekListeners.values())try{unsub()}catch{}
+  attendanceWeekListeners.clear();
+}
+let summaryLoadEpoch=0,summaryHistoryWeeks=16,summaryHistoryTimer=0,summaryHistoryIdle=0;
+let summaryLastUserScrollAt=0;
+let summaryWeekQueue=[],summaryWeekActive=0;
+const summaryWeekRequested=new Set();
+const SUMMARY_WEEK_CONCURRENCY=4;
+const SUMMARY_HISTORY_BATCH=16;
+const SUMMARY_RECENT_LIVE_WEEKS=3;
+function stopSummaryLoads(){
+  summaryLoadEpoch++;
+  clearTimeout(summaryHistoryTimer);
+  summaryHistoryTimer=0;
+  if(summaryHistoryIdle&&typeof cancelIdleCallback==="function")cancelIdleCallback(summaryHistoryIdle);
+  summaryHistoryIdle=0;
+  summaryWeekQueue.length=0;
+  summaryWeekRequested.clear();
+}
+function startSummaryLoads(){
+  stopSummaryLoads();
+  summaryHistoryWeeks=16;
+  resetSummaryRenderCache();
+}
+function queueSummaryWeek(date,classId,live){
+  if(!isPage("summary"))return;
+  const key=attendanceWeekKey(date,classId);
+  if(summaryWeekRequested.has(key))return;
+  summaryWeekRequested.add(key);
+  summaryWeekQueue.push({date,classId,live,epoch:summaryLoadEpoch});
+  drainSummaryWeekQueue();
+}
+function recordSummaryWeekError(date,classId,error){
+  attendanceWeekErrors.add(attendanceWeekKey(date,classId));
+  invalidateAttendanceWeek(date,classId);
+  console.warn("Summary attendance read failed",date,classId,error.code||error.message);
+  scheduleSummaryRender();
+}
+async function summaryFallbackGet(date,classId,epoch){
+  const ids=attendanceClassStudents(classId);
+  // Small batches avoid hundreds of simultaneous child reads if class-level
+  // reads are blocked by existing Firebase Security Rules.
+  for(let i=0;i<ids.length;i+=6){
+    if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
+    await Promise.all(ids.slice(i,i+6).map(async id=>{
+      const key=attendanceStudentKey(date,classId,id);
+      try{
+        const snap=await get(ref(db,"attendance/"+key));
+        if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
+        state.attendance[date] ||= {};
+        state.attendance[date][classId] ||= {};
+        const value=snap.val();
+        if(value==null)delete state.attendance[date][classId][id];
+        else state.attendance[date][classId][id]=value;
+        attendanceLoaded.add(key);
+        attendanceErrors.delete(key);
+      }catch(error){
+        if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
+        attendanceErrors.add(key);
+        console.warn("Attendance fallback read failed",key,error.code||error.message);
+      }
+    }));
+    invalidateAttendanceWeek(date,classId);
+    scheduleSummaryRender();
+  }
+}
+function summaryFallbackLive(date,classId,epoch){
+  if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
+  for(const id of attendanceClassStudents(classId))listenAttendance(date,classId,id);
+}
+async function executeSummaryWeek(task){
+  const {date,classId,live,epoch}=task,key=attendanceWeekKey(date,classId);
+  if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
+  if(attendanceBatchAllowed.get(classId)===false){
+    if(live)summaryFallbackLive(date,classId,epoch);
+    else await summaryFallbackGet(date,classId,epoch);
+    return;
+  }
+  if(live){
+    if(attendanceWeekListeners.has(key))return;
+    const unsubscribe=onValue(ref(db,"attendance/"+key),snap=>{
+      if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
+      attendanceBatchAllowed.set(classId,true);
+      applyAttendanceWeek(date,classId,snap.val());
+    },error=>{
+      attendanceWeekListeners.delete(key);
+      if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
+      if(error.code==="PERMISSION_DENIED"||error.code==="permission_denied"){
+        attendanceBatchAllowed.set(classId,false);
+        summaryFallbackLive(date,classId,epoch);
+      }else recordSummaryWeekError(date,classId,error);
+    });
+    attendanceWeekListeners.set(key,unsubscribe);
+    return;
+  }
+  try{
+    const snapshot=await get(ref(db,"attendance/"+key));
+    if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
+    attendanceBatchAllowed.set(classId,true);
+    applyAttendanceWeek(date,classId,snapshot.val());
+  }catch(error){
+    if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
+    if(error.code==="PERMISSION_DENIED"||error.code==="permission_denied"){
+      attendanceBatchAllowed.set(classId,false);
+      await summaryFallbackGet(date,classId,epoch);
+    }else recordSummaryWeekError(date,classId,error);
+  }
+}
+function drainSummaryWeekQueue(){
+  while(summaryWeekActive<SUMMARY_WEEK_CONCURRENCY&&summaryWeekQueue.length){
+    const task=summaryWeekQueue.shift();
+    if(task.epoch!==summaryLoadEpoch||!isPage("summary"))continue;
+    summaryWeekActive++;
+    Promise.resolve().then(()=>executeSummaryWeek(task)).catch(error=>{
+      if(task.epoch===summaryLoadEpoch)recordSummaryWeekError(task.date,task.classId,error);
+    }).finally(()=>{
+      summaryWeekActive--;
+      drainSummaryWeekQueue();
+    });
+  }
+}
+function scheduleMoreSummaryHistory(hasMore){
+  if(!hasMore||!isPage("summary")||summaryHistoryTimer||summaryHistoryIdle)return;
+  summaryHistoryTimer=setTimeout(()=>{
+    summaryHistoryTimer=0;
+    if(!isPage("summary"))return;
+    if(summaryWeekQueue.length>8||summaryWeekActive>2||
+      Date.now()-summaryLastUserScrollAt<500||
+      !$("summaryDayOverlay")?.classList.contains("hidden")){
+      scheduleMoreSummaryHistory(true);
+      return;
+    }
+    const grow=()=>{
+      summaryHistoryIdle=0;
+      if(!isPage("summary"))return;
+      if(Date.now()-summaryLastUserScrollAt<500||
+        !$("summaryDayOverlay")?.classList.contains("hidden")){
+        scheduleMoreSummaryHistory(true);
+        return;
+      }
+      summaryHistoryWeeks+=SUMMARY_HISTORY_BATCH;
+      resetSummaryRenderCache();
+      renderSummary();
+    };
+    if(typeof requestIdleCallback==="function")summaryHistoryIdle=requestIdleCallback(grow,{timeout:1200});
+    else grow();
+  },420);
 }
 // This is PUBLIC unsigned-upload configuration, not a secret.
 const cloudStorageKey="kid2pro_cloudinary_config_v1";
@@ -1163,7 +1363,16 @@ $("logoutBtn").onclick=()=>signOut(auth);
 $("openChatBtn").onclick=()=>{window.location.href='./chat/index.html';};
 
 onAuthStateChanged(auth, async user=>{
-  if(!user){ hideAuthLoading(); $("loginView").classList.remove("hidden"); $("appView").classList.add("hidden"); return; }
+  if(!user){
+    stopSummaryLoads();
+    stopAttendanceSubscriptions();
+    state.user=null;state.profile=null;state.role="guest";
+    state.attendance={};
+    attendanceLoaded.clear();attendanceErrors.clear();
+    attendanceWeekLoaded.clear();attendanceWeekErrors.clear();
+    attendanceBatchAllowed.clear();attendanceRosterCache.clear();attendanceWeekStateCache.clear();
+    hideAuthLoading(); $("loginView").classList.remove("hidden"); $("appView").classList.add("hidden"); return;
+  }
   state.user=user;
   const adminSnap=await get(ref(db,"admins/"+user.uid));
   if(adminSnap.exists()){
@@ -1196,6 +1405,12 @@ function applyRole(){
 document.querySelectorAll(".nav-btn[data-page]").forEach(b=>b.onclick=()=>{ if(b.classList.contains("attend-tab")) playWeekPop(b); page(b.dataset.page); });
 if($("dashboardBtn")) $("dashboardBtn").onclick=()=>{ localStorage.setItem("dashboardLang", currentLang); location.href="./dashboard.html"; };
 function page(name){
+  const previous=activePage();
+  if(previous!==name){
+    if(previous==="summary")stopSummaryLoads();
+    stopAttendanceSubscriptions();
+    if(name==="summary")startSummaryLoads();
+  }
   if(name!=="summary")closeSummaryDayPopup(true);
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
   $("page-"+name).classList.add("active");
@@ -1228,13 +1443,26 @@ function applyChoiceWipeAngle(value){
   }
 }
 
+let baseRenderFrame=0;
+function scheduleBaseRender(){
+  if(baseRenderFrame)return;
+  baseRenderFrame=requestAnimationFrame(()=>{
+    baseRenderFrame=0;
+    renderAll();
+  });
+}
 function watch(path, target, sourceRef=ref(db,path)){
   onValue(sourceRef, snap=>{
     state[target]=snap.val()||{};
+    if(target==="students"||target==="classes"){
+      attendanceRosterVersion++;
+      attendanceRosterCache.clear();
+      attendanceWeekStateCache.clear();
+    }
     if(target==="themeBackgroundsSettings" || target==="themeBackgroundsUser") applyThemeBackgroundSettings();
     if(target==="churches") applyThemeBackgroundSettings();
     if(target==="themeOptions") applyThemeOptionSettings();
-    renderAll();
+    scheduleBaseRender();
   }, err=>{
     console.warn(`Unable to load ${path}:`, err.code || err.message);
   });
@@ -1325,49 +1553,46 @@ function hideAttendanceLoadingSoon(){
   }));
 }
 function scheduleAttendanceRender(){
-  if(!isPage("attendance")) return;
+  if(!isPage("attendance")||attRenderTimer)return;
   showAttendanceLoading();
-  clearTimeout(attRenderTimer);
-  attRenderTimer=setTimeout(()=>renderAttendance(true),70);
-  clearTimeout(attRangeSortTimer);
-  attRangeSortTimer=setTimeout(()=>{
-    if(isPage("attendance")){
-      resetAttendanceRenderCache();
-      renderAttendance(true);
-    }
-  },180);
+  // A single throttled render coalesces concurrent student snapshots.
+  attRenderTimer=setTimeout(()=>{
+    attRenderTimer=0;
+    if(isPage("attendance"))renderAttendance(true);
+  },40);
 }
 function resetAttendanceRenderCache(){
   attWeekbarHtml="";
   attListHtml="";
 }
 function scheduleStudentRender(){
-  if(!isPage("students")) return;
-  clearTimeout(studentRenderTimer);
-  studentRenderTimer=setTimeout(()=>renderStudents(true),70);
-  clearTimeout(studentRangeSortTimer);
-  studentRangeSortTimer=setTimeout(()=>{
-    if(isPage("students")){
-      resetStudentRenderCache();
-      renderStudents(true);
-    }
-  },180);
+  if(!isPage("students")||studentRenderTimer)return;
+  studentRenderTimer=setTimeout(()=>{
+    studentRenderTimer=0;
+    if(isPage("students"))renderStudents(true);
+  },48);
 }
 function resetStudentRenderCache(){
   studentListHtml="";
 }
 function scheduleReportRender(){
-  if(!isPage("reports")) return;
-  clearTimeout(reportRenderTimer);
-  reportRenderTimer=setTimeout(()=>renderReports(),70);
+  if(!isPage("reports")||reportRenderTimer)return;
+  reportRenderTimer=setTimeout(()=>{
+    reportRenderTimer=0;
+    if(isPage("reports"))renderReports();
+  },48);
 }
 function resetReportRenderCache(){
   reportListHtml="";
 }
 function scheduleSummaryRender(){
-  if(!isPage("summary")) return;
-  clearTimeout(summaryRenderTimer);
-  summaryRenderTimer=setTimeout(renderSummary,100);
+  if(!isPage("summary")||summaryRenderTimer)return;
+  // Throttle, rather than debounce: steady Firebase snapshots cannot delay
+  // rendering until the last callback finally finishes.
+  summaryRenderTimer=setTimeout(()=>{
+    summaryRenderTimer=0;
+    if(isPage("summary"))renderSummary();
+  },48);
 }
 function resetSummaryRenderCache(){ summaryListHtml=""; }
 function resetStudentForm(){
@@ -1721,35 +1946,39 @@ function renderThemeBackgroundThumbs(){
   });
 }
 function listenAttendance(date,classId,studentId){
-  if(!date||!classId||!studentId) return;
-  const key=`${date}/${classId}/${studentId}`;
-  if(attendanceListeners.has(key)) return;
-  attendanceListeners.add(key);
-  onValue(ref(db,"attendance/"+key),snap=>{
+  if(!date||!classId||!studentId)return;
+  const key=attendanceStudentKey(date,classId,studentId);
+  if(attendanceListeners.has(key))return;
+  const epoch=attendanceSubscriptionEpoch;
+  // Used by Attendance, Student details, and fallback Summary reads only.
+  const unsubscribe=onValue(ref(db,"attendance/"+key),snap=>{
+    if(epoch!==attendanceSubscriptionEpoch||!state.user)return;
     state.attendance[date] ||= {};
     state.attendance[date][classId] ||= {};
-    const val=snap.val();
+    const value=snap.val();
+    if(value==null)delete state.attendance[date][classId][studentId];
+    else state.attendance[date][classId][studentId]=value;
     attendanceLoaded.add(key);
     attendanceErrors.delete(key);
-    if(val == null) delete state.attendance[date][classId][studentId];
-    else state.attendance[date][classId][studentId]=val;
-    // Historical Summary scans can open many scoped subscriptions. Avoid
-    // rerendering unrelated pages for each snapshot; they refresh on navigation.
-    if(isPage("summary")){
-      scheduleSummaryRender();
-    }else{
+    invalidateAttendanceWeek(date,classId);
+    if(isPage("summary"))scheduleSummaryRender();
+    else{
       scheduleAttendanceRender();
-      if(isPage("home")) renderHomeReport();
+      if(isPage("home"))renderHomeReport();
       scheduleStudentRender();
-      if(isPage("students") || !$("studentModal")?.classList.contains("hidden")) renderStudentDetails();
+      if(isPage("students")||!$("studentModal")?.classList.contains("hidden"))renderStudentDetails();
       scheduleReportRender();
       renderStats();
     }
-  },err=>{
+  },error=>{
+    if(epoch!==attendanceSubscriptionEpoch||!state.user)return;
     attendanceErrors.add(key);
-    console.warn(`Unable to load attendance ${key}:`,err.code||err.message);
-    scheduleSummaryRender();
+    invalidateAttendanceWeek(date,classId);
+    console.warn("Unable to load attendance",key,error.code||error.message);
+    if(isPage("summary"))scheduleSummaryRender();
+    else scheduleAttendanceRender();
   });
+  attendanceListeners.set(key,unsubscribe);
 }
 function renderPage(name){ ({home:renderHomeReport,church:renderChurches,roles:renderRoles,classes:renderClasses,students:renderStudents,attendance:renderAttendance,summary:renderSummary,reports:renderReports,activity:renderActivity}[name]||(()=>{}))(); }
 function renderAll(){ renderSelects(); renderStats(); renderPage(activePage()); }
@@ -2045,10 +2274,10 @@ function bindSwipe(el,onSwipe,wheel=false){
   el.addEventListener("touchend",e=>{const t=e.changedTouches[0],dx=t.clientX-x,dy=t.clientY-y;if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy))onSwipe(dx<0?1:-1);},{passive:true});
   if(wheel) el.addEventListener("wheel",e=>{if(Math.abs(e.deltaX)>Math.abs(e.deltaY)){e.preventDefault();onSwipe(e.deltaX>0?1:-1);}},{passive:false});
 }
-function setAttMonth(delta){ $("attMonth").value=shiftMonth($("attMonth").value,delta); syncMonthDisplay("attMonth","attMonthText"); state.selectedSunday=""; resetAttendanceRenderCache(); playSwipeWipe($("attMonth")?.closest(".month-field"),delta); renderAttendance(); }
-$("attMonth").value=monthNow(); syncMonthDisplay("attMonth","attMonthText"); $("attMonth").onchange=()=>{syncMonthDisplay("attMonth","attMonthText");state.selectedSunday=""; resetAttendanceRenderCache(); renderAttendance();};
-if($("attChurch")) $("attChurch").onchange=()=>{setSelectedChurchId($("attChurch").value); renderSelects(); syncCustomSelect("attChurch"); syncCustomSelect("attClass"); renderAttendance();};
-if($("attClass")) $("attClass").onchange=()=>{syncCustomSelect("attClass");resetAttendanceRenderCache();renderAttendance();};
+function setAttMonth(delta){ stopAttendanceSubscriptions(); $("attMonth").value=shiftMonth($("attMonth").value,delta); syncMonthDisplay("attMonth","attMonthText"); state.selectedSunday=""; resetAttendanceRenderCache(); playSwipeWipe($("attMonth")?.closest(".month-field"),delta); renderAttendance(); }
+$("attMonth").value=monthNow(); syncMonthDisplay("attMonth","attMonthText"); $("attMonth").onchange=()=>{stopAttendanceSubscriptions();syncMonthDisplay("attMonth","attMonthText");state.selectedSunday=""; resetAttendanceRenderCache(); renderAttendance();};
+if($("attChurch")) $("attChurch").onchange=()=>{stopAttendanceSubscriptions();setSelectedChurchId($("attChurch").value); renderSelects(); syncCustomSelect("attChurch"); syncCustomSelect("attClass"); renderAttendance();};
+if($("attClass")) $("attClass").onchange=()=>{stopAttendanceSubscriptions();syncCustomSelect("attClass");resetAttendanceRenderCache();renderAttendance();};
 if($("prevMonth")) $("prevMonth").onclick=()=>setAttMonth(-1);
 if($("nextMonth")) $("nextMonth").onclick=()=>setAttMonth(1);
 bindSwipe($("attMonth")?.closest(".month-field"),setAttMonth,true);
@@ -2062,14 +2291,20 @@ function moveSunday(delta){
   if(!ss.length) return;
   const i=Math.max(0,ss.indexOf(state.selectedSunday)), next=ss[Math.max(0,Math.min(ss.length-1,i+delta))];
   if(next===state.selectedSunday) return;
+  stopAttendanceSubscriptions();
   state.selectedSunday=next; resetAttendanceRenderCache(); playSwipeWipe($("weekbar"),delta); renderAttendance();
 }
 bindSwipe($("weekbar"),moveSunday);
 bindSwipe($("copyHomeReport")?.closest(".report-copy-head"),moveHomeReport,true);
 if($("reportChurch")) $("reportChurch").onchange=()=>{setSelectedChurchId($("reportChurch").value);renderSelects();renderReports();};
 if($("reportClass")) $("reportClass").onchange=()=>{resetReportRenderCache();renderReports();};
-if($("summaryChurch")) $("summaryChurch").onchange=()=>{setSelectedChurchId($("summaryChurch").value);renderSelects();renderSummary();};
-if($("summaryClass")) $("summaryClass").onchange=()=>{resetSummaryRenderCache();renderSummary();};
+if($("summaryChurch")) $("summaryChurch").onchange=()=>{
+  stopSummaryLoads();stopAttendanceSubscriptions();startSummaryLoads();
+  setSelectedChurchId($("summaryChurch").value);renderSelects();renderSummary();
+};
+if($("summaryClass")) $("summaryClass").onchange=()=>{
+  stopSummaryLoads();stopAttendanceSubscriptions();startSummaryLoads();renderSummary();
+};
 if($("summaryList")) $("summaryList").addEventListener("click",e=>{
   const cell=e.target.closest(".summary-day");
   if(cell){
@@ -2280,6 +2515,7 @@ const summarySyncStorageKey="kid2pro_summary_sync_scroll";
 let summarySyncEnabled=false;
 try{summarySyncEnabled=localStorage.getItem(summarySyncStorageKey)==="1"}catch{}
 let summarySyncWeek=0;
+let summaryRenderedStart="";
 let summaryScrollRestore=null;
 const summarySyncProgrammed=new WeakMap();
 function summaryWeekGap(start,end){
@@ -2475,20 +2711,23 @@ $("summaryDayOverlay").addEventListener("click",event=>{
 document.addEventListener("keydown",event=>{
   if(event.key==="Escape" && !$("summaryDayOverlay").classList.contains("hidden"))closeSummaryDayPopup();
 });
+const summaryDateCache=new Map();
 function summaryCandidateDates(classId){
   const cls=state.classes[classId]||{};
   const todaySunday=currentSunday();
-  const earliestLegacy=`${Number(todaySunday.slice(0,4))-2}-01-01`;
-  // Explicit class dates override the legacy history-discovery start.
-  const start=classDateValue(cls.startDate)||earliestLegacy;
+  const first=classDateValue(cls.startDate)||`${Number(todaySunday.slice(0,4))-2}-01-01`;
   const configuredEnd=classDateValue(cls.endDate);
   const last=configuredEnd&&configuredEnd<todaySunday?configuredEnd:todaySunday;
-  if(start>last)return [];
-  const firstSunday=new Date(start+"T12:00:00");
+  const cacheKey=classId+"|"+first+"|"+last;
+  if(summaryDateCache.has(cacheKey))return summaryDateCache.get(cacheKey);
+  if(first>last)return [];
+  const firstSunday=new Date(first+"T12:00:00");
   firstSunday.setDate(firstSunday.getDate()+(7-firstSunday.getDay())%7);
-  const result=[];
-  for(let d=dateKey(firstSunday),i=0;d<=last&&i<780;d=shiftDate(d,7),i++)result.push(d);
-  return result;
+  const dates=[];
+  for(let d=dateKey(firstSunday),i=0;d<=last&&i<780;d=shiftDate(d,7),i++)dates.push(d);
+  if(summaryDateCache.size>100)summaryDateCache.clear();
+  summaryDateCache.set(cacheKey,dates);
+  return dates;
 }
 function summaryClassPeriods(students){
   const byClass=new Map();
@@ -2498,27 +2737,31 @@ function summaryClassPeriods(students){
     byClass.get(st.classId).push(st);
   });
   const periods=new Map();
+  let hasEarlier=false;
   byClass.forEach((classStudents,classId)=>{
-    const cls=state.classes[classId]||{};
-    const dates=summaryCandidateDates(classId);
-    classStudents.forEach(st=>dates.forEach(date=>listenAttendance(date,classId,st.id)));
-    const recorded=dates.filter(date=>classStudents.some(st=>
-      state.attendance[date]?.[classId]?.[st.id]==="present"));
+    const cls=state.classes[classId];
+    if(!cls){
+      periods.set(classId,{dates:[],loading:true});
+      return;
+    }
+    const allDates=summaryCandidateDates(classId);
+    const dates=allDates.slice(-summaryHistoryWeeks);
+    if(allDates.length>summaryHistoryWeeks)hasEarlier=true;
+    // Recent Sunday reads run first; historical snapshots load later in chunks.
+    dates.slice().reverse().forEach((date,index)=>
+      queueSummaryWeek(date,classId,index<SUMMARY_RECENT_LIVE_WEEKS));
+    const recorded=dates.filter(date=>attendanceWeekState(date,classId)==="recorded");
     const first=recorded[0],last=recorded[recorded.length-1];
     const dated=!!classDateValue(cls.startDate);
     const fixedEnd=!!classDateValue(cls.endDate);
-    // With an explicit start, display the entire configured period, including
-    // neutral unrecorded Sundays. Archived classes without an end stop at the
-    // last recorded week rather than extending to today indefinitely.
     const within=dated?(cls.status==="archived"&&!fixedEnd
       ?(last?dates.filter(date=>date<=last):[]):dates)
       :(first&&last?dates.filter(date=>date>=first&&date<=last):[]);
-    const loading=dates.some(date=>classStudents.some(st=>{
-      const key=`${date}/${classId}/${st.id}`;
-      return !attendanceLoaded.has(key)&&!attendanceErrors.has(key);
-    }));
+    const loading=allDates.length>summaryHistoryWeeks||
+      dates.some(date=>!attendanceWeekComplete(date,classId));
     periods.set(classId,{dates:within,loading});
   });
+  scheduleMoreSummaryHistory(hasEarlier);
   return periods;
 }
 function layoutSummarySyncSpacers(list){
@@ -2577,6 +2820,7 @@ function summaryOnNativeScroll(scroll){
       return;
     }
   }
+  summaryLastUserScrollAt=Date.now();
   if(summarySyncEnabled){
     summarySyncLeader=scroll;
     if(!summarySyncFrame)summarySyncFrame=requestAnimationFrame(summaryApplySyncedFrame);
@@ -2625,6 +2869,62 @@ window.addEventListener("resize",()=>{
     summaryQueueScrollCues();
   });
 });
+function tryUpdateSummaryRowsInPlace(list,next){
+  const existing=[...list.querySelectorAll(":scope > .summary-card")];
+  if(!existing.length)return false;
+  const template=document.createElement("template");
+  template.innerHTML=next;
+  const incoming=[...template.content.querySelectorAll(":scope > .summary-card")];
+  if(existing.length!==incoming.length)return false;
+  // Only patch if names, photos, order, dates and spacers are unchanged.
+  // Otherwise use the full render, which also restores scroll positions.
+  for(let i=0;i<existing.length;i++){
+    const oldRow=existing[i],newRow=incoming[i];
+    if(oldRow.dataset.summaryStudent!==newRow.dataset.summaryStudent||
+       oldRow.querySelector(".summary-student-name")?.textContent!==newRow.querySelector(".summary-student-name")?.textContent||
+       oldRow.querySelector(".summary-avatar")?.dataset.src!==newRow.querySelector(".summary-avatar")?.dataset.src)return false;
+    const previous=[...oldRow.querySelectorAll(".summary-day")];
+    const current=[...newRow.querySelectorAll(".summary-day")];
+    if(previous.length!==current.length||
+       previous[0]?.dataset.date!==current[0]?.dataset.date||
+       previous[previous.length-1]?.dataset.date!==current[current.length-1]?.dataset.date||
+       oldRow.querySelector(".summary-sync-spacer.leading")?.dataset.weeks!==
+       newRow.querySelector(".summary-sync-spacer.leading")?.dataset.weeks||
+       oldRow.querySelector(".summary-sync-spacer.trailing")?.dataset.weeks!==
+       newRow.querySelector(".summary-sync-spacer.trailing")?.dataset.weeks)return false;
+  }
+  for(let i=0;i<existing.length;i++){
+    const oldRow=existing[i],newRow=incoming[i];
+    const oldHeat=oldRow.querySelector(".summary-heatmap");
+    const newHeat=newRow.querySelector(".summary-heatmap");
+    if(oldHeat&&newHeat){
+      const oldSquares=[...oldHeat.querySelectorAll(".summary-day")];
+      const newSquares=[...newHeat.querySelectorAll(".summary-day")];
+      if(oldSquares.length){
+        // Keep each existing scroller and spacer intact. Replacing the whole
+        // heatmap would discard measured spacer widths and break date alignment.
+        for(let j=0;j<oldSquares.length;j++){
+          const oldSquare=oldSquares[j],newSquare=newSquares[j];
+          if(oldSquare.className!==newSquare.className)oldSquare.className=newSquare.className;
+          if(oldSquare.textContent!==newSquare.textContent)oldSquare.textContent=newSquare.textContent;
+          for(const attr of ["title","aria-label"]){
+            if(oldSquare.getAttribute(attr)!==newSquare.getAttribute(attr)){
+              oldSquare.setAttribute(attr,newSquare.getAttribute(attr)||"");
+            }
+          }
+        }
+      }else if(oldHeat.innerHTML!==newHeat.innerHTML){
+        oldHeat.innerHTML=newHeat.innerHTML;
+      }
+    }
+    const oldCount=oldRow.querySelector(".summary-count strong");
+    const newCount=newRow.querySelector(".summary-count strong");
+    if(oldCount&&newCount&&oldCount.textContent!==newCount.textContent){
+      oldCount.textContent=newCount.textContent;
+    }
+  }
+  return true;
+}
 function renderSummary(){
   if(!isPage("summary"))return;
   const list=$("summaryList");
@@ -2649,6 +2949,10 @@ function renderSummary(){
     available.reduce((d,r)=>!d||r.dates[0]<d?r.dates[0]:d,""):"";
   const globalEnd=summarySyncEnabled&&available.length?
     available.reduce((d,r)=>!d||r.dates[r.dates.length-1]>d?r.dates[r.dates.length-1]:d,""):"";
+  if(summarySyncEnabled&&summaryRenderedStart&&globalStart&&globalStart<summaryRenderedStart){
+    summarySyncWeek+=summaryWeekGap(globalStart,summaryRenderedStart);
+  }
+  summaryRenderedStart=globalStart;
   const next=rows.map(({st,dates,present,loading})=>{
     const sources=studentPhotoSources(st),src=sources[0]||"";
     const photo=src
@@ -2656,8 +2960,7 @@ function renderSummary(){
       :`<i class="ri-user-smile-line" aria-hidden="true"></i>`;
     const squares=dates.map(date=>{
       const key=`${date}/${st.classId}/${st.id}`;
-      const status=attendanceErrors.has(key)?"error":!attendanceLoaded.has(key)?"pending":
-        attendanceDisplayStatus(date,st.classId,st.id);
+      const status=attendanceDisplayStatus(date,st.classId,st.id);
       const label=status==="present"?tr("present"):status==="absent"?tr("absent"):
         status==="pending"?tr("summaryLoading"):status==="error"?tr("summaryUnavailable"):tr("summaryNoRecord");
       const kind=status==="present"?"yes":status==="absent"?"no":status==="pending"?"pending":"none";
@@ -2681,15 +2984,27 @@ function renderSummary(){
     </div>`;
   }).join("")||`<div class="empty">${esc(tr("noStudents"))}</div>`;
   if(next===summaryListHtml)return;
-  const positions=summaryScrollRestore||new Map([...list.querySelectorAll("[data-summary-student]")].map(el=>[
-    el.dataset.summaryStudent,el.querySelector(".summary-grid-scroll")?.scrollLeft||0
-  ]));
+  if(tryUpdateSummaryRowsInPlace(list,next)){
+    summaryListHtml=next;
+    return;
+  }
+  const positions=summaryScrollRestore||new Map([...list.querySelectorAll("[data-summary-student]")].map(el=>{
+    const scroll=el.querySelector(".summary-grid-scroll");
+    return [el.dataset.summaryStudent,{left:scroll?.scrollLeft||0,
+      first:scroll?.querySelector(".summary-day")?.dataset.date||""}];
+  }));
   summaryScrollRestore=null;
   summaryListHtml=next;
   list.innerHTML=next;
   list.querySelectorAll("[data-summary-student]").forEach(el=>{
     const scroll=el.querySelector(".summary-grid-scroll");
-    if(scroll&&!summarySyncEnabled)scroll.scrollLeft=positions.get(el.dataset.summaryStudent)||0;
+    if(!scroll||summarySyncEnabled)return;
+    const remembered=positions.get(el.dataset.summaryStudent);
+    const left=typeof remembered==="object"?(remembered?.left||0):(remembered||0);
+    const previous=typeof remembered==="object"?remembered?.first:"";
+    const first=scroll.querySelector(".summary-day")?.dataset.date||"";
+    const shift=previous&&first&&first<previous?summaryWeekGap(first,previous)*summaryScrollStep(scroll):0;
+    scroll.scrollLeft=left+shift;
   });
   refreshSummaryScrollCues(list);
   if(selectedSummaryDay){
@@ -2718,7 +3033,7 @@ function renderAttendance(useRangeSort=true){
   if(attWeekbarHtml!==weekbarHtml){
     attWeekbarHtml=weekbarHtml;
     $("weekbar").innerHTML=weekbarHtml;
-    document.querySelectorAll("[data-day]").forEach(b=>b.onclick=()=>{state.selectedSunday=b.dataset.day;attWeekbarHtml="";renderAttendance();});
+    document.querySelectorAll("[data-day]").forEach(b=>b.onclick=()=>{stopAttendanceSubscriptions();state.selectedSunday=b.dataset.day;attWeekbarHtml="";renderAttendance();});
   }
   const churchId=attendanceChurchId(), classId=$("attClass")?.value||"";
   if(!churchId || !classId){
@@ -2811,6 +3126,7 @@ function renderAttendance(useRangeSort=true){
     state.attendance[state.selectedSunday][classId] ||= {};
     if(next===null) delete state.attendance[state.selectedSunday][classId][sid];
     else state.attendance[state.selectedSunday][classId][sid]=next;
+    invalidateAttendanceWeek(state.selectedSunday,classId);
     playWeekPop(btn.closest(".att-card"));
     renderAttendance();
     setTimeout(()=>{if(state.popAttendanceKey===popKey){state.popAttendanceKey=""; renderAttendance();}},420);
@@ -2818,6 +3134,7 @@ function renderAttendance(useRangeSort=true){
     if(!ok){
       if(prev==null) delete state.attendance[state.selectedSunday]?.[classId]?.[sid];
       else state.attendance[state.selectedSunday][classId][sid]=prev;
+      invalidateAttendanceWeek(state.selectedSunday,classId);
       renderAttendance();
     }else{
       const st=state.students[sid]||{};
