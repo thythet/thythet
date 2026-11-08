@@ -463,11 +463,42 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
 /* Love Kid Pro: class schedule and archive form. */
 .class-name-row{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:9px;align-items:center}
 .class-name-row>.input,.class-name-row>.custom-select{min-width:0}
-.class-period-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:11px}
+.class-period-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:11px}
 .class-period-fields label{display:grid;gap:6px;min-width:0;font-size:12px;font-weight:900;color:var(--muted)}
 .class-period-fields .input{width:100%;min-width:0}
 .class-period-fields input[type="date"]{color-scheme:dark}
-.class-date-help{font-size:12px;color:var(--muted);margin:9px 1px;line-height:1.6}
+.class-date-help{font-size:12px;color:var(--muted);margin:9px 0 0;line-height:1.6}
+/* Status is a single Active / Archived switch, with help hidden under the three-dot menu. */
+#page-classes .class-options-row{display:flex;align-items:center;gap:9px;margin:11px 0 12px;min-height:43px}
+#page-classes .class-switch-control{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+#page-classes #classLifecycleLabel{font-size:12px;color:var(--muted);font-weight:900}
+#page-classes .class-lifecycle-switch{display:inline-flex;align-items:center;gap:9px;min-height:40px;
+  padding:7px 12px 7px 8px;border-radius:13px;border:1px solid rgba(74,222,128,.36);
+  background:rgba(34,197,94,.10);color:#bbf7d0;font-size:13px;font-weight:900;
+  cursor:pointer;touch-action:manipulation}
+#page-classes .class-switch-track{position:relative;display:inline-block;width:38px;height:22px;
+  border-radius:999px;background:#16a34a;transition:background .18s;flex:0 0 38px}
+#page-classes .class-switch-thumb{position:absolute;top:3px;left:3px;width:16px;height:16px;
+  border-radius:50%;background:#fff;transform:translateX(16px);transition:transform .18s;
+  box-shadow:0 2px 5px rgba(0,0,0,.25)}
+#page-classes .class-lifecycle-switch[aria-checked="false"]{border-color:rgba(251,191,36,.38);
+  background:rgba(251,191,36,.10);color:#fde68a}
+#page-classes .class-lifecycle-switch[aria-checked="false"] .class-switch-track{background:#64748b}
+#page-classes .class-lifecycle-switch[aria-checked="false"] .class-switch-thumb{transform:translateX(0)}
+#page-classes .class-lifecycle-switch:focus-visible,
+#page-classes .class-info-menu summary:focus-visible{outline:2px solid #93c5fd;outline-offset:3px}
+#page-classes .class-info-menu{position:relative;margin-left:auto;flex:0 0 auto;z-index:2}
+#page-classes .class-info-menu summary{display:grid;place-items:center;width:40px;height:40px;
+  border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.08);
+  color:var(--text);font-size:23px;cursor:pointer;list-style:none}
+#page-classes .class-info-menu summary::-webkit-details-marker{display:none}
+#page-classes .class-info-menu[open] summary{border-color:rgba(147,197,253,.5);background:rgba(93,167,255,.20)}
+#page-classes .class-info-content{position:absolute;z-index:30;top:calc(100% + 8px);right:0;
+  width:min(310px,calc(100vw - 72px));max-width:calc(100vw - 40px);
+  padding:13px 14px;border-radius:14px;border:1px solid rgba(147,197,253,.34);
+  background:#22344e;color:var(--text);box-shadow:0 14px 30px rgba(0,0,0,.34)}
+#page-classes .class-info-content strong{font-size:13px}
+@media(prefers-reduced-motion:reduce){#page-classes .class-switch-track,#page-classes .class-switch-thumb{transition:none}}
 .class-form-actions{display:flex;gap:9px;justify-content:flex-end;align-items:center}
 .class-form-actions .btn{min-width:110px}
 .class-record-info{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:5px}
@@ -524,7 +555,6 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
 @media(max-width:640px){
   .class-name-row{grid-template-columns:1fr}
   .class-period-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .class-period-fields label:last-child{grid-column:1/-1}
   .class-form-actions .btn{min-width:0;flex:1}
   #page-summary .summary-filters-standalone{gap:8px;margin:8px 0 10px!important}
 }
@@ -789,9 +819,23 @@ body.summary-popup-open{overflow:hidden}
       <div class="class-period-fields">
         <label><span id="classStartLabel">Start Date</span><input id="classStartDate" type="date" class="input" aria-label="Start Date"></label>
         <label><span id="classEndLabel">End Date (optional)</span><input id="classEndDate" type="date" class="input" aria-label="End Date"></label>
-        <label><span id="classLifecycleLabel">Status</span><select id="classLifecycle" class="input" aria-label="Class status"><option value="active">Active</option><option value="archived">Archived</option></select></label>
       </div>
-      <p id="classDateHelp" class="class-date-help">Start Date is required for new classes. Leave End Date empty for an ongoing class. Archived classes and their attendance history remain available.</p>
+      <div class="class-options-row">
+        <div class="class-switch-control">
+          <span id="classLifecycleLabel">Status</span>
+          <button id="classLifecycleSwitch" class="class-lifecycle-switch" type="button" role="switch" aria-checked="true" aria-labelledby="classLifecycleLabel classLifecycleValue">
+            <span class="class-switch-track" aria-hidden="true"><span class="class-switch-thumb"></span></span>
+            <span id="classLifecycleValue">Active</span>
+          </button>
+          <select id="classLifecycle" class="native-select-hidden" tabindex="-1" aria-hidden="true"><option value="active">Active</option><option value="archived">Archived</option></select>
+        </div>
+        <details id="classInfoMenu" class="class-info-menu">
+          <summary id="classInfoButton" aria-label="Class information" title="Class information"><i class="ri-more-2-fill" aria-hidden="true"></i></summary>
+          <div class="class-info-content" role="note"><strong id="classInfoTitle">Class details</strong>
+            <p id="classDateHelp" class="class-date-help">Start Date is required for new classes. Leave End Date empty for an ongoing class. Archived classes and their attendance history remain available.</p>
+          </div>
+        </details>
+      </div>
       <div class="class-form-actions"><button id="saveClass" class="btn primary" type="button">Save</button><button id="cancelClassEdit" class="btn hidden" type="button">Cancel editing</button></div>
       <div id="classStatus" class="status"></div>
     </div>
@@ -1168,8 +1212,15 @@ function applyTranslations(){
   if($("umSearch"))$("umSearch").placeholder=currentLang==="km"?"ស្វែងរកឈ្មោះ ឬអ៊ីមែល":"Search by name or email";
   setText("#classStartLabel","classStartDate"); setText("#classEndLabel","classEndDate");
   setText("#classLifecycleLabel","classLifecycle"); setText("#classDateHelp","classDateHelp");
+  if($("classInfoTitle"))$("classInfoTitle").textContent=currentLang==="km"?"ព័ត៌មានថ្នាក់":"Class information";
+  if($("classInfoButton")){
+    const label=currentLang==="km"?"ព័ត៌មានថ្នាក់":"Class information";
+    $("classInfoButton").setAttribute("aria-label",label);
+    $("classInfoButton").title=label;
+  }
   setText("#cancelClassEdit","classCancel");
   setSelectLabel("classLifecycle","active","classActive"); setSelectLabel("classLifecycle","archived","classArchived");
+  syncClassLifecycleSwitch();
    setText("#restoreTitle","restore"); setText("#checkerTitle","attendanceChecker"); setText("#activityTitle","activity"); setText("#page-themes > .panel:nth-of-type(1) h2","themes"); setText("#themeEffectsTitle","effects"); setText(".att-stats .stat:nth-child(1) span","total"); setText(".att-stats .stat:nth-child(2) span","present"); setText(".att-stats .stat:nth-child(3) span","absent"); setText(".report-stats .stat:nth-child(1) span","students"); setText(".report-stats .stat:nth-child(2) span","total"); setText(".report-stats .stat:nth-child(3) span","weekMonths"); setText(".detail-total span","total");
   if($("copyHomeReport")) $("copyHomeReport").innerHTML=`${tr("copyWeek")} <span id="homeReportDate">${$("homeReportDate")?.textContent||""}</span>`;
   [["saveChurch","save"],["saveRole","saveRole"],["saveClass","save"],["saveStudent","save"]].forEach(([id,key])=>{ if($(id)) $(id).textContent=tr(key); });
@@ -1530,12 +1581,31 @@ function classDateValue(value){
   const d=new Date(v+"T12:00:00");
   return Number.isNaN(d.getTime())||dateKey(d)!==v?"":v;
 }
+function syncClassLifecycleSwitch(){
+  const input=$("classLifecycle"),button=$("classLifecycleSwitch"),text=$("classLifecycleValue");
+  if(!input||!button||!text)return;
+  const active=input.value!=="archived";
+  button.setAttribute("aria-checked",String(active));
+  text.textContent=tr(active?"classActive":"classArchived");
+}
+$("classLifecycleSwitch").addEventListener("click",()=>{
+  const input=$("classLifecycle");
+  input.value=input.value==="archived"?"active":"archived";
+  syncClassLifecycleSwitch();
+});
+$("classLifecycle").addEventListener("change",syncClassLifecycleSwitch);
+document.addEventListener("click",event=>{
+  const menu=$("classInfoMenu");
+  if(menu?.open&&!menu.contains(event.target))menu.open=false;
+});
 function resetClassForm(){
   editingClassId="";
   $("className").value="";
   $("classStartDate").value=today();
   $("classEndDate").value="";
   $("classLifecycle").value="active";
+  syncClassLifecycleSwitch();
+  if($("classInfoMenu"))$("classInfoMenu").open=false;
   $("cancelClassEdit").classList.add("hidden");
   $("classStatus").textContent="";
   syncCustomSelect("classChurch");
@@ -2276,6 +2346,8 @@ function editClass(id){
   $("classStartDate").value=classDateValue(c.startDate);
   $("classEndDate").value=classDateValue(c.endDate);
   $("classLifecycle").value=c.status==="archived"?"archived":"active";
+  syncClassLifecycleSwitch();
+  if($("classInfoMenu"))$("classInfoMenu").open=false;
   $("cancelClassEdit").classList.remove("hidden");
   syncCustomSelects();
   page("classes");
