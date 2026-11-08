@@ -1,49 +1,59 @@
-# Firebase Realtime Database — teacher class creation (Kid3Pro)
+# Kid3Pro — Firebase RTDB Class Ownership Rules
 
-**Status:** Prepared only. This GitHub file does **not** publish Firebase rules.
+**Status:** Prepared for manual Firebase Console publication. **This GitHub document does not update the live database.**
 
-## Purpose
-Allow active teachers to **create new classes** only for their assigned church. Keep all existing Administrator and Pastor permissions unchanged. Teachers cannot update or delete existing classes. All other Firebase paths and rules remain unchanged.
+## Changes
+- Active teachers can create new classes only inside their assigned church, with `createdByUid` matching their Firebase Authentication UID.
+- Active teachers can **delete only classes they personally created** in their assigned church, checked against the stored `createdByUid`.
+- Teachers cannot update existing classes, delete another teacher's classes, or delete legacy classes without an owner UID.
+- Admin and Pastor write permissions remain exactly as supplied.
+- No other database rules, data, Firebase configuration, or older Kid folders are changed.
+- `createdByEmail` is informational; **only UID controls authorization**.
+- Kid3Pro checks for students assigned to a class and blocks deletion until they are reassigned. RTDB rules cannot guarantee this referential integrity atomically; teachers should not delete classes with historical dependencies.
+- Teacher class deletions do not use admin-only Trash; they are permanent.
 
-## Apply one property only
+## Publish in Firebase
 
-1. Back up your **current live** Firebase Realtime Database rules from the Firebase Console. Do not overwrite any newer rule changes since the rules shared in chat.
-2. In **Firebase Console → Realtime Database → Rules**, locate `rules.classes.$classId[".write"]`.
-3. Replace **only its `.write` expression** with the value below, preserving the surrounding JSON and every other rule.
-4. Review the diff. In Rules Playground / Emulator, test with a teacher account (assigned church, other church, edit existing, delete existing), a pastor, and an admin.
-5. Publish after verifying. Only then can the Kid3Pro interface create classes for teachers.
-
-**Do not paste this fragment as the entire Realtime Database rules object.**
-
+1. Export a backup of your live **Realtime Database → Rules** first.
+2. Verify the live version still matches the previously shared rules. Do not overwrite unrelated newer changes.
+3. Find `rules → classes → $classId → .write`.
+4. Replace only that single `.write` string with the expression in this JSON fragment:
+   
 ```json
 {
-  ".write": "auth != null && (root.child('admins').child(auth.uid).exists() || (root.child('users').child(auth.uid).child('role').val() == 'pastor' && root.child('users').child(auth.uid).child('status').val() != 'disabled' && root.child('users').child(auth.uid).child('status').val() != 'pending' && (!data.exists() || data.child('churchId').val() == root.child('users').child(auth.uid).child('churchId').val()) && (!newData.exists() || newData.child('churchId').val() == root.child('users').child(auth.uid).child('churchId').val())) || (root.child('users').child(auth.uid).child('role').val() == 'teacher' && root.child('users').child(auth.uid).child('status').val() != 'disabled' && root.child('users').child(auth.uid).child('status').val() != 'pending' && root.child('users').child(auth.uid).child('churchId').isString() && root.child('users').child(auth.uid).child('churchId').val() != '' && !data.exists() && newData.exists() && newData.child('churchId').val() == root.child('users').child(auth.uid).child('churchId').val()))"
+  ".write": "auth != null && (root.child('admins').child(auth.uid).exists() || (root.child('users').child(auth.uid).child('role').val() == 'pastor' && root.child('users').child(auth.uid).child('status').val() != 'disabled' && root.child('users').child(auth.uid).child('status').val() != 'pending' && (!data.exists() || data.child('churchId').val() == root.child('users').child(auth.uid).child('churchId').val()) && (!newData.exists() || newData.child('churchId').val() == root.child('users').child(auth.uid).child('churchId').val())) || (root.child('users').child(auth.uid).child('role').val() == 'teacher' && root.child('users').child(auth.uid).child('status').val() != 'disabled' && root.child('users').child(auth.uid).child('status').val() != 'pending' && root.child('users').child(auth.uid).child('churchId').isString() && root.child('users').child(auth.uid).child('churchId').val() != '' && ((!data.exists() && newData.exists() && newData.child('churchId').val() == root.child('users').child(auth.uid).child('churchId').val() && newData.child('createdByUid').val() == auth.uid) || (data.exists() && !newData.exists() && data.child('churchId').val() == root.child('users').child(auth.uid).child('churchId').val() && data.child('createdByUid').val() == auth.uid))))"
 }
 ```
 
-## Security notes
+5. Test with the Rules Playground / Emulator using a real class owner UID and another teacher's UID, including cross-church attempts, update attempts, and deletion attempts.
+6. Click **Publish**. Until published, teacher class creation/deletion may fail with `PERMISSION_DENIED`.
 
-- Firebase permits teacher creation only if `!data.exists() && newData.exists()`; updates and deletion remain blocked.
-- The new record must use exactly the user's assigned, nonempty church ID.
-- Disabled or pending teachers are denied.
-- Existing administrator and pastor branches are **identical** to the supplied rule.
-- Database rules are shared by all old and current Kid versions: teacher create permission will apply to any client using these credentials, not only Kid3Pro.
-- These rules do not change Firebase data and do not alter other rule paths.
-- After publishing, test with an actual teacher account and a throwaway class. Only Admin or Pastor can delete it.
+## Important notes
+- Classes created before Kid3Pro saves `createdByUid` remain protected from teacher deletion. Admins or pastors may handle these legacy classes; do not retroactively assign ownership without verifying the original creator.
+- These shared Firebase rules apply to **all Kid versions** using the same Firebase project. The updated interface applies only to Kid3Pro.
+- Teacher delete actions skip Trash (admin-only). Admin deletion retains its existing Trash workflow.
+- The new rule checks authentication and UID on Firebase's server. Hiding buttons alone does not grant or secure permissions.
+- This patch does **not** implement the proposed new Admin Users page. Existing `accountRequests`, `users`, and `admins` permissions remain unchanged.
 
-## Local expression checks
+## Expression-level permission tests
 
-- PASS: teacher creates in assigned church
-- PASS: teacher creates in different church
-- PASS: teacher updates existing class
-- PASS: teacher deletes existing class
-- PASS: teacher disabled cannot create
-- PASS: teacher pending cannot create
-- PASS: teacher without assigned church denied
-- PASS: pastor can create in church
-- PASS: pastor can edit in church
-- PASS: pastor cannot move class to other church
-- PASS: pastor can delete in church
-- PASS: admin can edit any church
+- PASS: teacher create own church — allowed
+- PASS: teacher create wrong church — denied
+- PASS: teacher create with different owner — denied
+- PASS: teacher update own class — denied
+- PASS: teacher delete own class — allowed
+- PASS: teacher delete other teacher's class — denied
+- PASS: teacher delete same UID in another church — denied
+- PASS: teacher delete legacy unowned class — denied
+- PASS: teacher delete class when no church — denied
+- PASS: pastor create — allowed
+- PASS: pastor edit — allowed
+- PASS: pastor delete — allowed
+- PASS: pastor other church update denied — denied
+- PASS: admin create — allowed
+- PASS: admin edit — allowed
+- PASS: admin delete — allowed
+- PASS: teacher blocked disabled — denied
+- PASS: teacher blocked pending — denied
 
-These are expression-level simulations, not live Firebase Rules Emulator or Console tests.
+These are local expression tests, not live Firebase Rules Emulator tests.
