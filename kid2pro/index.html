@@ -560,6 +560,13 @@ body.summary-popup-open{overflow:hidden}
 .summary-popup-go i{font-size:17px}
 @media(max-width:375px){.summary-day-popup{width:min(308px,100%)!important;padding:11px 12px!important}}
 @media(prefers-reduced-motion:reduce){.summary-day-popup{will-change:auto}}
+
+/* On phones the translucent sticky header obscures Summary student rows.
+   Keep the normal header at the top of the document instead of floating
+   over vertically scrolled content. Desktop retains the existing behavior. */
+@media(max-width:800px){
+  #appView .top{position:relative;top:auto}
+}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#172b51">
@@ -2934,9 +2941,13 @@ function summaryClassPeriods(students){
     const first=recorded[0],last=recorded[recorded.length-1];
     const dated=!!classDateValue(cls.startDate);
     const fixedEnd=!!classDateValue(cls.endDate);
+    // Legacy classes without Start Date must keep their weekly cells visible
+    // while the recent attendance window is loading. Hiding all cells until a
+    // Present mark arrives causes an indefinite "Loading" row when the class
+    // last met outside the first 8-week window.
     const within=dated?(cls.status==="archived"&&!fixedEnd
-      ?(last?dates.filter(date=>date<=last):[]):dates)
-      :(first&&last?dates.filter(date=>date>=first&&date<=last):[]);
+      ?(last?dates.filter(date=>date<=last):dates):dates)
+      :(first&&last?dates.filter(date=>date>=first&&date<=last):dates);
     const loading=allDates.length>summaryHistoryWeeks||
       dates.some(date=>!attendanceWeekComplete(date,classId));
     periods.set(classId,{dates:within,loading});
