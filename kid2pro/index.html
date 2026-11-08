@@ -1037,6 +1037,8 @@ const SUMMARY_HISTORY_BATCH=8;
 const SUMMARY_RECENT_LIVE_WEEKS=1;
 const SUMMARY_IDLE_DELAY=2000;
 function stopSummaryLoads(){
+  clearTimeout(summaryRankRefreshTimer);
+  summaryRankRefreshTimer=0;
   summaryLoadEpoch++;
   // Old pending requests belong to the previous view. They must not block
   // the newly selected church/class or reuse outdated permission probes.
@@ -1053,6 +1055,8 @@ function stopSummaryLoads(){
 }
 function startSummaryLoads(){
   stopSummaryLoads();
+  // Use the newest confirmed attendance to rank the current class on entry.
+  summaryStableOrderCache.delete(selectedSummaryClassId());
   // Already viewed a class? Reuse the amount of history previously displayed.
   summaryHistoryWeeks=summaryHistoryProgress.get(selectedSummaryClassId())||8;
   resetSummaryRenderCache();
@@ -1856,17 +1860,41 @@ async function runSummaryPrefetch(classId,epoch,userId){
   }
 }
 
-function summaryStableStudents(students,classId){
+// Rank by total confirmed Present checks. Cache the rendered order so
+// individual Firebase updates change counts/squares without shuffling rows.
+// Re-rank only after the current week window settles, then once more when
+// the entire historical period is confirmed. Ranks are also refreshed on
+// reentering Summary or when class membership changes.
+let summaryRankRefreshTimer=0;
+function scheduleSummaryRankRefresh(){
+  if(summaryRankRefreshTimer)return;
+  summaryRankRefreshTimer=setTimeout(()=>{
+    summaryRankRefreshTimer=0;
+    if(isPage("summary"))scheduleSummaryRender();
+  },950);
+}
+function summaryStableStudents(students,classId,counts,recentSettled,allSettled){
   const cached=summaryStableOrderCache.get(classId);
-  const ids=students.map(st=>st.id);
-  if(cached?.version===attendanceRosterVersion&&cached.ids.length===ids.length&&
-     ids.every(id=>cached.ids.includes(id))){
-    const byId=new Map(students.map(st=>[st.id,st]));
-    return cached.ids.map(id=>byId.get(id)).filter(Boolean);
+  const byId=new Map(students.map(st=>[st.id,st]));
+  const sameRoster=!!cached&&cached.version===attendanceRosterVersion&&
+    cached.ids.length===students.length&&cached.ids.every(id=>byId.has(id));
+  const phase=allSettled?2:recentSettled?1:0;
+  if(sameRoster&&phase<=cached.phase){
+    return cached.ids.map(id=>byId.get(id));
+  }
+  // Do not move student rows while the user is scrolling or reading a popup.
+  if(sameRoster&&(Date.now()-summaryLastUserScrollAt<850||
+     !$("summaryDayOverlay")?.classList.contains("hidden"))){
+    scheduleSummaryRankRefresh();
+    return cached.ids.map(id=>byId.get(id));
   }
   const sorted=students.slice().sort((a,b)=>
-    String(a.name||"").localeCompare(String(b.name||""))||String(a.id).localeCompare(String(b.id)));
-  summaryStableOrderCache.set(classId,{version:attendanceRosterVersion,ids:sorted.map(st=>st.id)});
+    (counts.get(b.id)||0)-(counts.get(a.id)||0)||
+    String(a.name||"").localeCompare(String(b.name||""))||
+    String(a.id).localeCompare(String(b.id)));
+  summaryStableOrderCache.set(classId,{
+    version:attendanceRosterVersion,ids:sorted.map(st=>st.id),phase
+  });
   return sorted;
 }
 
@@ -3324,14 +3352,14 @@ function renderSummary(){
     if(summaryListHtml!==html){summaryListHtml=html;list.innerHTML=html;}
     return;
   }
-  const visible=summaryStableStudents(reportStudents(classFilter),classFilter);
-  const periods=summaryClassPeriods(visible);
+  const classStudents=reportStudents(classFilter);
+  const periods=summaryClassPeriods(classStudents);
   const period=periods.get(classFilter);
   const allDates=period?.allDates||[];
   // Full-period counts include confirmed records already fetched or prefetched,
   // even when the visible squares are still showing only the newest weeks.
   // A "+" explicitly means the total is not final.
-  const fullCounts=new Map(visible.map(st=>[st.id,0]));
+  const fullCounts=new Map(classStudents.map(st=>[st.id,0]));
   for(const date of allDates){
     const marks=state.attendance[date]?.[classFilter]||{};
     for(const [id,value] of Object.entries(marks)){
@@ -3341,9 +3369,11 @@ function renderSummary(){
   const countComplete=allDates.every(date=>attendanceWeekFullyRead(date,classFilter));
   const countErrors=!countComplete&&allDates.some(date=>
     attendanceWeekErrors.has(attendanceWeekKey(date,classFilter))||
-    visible.some(st=>attendanceErrors.has(attendanceStudentKey(date,classFilter,st.id))));
+    classStudents.some(st=>attendanceErrors.has(attendanceStudentKey(date,classFilter,st.id))));
   const countLabel=tr(countComplete?"summaryPresentCount":countErrors?
     "summaryIncompleteCount":"summaryPartialCount");
+  const recentSettled=(period?.dates||[]).every(date=>attendanceWeekComplete(date,classFilter));
+  const visible=summaryStableStudents(classStudents,classFilter,fullCounts,recentSettled,countComplete);
   const rows=visible.map(st=>({
     st,dates:period?.dates||[],present:fullCounts.get(st.id)||0,
     loading:period?.loading||false
