@@ -1419,7 +1419,10 @@ $("saveClass").onclick=async()=>{
   const id=editingClassId||push(ref(db,"classes")).key;
   const isEditing=!!editingClassId,action=isEditing?"updated":"created";
   const data={...old,name,churchId,startDate:start||old.startDate||"",endDate:end||"",status:lifecycle,
-    archivedAt:lifecycle==="archived"?(old.archivedAt||Date.now()):null,updatedAt:Date.now()};
+    archivedAt:lifecycle==="archived"?(old.archivedAt||Date.now()):null,
+    // Record ownership at creation; Firebase UID, not email, controls deletion.
+    ...(isEditing?{}:{createdByUid:state.user.uid,createdByEmail:state.user.email||"",createdAt:Date.now()}),
+    updatedAt:Date.now()};
   if(await write("classes/"+id,data,"classStatus",isEditing?tr("classUpdated"):tr("classSaved"))){
     await logActivity(action,"classes",id,name);
     resetClassForm();
@@ -1568,6 +1571,50 @@ async function del(path,id){
     if(path==="students"&&editingStudentId===id)resetStudentForm();
   }catch(e){alert(e.code||e.message)}
 }
+// Teachers may delete only classes they created in their assigned church.
+// Deletion is direct because the existing Trash path is admin-only.
+// Historical attendance references are never removed by this action.
+async function deleteOwnedClass(id){
+  if(!state.user||!canTeacher()||!roleChurch()){
+    alert("Permission denied.");
+    return;
+  }
+  const known=state.classes[id];
+  if(!known||known.churchId!==roleChurch()||known.createdByUid!==state.user.uid){
+    alert("You can delete only classes you created in your own church.");
+    return;
+  }
+  try{
+    // Avoid orphaning currently enrolled students; move students first.
+    const studentsSnap=await get(query(ref(db,"students"),orderByChild("churchId"),equalTo(roleChurch())));
+    if(Object.values(studentsSnap.val()||{}).some(s=>s?.classId===id)){
+      alert(currentLang==="km"
+        ?"សូមផ្ទេរសិស្សចេញពីថ្នាក់នេះជាមុនសិន មុននឹងលុប។"
+        :"Move students to another class before deleting this class.");
+      return;
+    }
+    const warning=currentLang==="km"
+      ?"លុបថ្នាក់នេះជាអចិន្ត្រៃយ៍មែនទេ? ថ្នាក់នេះមិនអាចស្ដារពីធុងសំរាមបានទេ។ កំណត់ត្រាវត្តមានចាស់ៗនឹងនៅសល់។"
+      :"Permanently delete your class? It cannot be restored from Trash. Existing attendance history will remain in Firebase.";
+    if(!confirm(warning))return;
+    const snap=await get(ref(db,"classes/"+id));
+    const actual=snap.val();
+    if(!actual)return alert(tr("itemNotFound"));
+    if(actual.churchId!==roleChurch()||actual.createdByUid!==state.user.uid){
+      alert("You can delete only classes you created in your own church.");
+      return;
+    }
+    // Firebase class-level .write rule independently checks owner and church.
+    await remove(ref(db,"classes/"+id));
+    await logActivity("deleted","classes",id,labelFor("classes",actual,id));
+    if(editingClassId===id)resetClassForm();
+    renderClasses();
+  }catch(error){
+    alert(error.code||error.message);
+  }
+}
+window.deleteOwnedClass=deleteOwnedClass;
+
 async function restoreItem(path,id){
   if(!confirm(tr("restoreConfirm"))) return;
   try{
@@ -1792,7 +1839,9 @@ function renderClasses(){
     const dates=[c.startDate?c.startDate:tr("classNotSet"),c.endDate||"…"].join(" — ");
     const editTools=(canAdmin()||canPastor())
       ?`<button class="btn icon-btn edit-btn" onclick="editClass('${esc(c.id)}')" title="${tr("edit")}"><i class="ri-edit-line"></i></button>${editingClassId===c.id ? `<button class="btn icon-btn danger" onclick="del('classes','${esc(c.id)}')" title="${tr("delete")}"><i class="ri-delete-bin-line"></i></button>` : ""}`
-      :"";
+      :(canTeacher()&&c.createdByUid===state.user?.uid&&c.churchId===roleChurch())
+        ?`<button class="btn icon-btn danger" onclick="deleteOwnedClass('${esc(c.id)}')" title="${tr("delete")}" aria-label="${tr("delete")}: ${esc(c.name)}"><i class="ri-delete-bin-line"></i></button>`
+        :"";
     return `<div class="card"><div class="card-main"><div class="card-title">
       <b>${esc(c.name)}</b><small>${esc(churchName(c.churchId))}</small>
       <div class="class-record-info"><span class="class-state-pill ${archived?"archived":""}">${esc(tr(archived?"classArchived":"classActive"))}</span><span class="class-period-text">${esc(dates)}</span></div>
