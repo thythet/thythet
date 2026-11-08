@@ -30,7 +30,15 @@
       }
       .lk-install-action.lk-main .lk-install-label,
       .lk-install-action.lk-login .lk-install-label{display:none}
-      .lk-install-action.lk-dashboard{min-height:39px}
+      /* Appinfo install control lives inside the floating Appinfo card, not in the header. */
+      #ssAppInfoPopup .lk-install-action.lk-info{
+        position:absolute;z-index:2;top:11px;left:11px;
+        display:inline-flex;align-items:center;justify-content:center;
+        width:30px;height:27px;min-width:30px;min-height:27px;
+        padding:0;margin:0;border-radius:9px;line-height:1
+      }
+      #ssAppInfoPopup .lk-install-action.lk-info .lk-install-label{display:none}
+      #ssAppInfoPopup .lk-install-action.lk-info svg{width:17px;height:17px}
       .lk-install-backdrop{position:fixed;inset:0;z-index:2147483600;display:flex;align-items:center;justify-content:center;
         padding:18px;background:rgba(5,14,33,.75);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
       .lk-install-dialog{width:min(100%,410px);border:1px solid rgba(167,198,243,.37);border-radius:22px;
@@ -43,7 +51,7 @@
       .lk-install-dialog strong{color:#fff}
       .lk-install-dialog .lk-install-steps{border:1px solid rgba(167,198,243,.23);border-radius:13px;
         padding:12px 14px;background:rgba(255,255,255,.07);line-height:1.8;margin-top:15px;font-size:14px}
-      @media(max-width:620px){.lk-install-action.lk-dashboard{padding:7px 9px}}`;
+`;
     document.head.append(st);
   }
   const icon='<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>';
@@ -122,11 +130,10 @@
   });
   function init(){
     addStyles();
-    // Install entry points for the attendance app, its login, and dashboard.
-    addButton(document.querySelector("#mainView .top .row.between > .row")||
-      document.querySelector(".app .top .row.between > .row"),"lk-main",true);
+    // Install shortcut belongs in the App Info popup, not the home header or Dashboard.
+    // Keep the login option before sign-in, as in Kid2Pro.
+    addButton(document.querySelector("#ssAppInfoPopup"),"lk-info",true);
     addButton(document.querySelector("#loginView .login-actions"),"lk-login");
-    addButton(document.querySelector(".top-actions"),"lk-dashboard",true);
     update();
     new MutationObserver(update).observe(document.documentElement,{attributes:true,attributeFilter:["lang"]});
     if("serviceWorker" in navigator && location.protocol==="https:"){
