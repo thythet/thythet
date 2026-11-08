@@ -2231,16 +2231,17 @@ async function umPerform(action){
   umSaving=true;renderUsers();
   try{
     const now=Date.now(),old=state.users?.[uid]||{};
+    const pendingPhoto=googleProfilePhotoURL(chosen.photoURL);
     if(pending&&chosen.uid!==uid)throw Error("Account request UID mismatch.");
     if(action==="approve"){
       const record={...old,uid,name:umDraftName.trim(),email:chosen.email||"",role:umDraftRole,
-        churchId:umDraftChurch,photoURL:googleProfilePhotoURL(chosen.photoURL),status:"active",active:true,accountDecision:"approved",
+        churchId:umDraftChurch,...(pendingPhoto?{photoURL:pendingPhoto}:{}),status:"active",active:true,accountDecision:"approved",
         approvedAt:now,approvedBy:state.user.uid,updatedAt:now};
       await update(ref(db),{["users/"+uid]:record,["accountRequests/"+uid]:null});
     }else if(action==="reject"){
       // Keep a disabled record so the rejected Google account cannot request access again.
       const record={uid,name:chosen.name||chosen.email||"Google User",email:chosen.email||"",
-        role:"teacher",churchId:"",photoURL:googleProfilePhotoURL(chosen.photoURL),status:"disabled",active:false,accountDecision:"rejected",
+        role:"teacher",churchId:"",...(pendingPhoto?{photoURL:pendingPhoto}:{}),status:"disabled",active:false,accountDecision:"rejected",
         blockedAt:now,blockedBy:state.user.uid,updatedAt:now};
       await update(ref(db),{["users/"+uid]:record,["accountRequests/"+uid]:null});
     }else{
