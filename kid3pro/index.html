@@ -583,12 +583,18 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
   #page-classes .class-row-actions{min-height:32px}
   #page-classes .class-row-actions .icon-btn{width:32px;height:32px;min-width:32px;min-height:32px;flex-basis:32px}
 }
-/* Home copy filter: independent class selection, no Firebase writes. */
-#page-home .home-class-filter{display:flex;align-items:center;gap:9px;margin-bottom:11px}
-#page-home .home-class-filter label{font-size:12px;font-weight:850;color:var(--muted);flex:0 0 auto}
-#page-home .home-class-filter .custom-select{flex:1;min-width:0}
-#page-home .home-class-filter .custom-select-btn{width:100%;min-height:42px}
-@media(max-width:560px){#page-home .home-class-filter{flex-direction:column;align-items:stretch;gap:6px}}
+/* Home weekly copy: swipeable chips backed by the existing homeClass select; no data writes. */
+#page-home .home-class-filter{display:flex;flex-direction:column;align-items:stretch;gap:7px;min-width:0;margin-bottom:11px}
+#page-home .home-class-filter label{font-size:12px;font-weight:850;color:var(--muted)}
+#page-home .home-class-chips{display:flex;align-items:center;gap:8px;min-width:0;width:100%;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scroll-snap-type:x proximity;padding:2px 1px 6px}
+#page-home .home-class-chips::-webkit-scrollbar{display:none}
+#page-home .home-class-chip{display:inline-flex;flex:0 0 auto;align-items:center;justify-content:center;gap:6px;max-width:min(75vw,260px);min-height:43px;padding:9px 14px;border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.08);color:var(--text);font-size:13px;font-weight:850;white-space:nowrap;cursor:pointer;scroll-snap-align:start;transition:background .16s ease,border-color .16s ease,box-shadow .16s ease}
+#page-home .home-class-chip .home-chip-label{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#page-home .home-class-chip.active{background:linear-gradient(135deg,rgba(93,167,255,.44),rgba(122,121,255,.34));border-color:rgba(147,197,253,.68);box-shadow:inset 0 1px 0 rgba(255,255,255,.17);color:#fff}
+#page-home .home-class-chip .home-chip-check{display:none;font-size:15px;line-height:1;flex:none}
+#page-home .home-class-chip.active .home-chip-check{display:block}
+#page-home .home-class-chip:focus-visible{outline:2px solid #93c5fd!important;outline-offset:2px}
+@media(prefers-reduced-motion:reduce){#page-home .home-class-chip{transition:none}}
 
 /* Summary has only two freestanding dropdown surfaces, not an enclosing panel. */
 #page-summary .summary-filters-standalone{
@@ -795,9 +801,9 @@ body.summary-popup-open{overflow:hidden}
     </div>
     <div class="panel glass">
       <div class="home-class-filter">
-        <label id="homeClassLabel" for="homeClass">Class for this week's report</label>
-        <select id="homeClass" class="input native-select-hidden" aria-label="Class for this week's report"></select>
-        <div class="custom-select" data-select="homeClass"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
+        <label id="homeClassLabel">Class for this week's report</label>
+        <select id="homeClass" class="input native-select-hidden" aria-label="Class for this week's report" tabindex="-1"></select>
+        <div id="homeClassChips" class="home-class-chips" role="group" aria-labelledby="homeClassLabel"></div>
       </div>
       <div class="report-copy-head">
         <span class="week-swipe-wipe"></span>
@@ -2037,6 +2043,26 @@ function setOptions(id, html){
   if(previous && [...el.options].some(o=>o.value===previous)) el.value=previous;
   syncCustomSelect(id);
 }
+// The original church-scoped homeClass options are the single source of class chip labels and IDs.
+function renderHomeClassChips(){
+  const select=$("homeClass"),strip=$("homeClassChips");
+  if(!select||!strip)return;
+  const options=[...select.options];
+  const key=JSON.stringify(options.map(o=>[o.value,o.textContent,o.disabled]));
+  if(strip.dataset.optionsKey!==key){
+    const previousScroll=strip.scrollLeft;
+    strip.innerHTML=options.map(o=>
+      `<button type="button" class="home-class-chip" data-home-class="${esc(o.value)}" title="${esc(o.textContent)}" ${o.disabled?"disabled":""} aria-pressed="false"><i class="ri-check-line home-chip-check" aria-hidden="true"></i><span class="home-chip-label">${esc(o.textContent)}</span></button>`
+    ).join("");
+    strip.dataset.optionsKey=key;
+    strip.scrollLeft=select.value?previousScroll:0;
+  }
+  strip.querySelectorAll("[data-home-class]").forEach(chip=>{
+    const selected=chip.dataset.homeClass===select.value;
+    chip.classList.toggle("active",selected);
+    chip.setAttribute("aria-pressed",String(selected));
+  });
+}
 function renderSelects(){
   const ch=visibleChurches().map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join("");
   setOptions("homeChurch",(canAdmin()?`<option value="">${esc(tr("selectChurch"))}</option>`:"")+ch);
@@ -2059,7 +2085,8 @@ function renderSelects(){
   if($("attChurch") && selectedChurchId()) $("attChurch").value=selectedChurchId();
   const attClassOptions=`<option value="">${esc(tr("selectClass"))}</option>`+attendanceClasses().map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join("");
   setOptions("attClass",attClassOptions);
-  ["homeChurch","homeClass","studentChurch","attChurch","reportChurch","summaryChurch","studentClass","attClass","reportClass","summaryClass"].forEach(syncCustomSelect);
+  ["homeChurch","studentChurch","attChurch","reportChurch","summaryChurch","studentClass","attClass","reportClass","summaryClass"].forEach(syncCustomSelect);
+  renderHomeClassChips();
   renderThemeBackgroundAdmin();
 }
 const themeChoices=()=>window.SSTheme?.themes || [];
@@ -2701,7 +2728,27 @@ function prevHomeReport(){ moveHomeReport(-1); }
 function nextHomeReport(){ moveHomeReport(1); }
 
 if($("homeChurch")) $("homeChurch").onchange=()=>{setSelectedChurchId($("homeChurch").value);renderSelects();renderAll();};
-if($("homeClass")) $("homeClass").onchange=()=>{renderHomeReport();};
+if($("homeClass")) $("homeClass").onchange=()=>{renderHomeClassChips();renderHomeReport();};
+if($("homeClassChips")){
+  $("homeClassChips").addEventListener("click",event=>{
+    const chip=event.target.closest("[data-home-class]");
+    if(!chip||chip.disabled)return;
+    const select=$("homeClass"),id=chip.dataset.homeClass;
+    if(!select||![...select.options].some(o=>o.value===id&&!o.disabled))return;
+    if(select.value===id)return;
+    select.value=id;
+    select.dispatchEvent(new Event("change",{bubbles:true}));
+  });
+  // Use the desktop vertical wheel for horizontal chips when the strip has room;
+  // keep normal vertical page scrolling at the beginning and end.
+  $("homeClassChips").addEventListener("wheel",event=>{
+    const strip=event.currentTarget;
+    if(Math.abs(event.deltaX)>=Math.abs(event.deltaY)||strip.scrollWidth<=strip.clientWidth)return;
+    const max=strip.scrollWidth-strip.clientWidth;
+    const next=Math.max(0,Math.min(max,strip.scrollLeft+event.deltaY));
+    if(next!==strip.scrollLeft){strip.scrollLeft=next;event.preventDefault();}
+  },{passive:false});
+}
 if($("studentChurch")) $("studentChurch").onchange=()=>{setSelectedChurchId($("studentChurch").value);renderSelects();scheduleStudentRender();};
 if($("studentClass")) $("studentClass").onchange=()=>{resetStudentRenderCache();scheduleStudentRender();};
 if($("studentSearch")) $("studentSearch").oninput=e=>{state.studentQ=e.target.value;resetStudentRenderCache();scheduleStudentRender();};
