@@ -601,6 +601,7 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
 #page-home .home-class-filter{display:flex;flex-direction:column;align-items:stretch;min-width:0;margin:0 0 11px}
 #page-home .home-class-chips{display:flex;align-items:center;gap:8px;min-width:0;width:100%;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scroll-snap-type:x proximity;padding:2px 1px 6px}
 #page-home .home-class-chips::-webkit-scrollbar{display:none}
+#page-home .home-class-empty{display:inline-flex;align-items:center;min-height:43px;padding:8px 12px;color:var(--muted);font-size:12px;font-weight:800}
 #page-home .home-class-chip{display:inline-flex;flex:0 0 auto;align-items:center;justify-content:center;gap:6px;max-width:min(75vw,260px);min-height:43px;padding:9px 14px;border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.08);color:var(--text);font-size:13px;font-weight:850;white-space:nowrap;cursor:pointer;scroll-snap-align:start;transition:background .16s ease,border-color .16s ease,box-shadow .16s ease}
 #page-home .home-class-chip .home-chip-label{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #page-home .home-class-chip.active{background:linear-gradient(135deg,rgba(93,167,255,.44),rgba(122,121,255,.34));border-color:rgba(147,197,253,.68);box-shadow:inset 0 1px 0 rgba(255,255,255,.17);color:#fff}
@@ -785,7 +786,7 @@ body.summary-popup-open{overflow:hidden}
 
 <div id="appView" class="app hidden">
   <div class="top glass">
-    <div class="row between"><div id="appTitle" class="title">Sunday School</div><div class="row"><div class="lang-switch"><button class="lang-btn" id="appLangBtn" type="button">KH</button></div><div id="userText" class="user">...</div></div></div>
+    <div class="row between"><div id="appTitle" class="title">Sunday School</div><div class="header-actions"><button id="darkModeToggle" type="button" class="header-mode-toggle" data-dark-mode-toggle aria-label="Turn on Black theme" aria-pressed="false"><i class="ri-moon-fill" aria-hidden="true"></i></button><div class="lang-switch"><button class="lang-btn" id="appLangBtn" type="button">KH</button></div><button id="userText" type="button" class="user" aria-haspopup="dialog" aria-expanded="false" aria-controls="myProfileDialog" title="My Profile">...</button></div></div>
     <div class="nav">
       <button class="nav-btn active" data-page="home"><i class="ri-home-5-line"></i>Home</button>
       <button class="nav-btn attend-tab" data-page="attendance"><i class="ri-checkbox-circle-line"></i>Attend</button>
@@ -1254,6 +1255,7 @@ function setLanguage(lang){
   localStorage.setItem("ss_lang", currentLang);
   applyTranslations();
   renderAll();
+  if($("myProfileOverlay")&&!$("myProfileOverlay").classList.contains("hidden"))renderMyProfile();
 }
 function applyTranslations(){
   document.documentElement.lang = currentLang === "kh" ? "km" : "en";
@@ -1384,15 +1386,24 @@ function googleProfilePhotoURL(value){
        target.hostname.endsWith(".googleusercontent.com"))?target.href:"";
   }catch{return "";}
 }
+// Shared, validated Google portrait lookup for Auth, approval and Admin Users.
+function googlePhotoURLFromRecord(account){
+  if(!account)return "";
+  const providers=Array.isArray(account.providerData)?account.providerData:[];
+  const candidates=[account.photoURL,account.photoUrl,account.googlePhotoURL,
+    account.googlePhotoUrl,account.picture,
+    ...providers.filter(p=>p?.providerId==="google.com").map(p=>p.photoURL)];
+  return candidates.map(googleProfilePhotoURL).find(Boolean)||"";
+}
 function authGooglePhotoURL(user){
-  return googleProfilePhotoURL(user?.photoURL||
-    user?.providerData?.find(p=>p?.providerId==="google.com")?.photoURL);
+  // Another provider's invalid photoURL must not hide the real Google picture.
+  const googleProviders=Array.isArray(user?.providerData)?
+    user.providerData.filter(p=>p?.providerId==="google.com"):[];
+  return googleProviders.map(p=>googleProfilePhotoURL(p.photoURL)).find(Boolean)||
+    googlePhotoURLFromRecord(user);
 }
 function umPhotoHtml(user){
-  // Use existing stored Google-hosted photos; never guess a Google account URL.
-  const url=[user?.photoURL,user?.photoUrl,user?.googlePhotoURL,
-    user?.providerData?.find(p=>p?.providerId==="google.com")?.photoURL]
-    .map(googleProfilePhotoURL).find(Boolean)||"";
+  const url=googlePhotoURLFromRecord(user);
   return '<span class="um-avatar">'+
     (url?'<img src="'+esc(url)+'" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">':'')+
     '<i class="ri-user-3-line"'+(url?' hidden':'')+' aria-hidden="true"></i></span>';
@@ -1418,25 +1429,103 @@ async function saveGoogleProfilePhotoForRequest(user){
     console.warn("Unable to check pending Google request:",error.code||error.message);
   }
   if(existing){
-    if(existing.status==="pending"&&photoURL&&existing.photoURL!==photoURL){
-      try{await update(ref(db,path),{photoURL});}
-      catch(error){console.warn("Google photo URL requires the optional photo-only Firebase rules:",error.code||error.message);}
+    if(existing.status==="pending"&&photoURL&&googlePhotoURLFromRecord(existing)!==photoURL){
+      try{await set(ref(db,path+"/photoURL"),photoURL);}
+      catch(error){console.warn("Kid3Pro pending Google photo sync blocked: check accountRequests photo-only RTDB rules.",error.code||error.message);}
     }
     return;
   }
   if(photoURL){
     try{await set(ref(db,path),{...basic,photoURL});return;}
-    catch(error){console.warn("Google profile photo not permitted by current Firebase rules; retrying the original request.",error.code||error.message);}
+    catch(error){console.warn("Kid3Pro pending Google photo rejected by RTDB; preserving original account request.",error.code||error.message);}
   }
   // Backward-compatible fallback: old RTDB rules reject extra request fields.
   await set(ref(db,path),basic);
 }
 async function syncApprovedGooglePhoto(user,profile){
   const photoURL=authGooglePhotoURL(user);
-  if(!photoURL||!profile||profile.photoURL===photoURL)return;
-  try{await set(ref(db,"users/"+user.uid+"/photoURL"),photoURL);}
-  catch(error){console.warn("Updating approved user photo needs photo-only Firebase rules:",error.code||error.message);}
+  if(!user?.uid||!profile||!photoURL||googlePhotoURLFromRecord(profile)===photoURL)return;
+  // Only the authenticated user's own portrait may be synced; never role/church/status.
+  if(state.user?.uid!==user.uid)return;
+  try{
+    await set(ref(db,"users/"+user.uid+"/photoURL"),photoURL);
+    if(state.user?.uid===user.uid&&state.profile===profile)profile.photoURL=photoURL;
+  }catch(error){
+    console.warn("Kid3Pro approved Google photo sync blocked: check users/<own uid>/photoURL RTDB rules.",error.code||error.message);
+  }
 }
+
+// Read-only signed-in profile; all details come from existing Firebase/Auth state.
+function myProfileDateInfo(profile,user){
+  const kh=currentLang==="kh";
+  const dates=[
+    [profile?.approvedAt,kh?"អនុម័ត":"Approved"],
+    [profile?.joinedAt,kh?"បានចូលរួម":"Joined"],
+    [profile?.createdAt,kh?"បង្កើតកំណត់ត្រា":"School record created"],
+    [user?.metadata?.creationTime,kh?"បង្កើតគណនីចូល":"Sign-in account created"]
+  ];
+  for(const [raw,label] of dates){
+    if(raw==null||raw==="")continue;
+    const date=new Date(raw);
+    if(Number.isNaN(date.getTime()))continue;
+    return {label,date:date.toLocaleDateString(kh?"km-KH":"en-US",{year:"numeric",month:"short",day:"numeric"})};
+  }
+  return {label:kh?"កាលបរិច្ឆេទចូលរួម":"Joined",date:kh?"មិនមានទិន្នន័យ":"Not available"};
+}
+function renderMyProfile(){
+  if(!state.user)return;
+  const user=state.user,profile=state.profile||{},kh=currentLang==="kh";
+  $("myProfileTitle").textContent=kh?"ប្រវត្តិរូបខ្ញុំ":"My Profile";
+  $("closeMyProfile").setAttribute("aria-label",kh?"បិទប្រវត្តិរូប":"Close profile");
+  $("myProfileName").textContent=profile.name||user.displayName||user.email||(kh?"អ្នកប្រើ":"User");
+  $("myProfileEmail").textContent=user.email||profile.email||(kh?"មិនមានអ៊ីមែល":"No email");
+  $("myProfileRole").textContent=state.role==="admin"?(kh?"អ្នកគ្រប់គ្រង":"Admin"):roleLabel(state.role);
+  const joined=myProfileDateInfo(profile,user);
+  $("myProfileDateLabel").textContent=joined.label;
+  $("myProfileDate").textContent=joined.date;
+  $("myProfileChurchLabel").textContent=kh?"ពួកជំនុំបម្រើ":"Serving church";
+  const churchId=profile.churchId||state.churchId||"";
+  $("myProfileChurch").textContent=canAdmin()?(kh?"គ្រប់ពួកជំនុំ":"All churches"):
+    (churchName(churchId)||(churchId?(kh?"មិនមានទិន្នន័យ":"Not available"):(kh?"មិនទាន់កំណត់":"Unassigned")));
+  const photo=authGooglePhotoURL(user)||googlePhotoURLFromRecord(profile);
+  const img=$("myProfileAvatar"),fallback=$("myProfileFallback");
+  img.hidden=true;fallback.hidden=false;
+  if(photo){
+    img.onload=()=>{img.hidden=false;fallback.hidden=true};
+    img.onerror=()=>{img.hidden=true;fallback.hidden=false};
+    img.src=photo;
+    if(img.complete&&img.naturalWidth>0)img.onload();
+  }else img.removeAttribute("src");
+}
+function closeMyProfile(){
+  const overlay=$("myProfileOverlay");
+  if(overlay.classList.contains("hidden"))return;
+  overlay.classList.add("hidden");
+  $("userText").setAttribute("aria-expanded","false");
+  $("userText").focus();
+}
+function openMyProfile(){
+  if(!state.user)return;
+  renderMyProfile();
+  $("myProfileOverlay").classList.remove("hidden");
+  $("userText").setAttribute("aria-expanded","true");
+  $("closeMyProfile").focus();
+}
+$("userText").addEventListener("click",()=>{
+  if($("myProfileOverlay").classList.contains("hidden"))openMyProfile();
+  else closeMyProfile();
+});
+$("closeMyProfile").addEventListener("click",closeMyProfile);
+$("myProfileOverlay").addEventListener("pointerdown",event=>{
+  if(event.target===$("myProfileOverlay"))closeMyProfile();
+});
+document.addEventListener("keydown",event=>{
+  if(event.key==="Escape")closeMyProfile();
+  if(event.key==="Tab"&&!$("myProfileOverlay").classList.contains("hidden")){
+    event.preventDefault();
+    $("closeMyProfile").focus();
+  }
+});
 
 let stopCurrentProfileWatch=null;
 function clearCurrentProfileWatch(){
@@ -1445,6 +1534,7 @@ function clearCurrentProfileWatch(){
 onAuthStateChanged(auth, async user=>{
   clearCurrentProfileWatch();
   if(!user){
+    closeMyProfile();
     state.user=null;state.profile=null;state.role="guest";state.churchId=null;
     hideAuthLoading();$("loginView").classList.remove("hidden");$("appView").classList.add("hidden");return;
   }
@@ -2063,12 +2153,13 @@ function renderHomeClassChips(){
   const select=$("homeClass"),strip=$("homeClassChips");
   if(!select||!strip)return;
   const options=[...select.options];
+  const hasClasses=options.some(o=>o.value&&!o.disabled);
   const key=JSON.stringify(options.map(o=>[o.value,o.textContent,o.disabled]));
   if(strip.dataset.optionsKey!==key){
     const previousScroll=strip.scrollLeft;
-    strip.innerHTML=options.map(o=>
+    strip.innerHTML=hasClasses?options.map(o=>
       `<button type="button" class="home-class-chip" data-home-class="${esc(o.value)}" title="${esc(o.textContent)}" ${o.disabled?"disabled":""} aria-pressed="false"><i class="ri-check-line home-chip-check" aria-hidden="true"></i><span class="home-chip-label">${esc(o.textContent)}</span></button>`
-    ).join("");
+    ).join(""):`<span class="home-class-empty" role="status">${esc(options[0]?.textContent||tr("noClass"))}</span>`;
     strip.dataset.optionsKey=key;
     strip.scrollLeft=select.value?previousScroll:0;
   }
@@ -2081,9 +2172,15 @@ function renderHomeClassChips(){
 function renderSelects(){
   const ch=visibleChurches().map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join("");
   setOptions("homeChurch",(canAdmin()?`<option value="">${esc(tr("selectChurch"))}</option>`:"")+ch);
-  setOptions("homeClass",`<option value="">${esc(tr("summaryAllClasses"))}</option>`+
-    scopedClasses().sort((a,b)=>String(a.name||"").localeCompare(String(b.name||"")))
-      .map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join(""));
+  const homeClasses=scopedClasses().sort((a,b)=>String(a.name||"").localeCompare(String(b.name||"")));
+  // One class: select it automatically and omit "All classes". Two or more: keep
+  // the original All classes filter. No classes: show an informative empty state.
+  const homeDefault=homeClasses.length>1
+    ?`<option value="">${esc(tr("summaryAllClasses"))}</option>`
+    :homeClasses.length===0
+      ?`<option value="">${esc(tr(selectedChurchId()?"noClass":"selectChurch"))}</option>`:"";
+  setOptions("homeClass",homeDefault+
+    homeClasses.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join(""));
   ["roleChurch","classChurch"].forEach(id=>setOptions(id,ch));
   setOptions("studentChurch",(canAdmin()?`<option value="">${esc(tr("selectChurch"))}</option>`:"")+ch);
   ["homeChurch","studentChurch","attChurch","reportChurch"].forEach(id=>{ if($(id) && selectedChurchId() && [...$(id).options].some(o=>o.value===selectedChurchId())) $(id).value=selectedChurchId(); syncCustomSelect(id); });
@@ -2350,7 +2447,7 @@ async function umPerform(action){
   umSaving=true;renderUsers();
   try{
     const now=Date.now(),old=state.users?.[uid]||{};
-    const pendingPhoto=googleProfilePhotoURL(chosen.photoURL);
+    const pendingPhoto=googlePhotoURLFromRecord(chosen);
     if(pending&&chosen.uid!==uid)throw Error("Account request UID mismatch.");
     if(action==="approve"){
       const record={...old,uid,name:umDraftName.trim(),email:chosen.email||"",role:umDraftRole,
@@ -3596,6 +3693,17 @@ setupIOSTouchFeedback();
   </div>
 </div>
 
+<div id="myProfileOverlay" class="my-profile-overlay hidden">
+  <section id="myProfileDialog" class="my-profile-popup" role="dialog" aria-modal="true" aria-labelledby="myProfileTitle" tabindex="-1">
+    <div class="my-profile-head"><strong id="myProfileTitle">My Profile</strong><button id="closeMyProfile" type="button" class="my-profile-close" aria-label="Close profile"><i class="ri-close-line" aria-hidden="true"></i></button></div>
+    <div class="my-profile-identity">
+      <span class="my-profile-avatar"><img id="myProfileAvatar" alt="" hidden referrerpolicy="no-referrer"><i id="myProfileFallback" class="ri-user-3-line" aria-hidden="true"></i></span>
+      <div class="my-profile-details"><strong id="myProfileName"></strong><small id="myProfileEmail"></small><span id="myProfileRole" class="my-profile-role"></span></div>
+    </div>
+    <div class="my-profile-field"><span id="myProfileDateLabel">Joined</span><strong id="myProfileDate"></strong></div>
+    <div class="my-profile-field"><span id="myProfileChurchLabel">Serving church</span><strong id="myProfileChurch"></strong></div>
+  </section>
+</div>
 <div id="photoPreview" class="photo-preview hidden">
   <button id="closePhotoPreview" class="btn danger photo-close"><i class="ri-close-line"></i></button>
   <div class="photo-preview-inner">

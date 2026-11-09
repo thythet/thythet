@@ -38,6 +38,11 @@ body[data-color-theme="dark-pro"]{
   --line:#30363d;--text:#f0f6fc;--muted:#8b949e;--blue:#58a6ff;--violet:#bc8cff;
   --green:#3fb950;--red:#f85149;--yellow:#d29922;
 }
+body[data-color-theme="black"]{
+  --bg1:#000000;--bg2:#000000;--glass:rgb(0 0 0 / 96%);--glass2:#1a1919;
+  --line:#1b1919;--text:#f0f6fc;--muted:#8b949e;--blue:#2c7f43;--violet:#2d5126;
+  --green:#029116;--red:#490300;--yellow:#d29922;
+}
 body[data-color-theme="bento"]{
   --bg1:#f6f7fb;--bg2:#e9eef7;--glass:rgba(255,255,255,.96);--glass2:#ffffff;
   --line:#d9e1ef;--text:#1b2430;--muted:#687489;--blue:#3b82f6;--violet:#8b5cf6;
@@ -504,3 +509,54 @@ body[data-color-theme="contrast"] .input,
 body[data-color-theme="contrast"] .custom-select-btn{
   box-shadow:none!important;
 }
+
+// Black theme keeps your exact color tokens without bright white inset shadows.
+body[data-color-theme="black"] .glass,
+body[data-color-theme="black"] .panel,
+body[data-color-theme="black"] .card,
+body[data-color-theme="black"] .student-card,
+body[data-color-theme="black"] .effect-card,
+body[data-color-theme="black"] .stat,
+body[data-color-theme="black"] .detail-stat,
+body[data-color-theme="black"] .chart-wrap{
+  box-shadow:0 12px 28px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.07)!important;
+}
+body[data-color-theme="black"] .btn,
+body[data-color-theme="black"] .nav-btn,
+body[data-color-theme="black"] .input,
+body[data-color-theme="black"] .custom-select-btn,
+body[data-color-theme="black"] .week-chip,
+body[data-color-theme="black"] .check,
+body[data-color-theme="black"] .day,
+body[data-color-theme="black"] .badge,
+body[data-color-theme="black"] .month-field{
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07)!important;
+}
+
+/* Kid3Pro compact header actions and read-only profile popup. */
+.header-actions{display:flex;align-items:center;gap:7px;min-width:0}
+.header-mode-toggle{display:grid;place-items:center;flex:0 0 30px;width:30px;height:32px;padding:0;border:0!important;outline-offset:2px;background:transparent!important;box-shadow:none!important;color:var(--text);font-size:21px;cursor:pointer}
+.user{cursor:pointer}
+.header-mode-toggle:focus-visible,.user:focus-visible,.my-profile-close:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+@media(max-width:480px){
+  .top .title{font-size:clamp(18px,5vw,24px);min-width:0}
+  .header-actions{gap:5px}
+  .header-mode-toggle{flex-basis:25px;width:25px;font-size:20px}
+  .top .user{max-width:100px;padding:0 9px}
+  .top .lang-btn{min-width:43px}
+}
+.my-profile-overlay{position:fixed;inset:0;z-index:12000;display:flex;justify-content:center;align-items:flex-start;padding:clamp(72px,12vh,118px) 12px 20px;background:rgba(0,0,0,.20)}
+.my-profile-popup{width:min(320px,100%);max-height:calc(100dvh - 90px);overflow-y:auto;padding:13px 14px;border:1px solid var(--line);border-radius:18px;background:var(--bg2);color:var(--text);box-shadow:0 18px 52px rgba(0,0,0,.35)}
+.my-profile-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.my-profile-head strong{font-size:14px}
+.my-profile-close{display:grid;place-items:center;width:28px;height:28px;flex:none;padding:0;background:transparent;border:0;color:var(--muted);font-size:19px}
+.my-profile-identity{display:flex;align-items:center;gap:10px;min-width:0;padding-bottom:11px;border-bottom:1px solid var(--line)}
+.my-profile-avatar{display:grid;place-items:center;flex:0 0 52px;width:52px;height:52px;border-radius:50%;overflow:hidden;background:color-mix(in srgb,var(--blue) 19%,var(--glass2));font-size:25px}
+.my-profile-avatar img{width:100%;height:100%;object-fit:cover}
+.my-profile-details{display:flex;flex-direction:column;align-items:flex-start;gap:2px;flex:1;min-width:0}
+.my-profile-details strong{max-width:100%;font-size:13px;overflow-wrap:anywhere}
+.my-profile-details small{max-width:100%;font-size:11px;color:var(--muted);overflow-wrap:anywhere;line-height:1.4}
+.my-profile-role{margin-top:4px;padding:2px 8px;border:1px solid color-mix(in srgb,var(--blue) 42%,var(--line));border-radius:999px;background:color-mix(in srgb,var(--blue) 15%,transparent);font-size:10px;font-weight:850;line-height:1.3}
+.my-profile-field{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:9px 0 0;font-size:11px}
+.my-profile-field span{flex:0 0 auto;color:var(--muted)}
+.my-profile-field strong{min-width:0;max-width:64%;text-align:right;font-size:11px;font-weight:800;overflow-wrap:anywhere}

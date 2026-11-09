@@ -1,5 +1,6 @@
 (function(){
   const storageKey = "ss_color_theme";
+  const beforeBlackKey = "ss_theme_before_black";
   const localBgStorageKey = "ss_theme_backgrounds_local";
   const localBgSelectedKey = "ss_theme_backgrounds_selected";
   const localThemeOptionsKey = "ss_theme_options_local";
@@ -15,6 +16,7 @@
     ["colorful","Colorful",["#fff7fb","#0284c7","#db2777","#16a34a"]],
     ["contrast","Contrast",["#050505","#38bdf8","#facc15","#4ade80"]],
     ["dark-pro","Dark Pro",["#0d1117","#58a6ff","#bc8cff","#3fb950"]],
+    ["black","Black",["#000000","#2c7f43","#2d5126","#029116"]],
     ["bento","Bento",["#f6f7fb","#3b82f6","#8b5cf6","#10b981"]],
     ["soft-pastel","Pastel",["#fff1f7","#60a5fa","#c084fc","#86c98a"]],
     ["minimal-white","Minimal",["#ffffff","#1d4ed8","#4338ca","#15803d"]],
@@ -242,11 +244,23 @@
     document.dispatchEvent(new CustomEvent("ss-theme-backgrounds-change"));
   }
 
+  function themeBeforeBlack(){
+    const saved=localStorage.getItem(beforeBlackKey);
+    return saved!=="black"&&themes.some(([key])=>key===saved)?saved:"glassy";
+  }
   function updateButtons(theme){
     document.querySelectorAll("[data-theme-toggle]").forEach(button => {
       button.innerHTML = `<i class="ri-palette-line"></i>${labelFor(theme)}`;
       button.setAttribute("aria-label", `Theme: ${labelFor(theme)}`);
       button.title = `Theme: ${labelFor(theme)}`;
+    });
+    document.querySelectorAll("[data-dark-mode-toggle]").forEach(button=>{
+      const isBlack=theme==="black";
+      const label=isBlack?`Return to ${labelFor(themeBeforeBlack())}`:"Turn on Black theme";
+      button.innerHTML=isBlack?'<i class="ri-sun-fill" aria-hidden="true"></i>':'<i class="ri-moon-fill" aria-hidden="true"></i>';
+      button.setAttribute("aria-label",label);
+      button.setAttribute("aria-pressed",String(isBlack));
+      button.title=label;
     });
   }
 
@@ -267,6 +281,15 @@
   }
 
   function applyTheme(theme){
+    if(!themes.some(([key])=>key===theme))theme="glassy";
+    const previous=currentTheme();
+    // Track the previous non-Black theme using the same theme manager, never a
+    // second dark-mode state. Gallery selections and header toggle stay in sync.
+    if(theme==="black"){
+      if(previous!=="black")localStorage.setItem(beforeBlackKey,previous);
+    }else{
+      localStorage.setItem(beforeBlackKey,theme);
+    }
     document.body.dataset.colorTheme = theme;
     localStorage.setItem(storageKey, theme);
     applyThemeBackground(theme);
@@ -274,6 +297,9 @@
     updateButtons(theme);
     renderGallery(theme);
     document.dispatchEvent(new CustomEvent("ss-theme-change",{detail:{theme}}));
+  }
+  function toggleBlackTheme(){
+    applyTheme(currentTheme()==="black"?themeBeforeBlack():"black");
   }
 
   function nextTheme(){
@@ -287,9 +313,12 @@
     document.querySelectorAll("[data-theme-toggle]").forEach(button => {
       button.addEventListener("click", () => applyTheme(nextTheme()));
     });
+    document.querySelectorAll("[data-dark-mode-toggle]").forEach(button=>{
+      button.addEventListener("click",toggleBlackTheme);
+    });
   }
 
-  window.SSTheme = { themes, currentTheme, applyTheme, labelFor, localThemeBackgrounds, setLocalThemeBackgrounds, clearLocalThemeBackgrounds, normalizeBackgrounds, themeImages, themeMedia:themeImages, selectedThemeBackground, selectThemeBackground, isVideoUrl, localThemeOptions, setLocalThemeOptions, normalizeThemeOptions, currentThemeOptions };
+  window.SSTheme = { themes, currentTheme, applyTheme, toggleBlackTheme, labelFor, localThemeBackgrounds, setLocalThemeBackgrounds, clearLocalThemeBackgrounds, normalizeBackgrounds, themeImages, themeMedia:themeImages, selectedThemeBackground, selectThemeBackground, isVideoUrl, localThemeOptions, setLocalThemeOptions, normalizeThemeOptions, currentThemeOptions };
   window.SSApplyThemeBackgrounds = backgrounds => {
     window.SS_THEME_BACKGROUNDS = normalizeBackgrounds(backgrounds || {});
     applyThemeBackground(currentTheme());
