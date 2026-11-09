@@ -101,19 +101,29 @@ select.input{appearance:none;background-image:linear-gradient(45deg,transparent 
   background:rgba(255,255,255,.07);cursor:pointer}
 #page-users .um-tabs button.active{background:linear-gradient(135deg,rgba(93,167,255,.34),rgba(122,121,255,.3));border-color:rgba(147,197,253,.56)}
 #page-users #umStatus:empty{display:none}
-#page-users .um-list{display:flex;flex-direction:column;gap:8px}
-#page-users .um-user-row{display:flex;align-items:center;gap:10px;padding:11px 12px;
-  border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.065)}
-#page-users .um-avatar{display:grid;place-items:center;flex:0 0 39px;width:39px;height:39px;
-  border-radius:13px;background:rgba(93,167,255,.17);font-size:18px;overflow:hidden}
+/* User records grouped by church; lightweight two-line rows. */
+#page-users .um-list{display:flex;flex-direction:column;gap:11px}
+#page-users .um-church-group{display:flex;flex-direction:column;gap:5px;min-width:0}
+#page-users .um-church-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:3px 4px 2px;color:#e2e8f0}
+#page-users .um-church-head-title{display:flex;align-items:center;gap:7px;min-width:0}
+#page-users .um-church-head-title i{font-size:15px;color:#a5cafa;flex:none}
+#page-users .um-church-head-title strong{font-size:13px;font-weight:900;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#page-users .um-church-count{flex:none;color:var(--muted);font-size:10px;font-weight:800}
+#page-users .um-church-rows{display:flex;flex-direction:column;gap:5px}
+#page-users .um-user-row{display:flex;align-items:center;gap:8px;min-width:0;padding:7px 9px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.065)}
+#page-users .um-avatar{display:grid;place-items:center;flex:0 0 35px;width:35px;height:35px;border-radius:11px;background:rgba(93,167,255,.17);font-size:17px;overflow:hidden}
 #page-users .um-avatar img{display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit}
 #page-users .um-avatar img[hidden]{display:none}
 #page-users .um-avatar>i[hidden]{display:none}
 #page-users .um-edit-top .um-avatar{flex:0 0 44px;width:44px;height:44px}
-#page-users .um-user-text{min-width:0;flex:1}
-#page-users .um-user-text strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
-#page-users .um-user-text small{display:block;color:var(--muted);font-size:11px;overflow-wrap:anywhere}
-#page-users .um-user-row .um-manage{min-width:68px;padding:8px 10px;border-radius:10px;font-size:12px}
+#page-users .um-user-text{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+#page-users .um-user-name-line{display:flex;align-items:center;gap:6px;min-width:0}
+#page-users .um-user-name-line strong{min-width:0;max-width:max-content;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:900}
+#page-users .um-role-pill{flex:none;max-width:86px;padding:2px 6px;border-radius:999px;background:rgba(93,167,255,.15);border:1px solid rgba(147,197,253,.32);color:#dbeafe;font-size:9px;line-height:1.3;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#page-users .um-role-pill[data-role="pastor"]{background:rgba(112,220,155,.14);border-color:rgba(112,220,155,.33);color:#c3f9dc}
+#page-users .um-role-pill[data-role="pending"]{background:rgba(250,204,21,.11);border-color:rgba(250,204,21,.30);color:#fde68a}
+#page-users .um-user-text small{display:block;min-width:0;color:var(--muted);font-size:11px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#page-users .um-user-row .um-manage{flex:none;min-width:61px;min-height:33px;padding:6px 9px;border-radius:10px;font-size:11px}
 #page-users .um-editor{display:block;margin:12px 0}
 #page-users .um-editor:empty{display:none}
 #page-users .um-edit-card{padding:15px;border:1px solid rgba(147,197,253,.28);
@@ -133,8 +143,12 @@ select.input{appearance:none;background-image:linear-gradient(45deg,transparent 
   #page-users .um-edit-fields{grid-template-columns:1fr}
   #page-users .um-edit-fields .um-name-field{grid-column:auto}
   #page-users .um-edit-actions .btn{min-width:90px}
-  #page-users .um-user-row{gap:8px;padding:10px}
-  #page-users .um-user-row .um-manage{min-width:56px;padding:8px}
+  #page-users .um-user-row{gap:7px;padding:7px 8px}
+  #page-users .um-avatar{flex-basis:33px;width:33px;height:33px}
+  #page-users .um-user-name-line{gap:5px}
+  #page-users .um-user-name-line strong{font-size:12px}
+  #page-users .um-role-pill{max-width:75px;padding:2px 5px}
+  #page-users .um-user-row .um-manage{min-width:55px;min-height:32px;padding:5px 7px;font-size:10px}
 }
 
 /* Login */
@@ -1379,18 +1393,23 @@ function authGooglePhotoURL(user){
     user?.providerData?.find(p=>p?.providerId==="google.com")?.photoURL);
 }
 function umPhotoHtml(user){
-  const url=googleProfilePhotoURL(user?.photoURL);
+  // Use existing stored Google-hosted photos; never guess a Google account URL.
+  const url=[user?.photoURL,user?.photoUrl,user?.googlePhotoURL,
+    user?.providerData?.find(p=>p?.providerId==="google.com")?.photoURL]
+    .map(googleProfilePhotoURL).find(Boolean)||"";
   return '<span class="um-avatar">'+
     (url?'<img src="'+esc(url)+'" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">':'')+
     '<i class="ri-user-3-line"'+(url?' hidden':'')+' aria-hidden="true"></i></span>';
 }
 function umBindPhotoFallbacks(container){
   container?.querySelectorAll(".um-avatar img").forEach(img=>{
-    img.addEventListener("error",()=>{
+    const fallback=()=>{
       img.hidden=true;
       const icon=img.nextElementSibling;
       if(icon)icon.hidden=false;
-    },{once:true});
+    };
+    img.addEventListener("error",fallback,{once:true});
+    if(img.complete&&img.naturalWidth===0)fallback();
   });
 }
 async function saveGoogleProfilePhotoForRequest(user){
@@ -2244,17 +2263,36 @@ function renderUsers(){
     b.setAttribute("aria-pressed",String(b.dataset.umTab===umTab));
   });
   const pool=umTab==="pending"?pending:umTab==="blocked"?blocked:active;
-  const items=pool.slice()
-    .sort((a,b)=>String(a.name||a.email||"").localeCompare(String(b.name||b.email||"")));
-  $("umList").innerHTML=items.map(u=>{
-    const role=u.pending?(currentLang==="km"?"រង់ចាំ":"Pending"):roleLabel(u.role);
-    const info=u.pending?role:[role,churchName(u.churchId)].filter(Boolean).join(" • ");
-    const title=u.pending?(currentLang==="km"?"ពិនិត្យ":"Review"):(currentLang==="km"?"គ្រប់គ្រង":"Manage");
-    return '<div class="um-user-row">'+umPhotoHtml(u)+
-      '<div class="um-user-text"><strong>'+esc(u.name||u.email||"Google User")+'</strong>'+
-      '<small>'+esc(u.email||"")+'</small><small>'+esc(info)+'</small></div>'+
-      '<button type="button" class="btn um-manage" data-um-select="'+esc((u.pending?"pending:":"user:")+u.id)+'">'+title+'</button></div>';
-  }).join("")||'<div class="um-no-users">'+(currentLang==="km"?"មិនមានអ្នកប្រើ":"No matching users")+'</div>';
+  const grouped=new Map();
+  pool.forEach(u=>{
+    const id=u.churchId&&Object.hasOwn(state.churches||{},u.churchId)?u.churchId:"";
+    if(!grouped.has(id))grouped.set(id,[]);
+    grouped.get(id).push(u);
+  });
+  const churchIds=[...grouped.keys()].sort((a,b)=>
+    !a?1:!b?-1:churchName(a).localeCompare(churchName(b)));
+  const groupKh=currentLang==="km";
+  $("umList").innerHTML=churchIds.map(churchId=>{
+    const name=churchId?churchName(churchId):(groupKh?"មិនទាន់កំណត់ពួកជំនុំ":"Unassigned");
+    const members=grouped.get(churchId).slice()
+      .sort((a,b)=>String(a.name||a.email||"").localeCompare(String(b.name||b.email||"")));
+    const heading='<div class="um-church-head"><div class="um-church-head-title">'+
+      '<i class="'+(churchId?"ri-building-4-line":"ri-folder-user-line")+'" aria-hidden="true"></i>'+
+      '<strong>'+esc(name)+'</strong></div><span class="um-church-count">'+
+      members.length+' '+(groupKh?"នាក់":members.length===1?"user":"users")+'</span></div>';
+    const rows=members.map(u=>{
+      const role=u.pending?(groupKh?"រង់ចាំ":"Pending"):roleLabel(u.role);
+      const kind=u.pending?"pending":u.role==="pastor"?"pastor":"teacher";
+      const title=u.pending?(groupKh?"ពិនិត្យ":"Review"):(groupKh?"គ្រប់គ្រង":"Manage");
+      return '<div class="um-user-row">'+umPhotoHtml(u)+
+        '<div class="um-user-text"><div class="um-user-name-line"><strong>'+esc(u.name||u.email||"Google User")+'</strong>'+
+        '<span class="um-role-pill" data-role="'+kind+'">'+esc(role)+'</span></div>'+
+        '<small>'+esc(u.email||"")+'</small></div>'+
+        '<button type="button" class="btn um-manage" data-um-select="'+esc((u.pending?"pending:":"user:")+u.id)+'">'+title+'</button></div>';
+    }).join("");
+    return '<section class="um-church-group" aria-label="'+esc(name)+'">'+heading+
+      '<div class="um-church-rows">'+rows+'</div></section>';
+  }).join("")||'<div class="um-no-users">'+(groupKh?"មិនមានអ្នកប្រើ":"No matching users")+'</div>';
   umBindPhotoFallbacks($("umList"));
   const selected=umSelectedRecord();
   if(!selected){umSelected="";$("umEditor").textContent="";return;}
