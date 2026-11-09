@@ -562,7 +562,7 @@ body[data-color-theme="black"] .month-field{
 .my-profile-field span{flex:0 0 auto;color:var(--muted)}
 .my-profile-field strong{min-width:0;max-width:64%;text-align:right;font-size:11px;font-weight:800;overflow-wrap:anywhere}
 
-.my-profile-actions{display:flex;justify-content:flex-end;padding-top:13px;margin-top:11px;border-top:1px solid var(--line)}
-.my-profile-signout{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:7px 12px;border-radius:9px;border:1px solid var(--line);background:var(--glass2);color:var(--text);font:inherit;font-size:11px;font-weight:750;cursor:pointer}
+.my-profile-head-buttons{display:flex;align-items:center;gap:4px;flex:none}
+.my-profile-signout{display:grid;place-items:center;width:28px;height:28px;flex:none;padding:0;border:0;border-radius:8px;background:transparent;color:var(--muted);font:inherit;font-size:19px;cursor:pointer}
 .my-profile-signout:hover{background:var(--glass);border-color:var(--blue)}
 .my-profile-signout:disabled{opacity:.55;cursor:wait}
