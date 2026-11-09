@@ -38,6 +38,11 @@ body[data-color-theme="dark-pro"]{
   --line:#30363d;--text:#f0f6fc;--muted:#8b949e;--blue:#58a6ff;--violet:#bc8cff;
   --green:#3fb950;--red:#f85149;--yellow:#d29922;
 }
+body[data-color-theme="black"]{
+  --bg1:#000000;--bg2:#000000;--glass:rgb(0 0 0 / 96%);--glass2:#1a1919;
+  --line:#1b1919;--text:#f0f6fc;--muted:#8b949e;--blue:#2c7f43;--violet:#2d5126;
+  --green:#029116;--red:#490300;--yellow:#d29922;
+}
 body[data-color-theme="bento"]{
   --bg1:#f6f7fb;--bg2:#e9eef7;--glass:rgba(255,255,255,.96);--glass2:#ffffff;
   --line:#d9e1ef;--text:#1b2430;--muted:#687489;--blue:#3b82f6;--violet:#8b5cf6;
@@ -503,4 +508,27 @@ body[data-color-theme="contrast"] .nav-btn,
 body[data-color-theme="contrast"] .input,
 body[data-color-theme="contrast"] .custom-select-btn{
   box-shadow:none!important;
+}
+
+// Black theme keeps your exact color tokens without bright white inset shadows.
+body[data-color-theme="black"] .glass,
+body[data-color-theme="black"] .panel,
+body[data-color-theme="black"] .card,
+body[data-color-theme="black"] .student-card,
+body[data-color-theme="black"] .effect-card,
+body[data-color-theme="black"] .stat,
+body[data-color-theme="black"] .detail-stat,
+body[data-color-theme="black"] .chart-wrap{
+  box-shadow:0 12px 28px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.07)!important;
+}
+body[data-color-theme="black"] .btn,
+body[data-color-theme="black"] .nav-btn,
+body[data-color-theme="black"] .input,
+body[data-color-theme="black"] .custom-select-btn,
+body[data-color-theme="black"] .week-chip,
+body[data-color-theme="black"] .check,
+body[data-color-theme="black"] .day,
+body[data-color-theme="black"] .badge,
+body[data-color-theme="black"] .month-field{
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07)!important;
 }
