@@ -101,19 +101,29 @@ select.input{appearance:none;background-image:linear-gradient(45deg,transparent 
   background:rgba(255,255,255,.07);cursor:pointer}
 #page-users .um-tabs button.active{background:linear-gradient(135deg,rgba(93,167,255,.34),rgba(122,121,255,.3));border-color:rgba(147,197,253,.56)}
 #page-users #umStatus:empty{display:none}
-#page-users .um-list{display:flex;flex-direction:column;gap:8px}
-#page-users .um-user-row{display:flex;align-items:center;gap:10px;padding:11px 12px;
-  border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.065)}
-#page-users .um-avatar{display:grid;place-items:center;flex:0 0 39px;width:39px;height:39px;
-  border-radius:13px;background:rgba(93,167,255,.17);font-size:18px;overflow:hidden}
+/* User records grouped by church; lightweight two-line rows. */
+#page-users .um-list{display:flex;flex-direction:column;gap:11px}
+#page-users .um-church-group{display:flex;flex-direction:column;gap:5px;min-width:0}
+#page-users .um-church-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:3px 4px 2px;color:#e2e8f0}
+#page-users .um-church-head-title{display:flex;align-items:center;gap:7px;min-width:0}
+#page-users .um-church-head-title i{font-size:15px;color:#a5cafa;flex:none}
+#page-users .um-church-head-title strong{font-size:13px;font-weight:900;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#page-users .um-church-count{flex:none;color:var(--muted);font-size:10px;font-weight:800}
+#page-users .um-church-rows{display:flex;flex-direction:column;gap:5px}
+#page-users .um-user-row{display:flex;align-items:center;gap:8px;min-width:0;padding:7px 9px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.065)}
+#page-users .um-avatar{display:grid;place-items:center;flex:0 0 35px;width:35px;height:35px;border-radius:11px;background:rgba(93,167,255,.17);font-size:17px;overflow:hidden}
 #page-users .um-avatar img{display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit}
 #page-users .um-avatar img[hidden]{display:none}
 #page-users .um-avatar>i[hidden]{display:none}
 #page-users .um-edit-top .um-avatar{flex:0 0 44px;width:44px;height:44px}
-#page-users .um-user-text{min-width:0;flex:1}
-#page-users .um-user-text strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
-#page-users .um-user-text small{display:block;color:var(--muted);font-size:11px;overflow-wrap:anywhere}
-#page-users .um-user-row .um-manage{min-width:68px;padding:8px 10px;border-radius:10px;font-size:12px}
+#page-users .um-user-text{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+#page-users .um-user-name-line{display:flex;align-items:center;gap:6px;min-width:0}
+#page-users .um-user-name-line strong{min-width:0;max-width:max-content;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:900}
+#page-users .um-role-pill{flex:none;max-width:86px;padding:2px 6px;border-radius:999px;background:rgba(93,167,255,.15);border:1px solid rgba(147,197,253,.32);color:#dbeafe;font-size:9px;line-height:1.3;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#page-users .um-role-pill[data-role="pastor"]{background:rgba(112,220,155,.14);border-color:rgba(112,220,155,.33);color:#c3f9dc}
+#page-users .um-role-pill[data-role="pending"]{background:rgba(250,204,21,.11);border-color:rgba(250,204,21,.30);color:#fde68a}
+#page-users .um-user-text small{display:block;min-width:0;color:var(--muted);font-size:11px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#page-users .um-user-row .um-manage{flex:none;min-width:61px;min-height:33px;padding:6px 9px;border-radius:10px;font-size:11px}
 #page-users .um-editor{display:block;margin:12px 0}
 #page-users .um-editor:empty{display:none}
 #page-users .um-edit-card{padding:15px;border:1px solid rgba(147,197,253,.28);
@@ -133,8 +143,12 @@ select.input{appearance:none;background-image:linear-gradient(45deg,transparent 
   #page-users .um-edit-fields{grid-template-columns:1fr}
   #page-users .um-edit-fields .um-name-field{grid-column:auto}
   #page-users .um-edit-actions .btn{min-width:90px}
-  #page-users .um-user-row{gap:8px;padding:10px}
-  #page-users .um-user-row .um-manage{min-width:56px;padding:8px}
+  #page-users .um-user-row{gap:7px;padding:7px 8px}
+  #page-users .um-avatar{flex-basis:33px;width:33px;height:33px}
+  #page-users .um-user-name-line{gap:5px}
+  #page-users .um-user-name-line strong{font-size:12px}
+  #page-users .um-role-pill{max-width:75px;padding:2px 5px}
+  #page-users .um-user-row .um-manage{min-width:55px;min-height:32px;padding:5px 7px;font-size:10px}
 }
 
 /* Login */
@@ -180,10 +194,7 @@ select.input{appearance:none;background-image:linear-gradient(45deg,transparent 
 button:not(.month-icon):not(.eye):not(.go),[onclick]:not(.month-icon),.nav-btn,.btn,.student-card,.att-card,.check,.week-chip,.month-field{position:relative;overflow:hidden;transform:translateZ(0);transition:transform .16s cubic-bezier(.2,.8,.2,1),opacity .16s ease,background .18s ease,border-color .18s ease,box-shadow .18s ease,filter .18s ease;-webkit-touch-callout:none}
 .custom-select.needs-choice .custom-select-btn{border-color:rgba(112,220,155,.72)!important;box-shadow:0 0 0 0 rgba(112,220,155,.26),0 0 24px rgba(93,167,255,.18),inset 0 1px 0 rgba(255,255,255,.16);animation:choiceGlow var(--choice-glow-duration) cubic-bezier(.2,.8,.2,1) infinite}
 .custom-select.needs-choice .custom-select-btn:before{content:"";position:absolute;inset:-1px;border-radius:inherit;pointer-events:none;opacity:.72;background:linear-gradient(var(--choice-wipe-angle),transparent 0%,rgba(112,220,155,.07) 14%,rgba(93,167,255,.26) 45%,rgba(251,113,133,.14) 70%,transparent 100%);transform:translateX(-105%);animation:choiceWipe var(--choice-wipe-duration) cubic-bezier(.2,.8,.2,1) infinite}
-/* The same existing green/blue Choice Glow + Wipe is shared by all required selects. */
-@media(prefers-reduced-motion:reduce){
-  .custom-select.needs-choice .custom-select-btn::before{animation:none!important;opacity:0!important}
-}
+.custom-select.loop-choice .custom-select-btn:before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(var(--choice-wipe-angle),transparent 0%,rgba(255,255,255,.04) 18%,rgba(255,255,255,.22) 48%,rgba(147,197,253,.12) 72%,transparent 100%);transform:translateX(-105%);animation:choiceWipe var(--choice-wipe-duration) cubic-bezier(.2,.8,.2,1) infinite}
 @keyframes choiceGlow{0%,100%{box-shadow:0 0 0 0 rgba(112,220,155,.22),0 0 20px rgba(93,167,255,.18),inset 0 1px 0 rgba(255,255,255,.18)}50%{box-shadow:0 0 0 4px rgba(112,220,155,.14),0 0 34px rgba(93,167,255,.36),inset 0 1px 0 rgba(255,255,255,.26)}}
 @keyframes choiceWipe{0%{opacity:0;transform:translateX(-105%)}18%{opacity:.95}100%{opacity:0;transform:translateX(105%)}}
 button:focus,input:focus,select:focus{outline:none!important}
@@ -586,12 +597,18 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
   #page-classes .class-row-actions{min-height:32px}
   #page-classes .class-row-actions .icon-btn{width:32px;height:32px;min-width:32px;min-height:32px;flex-basis:32px}
 }
-/* Home copy filter: independent class selection, no Firebase writes. */
-#page-home .home-class-filter{display:flex;align-items:center;gap:9px;margin-bottom:11px}
-#page-home .home-class-filter label{font-size:12px;font-weight:850;color:var(--muted);flex:0 0 auto}
-#page-home .home-class-filter .custom-select{flex:1;min-width:0}
-#page-home .home-class-filter .custom-select-btn{width:100%;min-height:42px}
-@media(max-width:560px){#page-home .home-class-filter{flex-direction:column;align-items:stretch;gap:6px}}
+/* Home weekly copy: swipeable chips backed by the existing homeClass select; no data writes. */
+#page-home .home-class-filter{display:flex;flex-direction:column;align-items:stretch;gap:7px;min-width:0;margin-bottom:11px}
+#page-home .home-class-filter label{font-size:12px;font-weight:850;color:var(--muted)}
+#page-home .home-class-chips{display:flex;align-items:center;gap:8px;min-width:0;width:100%;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scroll-snap-type:x proximity;padding:2px 1px 6px}
+#page-home .home-class-chips::-webkit-scrollbar{display:none}
+#page-home .home-class-chip{display:inline-flex;flex:0 0 auto;align-items:center;justify-content:center;gap:6px;max-width:min(75vw,260px);min-height:43px;padding:9px 14px;border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.08);color:var(--text);font-size:13px;font-weight:850;white-space:nowrap;cursor:pointer;scroll-snap-align:start;transition:background .16s ease,border-color .16s ease,box-shadow .16s ease}
+#page-home .home-class-chip .home-chip-label{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#page-home .home-class-chip.active{background:linear-gradient(135deg,rgba(93,167,255,.44),rgba(122,121,255,.34));border-color:rgba(147,197,253,.68);box-shadow:inset 0 1px 0 rgba(255,255,255,.17);color:#fff}
+#page-home .home-class-chip .home-chip-check{display:none;font-size:15px;line-height:1;flex:none}
+#page-home .home-class-chip.active .home-chip-check{display:block}
+#page-home .home-class-chip:focus-visible{outline:2px solid #93c5fd!important;outline-offset:2px}
+@media(prefers-reduced-motion:reduce){#page-home .home-class-chip{transition:none}}
 
 /* Summary has only two freestanding dropdown surfaces, not an enclosing panel. */
 #page-summary .summary-filters-standalone{
@@ -789,7 +806,7 @@ body.summary-popup-open{overflow:hidden}
 
   <section id="page-home" class="page active">
     <div class="panel glass">
-      <div class="panel-head"><h2>Overview</h2><select id="homeChurch" class="input native-select-hidden" required></select><div class="custom-select" data-select="homeChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div></div>
+      <div class="panel-head"><h2>Overview</h2><select id="homeChurch" class="input native-select-hidden"></select><div class="custom-select" data-select="homeChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div></div>
       <div class="stats home-stats">
         <div class="stat"><span>Churches</span><b id="statChurch">0</b></div>
         <div class="stat"><span>Students</span><b id="statStudent">0</b></div>
@@ -798,9 +815,9 @@ body.summary-popup-open{overflow:hidden}
     </div>
     <div class="panel glass">
       <div class="home-class-filter">
-        <label id="homeClassLabel" for="homeClass">Class for this week's report</label>
-        <select id="homeClass" class="input native-select-hidden" aria-label="Class for this week's report"></select>
-        <div class="custom-select" data-select="homeClass"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
+        <label id="homeClassLabel">Class for this week's report</label>
+        <select id="homeClass" class="input native-select-hidden" aria-label="Class for this week's report" tabindex="-1"></select>
+        <div id="homeClassChips" class="home-class-chips" role="group" aria-labelledby="homeClassLabel"></div>
       </div>
       <div class="report-copy-head">
         <span class="week-swipe-wipe"></span>
@@ -831,8 +848,8 @@ body.summary-popup-open{overflow:hidden}
         <input id="roleName" class="input" placeholder="Name">
         <input id="roleEmail" class="input" placeholder="Email">
         <input id="roleUid" class="input" placeholder="Firebase UID">
-        <select id="roleType" class="input native-select-hidden" required><option value="pastor">Pastor</option><option value="teacher">Teacher</option></select><div class="custom-select" data-select="roleType"><button class="custom-select-btn" type="button">Pastor</button><div class="custom-select-menu"></div></div>
-        <select id="roleChurch" class="input native-select-hidden" required></select><div class="custom-select" data-select="roleChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
+        <select id="roleType" class="input native-select-hidden"><option value="pastor">Pastor</option><option value="teacher">Teacher</option></select><div class="custom-select" data-select="roleType"><button class="custom-select-btn" type="button">Pastor</button><div class="custom-select-menu"></div></div>
+        <select id="roleChurch" class="input native-select-hidden"></select><div class="custom-select" data-select="roleChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
       </div>
       <button id="saveRole" class="btn primary" style="margin-top:10px;width:100%">Save Role</button>
       <div id="roleStatus" class="status"></div>
@@ -859,7 +876,7 @@ body.summary-popup-open{overflow:hidden}
   <section id="page-classes" class="page">
     <div class="panel glass">
       <h2>Class</h2>
-      <div class="class-name-row"><input id="className" class="input" placeholder="Class name" aria-label="Class name"><select id="classChurch" class="input native-select-hidden" aria-label="Church" required></select><div class="custom-select" data-select="classChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div></div>
+      <div class="class-name-row"><input id="className" class="input" placeholder="Class name" aria-label="Class name"><select id="classChurch" class="input native-select-hidden" aria-label="Church"></select><div class="custom-select" data-select="classChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div></div>
       <div class="class-period-fields">
         <label><span id="classStartLabel">Start Date</span><input id="classStartDate" type="date" class="input" aria-label="Start Date"></label>
         <label><span id="classEndLabel">End Date (optional)</span><input id="classEndDate" type="date" class="input" aria-label="End Date"></label>
@@ -891,12 +908,12 @@ body.summary-popup-open{overflow:hidden}
       <h2>Student</h2>
       <div class="student-line1">
         <input id="studentName" class="input" placeholder="Student name">
-        <select id="studentGender" class="input native-select-hidden" required><option value="Male">Male</option><option value="Female">Female</option></select><div class="custom-select" data-select="studentGender"><button class="custom-select-btn" type="button">Male</button><div class="custom-select-menu"></div></div>
+        <select id="studentGender" class="input native-select-hidden"><option value="Male">Male</option><option value="Female">Female</option></select><div class="custom-select" data-select="studentGender"><button class="custom-select-btn" type="button">Male</button><div class="custom-select-menu"></div></div>
         <input id="studentAge" class="input" placeholder="Age" type="number">
       </div>
       <div class="student-line2">
-        <select id="studentChurch" class="input native-select-hidden" required></select><div class="custom-select" data-select="studentChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
-        <select id="studentClass" class="input native-select-hidden" required></select><div class="custom-select" data-select="studentClass"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
+        <select id="studentChurch" class="input native-select-hidden"></select><div class="custom-select" data-select="studentChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
+        <select id="studentClass" class="input native-select-hidden"></select><div class="custom-select" data-select="studentClass"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
       </div>
       <div class="student-photo-row">
         <input id="studentPhoto" class="input" placeholder="Photo file name or uploaded URL">
@@ -928,7 +945,7 @@ body.summary-popup-open{overflow:hidden}
 
   <section id="page-attendance" class="page">
     <div class="panel glass">
-      <div class="att-head"><h2>Attendance</h2><select id="attChurch" class="input church-switch native-select-hidden" required></select><div class="custom-select church-switch-wrap" data-select="attChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div><select id="attClass" class="input class-switch native-select-hidden" required></select><div class="custom-select class-switch-wrap" data-select="attClass"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div></div>
+      <div class="att-head"><h2>Attendance</h2><select id="attChurch" class="input church-switch native-select-hidden"></select><div class="custom-select church-switch-wrap" data-select="attChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div><select id="attClass" class="input class-switch native-select-hidden"></select><div class="custom-select class-switch-wrap" data-select="attClass"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div></div>
       <div class="att-filter"><div class="month-field"><span class="week-swipe-wipe"></span><button id="prevMonth" class="month-icon left" title="Previous month"><i class="ri-arrow-left-s-line"></i></button><input id="attMonth" class="input" type="month"><span id="attMonthText" class="month-field-display"></span><span class="month-icon cal"><i class="ri-calendar-todo-line"></i></span><button id="nextMonth" class="month-icon right" title="Next month"><i class="ri-arrow-right-s-line"></i></button></div></div>
       <div id="weekbar" class="weekbar"></div>
       <div class="stats att-stats">
@@ -949,7 +966,7 @@ body.summary-popup-open{overflow:hidden}
 
   <section id="page-summary" class="page">
     <div class="summary-filters summary-filters-standalone">
-        <select id="summaryChurch" class="input native-select-hidden" aria-label="Church" required></select><div class="custom-select" data-select="summaryChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
+        <select id="summaryChurch" class="input native-select-hidden" aria-label="Church"></select><div class="custom-select" data-select="summaryChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
         <select id="summaryClass" class="input native-select-hidden" aria-label="Filter by class"></select><div class="custom-select" data-select="summaryClass"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
     </div>
     <div id="summaryList" class="list summary-list"></div>
@@ -980,7 +997,7 @@ body.summary-popup-open{overflow:hidden}
       </div>
       <div class="grid2">
         <div class="month-field"><span class="week-swipe-wipe"></span><button id="prevReportMonth" class="month-icon left" title="Previous month"><i class="ri-arrow-left-s-line"></i></button><input id="reportMonth" class="input" type="month"><span id="reportMonthText" class="month-field-display"></span><span class="month-icon cal"><i class="ri-calendar-todo-line"></i></span><button id="nextReportMonth" class="month-icon right" title="Next month"><i class="ri-arrow-right-s-line"></i></button></div>
-        <select id="reportChurch" class="input native-select-hidden" required></select><div class="custom-select" data-select="reportChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
+        <select id="reportChurch" class="input native-select-hidden"></select><div class="custom-select" data-select="reportChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
         <select id="reportClass" class="input native-select-hidden"></select><div class="custom-select report-class-select" data-select="reportClass"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
       </div>
       <div class="stats report-stats" style="margin-top:12px">
@@ -1376,18 +1393,23 @@ function authGooglePhotoURL(user){
     user?.providerData?.find(p=>p?.providerId==="google.com")?.photoURL);
 }
 function umPhotoHtml(user){
-  const url=googleProfilePhotoURL(user?.photoURL);
+  // Use existing stored Google-hosted photos; never guess a Google account URL.
+  const url=[user?.photoURL,user?.photoUrl,user?.googlePhotoURL,
+    user?.providerData?.find(p=>p?.providerId==="google.com")?.photoURL]
+    .map(googleProfilePhotoURL).find(Boolean)||"";
   return '<span class="um-avatar">'+
     (url?'<img src="'+esc(url)+'" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">':'')+
     '<i class="ri-user-3-line"'+(url?' hidden':'')+' aria-hidden="true"></i></span>';
 }
 function umBindPhotoFallbacks(container){
   container?.querySelectorAll(".um-avatar img").forEach(img=>{
-    img.addEventListener("error",()=>{
+    const fallback=()=>{
       img.hidden=true;
       const icon=img.nextElementSibling;
       if(icon)icon.hidden=false;
-    },{once:true});
+    };
+    img.addEventListener("error",fallback,{once:true});
+    if(img.complete&&img.naturalWidth===0)fallback();
   });
 }
 async function saveGoogleProfilePhotoForRequest(user){
@@ -1486,7 +1508,6 @@ function page(name){
   $("page-"+name).classList.add("active");
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.page===name));
   renderAll();
-  updateRequiredSelectEffects();
 }
 const activePage = () => document.querySelector(".page.active")?.id.replace("page-","") || "home";
 const isPage = name => activePage() === name;
@@ -2007,27 +2028,13 @@ window.editClass = editClass;
 window.editStudent = editStudent;
 window.showStudentDetails = showStudentDetails;
 
-// Centralized: use existing choiceGlow/choiceWipe CSS only for unresolved required selects.
-function updateRequiredSelectEffects(id=null){
-  const wrappers=id?[document.querySelector(`.custom-select[data-select="${id}"]`)].filter(Boolean)
-    :document.querySelectorAll(".custom-select[data-select]");
-  for(const wrap of wrappers){
-    const select=$(wrap.dataset.select),page=wrap.closest(".page");
-    const options=select?[...select.options]:[];
-    const hasChoices=options.some(option=>option.value!==""&&!option.disabled);
-    const valid=!!select?.value&&options.some(option=>option.value===select.value&&!option.disabled);
-    const visible=(!page||page.classList.contains("active"))&&
-      wrap.getClientRects().length>0&&!wrap.hidden&&!wrap.classList.contains("hidden");
-    const enabled=!!select&&!select.disabled&&!wrap.querySelector(".custom-select-btn")?.disabled;
-    wrap.classList.toggle("needs-choice",!!select?.required&&visible&&enabled&&hasChoices&&!valid);
-    wrap.classList.remove("loop-choice");
-  }
-}
 function syncCustomSelect(id){
-  const select=$(id),wrap=document.querySelector(`.custom-select[data-select="${id}"]`);
-  if(!select||!wrap)return;
-  const btn=wrap.querySelector(".custom-select-btn"),menu=wrap.querySelector(".custom-select-menu");
+  const select=$(id), wrap=document.querySelector(`.custom-select[data-select="${id}"]`);
+  if(!select||!wrap) return;
+  const btn=wrap.querySelector(".custom-select-btn"), menu=wrap.querySelector(".custom-select-menu");
   btn.textContent=select.selectedOptions[0]?.textContent||"";
+  if(id==="attChurch" || id==="attClass") wrap.classList.toggle("needs-choice", !select.value);
+  if(id==="homeChurch") wrap.classList.toggle("loop-choice", !select.value);
   menu.innerHTML=[...select.options].map(o=>`<button type="button" class="custom-select-option ${o.value===select.value?"active":""}" data-value="${esc(o.value)}">${esc(o.textContent)}</button>`).join("");
   menu.querySelectorAll(".custom-select-option").forEach(opt=>opt.onclick=()=>{
     select.value=opt.dataset.value;
@@ -2035,41 +2042,45 @@ function syncCustomSelect(id){
     wrap.classList.remove("open");
     syncCustomSelect(id);
   });
-  updateRequiredSelectEffects(id);
 }
-function syncCustomSelects(){
-  document.querySelectorAll(".custom-select[data-select]").forEach(w=>syncCustomSelect(w.dataset.select));
-}
-let customSelectDismissBound=false;
+function syncCustomSelects(){ document.querySelectorAll(".custom-select[data-select]").forEach(w=>syncCustomSelect(w.dataset.select)); }
 function initCustomSelects(){
-  document.querySelectorAll(".custom-select[data-select]").forEach(w=>{
-    if(w.dataset.customSelectReady)return;
-    const button=w.querySelector(".custom-select-btn");
-    if(!button)return;
-    button.onclick=e=>{
+  document.querySelectorAll(".custom-select").forEach(w=>{
+    w.querySelector(".custom-select-btn").onclick=e=>{
       e.stopPropagation();
-      document.querySelectorAll(".custom-select.open").forEach(x=>{if(x!==w)x.classList.remove("open")});
+      document.querySelectorAll(".custom-select.open").forEach(x=>{ if(x!==w) x.classList.remove("open"); });
       w.classList.toggle("open");
     };
-    w.dataset.customSelectReady="1";
   });
-  if(!customSelectDismissBound){
-    document.addEventListener("click",()=>document.querySelectorAll(".custom-select.open").forEach(w=>w.classList.remove("open")));
-    customSelectDismissBound=true;
-  }
+  document.addEventListener("click",()=>document.querySelectorAll(".custom-select.open").forEach(w=>w.classList.remove("open")));
   syncCustomSelects();
 }
-// Covers native keyboard changes as well as custom-menu selections.
-document.addEventListener("change",event=>{
-  if(event.target?.tagName==="SELECT"&&event.target.required)
-    updateRequiredSelectEffects(event.target.id);
-});
 function setOptions(id, html){
   const el=$(id); if(!el) return;
   const previous=el.value;
   el.innerHTML=html;
   if(previous && [...el.options].some(o=>o.value===previous)) el.value=previous;
   syncCustomSelect(id);
+}
+// The original church-scoped homeClass options are the single source of class chip labels and IDs.
+function renderHomeClassChips(){
+  const select=$("homeClass"),strip=$("homeClassChips");
+  if(!select||!strip)return;
+  const options=[...select.options];
+  const key=JSON.stringify(options.map(o=>[o.value,o.textContent,o.disabled]));
+  if(strip.dataset.optionsKey!==key){
+    const previousScroll=strip.scrollLeft;
+    strip.innerHTML=options.map(o=>
+      `<button type="button" class="home-class-chip" data-home-class="${esc(o.value)}" title="${esc(o.textContent)}" ${o.disabled?"disabled":""} aria-pressed="false"><i class="ri-check-line home-chip-check" aria-hidden="true"></i><span class="home-chip-label">${esc(o.textContent)}</span></button>`
+    ).join("");
+    strip.dataset.optionsKey=key;
+    strip.scrollLeft=select.value?previousScroll:0;
+  }
+  strip.querySelectorAll("[data-home-class]").forEach(chip=>{
+    const selected=chip.dataset.homeClass===select.value;
+    chip.classList.toggle("active",selected);
+    chip.setAttribute("aria-pressed",String(selected));
+  });
 }
 function renderSelects(){
   const ch=visibleChurches().map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join("");
@@ -2093,7 +2104,8 @@ function renderSelects(){
   if($("attChurch") && selectedChurchId()) $("attChurch").value=selectedChurchId();
   const attClassOptions=`<option value="">${esc(tr("selectClass"))}</option>`+attendanceClasses().map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join("");
   setOptions("attClass",attClassOptions);
-  ["homeChurch","homeClass","studentChurch","attChurch","reportChurch","summaryChurch","studentClass","attClass","reportClass","summaryClass"].forEach(syncCustomSelect);
+  ["homeChurch","studentChurch","attChurch","reportChurch","summaryChurch","studentClass","attClass","reportClass","summaryClass"].forEach(syncCustomSelect);
+  renderHomeClassChips();
   renderThemeBackgroundAdmin();
 }
 const themeChoices=()=>window.SSTheme?.themes || [];
@@ -2251,17 +2263,36 @@ function renderUsers(){
     b.setAttribute("aria-pressed",String(b.dataset.umTab===umTab));
   });
   const pool=umTab==="pending"?pending:umTab==="blocked"?blocked:active;
-  const items=pool.slice()
-    .sort((a,b)=>String(a.name||a.email||"").localeCompare(String(b.name||b.email||"")));
-  $("umList").innerHTML=items.map(u=>{
-    const role=u.pending?(currentLang==="km"?"រង់ចាំ":"Pending"):roleLabel(u.role);
-    const info=u.pending?role:[role,churchName(u.churchId)].filter(Boolean).join(" • ");
-    const title=u.pending?(currentLang==="km"?"ពិនិត្យ":"Review"):(currentLang==="km"?"គ្រប់គ្រង":"Manage");
-    return '<div class="um-user-row">'+umPhotoHtml(u)+
-      '<div class="um-user-text"><strong>'+esc(u.name||u.email||"Google User")+'</strong>'+
-      '<small>'+esc(u.email||"")+'</small><small>'+esc(info)+'</small></div>'+
-      '<button type="button" class="btn um-manage" data-um-select="'+esc((u.pending?"pending:":"user:")+u.id)+'">'+title+'</button></div>';
-  }).join("")||'<div class="um-no-users">'+(currentLang==="km"?"មិនមានអ្នកប្រើ":"No matching users")+'</div>';
+  const grouped=new Map();
+  pool.forEach(u=>{
+    const id=u.churchId&&Object.hasOwn(state.churches||{},u.churchId)?u.churchId:"";
+    if(!grouped.has(id))grouped.set(id,[]);
+    grouped.get(id).push(u);
+  });
+  const churchIds=[...grouped.keys()].sort((a,b)=>
+    !a?1:!b?-1:churchName(a).localeCompare(churchName(b)));
+  const groupKh=currentLang==="km";
+  $("umList").innerHTML=churchIds.map(churchId=>{
+    const name=churchId?churchName(churchId):(groupKh?"មិនទាន់កំណត់ពួកជំនុំ":"Unassigned");
+    const members=grouped.get(churchId).slice()
+      .sort((a,b)=>String(a.name||a.email||"").localeCompare(String(b.name||b.email||"")));
+    const heading='<div class="um-church-head"><div class="um-church-head-title">'+
+      '<i class="'+(churchId?"ri-building-4-line":"ri-folder-user-line")+'" aria-hidden="true"></i>'+
+      '<strong>'+esc(name)+'</strong></div><span class="um-church-count">'+
+      members.length+' '+(groupKh?"នាក់":members.length===1?"user":"users")+'</span></div>';
+    const rows=members.map(u=>{
+      const role=u.pending?(groupKh?"រង់ចាំ":"Pending"):roleLabel(u.role);
+      const kind=u.pending?"pending":u.role==="pastor"?"pastor":"teacher";
+      const title=u.pending?(groupKh?"ពិនិត្យ":"Review"):(groupKh?"គ្រប់គ្រង":"Manage");
+      return '<div class="um-user-row">'+umPhotoHtml(u)+
+        '<div class="um-user-text"><div class="um-user-name-line"><strong>'+esc(u.name||u.email||"Google User")+'</strong>'+
+        '<span class="um-role-pill" data-role="'+kind+'">'+esc(role)+'</span></div>'+
+        '<small>'+esc(u.email||"")+'</small></div>'+
+        '<button type="button" class="btn um-manage" data-um-select="'+esc((u.pending?"pending:":"user:")+u.id)+'">'+title+'</button></div>';
+    }).join("");
+    return '<section class="um-church-group" aria-label="'+esc(name)+'">'+heading+
+      '<div class="um-church-rows">'+rows+'</div></section>';
+  }).join("")||'<div class="um-no-users">'+(groupKh?"មិនមានអ្នកប្រើ":"No matching users")+'</div>';
   umBindPhotoFallbacks($("umList"));
   const selected=umSelectedRecord();
   if(!selected){umSelected="";$("umEditor").textContent="";return;}
@@ -2285,11 +2316,9 @@ function renderUsers(){
     '<input id="umName" class="input" maxlength="120" value="'+esc(umDraftName)+'"></label>'+
     '<label>'+(kh?"តួនាទី":"Role")+'<select id="umRole" class="input"><option value="teacher" '+(umDraftRole==="teacher"?"selected":"")+'>Teacher</option>'+
     '<option value="pastor" '+(umDraftRole==="pastor"?"selected":"")+'>Pastor</option></select></label>'+
-    '<label>'+(kh?"ពួកជំនុំ":"Church")+'<select id="umChurch" class="input native-select-hidden" required>'+options+'</select>'+
-    '<div class="custom-select" data-select="umChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div></label></div>'+
+    '<label>'+(kh?"ពួកជំនុំ":"Church")+'<select id="umChurch" class="input">'+options+'</select></label></div>'+
     '<div class="um-edit-actions">'+primary+secondary+'</div></div>';
   umBindPhotoFallbacks($("umEditor"));
-  initCustomSelects(); // Bind the dynamically created Admin Users church selector once.
   $("umEditor").querySelectorAll("[data-um-action]").forEach(b=>b.disabled=umSaving);
 }
 function umSelect(key){
@@ -2738,7 +2767,27 @@ function prevHomeReport(){ moveHomeReport(-1); }
 function nextHomeReport(){ moveHomeReport(1); }
 
 if($("homeChurch")) $("homeChurch").onchange=()=>{setSelectedChurchId($("homeChurch").value);renderSelects();renderAll();};
-if($("homeClass")) $("homeClass").onchange=()=>{renderHomeReport();};
+if($("homeClass")) $("homeClass").onchange=()=>{renderHomeClassChips();renderHomeReport();};
+if($("homeClassChips")){
+  $("homeClassChips").addEventListener("click",event=>{
+    const chip=event.target.closest("[data-home-class]");
+    if(!chip||chip.disabled)return;
+    const select=$("homeClass"),id=chip.dataset.homeClass;
+    if(!select||![...select.options].some(o=>o.value===id&&!o.disabled))return;
+    if(select.value===id)return;
+    select.value=id;
+    select.dispatchEvent(new Event("change",{bubbles:true}));
+  });
+  // Use the desktop vertical wheel for horizontal chips when the strip has room;
+  // keep normal vertical page scrolling at the beginning and end.
+  $("homeClassChips").addEventListener("wheel",event=>{
+    const strip=event.currentTarget;
+    if(Math.abs(event.deltaX)>=Math.abs(event.deltaY)||strip.scrollWidth<=strip.clientWidth)return;
+    const max=strip.scrollWidth-strip.clientWidth;
+    const next=Math.max(0,Math.min(max,strip.scrollLeft+event.deltaY));
+    if(next!==strip.scrollLeft){strip.scrollLeft=next;event.preventDefault();}
+  },{passive:false});
+}
 if($("studentChurch")) $("studentChurch").onchange=()=>{setSelectedChurchId($("studentChurch").value);renderSelects();scheduleStudentRender();};
 if($("studentClass")) $("studentClass").onchange=()=>{resetStudentRenderCache();scheduleStudentRender();};
 if($("studentSearch")) $("studentSearch").oninput=e=>{state.studentQ=e.target.value;resetStudentRenderCache();scheduleStudentRender();};
@@ -2768,7 +2817,12 @@ function bindSwipe(el,onSwipe,wheel=false){
   if(wheel) el.addEventListener("wheel",e=>{if(Math.abs(e.deltaX)>Math.abs(e.deltaY)){e.preventDefault();onSwipe(e.deltaX>0?1:-1);}},{passive:false});
 }
 function setAttMonth(delta){ $("attMonth").value=shiftMonth($("attMonth").value,delta); syncMonthDisplay("attMonth","attMonthText"); state.selectedSunday=""; resetAttendanceRenderCache(); playSwipeWipe($("attMonth")?.closest(".month-field"),delta); renderAttendance(); }
-$("attMonth").value=monthNow(); syncMonthDisplay("attMonth","attMonthText"); $("attMonth").onchange=()=>{syncMonthDisplay("attMonth","attMonthText");state.selectedSunday=""; resetAttendanceRenderCache(); renderAttendance();};
+// Open on this week's Sunday (including weeks starting in the previous month).
+// Month navigation still clears selectedSunday and uses the month's first Sunday.
+state.selectedSunday=currentSunday();
+$("attMonth").value=state.selectedSunday.slice(0,7);
+syncMonthDisplay("attMonth","attMonthText");
+$("attMonth").onchange=()=>{syncMonthDisplay("attMonth","attMonthText");state.selectedSunday=""; resetAttendanceRenderCache(); renderAttendance();};
 if($("attChurch")) $("attChurch").onchange=()=>{setSelectedChurchId($("attChurch").value); renderSelects(); syncCustomSelect("attChurch"); syncCustomSelect("attClass"); renderAttendance();};
 if($("attClass")) $("attClass").onchange=()=>{syncCustomSelect("attClass");resetAttendanceRenderCache();renderAttendance();};
 if($("prevMonth")) $("prevMonth").onclick=()=>setAttMonth(-1);
@@ -3000,7 +3054,7 @@ function renderReports(){
    dates retain the original recorded-week range. No attendance data is changed. */
 const summarySyncStorageKey="kid_summary_sync_scroll";
 let summarySyncEnabled=false;
-try{summarySyncEnabled=(localStorage.getItem(summarySyncStorageKey)??localStorage.getItem("kid3pro_summary_sync_scroll"))==="1"}catch{}
+try{summarySyncEnabled=localStorage.getItem(summarySyncStorageKey)==="1"}catch{}
 let summarySyncWeek=0;
 let summaryScrollRestore=null;
 const summarySyncProgrammed=new WeakMap();
