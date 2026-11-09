@@ -1,7 +1,7 @@
 {
-  "id": "/kid3pro/",
-  "name": "Love Kid 3 Pro — Sunday School",
-  "short_name": "Love Kid 3 Pro",
+  "id": "/sundaykidpro/",
+  "name": "SundayKidPro — Sunday School",
+  "short_name": "SundayKidPro",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
