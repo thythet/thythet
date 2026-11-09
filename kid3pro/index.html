@@ -2014,12 +2014,15 @@ function updateRequiredSelectEffects(id=null){
   for(const wrap of wrappers){
     const select=$(wrap.dataset.select),page=wrap.closest(".page");
     const options=select?[...select.options]:[];
-    const hasChoices=options.some(option=>option.value!==""&&!option.disabled);
+    // A placeholder-only Class dropdown must still guide the user, as it did originally.
+    // Avoid getClientRects(): reading layout while options render can clear the glow early
+    // (the app may still be hidden during sign-in) and force unnecessary reflows.
+    const hasOptions=options.length>0;
     const valid=!!select?.value&&options.some(option=>option.value===select.value&&!option.disabled);
-    const visible=(!page||page.classList.contains("active"))&&
-      wrap.getClientRects().length>0&&!wrap.hidden&&!wrap.classList.contains("hidden");
+    const visible=(!page||page.classList.contains("active"))&&!wrap.hidden&&
+      !wrap.classList.contains("hidden");
     const enabled=!!select&&!select.disabled&&!wrap.querySelector(".custom-select-btn")?.disabled;
-    wrap.classList.toggle("needs-choice",!!select?.required&&visible&&enabled&&hasChoices&&!valid);
+    wrap.classList.toggle("needs-choice",!!select?.required&&visible&&enabled&&hasOptions&&!valid);
     wrap.classList.remove("loop-choice");
   }
 }
