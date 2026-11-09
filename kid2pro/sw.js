@@ -1,5 +1,5 @@
 /* Love Kid Pro PWA app shell. Never cache Firebase responses or student data. */
-const CACHE="lovekid-pro-shell-v13";
+const CACHE="lovekid-2pro-shell-v16";
 const SHELL=[
   "./","./index.html","./dashboard.html",
   "./themes.css","./effects.css","./theme-switcher.js","./effect-switcher.js",
@@ -15,8 +15,7 @@ self.addEventListener("install",event=>{
 });
 self.addEventListener("activate",event=>{
   event.waitUntil(caches.keys().then(keys=>Promise.all(
-    keys.filter(key=>(key.startsWith("lovekid-shell-")||
-      key.startsWith("lovekid-pro-shell-"))&&key!==CACHE).map(key=>caches.delete(key))
+    keys.filter(key=>key.startsWith("lovekid-2pro-shell-")&&key!==CACHE).map(key=>caches.delete(key))
   )).then(()=>self.clients.claim()));
 });
 self.addEventListener("fetch",event=>{
@@ -26,13 +25,13 @@ self.addEventListener("fetch",event=>{
   if(url.origin!==self.location.origin || !url.pathname.startsWith(new URL(self.registration.scope).pathname))return;
   if(request.mode==="navigate"){
     event.respondWith(fetch(request).catch(async()=>
-      (await caches.match(request,{ignoreSearch:true}))||
-      (await caches.match("./index.html"))));
+      (await caches.open(CACHE).then(cache=>cache.match(request,{ignoreSearch:true})))||
+      (await caches.open(CACHE).then(cache=>cache.match("./index.html")))));
     return;
   }
   // Only public, explicitly listed app-shell files are cached. The Firebase
   // database, Cloudinary images, photo uploads and other live data remain online.
   if(!STATIC.has(url.pathname))return;
-  event.respondWith(caches.match(request,{ignoreSearch:true}).then(hit=>
+  event.respondWith(caches.open(CACHE).then(cache=>cache.match(request,{ignoreSearch:true})).then(hit=>
     hit||fetch(request)));
 });

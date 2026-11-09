@@ -87,6 +87,56 @@ select.input{appearance:none;background-image:linear-gradient(45deg,transparent 
 .status{min-height:20px;margin-top:8px;color:#bfdbfe;font-weight:850}.err{color:#fecaca}.ok{color:#bbf7d0}
 .report-copy-head{position:relative;display:grid;grid-template-columns:48px minmax(0,1fr) 48px;gap:0;margin-bottom:10px;border:1px solid rgba(147,197,253,.28);border-radius:18px;overflow:hidden;background:rgba(255,255,255,.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.14);touch-action:pan-y;user-select:none}.report-nav{height:50px;padding:0!important;border-radius:0!important;border:0!important;background:rgba(255,255,255,.06);font-size:26px;box-shadow:none!important;display:grid!important;place-items:center!important;line-height:1}.report-nav i{display:block;line-height:1}.report-nav[disabled]{opacity:.35;filter:saturate(.6);pointer-events:none}.report-copy-btn{min-height:50px;border-radius:0!important;border-top:0!important;border-bottom:0!important;background:linear-gradient(135deg,rgba(93,167,255,.56),rgba(122,121,255,.42));border-color:rgba(147,197,253,.28);box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 12px 28px rgba(37,99,235,.18);letter-spacing:0;min-width:0;display:flex;align-items:center;justify-content:center;gap:.35em;white-space:nowrap;overflow:hidden;text-overflow:clip;font-size:clamp(13px,3.6vw,20px);line-height:1}.report-copy-btn span{white-space:nowrap;flex:0 1 auto}.copy-report{display:block}.report-text{min-height:120px;resize:none;overflow:hidden;line-height:1.72;white-space:pre-wrap}
 
+/* Kid3Pro Admin-only user approvals: compact, responsive, no manual UIDs. */
+/* Counters and filters sit directly on the page, with no enclosing glass panel. */
+#page-users .um-stat-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+#page-users .um-stat-row>div{display:flex;flex-direction:column;justify-content:center;
+  min-width:0;min-height:60px;gap:2px;padding:8px;
+  border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.06)}
+#page-users .um-stat-row strong{font-size:20px;line-height:1.1;font-variant-numeric:tabular-nums}
+#page-users .um-stat-row span{color:var(--muted);font-size:10px;line-height:1.25;font-weight:800}
+#page-users .um-tabs{display:flex;gap:6px;margin:9px 0 11px}
+#page-users .um-tabs button{flex:1;min-width:0;min-height:37px;padding:8px 6px;border-radius:12px;
+  color:var(--text);font-size:12px;font-weight:900;border:1px solid var(--line);
+  background:rgba(255,255,255,.07);cursor:pointer}
+#page-users .um-tabs button.active{background:linear-gradient(135deg,rgba(93,167,255,.34),rgba(122,121,255,.3));border-color:rgba(147,197,253,.56)}
+#page-users #umStatus:empty{display:none}
+#page-users .um-list{display:flex;flex-direction:column;gap:8px}
+#page-users .um-user-row{display:flex;align-items:center;gap:10px;padding:11px 12px;
+  border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.065)}
+#page-users .um-avatar{display:grid;place-items:center;flex:0 0 39px;width:39px;height:39px;
+  border-radius:13px;background:rgba(93,167,255,.17);font-size:18px;overflow:hidden}
+#page-users .um-avatar img{display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit}
+#page-users .um-avatar img[hidden]{display:none}
+#page-users .um-avatar>i[hidden]{display:none}
+#page-users .um-edit-top .um-avatar{flex:0 0 44px;width:44px;height:44px}
+#page-users .um-user-text{min-width:0;flex:1}
+#page-users .um-user-text strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
+#page-users .um-user-text small{display:block;color:var(--muted);font-size:11px;overflow-wrap:anywhere}
+#page-users .um-user-row .um-manage{min-width:68px;padding:8px 10px;border-radius:10px;font-size:12px}
+#page-users .um-editor{display:block;margin:12px 0}
+#page-users .um-editor:empty{display:none}
+#page-users .um-edit-card{padding:15px;border:1px solid rgba(147,197,253,.28);
+  border-radius:18px;background:linear-gradient(145deg,rgba(76,124,201,.18),rgba(255,255,255,.055))}
+#page-users .um-edit-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+#page-users .um-edit-top strong{font-size:15px;overflow-wrap:anywhere}
+#page-users .um-edit-top small{display:block;font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+#page-users .um-edit-fields{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+#page-users .um-edit-fields label{display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:850;color:var(--muted)}
+#page-users .um-edit-fields .input{min-height:43px;padding:10px;font-size:13px}
+#page-users .um-edit-fields .um-name-field{grid-column:1/-1}
+#page-users .um-edit-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
+#page-users .um-edit-actions .btn{flex:1;min-width:110px;padding:10px;font-size:12px;border-radius:12px}
+#page-users .um-no-users{padding:20px;text-align:center;color:var(--muted);
+  border:1px dashed var(--line);border-radius:15px;font-size:13px}
+@media(max-width:480px){
+  #page-users .um-edit-fields{grid-template-columns:1fr}
+  #page-users .um-edit-fields .um-name-field{grid-column:auto}
+  #page-users .um-edit-actions .btn{min-width:90px}
+  #page-users .um-user-row{gap:8px;padding:10px}
+  #page-users .um-user-row .um-manage{min-width:56px;padding:8px}
+}
+
 /* Login */
 .login-wrap{min-height:calc(100vh - 32px);display:grid;place-items:start center;padding-top:clamp(54px,14vh,150px)}
 .login-card{width:min(92vw,520px);padding:34px}
@@ -279,7 +329,6 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
   .student-card .actions .icon-btn{width:38px;height:38px;min-width:38px;font-size:19px}
 }
 
-
 /* Student photos: compact Remix camera upload button and live green progress. */
 #page-students .student-photo-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:9px}
 #page-students .student-photo-row #studentPhoto{flex:1 1 200px;min-width:0}
@@ -337,21 +386,10 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
   text-overflow:ellipsis;overflow:hidden
 }
 #page-summary .summary-strip-wrap{position:relative;min-width:0;overflow:hidden}
-/* Keep all attendance histories horizontally scrollable, but never show
-   the browser's native (including hover-triggered) horizontal scrollbar. */
 #page-summary .summary-grid-scroll{
   display:block;max-width:100%;min-width:0;overflow-x:auto;overflow-y:hidden;
   padding:5px 5px 6px;touch-action:pan-x;-webkit-overflow-scrolling:touch;
-  overscroll-behavior-x:contain;
-  scrollbar-width:none!important;/* Firefox and modern Chromium */
-  -ms-overflow-style:none;/* Legacy Edge */
-}
-#page-summary .summary-grid-scroll::-webkit-scrollbar{
-  display:none!important;width:0!important;height:0!important;
-}
-#page-summary .summary-grid-scroll::-webkit-scrollbar-thumb,
-#page-summary .summary-grid-scroll::-webkit-scrollbar-track{
-  background:transparent!important;
+  overscroll-behavior-x:contain;scrollbar-width:thin
 }
 #page-summary .summary-strip-wrap.has-overflow .summary-grid-scroll{
   -webkit-mask-image:linear-gradient(to right,#000 0%,#000 calc(100% - 20px),transparent 100%);
@@ -428,17 +466,130 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
 /* Love Kid Pro: class schedule and archive form. */
 .class-name-row{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:9px;align-items:center}
 .class-name-row>.input,.class-name-row>.custom-select{min-width:0}
-.class-period-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:11px}
+.class-period-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:11px}
 .class-period-fields label{display:grid;gap:6px;min-width:0;font-size:12px;font-weight:900;color:var(--muted)}
 .class-period-fields .input{width:100%;min-width:0}
 .class-period-fields input[type="date"]{color-scheme:dark}
-.class-date-help{font-size:12px;color:var(--muted);margin:9px 1px;line-height:1.6}
+.class-date-help{font-size:12px;color:var(--muted);margin:9px 0 0;line-height:1.6}
+/* Status is a single Active / Archived switch, with help hidden under the three-dot menu. */
+#page-classes .class-options-row{display:flex;align-items:center;gap:9px;margin:11px 0 12px;min-height:43px}
+#page-classes .class-switch-control{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+#page-classes #classLifecycleLabel{font-size:12px;color:var(--muted);font-weight:900}
+#page-classes .class-lifecycle-switch{display:inline-flex;align-items:center;gap:9px;min-height:40px;
+  padding:5px 2px;border-radius:0;border:0;box-shadow:none;
+  background:transparent;color:#bbf7d0;font-size:13px;font-weight:900;
+  cursor:pointer;touch-action:manipulation}
+#page-classes .class-switch-track{position:relative;display:inline-block;width:38px;height:22px;
+  border-radius:999px;background:#16a34a;transition:background .18s;flex:0 0 38px}
+#page-classes .class-switch-thumb{position:absolute;top:3px;left:3px;width:16px;height:16px;
+  border-radius:50%;background:#fff;transform:translateX(16px);transition:transform .18s;
+  box-shadow:0 2px 5px rgba(0,0,0,.25)}
+#page-classes .class-lifecycle-switch[aria-checked="false"]{background:transparent;border-color:transparent;color:#fde68a}
+#page-classes .class-lifecycle-switch:hover{background:transparent;border-color:transparent}
+#page-classes .class-lifecycle-switch[aria-checked="false"] .class-switch-track{background:#64748b}
+#page-classes .class-lifecycle-switch[aria-checked="false"] .class-switch-thumb{transform:translateX(0)}
+#page-classes .class-lifecycle-switch:focus-visible,
+#page-classes .class-info-menu summary:focus-visible{outline:2px solid #93c5fd;outline-offset:3px}
+#page-classes .class-info-menu{position:relative;margin-left:auto;flex:0 0 auto;z-index:2}
+#page-classes .class-info-menu summary{display:grid;place-items:center;width:40px;height:40px;
+  border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.08);
+  color:var(--text);font-size:23px;cursor:pointer;list-style:none}
+#page-classes .class-info-menu summary::-webkit-details-marker{display:none}
+#page-classes .class-info-menu[open] summary{border-color:rgba(147,197,253,.5);background:rgba(93,167,255,.20)}
+#page-classes .class-info-content{position:absolute;z-index:30;top:calc(100% + 8px);right:0;
+  width:min(310px,calc(100vw - 72px));max-width:calc(100vw - 40px);
+  padding:13px 14px;border-radius:14px;border:1px solid rgba(147,197,253,.34);
+  background:#22344e;color:var(--text);box-shadow:0 14px 30px rgba(0,0,0,.34)}
+#page-classes .class-info-content strong{font-size:13px}
+@media(prefers-reduced-motion:reduce){#page-classes .class-switch-track,#page-classes .class-switch-thumb{transition:none}}
 .class-form-actions{display:flex;gap:9px;justify-content:flex-end;align-items:center}
 .class-form-actions .btn{min-width:110px}
 .class-record-info{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:5px}
 .class-record-info .class-period-text{font-size:12px;font-weight:750;color:var(--muted)}
 .class-state-pill{font-size:11px;font-weight:900;padding:4px 8px;border-radius:999px;border:1px solid rgba(74,222,128,.4);background:rgba(34,197,94,.12);color:#bbf7d0}
 .class-state-pill.archived{border-color:rgba(251,191,36,.32);background:rgba(251,191,36,.10);color:#fde68a}
+/* Kid3Pro: tiny class rows grouped inside independently collapsible churches. */
+#page-classes #classList{display:flex;flex-direction:column;gap:9px}
+#page-classes .class-church-group{border:1px solid var(--line);border-radius:17px;overflow:hidden;
+  background:rgba(255,255,255,.055);box-shadow:inset 0 1px 0 rgba(255,255,255,.07)}
+#page-classes .class-church-header{display:flex;align-items:center;gap:9px;min-height:46px;
+  padding:10px 12px;cursor:pointer;list-style:none;user-select:none;font-weight:900}
+#page-classes .class-church-header::-webkit-details-marker{display:none}
+#page-classes .class-church-header:focus-visible{outline:2px solid #93c5fd;outline-offset:-3px}
+#page-classes .class-church-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:16px;line-height:1.35}
+#page-classes .class-church-count{font-size:11px;color:var(--muted);white-space:nowrap}
+#page-classes .class-church-arrow{font-size:16px;transition:transform .2s}
+#page-classes .class-church-group[open] .class-church-arrow{transform:rotate(180deg)}
+#page-classes .class-row{min-height:45px;padding:6px 12px;
+  display:flex;align-items:center;gap:8px;border-top:1px solid var(--line);box-sizing:border-box}
+#page-classes .class-row-main{min-width:0;flex:1;display:flex;align-items:center;gap:8px;overflow:hidden}
+#page-classes .class-row-title{font-size:13px;min-width:0;flex:0 1 auto;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;font-weight:900}
+#page-classes .class-row-dates{color:var(--muted);font-size:11px;white-space:nowrap;
+  min-width:0;overflow:hidden;text-overflow:ellipsis;flex:1}
+#page-classes .class-row-state{display:inline-block;width:7px;height:7px;border-radius:50%;
+  flex:0 0 7px;background:#4ade80}
+#page-classes .class-row-state.archived{background:#fbbf24}
+#page-classes .class-row-folder{display:inline-block;flex:0 0 auto;font-size:15px;line-height:1;
+  color:var(--muted);vertical-align:middle}
+#page-classes .class-row-actions{display:flex;align-items:center;justify-content:flex-end;
+  gap:5px;flex:0 0 auto;align-self:center;min-height:34px;margin:0}
+/* Center the actual Remixicon glyph, not just its inline-font baseline. */
+#page-classes .class-row-actions .icon-btn{
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  width:34px;height:34px;min-width:34px;min-height:34px;
+  margin:0;box-sizing:border-box;flex:0 0 34px;
+  padding:0!important;border-radius:10px;font-size:18px;line-height:1!important;
+  text-align:center;vertical-align:middle;
+}
+#page-classes .class-row-actions .icon-btn i{
+  display:flex;align-items:center;justify-content:center;flex:0 0 20px;
+  width:20px;height:20px;margin:0;padding:0;
+  font-size:18px;line-height:1!important;
+  transform:translateY(-1px);
+}
+#page-classes .class-row-actions .icon-btn i::before{
+  display:block;font-size:inherit;line-height:1!important;margin:0;padding:0;
+}
+#page-classes .class-row-actions .class-inline-toggle{
+  display:flex;align-items:center;justify-content:center;flex:0 0 40px;
+  width:40px;height:34px;min-height:34px;padding:0;border:0;border-radius:9px;
+  background:transparent;box-shadow:none;cursor:pointer;touch-action:manipulation
+}
+#page-classes .class-inline-track{display:block;position:relative;flex:0 0 36px;
+  width:36px;height:21px;border-radius:999px;background:#16a34a;transition:background .18s}
+#page-classes .class-inline-thumb{position:absolute;top:3px;left:3px;width:15px;height:15px;
+  border-radius:50%;background:#fff;transform:translateX(15px);transition:transform .18s}
+#page-classes .class-inline-toggle[aria-checked="false"] .class-inline-track{background:#64748b}
+#page-classes .class-inline-toggle[aria-checked="false"] .class-inline-thumb{transform:translateX(0)}
+#page-classes .class-row-actions .class-inline-save{color:#86efac}
+#page-classes .class-row-actions .class-inline-cancel{color:#fda4af}
+#page-classes .class-row-actions button:disabled{opacity:.55;cursor:wait}
+#page-classes .class-inline-toggle:focus-visible{outline:2px solid #93c5fd;outline-offset:2px}
+@media(max-width:640px){
+  #page-classes .class-row.is-editing{flex-wrap:wrap;row-gap:4px}
+  #page-classes .class-row.is-editing .class-row-main{flex:1 1 100%;width:100%}
+  #page-classes .class-row.is-editing .class-row-actions{width:100%;justify-content:flex-end}
+}
+@media(prefers-reduced-motion:reduce){
+  #page-classes .class-inline-track,#page-classes .class-inline-thumb{transition:none}
+}
+#page-classes .class-row-actions .icon-btn:focus-visible{outline:2px solid #93c5fd;outline-offset:2px}
+@media(max-width:520px){
+  #page-classes .class-row{gap:5px;padding:6px 12px 6px 10px}
+  #page-classes .class-row-main{gap:5px}
+  #page-classes .class-row-title{font-size:12px}
+  #page-classes .class-row-dates{font-size:10px}
+  #page-classes .class-row-actions{min-height:32px}
+  #page-classes .class-row-actions .icon-btn{width:32px;height:32px;min-width:32px;min-height:32px;flex-basis:32px}
+}
+/* Home copy filter: independent class selection, no Firebase writes. */
+#page-home .home-class-filter{display:flex;align-items:center;gap:9px;margin-bottom:11px}
+#page-home .home-class-filter label{font-size:12px;font-weight:850;color:var(--muted);flex:0 0 auto}
+#page-home .home-class-filter .custom-select{flex:1;min-width:0}
+#page-home .home-class-filter .custom-select-btn{width:100%;min-height:42px}
+@media(max-width:560px){#page-home .home-class-filter{flex-direction:column;align-items:stretch;gap:6px}}
+
 /* Summary has only two freestanding dropdown surfaces, not an enclosing panel. */
 #page-summary .summary-filters-standalone{
   display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;
@@ -450,7 +601,6 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
 @media(max-width:640px){
   .class-name-row{grid-template-columns:1fr}
   .class-period-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .class-period-fields label:last-child{grid-column:1/-1}
   .class-form-actions .btn{min-width:0;flex:1}
   #page-summary .summary-filters-standalone{gap:8px;margin:8px 0 10px!important}
 }
@@ -560,34 +710,6 @@ body.summary-popup-open{overflow:hidden}
 .summary-popup-go i{font-size:17px}
 @media(max-width:375px){.summary-day-popup{width:min(308px,100%)!important;padding:11px 12px!important}}
 @media(prefers-reduced-motion:reduce){.summary-day-popup{will-change:auto}}
-
-/* On phones the translucent sticky header obscures Summary student rows.
-   Keep the normal header at the top of the document instead of floating
-   over vertically scrolled content. Desktop retains the existing behavior. */
-@media(max-width:800px){
-  #appView .top{position:relative;top:auto}
-}
-
-/* Session-prepared Summary: never display incomplete attendance rankings. */
-#page-summary .summary-preparation{
-  max-width:600px;margin:14px auto;padding:18px 20px;
-  border-radius:20px;border:1px solid rgba(180,207,245,.28);
-  background:linear-gradient(150deg,rgba(53,75,110,.66),rgba(28,43,72,.84));
-  color:#f8fafc;text-align:center;
-}
-#page-summary .summary-prep-heading{font-weight:900;font-size:16px}
-#page-summary .summary-prep-description{color:#ccd9eb;font-size:13px;margin-top:7px;line-height:1.5}
-#page-summary .summary-prep-meter{
-  width:100%;height:7px;border-radius:999px;overflow:hidden;
-  margin-top:13px;background:rgba(170,195,230,.17)
-}
-#page-summary .summary-prep-meter-fill{
-  height:100%;border-radius:inherit;
-  background:linear-gradient(90deg,#34d399,#60a5fa);
-  transition:width .20s ease
-}
-#page-summary .summary-prep-count{font-size:12px;margin-top:9px;color:#cbd5e1}
-#page-summary .summary-prep-retry{margin-top:14px}
 </style>
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#172b51">
@@ -648,9 +770,10 @@ body.summary-popup-open{overflow:hidden}
     <div class="nav">
       <button class="nav-btn active" data-page="home"><i class="ri-home-5-line"></i>Home</button>
       <button class="nav-btn attend-tab" data-page="attendance"><i class="ri-checkbox-circle-line"></i>Attend</button>
-      <button class="nav-btn" data-page="summary"><i class="ri-calendar-check-line"></i>Summary</button>
+      <button class="nav-btn" data-page="summary"><i class="ri-calendar-check-line"></i>Sum</button>
       <button class="nav-btn" data-page="church"><i class="ri-building-4-line"></i>Church</button>
       <button class="nav-btn" data-page="roles"><i class="ri-shield-user-line"></i>Roles</button>
+       <button class="nav-btn" data-page="users"><i class="ri-google-fill"></i>Users</button>
       <button class="nav-btn" data-page="classes"><i class="ri-folder-line"></i>Class</button>
       <button class="nav-btn" data-page="students"><i class="ri-group-line"></i>Student</button>
       <button class="nav-btn" data-page="reports"><i class="ri-bar-chart-box-line"></i>Report</button>
@@ -671,6 +794,11 @@ body.summary-popup-open{overflow:hidden}
       </div>
     </div>
     <div class="panel glass">
+      <div class="home-class-filter">
+        <label id="homeClassLabel" for="homeClass">Class for this week's report</label>
+        <select id="homeClass" class="input native-select-hidden" aria-label="Class for this week's report"></select>
+        <div class="custom-select" data-select="homeClass"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
+      </div>
       <div class="report-copy-head">
         <span class="week-swipe-wipe"></span>
         <button id="prevHomeReport" class="btn report-nav" title="Previous Sunday"><i class="ri-arrow-left-s-line"></i></button>
@@ -709,6 +837,22 @@ body.summary-popup-open{overflow:hidden}
     <div id="roleList" class="list"></div>
   </section>
 
+  <section id="page-users" class="page">
+    <div class="um-stat-row">
+      <div><strong id="umPendingCount">0</strong><span id="umPendingLabel">Pending</span></div>
+      <div><strong id="umActiveCount">0</strong><span id="umActiveLabel">Active</span></div>
+      <div><strong id="umBlockedCount">0</strong><span id="umBlockedLabel">Blocked</span></div>
+    </div>
+    <div class="um-tabs" role="group" aria-label="User status">
+      <button type="button" data-um-tab="pending" class="active">Pending</button>
+      <button type="button" data-um-tab="active">Active</button>
+      <button type="button" data-um-tab="blocked">Blocked</button>
+    </div>
+    <div id="umStatus" class="status" role="status" aria-live="polite"></div>
+    <div id="umEditor" class="um-editor"></div>
+    <div id="umList" class="um-list"></div>
+  </section>
+
   <section id="page-classes" class="page">
     <div class="panel glass">
       <h2>Class</h2>
@@ -716,9 +860,23 @@ body.summary-popup-open{overflow:hidden}
       <div class="class-period-fields">
         <label><span id="classStartLabel">Start Date</span><input id="classStartDate" type="date" class="input" aria-label="Start Date"></label>
         <label><span id="classEndLabel">End Date (optional)</span><input id="classEndDate" type="date" class="input" aria-label="End Date"></label>
-        <label><span id="classLifecycleLabel">Status</span><select id="classLifecycle" class="input" aria-label="Class status"><option value="active">Active</option><option value="archived">Archived</option></select></label>
       </div>
-      <p id="classDateHelp" class="class-date-help">Start Date is required for new classes. Leave End Date empty for an ongoing class. Archived classes and their attendance history remain available.</p>
+      <div class="class-options-row">
+        <div class="class-switch-control">
+          <span id="classLifecycleLabel">Status</span>
+          <button id="classLifecycleSwitch" class="class-lifecycle-switch" type="button" role="switch" aria-checked="true" aria-labelledby="classLifecycleLabel classLifecycleValue">
+            <span class="class-switch-track" aria-hidden="true"><span class="class-switch-thumb"></span></span>
+            <span id="classLifecycleValue">Active</span>
+          </button>
+          <select id="classLifecycle" class="native-select-hidden" tabindex="-1" aria-hidden="true"><option value="active">Active</option><option value="archived">Archived</option></select>
+        </div>
+        <details id="classInfoMenu" class="class-info-menu">
+          <summary id="classInfoButton" aria-label="Class information" title="Class information"><i class="ri-more-2-fill" aria-hidden="true"></i></summary>
+          <div class="class-info-content" role="note"><strong id="classInfoTitle">Class details</strong>
+            <p id="classDateHelp" class="class-date-help">Start Date is required for new classes. Leave End Date empty for an ongoing class. Archived classes and their attendance history remain available.</p>
+          </div>
+        </details>
+      </div>
       <div class="class-form-actions"><button id="saveClass" class="btn primary" type="button">Save</button><button id="cancelClassEdit" class="btn hidden" type="button">Cancel editing</button></div>
       <div id="classStatus" class="status"></div>
     </div>
@@ -745,7 +903,7 @@ body.summary-popup-open{overflow:hidden}
         <div id="studentUploadProgressFill" class="student-upload-progress-fill"></div>
       </div>
       <div id="studentUploadStatus" class="student-upload-status" aria-live="polite"></div>
-  <details id="cloudinarySettingsPanel" class="cloud-panel hidden">
+ <details id="cloudinarySettingsPanel" class="cloud-panel hidden">
    <summary><i class="ri-cloud-line"></i> Cloudinary Settings <span id="cloudinaryBadge">Not configured</span></summary>
    <div class="cloud-form">
      <div class="cloud-fields">
@@ -906,7 +1064,7 @@ body.summary-popup-open{overflow:hidden}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signInWithEmailAndPassword, setPersistence, browserLocalPersistence, browserSessionPersistence, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getDatabase, ref, set, push, onValue, remove, get, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, set, update, push, onValue, remove, get, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 // Student images upload directly to Cloudinary; no upload API secret in the client.
 
 const firebaseConfig = {
@@ -936,9 +1094,11 @@ document.getElementById('googleLoginBtn').addEventListener('click',async()=>{
 
 
 const $ = id => document.getElementById(id);
+const authLoadingStarted = Date.now();
 function hideAuthLoading(){
-  // The authenticated view is ready: avoid an artificial 900 ms splash delay.
-  $("authLoading")?.classList.add("hidden");
+  const el = $("authLoading");
+  if(!el) return;
+  setTimeout(()=>el.classList.add("hidden"), Math.max(0, 900 - (Date.now() - authLoadingStarted)));
 }
 let connectionStatusTimer=0;
 function showConnectionStatus(message,type,autoHide=false){
@@ -957,391 +1117,29 @@ window.addEventListener("offline",()=>showConnectionStatus("waiting for connecti
 window.addEventListener("online",()=>showConnectionStatus("back online","online",true));
 if(!navigator.onLine) updateConnectionStatus();
 const adminSelectedChurchKey = "ss_admin_selected_church";
-const state = { user:null, profile:null, role:"guest", churchId:null, selectedChurchId:localStorage.getItem(adminSelectedChurchKey)||"", churches:{}, users:{}, classes:{}, students:{}, attendance:{}, trash:{}, activities:{}, themeBackgrounds:{}, themeOptions:{}, selectedSunday:"", homeReportDate:"", studentQ:"", attQ:"", popAttendanceKey:"", activityExpanded:{trash:false,checker:false,activity:false}, checkerCleanupAt:0 };
-// Existing RTDB paths are unchanged. Grouped class/week reads are optional;
-// fall back to permitted individual student paths if a parent read is denied.
-const attendanceListeners=new Map();
-const attendanceWeekListeners=new Map();
-const attendanceLoaded=new Set();
-const attendanceErrors=new Set();
-const attendanceWeekLoaded=new Set();
-const attendanceWeekErrors=new Set();
-const attendanceBatchAllowed=new Map();
-const attendanceRosterCache=new Map();
-const attendanceWeekStateCache=new Map();
-let attendanceSubscriptionEpoch=0;
-let attendanceRosterVersion=0;
-function attendanceClassStudents(classId){
-  const cached=attendanceRosterCache.get(classId);
-  if(cached&&cached.version===attendanceRosterVersion)return cached.ids;
-  const church=state.classes[classId]?.churchId;
-  const ids=Object.entries(state.students).filter(([id,student])=>student?.classId===classId&&
-    (!church||student.churchId===church)).map(([id])=>id);
-  attendanceRosterCache.set(classId,{ids,version:attendanceRosterVersion});
-  return ids;
-}
-function attendanceWeekKey(date,classId){return date+"/"+classId}
-function attendanceStudentKey(date,classId,id){return date+"/"+classId+"/"+id}
-function invalidateAttendanceWeek(date,classId){
-  attendanceWeekStateCache.delete(attendanceWeekKey(date,classId));
-}
-function attendanceMarkLoaded(date,classId,id){
-  return attendanceWeekLoaded.has(attendanceWeekKey(date,classId))||
-    attendanceLoaded.has(attendanceStudentKey(date,classId,id));
-}
-function attendanceWeekComplete(date,classId){
-  if(attendanceWeekLoaded.has(attendanceWeekKey(date,classId)))return true;
-  return attendanceClassStudents(classId).every(id=>{
-    const key=attendanceStudentKey(date,classId,id);
-    return attendanceLoaded.has(key)||attendanceErrors.has(key);
-  });
-}
-function attendanceWeekFullyRead(date,classId){
-  if(attendanceWeekLoaded.has(attendanceWeekKey(date,classId)))return true;
-  const ids=attendanceClassStudents(classId);
-  return ids.length>0&&ids.every(id=>attendanceLoaded.has(attendanceStudentKey(date,classId,id)));
-}
+const state = { user:null, profile:null, role:"guest", churchId:null, selectedChurchId:localStorage.getItem(adminSelectedChurchKey)||"", churches:{}, users:{}, accountRequests:{}, classes:{}, students:{}, attendance:{}, trash:{}, activities:{}, themeBackgrounds:{}, themeOptions:{}, selectedSunday:"", homeReportDate:"", studentQ:"", attQ:"", popAttendanceKey:"", activityExpanded:{trash:false,checker:false,activity:false}, checkerCleanupAt:0 };
+const attendanceListeners = new Set();
+const attendanceLoaded = new Set();
+const attendanceErrors = new Set();
+// A Sunday is No Record when no student in the selected class is checked Present.
 function attendanceWeekState(date,classId){
   if(!date||!classId)return "none";
-  const key=attendanceWeekKey(date,classId);
-  if(attendanceWeekStateCache.has(key))return attendanceWeekStateCache.get(key);
-  const students=attendanceClassStudents(classId);
-  const records=state.attendance[date]?.[classId]||{};
-  let status="none";
-  if(students.some(id=>records[id]==="present"))status="recorded";
-  else if(attendanceWeekErrors.has(key)||students.some(id=>
-    attendanceErrors.has(attendanceStudentKey(date,classId,id))))status="error";
-  else if(!attendanceWeekComplete(date,classId))status="pending";
-  attendanceWeekStateCache.set(key,status);
-  return status;
+  const students=Object.entries(state.students).filter(([id,st])=>
+    st?.classId===classId && (!state.classes[classId]?.churchId||
+      st.churchId===state.classes[classId].churchId));
+  const marks=state.attendance[date]?.[classId]||{};
+  if(students.some(([id])=>marks[id]==="present"))return "recorded";
+  if(students.some(([id])=>attendanceErrors.has(`${date}/${classId}/${id}`)))return "error";
+  if(students.some(([id])=>!attendanceLoaded.has(`${date}/${classId}/${id}`)))return "pending";
+  return "none";
 }
-function attendanceDisplayStatus(date,classId,id){
-  const key=attendanceStudentKey(date,classId,id);
-  // Preserve successfully loaded Present marks even if a later refresh fails.
-  if(attendanceMarkLoaded(date,classId,id)&&
-    state.attendance[date]?.[classId]?.[id]==="present")return "present";
-  if(attendanceErrors.has(key)||attendanceWeekErrors.has(attendanceWeekKey(date,classId)))return "error";
-  if(!attendanceMarkLoaded(date,classId,id))return "pending";
+function attendanceDisplayStatus(date,classId,studentId){
+  const key=`${date}/${classId}/${studentId}`;
+  if(attendanceErrors.has(key))return "error";
+  if(!attendanceLoaded.has(key))return "pending";
+  if(state.attendance[date]?.[classId]?.[studentId]==="present")return "present";
   const week=attendanceWeekState(date,classId);
   return week==="recorded"?"absent":week;
-}
-function applyAttendanceWeek(date,classId,records){
-  state.attendance[date] ||= {};
-  state.attendance[date][classId]=records&&typeof records==="object"?records:{};
-  const key=attendanceWeekKey(date,classId);
-  attendanceWeekLoaded.add(key);
-  attendanceWeekErrors.delete(key);
-  for(const id of attendanceClassStudents(classId)){
-    attendanceErrors.delete(attendanceStudentKey(date,classId,id));
-  }
-  invalidateAttendanceWeek(date,classId);
-  summaryUpdateReadyCounts(classId);
-  if(isPage("summary"))scheduleSummaryRender();
-  else scheduleAttendanceRender();
-}
-function stopAttendanceSubscriptions(){
-  attendanceSubscriptionEpoch++;
-  for(const unsub of attendanceListeners.values())try{unsub()}catch{}
-  attendanceListeners.clear();
-  for(const unsub of attendanceWeekListeners.values())try{unsub()}catch{}
-  attendanceWeekListeners.clear();
-}
-let summaryLoadEpoch=0,summaryHistoryWeeks=8,summaryHistoryTimer=0,summaryHistoryIdle=0;
-const summaryHistoryProgress=new Map();
-let summaryLastUserScrollAt=0;
-let summaryWeekQueue=[],summaryWeekActive=0;
-const summaryWeekRequested=new Set();
-let summaryDrainScheduled=false;
-const summaryPermissionProbes=new Map();
-const summaryFallbackLocks=new Map();
-const SUMMARY_WEEK_CONCURRENCY=3;
-const SUMMARY_HISTORY_BATCH=8;
-const SUMMARY_RECENT_LIVE_WEEKS=1;
-const SUMMARY_IDLE_DELAY=2000;
-function stopSummaryLoads(){
-  clearTimeout(summaryRankRefreshTimer);
-  summaryRankRefreshTimer=0;
-  summaryLoadEpoch++;
-  // Old pending requests belong to the previous view. They must not block
-  // the newly selected church/class or reuse outdated permission probes.
-  summaryWeekActive=0;
-  summaryPermissionProbes.clear();
-  summaryFallbackLocks.clear();
-  clearTimeout(summaryHistoryTimer);
-  summaryHistoryTimer=0;
-  if(summaryHistoryIdle&&typeof cancelIdleCallback==="function")cancelIdleCallback(summaryHistoryIdle);
-  summaryHistoryIdle=0;
-  summaryWeekQueue.length=0;
-  summaryDrainScheduled=false;
-  summaryWeekRequested.clear();
-}
-function startSummaryLoads(){
-  stopSummaryLoads();
-  // Use the newest confirmed attendance to rank the current class on entry.
-  summaryStableOrderCache.delete(selectedSummaryClassId());
-  // Already viewed a class? Reuse the amount of history previously displayed.
-  summaryHistoryWeeks=summaryHistoryProgress.get(selectedSummaryClassId())||8;
-  resetSummaryRenderCache();
-}
-function queueSummaryWeek(date,classId,live){
-  if(!isPage("summary"))return;
-  const key=attendanceWeekKey(date,classId);
-  if(summaryWeekRequested.has(key))return;
-  // Reuse data already loaded in this session. Live weeks resubscribe so their
-  // status stays fresh when the user returns from Attendance.
-  if(attendanceWeekFullyRead(date,classId)&&!live)return;
-  if(!live&&attendanceClassStudents(classId).every(id=>{
-    const key=attendanceStudentKey(date,classId,id);
-    return attendanceLoaded.has(key)||(attendanceErrors.has(key)&&
-      Date.now()<(summaryRetryAfter.get(key)||0));
-  }))return;
-  summaryWeekRequested.add(key);
-  summaryWeekQueue.push({date,classId,live,epoch:summaryLoadEpoch});
-  // Schedule one queue drain after all classes enqueue their weeks, so the
-  // newest dates across every class are served first (not just the first class).
-  summaryWeekQueue.sort((a,b)=>b.date.localeCompare(a.date));
-  if(!summaryDrainScheduled){
-    summaryDrainScheduled=true;
-    Promise.resolve().then(()=>{
-      summaryDrainScheduled=false;
-      drainSummaryWeekQueue();
-    });
-  }
-}
-
-// Read through the Realtime Database socket rather than issuing thousands
-// of independent server-first get() requests. onValue({onlyOnce:true}) can use
-// existing synchronized client data and automatically releases its listener.
-// Permission errors are still enforced by Firebase; these are never bypassed.
-function summaryReadOnce(path){
-  return new Promise((resolve,reject)=>{
-    let finished=false,unsubscribe=null;
-    const timer=setTimeout(()=>{
-      finish(new Error("ATTENDANCE_READ_TIMEOUT"));
-    },15000);
-    function finish(error,snapshot){
-      if(finished)return;
-      finished=true;
-      clearTimeout(timer);
-      if(unsubscribe){try{unsubscribe()}catch{}}
-      if(error)reject(error);
-      else resolve(snapshot);
-    }
-    try{
-      unsubscribe=onValue(ref(db,path),snapshot=>finish(null,snapshot),error=>finish(error),{onlyOnce:true});
-      // The SDK can deliver cached data synchronously before returning unsubscribe.
-      if(finished&&unsubscribe){try{unsubscribe()}catch{}}
-    }catch(error){finish(error)}
-  });
-}
-function summaryIsDenied(error){
-  return /permission[_ -]?denied/i.test(String(error?.code||error?.message||""));
-}
-const summaryTransientRetry=new Set();
-const summaryRetryAfter=new Map();
-async function summaryReadStudent(path,key){
-  try{
-    return await summaryReadOnce(path);
-  }catch(error){
-    // Brief retry only for transient failures, never for authorization failures.
-    if(summaryIsDenied(error)||summaryTransientRetry.has(key))throw error;
-    summaryTransientRetry.add(key);
-    await new Promise(resolve=>setTimeout(resolve,350));
-    return summaryReadOnce(path);
-  }
-}
-function recordSummaryWeekError(date,classId,error){
-  attendanceWeekErrors.add(attendanceWeekKey(date,classId));
-  invalidateAttendanceWeek(date,classId);
-  console.warn("Summary attendance read failed",date,classId,error.code||error.message);
-  scheduleSummaryRender();
-}
-async function summaryFallbackGet(date,classId,epoch){
-  // Only one class fallback scan at a time. Too many simultaneous child GETs
-  // were saturating the browser and delaying the visible newest-week rows.
-  const previous=summaryFallbackLocks.get(classId)||Promise.resolve();
-  let release;
-  const turn=new Promise(resolve=>{release=resolve});
-  const tail=previous.catch(()=>{}).then(()=>turn);
-  summaryFallbackLocks.set(classId,tail);
-  await previous.catch(()=>{});
-  try{
-    const ids=attendanceClassStudents(classId).filter(id=>{
-      const key=attendanceStudentKey(date,classId,id);
-      return !attendanceLoaded.has(key)&&Date.now()>=(summaryRetryAfter.get(key)||0);
-    });
-    for(let i=0;i<ids.length;i+=8){
-      if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
-      await Promise.all(ids.slice(i,i+8).map(async id=>{
-        const key=attendanceStudentKey(date,classId,id);
-        try{
-          const snap=await summaryReadStudent("attendance/"+key,key);
-          if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
-          state.attendance[date] ||= {};
-          state.attendance[date][classId] ||= {};
-          const value=snap.val();
-          if(value==null)delete state.attendance[date][classId][id];
-          else state.attendance[date][classId][id]=value;
-          attendanceLoaded.add(key);
-          attendanceErrors.delete(key);
-          summaryTransientRetry.delete(key);
-          summaryRetryAfter.delete(key);
-        }catch(error){
-          if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
-          // Keep known-successful records visible after a failed refresh.
-          if(!attendanceLoaded.has(key)){
-            attendanceErrors.add(key);
-            summaryRetryAfter.set(key,Date.now()+(summaryIsDenied(error)?120000:12000));
-          }
-          console.warn("Attendance fallback read failed",key,error.code||error.message);
-        }
-      }));
-      invalidateAttendanceWeek(date,classId);
-      scheduleSummaryRender();
-    }
-  }finally{
-    release();
-    if(summaryFallbackLocks.get(classId)===tail)summaryFallbackLocks.delete(classId);
-  }
-}
-function summaryFallbackLive(date,classId,epoch){
-  if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
-  for(const id of attendanceClassStudents(classId))listenAttendance(date,classId,id);
-}
-async function summaryClassBatchAllowed(date,classId,epoch){
-  if(attendanceBatchAllowed.has(classId))return attendanceBatchAllowed.get(classId);
-  let probe=summaryPermissionProbes.get(classId);
-  if(!probe){
-    // One permission probe per class (not one denied request per Sunday).
-    probe=(async()=>{
-      const key=attendanceWeekKey(date,classId);
-      try{
-        const snap=await summaryReadOnce("attendance/"+key);
-        if(epoch!==summaryLoadEpoch||!isPage("summary"))return null;
-        attendanceBatchAllowed.set(classId,true);
-        applyAttendanceWeek(date,classId,snap.val());
-        return true;
-      }catch(error){
-        if(epoch!==summaryLoadEpoch||!isPage("summary"))return null;
-        if(error.code==="PERMISSION_DENIED"||error.code==="permission_denied"){
-          attendanceBatchAllowed.set(classId,false);
-          return false;
-        }
-        recordSummaryWeekError(date,classId,error);
-        return null;
-      }
-    })();
-    summaryPermissionProbes.set(classId,probe);
-    probe.finally(()=>{
-      if(summaryPermissionProbes.get(classId)===probe)summaryPermissionProbes.delete(classId);
-    });
-  }
-  return probe;
-}
-async function executeSummaryWeek(task){
-  const {date,classId,live,epoch}=task,key=attendanceWeekKey(date,classId);
-  if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
-  const allowed=await summaryClassBatchAllowed(date,classId,epoch);
-  if(allowed===null||epoch!==summaryLoadEpoch||!isPage("summary"))return;
-  if(!allowed){
-    if(live)summaryFallbackLive(date,classId,epoch);
-    else if(!attendanceWeekComplete(date,classId))await summaryFallbackGet(date,classId,epoch);
-    return;
-  }
-  if(live){
-    if(attendanceWeekListeners.has(key))return;
-    const unsubscribe=onValue(ref(db,"attendance/"+key),snap=>{
-      if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
-      applyAttendanceWeek(date,classId,snap.val());
-    },error=>{
-      attendanceWeekListeners.delete(key);
-      if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
-      if(error.code==="PERMISSION_DENIED"||error.code==="permission_denied"){
-        attendanceBatchAllowed.set(classId,false);
-        summaryFallbackLive(date,classId,epoch);
-      }else recordSummaryWeekError(date,classId,error);
-    });
-    attendanceWeekListeners.set(key,unsubscribe);
-    return;
-  }
-  if(attendanceWeekComplete(date,classId))return;
-  try{
-    const snapshot=await summaryReadOnce("attendance/"+key);
-    if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
-    applyAttendanceWeek(date,classId,snapshot.val());
-  }catch(error){
-    if(epoch!==summaryLoadEpoch||!isPage("summary"))return;
-    if(error.code==="PERMISSION_DENIED"||error.code==="permission_denied"){
-      attendanceBatchAllowed.set(classId,false);
-      await summaryFallbackGet(date,classId,epoch);
-    }else recordSummaryWeekError(date,classId,error);
-  }
-}
-function drainSummaryWeekQueue(){
-  while(summaryWeekActive<SUMMARY_WEEK_CONCURRENCY&&summaryWeekQueue.length){
-    const task=summaryWeekQueue.shift();
-    if(task.epoch!==summaryLoadEpoch||!isPage("summary"))continue;
-    summaryWeekActive++;
-    Promise.resolve().then(()=>executeSummaryWeek(task)).catch(error=>{
-      if(task.epoch===summaryLoadEpoch)recordSummaryWeekError(task.date,task.classId,error);
-    }).finally(()=>{
-      if(task.epoch!==summaryLoadEpoch)return;
-      summaryWeekActive=Math.max(0,summaryWeekActive-1);
-      drainSummaryWeekQueue();
-    });
-  }
-}
-function summaryVisibleHistoryReady(){
-  if(summaryWeekActive||summaryWeekQueue.length)return false;
-  // A historical expansion must not outrun the completed visible window.
-  const classId=selectedSummaryClassId();
-  if(!classId)return false;
-  const visible=reportStudents(classId);
-  const classIds=[...new Set(visible.map(st=>st.classId).filter(Boolean))];
-  const windows=new Map(classIds.map(id=>[id,
-    new Set(summaryCandidateDates(id).slice(-summaryHistoryWeeks))]));
-  if([...attendanceWeekErrors].some(key=>{
-    const [date,id]=key.split("/");
-    return windows.get(id)?.has(date);
-  })||[...attendanceErrors].some(key=>{
-    const [date,id]=key.split("/");
-    return windows.get(id)?.has(date);
-  }))return false;
-  return classIds.every(id=>{
-    if(!state.classes[id])return false;
-    const dates=summaryCandidateDates(id).slice(-summaryHistoryWeeks);
-    return dates.every(date=>attendanceWeekComplete(date,id));
-  });
-}
-function scheduleMoreSummaryHistory(hasMore){
-  if(!hasMore||!isPage("summary")||summaryHistoryTimer||summaryHistoryIdle)return;
-  summaryHistoryTimer=setTimeout(()=>{
-    summaryHistoryTimer=0;
-    if(!isPage("summary"))return;
-    const busy=Date.now()-summaryLastUserScrollAt<700||
-      !$("summaryDayOverlay")?.classList.contains("hidden");
-    if(busy||!summaryVisibleHistoryReady()){
-      scheduleMoreSummaryHistory(true);
-      return;
-    }
-    const grow=()=>{
-      summaryHistoryIdle=0;
-      if(!isPage("summary"))return;
-      if(Date.now()-summaryLastUserScrollAt<700||!summaryVisibleHistoryReady()){
-        scheduleMoreSummaryHistory(true);
-        return;
-      }
-      // Class-level Firebase access can load many Sundays cheaply. Expand
-      // faster only when that permission exists; keep the per-student fallback
-      // conservative to protect mobile responsiveness.
-      const groupAllowed=attendanceBatchAllowed.get(selectedSummaryClassId())===true;
-      summaryHistoryWeeks+=groupAllowed?24:SUMMARY_HISTORY_BATCH;
-      resetSummaryRenderCache();
-      renderSummary();
-    };
-    if(typeof requestIdleCallback==="function")summaryHistoryIdle=requestIdleCallback(grow,{timeout:1200});
-    else grow();
-  },attendanceBatchAllowed.get(selectedSummaryClassId())===true?120:SUMMARY_IDLE_DELAY);
 }
 // This is PUBLIC unsigned-upload configuration, not a secret.
 const cloudStorageKey="kid2pro_cloudinary_config_v1";
@@ -1367,19 +1165,14 @@ function cloudDisplay(){
     $("cloudPublicAck").checked=ok;
   }
 }
-let cloudWatchStop=null;
 function cloudWatch(){
-  if(cloudWatchStop)cloudWatchStop();
-  const epoch=baseWatchEpoch;
-  cloudWatchStop=onValue(ref(db,"settings/cloudinary"),snapshot=>{
-    if(epoch!==baseWatchEpoch)return;
+  onValue(ref(db,"settings/cloudinary"),snapshot=>{
     if(snapshot.exists()){
       state.cloudinary=cloudNormalize(snapshot.val());
       localStorage.setItem(cloudStorageKey,JSON.stringify(state.cloudinary));
     }
     cloudDisplay();
   },err=>{
-    if(epoch!==baseWatchEpoch)return;
     console.warn("Cloudinary settings not shared:",err.code||err.message);
     cloudDisplay();
     if(canAdmin()) $("cloudSaveStatus").textContent="Cannot read shared settings; local settings may still work on this device.";
@@ -1412,24 +1205,24 @@ $("cloudSaveBtn").onclick=async()=>{
 const I18N = {
   en: {
     appTitle:"Sunday School", loginTitle:"Sunday School", email:"Email", key:"Key", remember:"Remember Login",
-    home:"Home", attendance:"Attend", summary:"Summary", attendancePage:"Attendance", church:"Church", roles:"Roles", classes:"Class", students:"Student", reports:"Report", dashboard:"Dashboard", activity:"Activity", themes:"Themes", effects:"Effects", compact:"Compact", normal:"Normal", logout:"Logout",
-    overview:"Overview", churches:"Churches", present:"Present", copyWeek:"COPY THIS WEEK", churchName:"Church name", save:"Save", assignRole:"Assign Role", name:"Name", firebaseUid:"Firebase UID", pastor:"Pastor", teacher:"Teacher", saveRole:"Save Role",
+    home:"Home", attendance:"Attend", summary:"Sum", attendancePage:"Attendance", church:"Church", roles:"Roles", users:"Users", classes:"Class", students:"Student", reports:"Report", dashboard:"Dashboard", activity:"Activity", themes:"Themes", effects:"Effects", compact:"Compact", normal:"Normal", logout:"Logout",
+    overview:"Overview", churches:"Churches", present:"Present", copyWeek:"COPY THIS WEEK", homeClassCopy:"Class for weekly copy", churchName:"Church name", save:"Save", assignRole:"Assign Role", name:"Name", firebaseUid:"Firebase UID", pastor:"Pastor", teacher:"Teacher", saveRole:"Save Role",
     className:"Class name", classStartDate:"Start Date", classEndDate:"End Date (optional)", classLifecycle:"Status", classActive:"Active", classArchived:"Archived", classDateHelp:"Start Date is required for new classes. Leave End Date empty for an ongoing class. Archived classes and their attendance history remain available.", classDateInvalid:"End Date must be on or after Start Date.", classStartRequired:"Please choose a Start Date for this new class.", classCancel:"Cancel editing", classNotSet:"Date not set", studentName:"Student name", male:"Male", female:"Female", age:"Age", profilePhoto:"Profile picture file name", searchStudents:"Search students", search:"Search",
-    total:"Total", absent:"Absent", summaryPresentCount:"Present checks", summaryAbsentCount:"Absent checks", summaryNoRecord:"No record", summaryLoading:"Loading", summaryUnavailable:"Unavailable", summaryHint:"Tap a square to see its date and status.", summary13:"Last 3 months", summary26:"Last 6 months", summary52:"Last 12 months", summaryAllClasses:"All classes", summaryChooseClass:"Select a class to view attendance summary", summaryPrepareTitle:"Preparing complete attendance history", summaryPrepareSub:"Summary totals and ranking will appear after every Sunday is verified.", summaryPrepareProgress:"Sundays verified", summaryPrepareFailed:"Complete attendance could not be loaded. Check the connection or Firebase permissions and retry.", summaryPrepareRetry:"Retry loading", summaryPartialCount:"Confirmed so far — loading the full history", summaryIncompleteCount:"Confirmed so far — some attendance could not be loaded", summaryDayPopupTitle:"Attendance details", summaryGoDay:"Go to that day", summarySyncLabel:"Sync horizontal scrolling", summarySyncOn:"ON — rows show the same dates", summarySyncOff:"OFF — rows scroll individually", summaryPopupDate:"Date", summaryPopupStatus:"Status", monthlyReport:"Monthly Report", average:"Average", sundays:"Sundays", weekMonths:"Weeks/Months", restore:"Restore", attendanceChecker:"Attendance Checker", emptyTrash:"Empty Trash", clearChecker:"Clear Checker", clearCheckerConfirm:"Clear attendance checker logs permanently?", clearActivity:"Clear Activity", seeAll:"See all", seeLess:"See less", noChecker:"No attendance checks yet",
+    total:"Total", absent:"Absent", summaryPresentCount:"Present checks", summaryAbsentCount:"Absent checks", summaryNoRecord:"No record", summaryLoading:"Loading", summaryUnavailable:"Unavailable", summaryHint:"Tap a square to see its date and status.", summary13:"Last 3 months", summary26:"Last 6 months", summary52:"Last 12 months", summaryAllClasses:"All classes", summaryDayPopupTitle:"Attendance details", summaryGoDay:"Go to that day", summarySyncLabel:"Sync horizontal scrolling", summarySyncOn:"ON — rows show the same dates", summarySyncOff:"OFF — rows scroll individually", summaryPopupDate:"Date", summaryPopupStatus:"Status", monthlyReport:"Monthly Report", average:"Average", sundays:"Sundays", weekMonths:"Weeks/Months", restore:"Restore", attendanceChecker:"Attendance Checker", emptyTrash:"Empty Trash", clearChecker:"Clear Checker", clearCheckerConfirm:"Clear attendance checker logs permanently?", clearActivity:"Clear Activity", seeAll:"See all", seeLess:"See less", noChecker:"No attendance checks yet",
     loading:"Loading...", enterEmailKey:"Enter email and key", noRole:"No role assigned", saved:"Saved", copied:"Copied", churchSaved:"Church saved", churchUpdated:"Church updated", roleSaved:"Role saved", roleUpdated:"Role updated", classSaved:"Class saved", classUpdated:"Class updated", studentSaved:"Student saved", studentUpdated:"Student updated", attendanceSaved:"Attendance saved",
     addRoleFields:"Add UID, name, church. Create church first.", addStudentFields:"Add name, church, class", deleteConfirm:"Delete?", restoreConfirm:"Restore?", emptyTrashConfirm:"Empty trash permanently?", clearActivityConfirm:"Clear all activity log?", itemNotFound:"Item not found", restoreItemNotFound:"Restore item not found",
     noChurch:"No church", selectChurch:"Select church", selectClass:"Select class", noUsers:"No users", noClass:"No class", noStudent:"No student", noStudents:"No students", noDeleted:"No deleted items", noActivity:"No activity yet", noReport:"No report data", noSunday:"No Sunday in this month", sundayAttendance:"Sunday attendance", deleted:"deleted", details:"Details", edit:"Edit", delete:"Delete", previewPhoto:"Preview profile picture", student:"Student", roleAdmin:"BONGTHET", rolePastor:"pastor", roleTeacher:"teacher", week:"W", present:"Present"
   },
   kh: {
     appTitle:"សាលាថ្ងៃអាទិត្យ", loginTitle:"គ្រូកុមារ", email:"អ៊ីមែល", key:"លេខសម្ងាត់", remember:"ចងចាំការចូល",
-    home:"ទំព័រដើម", attendance:"វត្តមាន", summary:"សង្ខេប", attendancePage:"វត្តមាន", church:"ពួកជំនុំ", roles:"តួនាទី", classes:"ថ្នាក់", students:"សិស្ស", reports:"របាយ", dashboard:"ផ្ទាំងកុមារ", activity:"សកម្មភាព", themes:"រចនាប័ទ្ម", effects:"ចលនា", compact:"តូច", normal:"ធម្មតា", logout:"ចាកចេញ",
-    overview:"សង្ខេប", churches:"ពួកជំនុំ", present:"មានវត្តមាន", copyWeek:"ចម្លងសប្តាហ៍នេះ", churchName:"ឈ្មោះពួកជំនុំ", save:"រក្សាទុក", assignRole:"កំណត់តួនាទី", name:"ឈ្មោះ", firebaseUid:"Firebase UID", pastor:"គ្រូគង្វាល", teacher:"គ្រូ", saveRole:"រក្សាទុកតួនាទី",
+    home:"ទំព័រដើម", attendance:"វត្តមាន", summary:"សង្ខេប", attendancePage:"វត្តមាន", church:"ពួកជំនុំ", roles:"តួនាទី", users:"អ្នកប្រើ", classes:"ថ្នាក់", students:"សិស្ស", reports:"របាយ", dashboard:"ផ្ទាំងកុមារ", activity:"សកម្មភាព", themes:"រចនាប័ទ្ម", effects:"ចលនា", compact:"តូច", normal:"ធម្មតា", logout:"ចាកចេញ",
+    overview:"សង្ខេប", churches:"ពួកជំនុំ", present:"មានវត្តមាន", copyWeek:"ចម្លងសប្តាហ៍នេះ", homeClassCopy:"ជ្រើសរើសថ្នាក់សម្រាប់ចម្លង", churchName:"ឈ្មោះពួកជំនុំ", save:"រក្សាទុក", assignRole:"កំណត់តួនាទី", name:"ឈ្មោះ", firebaseUid:"Firebase UID", pastor:"គ្រូគង្វាល", teacher:"គ្រូ", saveRole:"រក្សាទុកតួនាទី",
     className:"ឈ្មោះថ្នាក់", classStartDate:"ថ្ងៃចាប់ផ្ដើម", classEndDate:"ថ្ងៃបញ្ចប់ (មិនបាច់ក៏បាន)", classLifecycle:"ស្ថានភាព", classActive:"កំពុងដំណើរការ", classArchived:"បានបណ្ណសារ", classDateHelp:"ថ្នាក់ថ្មីត្រូវមានថ្ងៃចាប់ផ្ដើម។ ទុកថ្ងៃបញ្ចប់ទទេសម្រាប់ថ្នាក់កំពុងដំណើរការ។ ថ្នាក់ដែលបានបណ្ណសារនៅតែអាចមើលប្រវត្តិវត្តមានបាន។", classDateInvalid:"ថ្ងៃបញ្ចប់ត្រូវស្មើ ឬក្រោយថ្ងៃចាប់ផ្ដើម។", classStartRequired:"សូមជ្រើសរើសថ្ងៃចាប់ផ្ដើមសម្រាប់ថ្នាក់ថ្មី។", classCancel:"បោះបង់ការកែប្រែ", classNotSet:"មិនទាន់កំណត់ថ្ងៃ", studentName:"ឈ្មោះសិស្ស", male:"ប្រុស", female:"ស្រី", age:"អាយុ", profilePhoto:"ឈ្មោះឯកសាររូបថត", searchStudents:"ស្វែងរកសិស្ស", search:"ស្វែងរក",
-    total:"សរុប", absent:"អវត្តមាន", summaryPresentCount:"ចំនួនមានវត្តមាន", summaryAbsentCount:"ចំនួនអវត្តមាន", summaryNoRecord:"មិនមានកំណត់ត្រា", summaryLoading:"កំពុងផ្ទុក", summaryUnavailable:"មិនអាចទាញទិន្នន័យ", summaryHint:"ចុចលើប្រអប់ដើម្បីមើលកាលបរិច្ឆេទ និងស្ថានភាព។", summary13:"៣ ខែចុងក្រោយ", summary26:"៦ ខែចុងក្រោយ", summary52:"១២ ខែចុងក្រោយ", summaryAllClasses:"គ្រប់ថ្នាក់", summaryChooseClass:"សូមជ្រើសរើសថ្នាក់ ដើម្បីមើលសង្ខេបវត្តមាន", summaryPrepareTitle:"កំពុងរៀបចំប្រវត្តិវត្តមានទាំងអស់", summaryPrepareSub:"ចំនួនសរុប និងលំដាប់សិស្សនឹងបង្ហាញ បន្ទាប់ពីផ្ទៀងផ្ទាត់ទិន្នន័យគ្រប់ថ្ងៃអាទិត្យ។", summaryPrepareProgress:"ថ្ងៃអាទិត្យបានផ្ទៀងផ្ទាត់", summaryPrepareFailed:"មិនអាចទាញប្រវត្តិវត្តមានបានគ្រប់គ្រាន់។ សូមពិនិត្យបណ្ដាញ ឬសិទ្ធិ Firebase ហើយសាកម្តងទៀត។", summaryPrepareRetry:"ទាញទិន្នន័យម្ដងទៀត", summaryPartialCount:"បានបញ្ជាក់បណ្ដោះអាសន្ន — កំពុងទាញប្រវត្តិសរុប", summaryIncompleteCount:"បានបញ្ជាក់បណ្ដោះអាសន្ន — មានទិន្នន័យមិនអាចទាញបាន", summaryDayPopupTitle:"ព័ត៌មានវត្តមាន", summaryGoDay:"ទៅកាន់ថ្ងៃនោះ", summarySyncLabel:"រំកិលផ្ដេកព្រមគ្នា", summarySyncOn:"បើក — រំកិលតាមថ្ងៃដូចគ្នា", summarySyncOff:"បិទ — រំកិលតាមសិស្សនីមួយៗ", summaryPopupDate:"កាលបរិច្ឆេទ", summaryPopupStatus:"ស្ថានភាព", monthlyReport:"របាយការណ៍ប្រចាំខែ", average:"មធ្យម", sundays:"ថ្ងៃអាទិត្យ", weekMonths:"សប្តាហ៍/ខែ", restore:"ស្តារឡើងវិញ", emptyTrash:"លុបធុងសំរាម", clearChecker:"Clear Checker", clearCheckerConfirm:"Clear attendance checker logs permanently?", clearActivity:"សម្អាតសកម្មភាព",
+    total:"សរុប", absent:"អវត្តមាន", summaryPresentCount:"ចំនួនមានវត្តមាន", summaryAbsentCount:"ចំនួនអវត្តមាន", summaryNoRecord:"មិនមានកំណត់ត្រា", summaryLoading:"កំពុងផ្ទុក", summaryUnavailable:"មិនអាចទាញទិន្នន័យ", summaryHint:"ចុចលើប្រអប់ដើម្បីមើលកាលបរិច្ឆេទ និងស្ថានភាព។", summary13:"៣ ខែចុងក្រោយ", summary26:"៦ ខែចុងក្រោយ", summary52:"១២ ខែចុងក្រោយ", summaryAllClasses:"គ្រប់ថ្នាក់", summaryDayPopupTitle:"ព័ត៌មានវត្តមាន", summaryGoDay:"ទៅកាន់ថ្ងៃនោះ", summarySyncLabel:"រំកិលផ្ដេកព្រមគ្នា", summarySyncOn:"បើក — រំកិលតាមថ្ងៃដូចគ្នា", summarySyncOff:"បិទ — រំកិលតាមសិស្សនីមួយៗ", summaryPopupDate:"កាលបរិច្ឆេទ", summaryPopupStatus:"ស្ថានភាព", monthlyReport:"របាយការណ៍ប្រចាំខែ", average:"មធ្យម", sundays:"ថ្ងៃអាទិត្យ", weekMonths:"សប្តាហ៍/ខែ", restore:"ស្តារឡើងវិញ", emptyTrash:"លុបធុងសំរាម", clearChecker:"Clear Checker", clearCheckerConfirm:"Clear attendance checker logs permanently?", clearActivity:"សម្អាតសកម្មភាព",
     loading:"កំពុងផ្ទុក...", enterEmailKey:"សូមបញ្ចូលអ៊ីមែល និងលេខសម្ងាត់", noRole:"មិនទាន់បានកំណត់តួនាទី", saved:"បានរក្សាទុក", copied:"បានចម្លង", churchSaved:"បានរក្សាទុកពួកជំនុំ", churchUpdated:"បានកែប្រែពួកជំនុំ", roleSaved:"បានរក្សាទុកតួនាទី", roleUpdated:"បានកែប្រែតួនាទី", classSaved:"បានរក្សាទុកថ្នាក់", classUpdated:"បានកែប្រែថ្នាក់", studentSaved:"បានរក្សាទុកសិស្ស", studentUpdated:"បានកែប្រែសិស្ស", attendanceSaved:"បានរក្សាទុកវត្តមាន",
     addRoleFields:"សូមបន្ថែម UID ឈ្មោះ និងពួកជំនុំ។ បង្កើតពួកជំនុំជាមុនសិន។", addStudentFields:"សូមបន្ថែមឈ្មោះ ពួកជំនុំ និងថ្នាក់", deleteConfirm:"តើលុបមែនទេ?", restoreConfirm:"តើស្តារឡើងវិញមែនទេ?", emptyTrashConfirm:"លុបធុងសំរាមជាអចិន្ត្រៃយ៍មែនទេ?", clearActivityConfirm:"សម្អាតកំណត់ត្រាសកម្មភាពទាំងអស់មែនទេ?", itemNotFound:"រកមិនឃើញធាតុ", restoreItemNotFound:"រកមិនឃើញធាតុសម្រាប់ស្តារ",
     noChurch:"មិនទាន់មានពួកជំនុំ", noUsers:"មិនទាន់មានអ្នកប្រើ", noClass:"មិនទាន់មានថ្នាក់", noStudent:"មិនទាន់មានសិស្ស", noStudents:"មិនទាន់មានសិស្ស", noDeleted:"មិនមានធាតុបានលុប", noActivity:"មិនទាន់មានសកម្មភាព", noReport:"មិនទាន់មានទិន្នន័យរបាយការណ៍", noSunday:"ខែនេះមិនមានថ្ងៃអាទិត្យ", sundayAttendance:"វត្តមានថ្ងៃអាទិត្យ", deleted:"បានលុប", details:"លម្អិត", edit:"កែប្រែ", delete:"លុប", previewPhoto:"មើលរូបភាពសិស្ស", student:"សិស្ស", roleAdmin:"បងថេត", rolePastor:"គ្រូគង្វាល", roleTeacher:"គ្រូ", week:"សប្តាហ៍",
-    attendanceChecker:"Attendance Checker", selectChurch:"ជ្រើសរើសពួកជំនុំ", selectClass:"ជ្រើសរើសថ្នាក់", seeAll:"See all", seeLess:"See less", noChecker:"No attendance checks yet"
+    attendanceChecker:"Attendance Checker", selectChurch:"Select church", selectClass:"Select class", seeAll:"See all", seeLess:"See less", noChecker:"No attendance checks yet"
   }
 };
 let currentLang = localStorage.getItem("ss_lang") || "kh";
@@ -1454,10 +1247,18 @@ function applyTranslations(){
   if($("userText") && state.profile) $("userText").textContent=state.profile?.name || roleLabel(state.role);
   setPlaceholder("email","email"); setPlaceholder("password","key"); setPlaceholder("churchName","churchName"); setPlaceholder("roleName","name"); setPlaceholder("roleEmail","email"); setPlaceholder("roleUid","firebaseUid"); setPlaceholder("className","className"); setPlaceholder("studentName","studentName"); setPlaceholder("studentAge","age"); setPlaceholder("studentPhoto","profilePhoto"); setPlaceholder("studentSearch","searchStudents"); setPlaceholder("attSearch","search");
   setText("#remember span","remember"); setText("#page-home h2","overview"); setText(".home-stats .stat:nth-child(1) span","churches"); setText(".home-stats .stat:nth-child(2) span","students"); setText(".home-stats .stat:nth-child(3) span","present"); setText("#page-church h2","church"); setText("#page-roles h2","assignRole"); setText("#page-classes h2","classes"); setText("#page-students h2","students"); setText("#page-attendance h2","attendancePage"); setText("#page-reports h2","monthlyReport");
+  setText("#homeClassLabel","homeClassCopy");
   setText("#classStartLabel","classStartDate"); setText("#classEndLabel","classEndDate");
   setText("#classLifecycleLabel","classLifecycle"); setText("#classDateHelp","classDateHelp");
+  if($("classInfoTitle"))$("classInfoTitle").textContent=currentLang==="km"?"ព័ត៌មានថ្នាក់":"Class information";
+  if($("classInfoButton")){
+    const label=currentLang==="km"?"ព័ត៌មានថ្នាក់":"Class information";
+    $("classInfoButton").setAttribute("aria-label",label);
+    $("classInfoButton").title=label;
+  }
   setText("#cancelClassEdit","classCancel");
   setSelectLabel("classLifecycle","active","classActive"); setSelectLabel("classLifecycle","archived","classArchived");
+  syncClassLifecycleSwitch();
    setText("#restoreTitle","restore"); setText("#checkerTitle","attendanceChecker"); setText("#activityTitle","activity"); setText("#page-themes > .panel:nth-of-type(1) h2","themes"); setText("#themeEffectsTitle","effects"); setText(".att-stats .stat:nth-child(1) span","total"); setText(".att-stats .stat:nth-child(2) span","present"); setText(".att-stats .stat:nth-child(3) span","absent"); setText(".report-stats .stat:nth-child(1) span","students"); setText(".report-stats .stat:nth-child(2) span","total"); setText(".report-stats .stat:nth-child(3) span","weekMonths"); setText(".detail-total span","total");
   if($("copyHomeReport")) $("copyHomeReport").innerHTML=`${tr("copyWeek")} <span id="homeReportDate">${$("homeReportDate")?.textContent||""}</span>`;
   [["saveChurch","save"],["saveRole","saveRole"],["saveClass","save"],["saveStudent","save"]].forEach(([id,key])=>{ if($(id)) $(id).textContent=tr(key); });
@@ -1555,25 +1356,76 @@ async function login(){
 $("logoutBtn").onclick=()=>signOut(auth);
 $("openChatBtn").onclick=()=>{window.location.href='./chat/index.html';};
 
+// Google sign-in avatar URLs come from Firebase Authentication, not from
+// a guessed Gmail URL. Accept only Google-hosted HTTPS image URLs for display.
+function googleProfilePhotoURL(value){
+  const url=String(value||"").trim();
+  if(!url||url.length>2048)return "";
+  try{
+    const target=new URL(url);
+    return target.protocol==="https:"&&
+      (target.hostname==="googleusercontent.com"||
+       target.hostname.endsWith(".googleusercontent.com"))?target.href:"";
+  }catch{return "";}
+}
+function authGooglePhotoURL(user){
+  return googleProfilePhotoURL(user?.photoURL||
+    user?.providerData?.find(p=>p?.providerId==="google.com")?.photoURL);
+}
+function umPhotoHtml(user){
+  const url=googleProfilePhotoURL(user?.photoURL);
+  return '<span class="um-avatar">'+
+    (url?'<img src="'+esc(url)+'" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">':'')+
+    '<i class="ri-user-3-line"'+(url?' hidden':'')+' aria-hidden="true"></i></span>';
+}
+function umBindPhotoFallbacks(container){
+  container?.querySelectorAll(".um-avatar img").forEach(img=>{
+    img.addEventListener("error",()=>{
+      img.hidden=true;
+      const icon=img.nextElementSibling;
+      if(icon)icon.hidden=false;
+    },{once:true});
+  });
+}
+async function saveGoogleProfilePhotoForRequest(user){
+  const path="accountRequests/"+user.uid,photoURL=authGooglePhotoURL(user);
+  const basic={uid:user.uid,name:user.displayName||"",email:user.email||"",
+    provider:user.providerData?.[0]?.providerId||"password",
+    status:"pending",requestedAt:Date.now()};
+  let existing=null;
+  try{existing=(await get(ref(db,path))).val();}catch(error){
+    console.warn("Unable to check pending Google request:",error.code||error.message);
+  }
+  if(existing){
+    if(existing.status==="pending"&&photoURL&&existing.photoURL!==photoURL){
+      try{await update(ref(db,path),{photoURL});}
+      catch(error){console.warn("Google photo URL requires the optional photo-only Firebase rules:",error.code||error.message);}
+    }
+    return;
+  }
+  if(photoURL){
+    try{await set(ref(db,path),{...basic,photoURL});return;}
+    catch(error){console.warn("Google profile photo not permitted by current Firebase rules; retrying the original request.",error.code||error.message);}
+  }
+  // Backward-compatible fallback: old RTDB rules reject extra request fields.
+  await set(ref(db,path),basic);
+}
+async function syncApprovedGooglePhoto(user,profile){
+  const photoURL=authGooglePhotoURL(user);
+  if(!photoURL||!profile||profile.photoURL===photoURL)return;
+  try{await set(ref(db,"users/"+user.uid+"/photoURL"),photoURL);}
+  catch(error){console.warn("Updating approved user photo needs photo-only Firebase rules:",error.code||error.message);}
+}
+
+let stopCurrentProfileWatch=null;
+function clearCurrentProfileWatch(){
+  if(stopCurrentProfileWatch){stopCurrentProfileWatch();stopCurrentProfileWatch=null;}
+}
 onAuthStateChanged(auth, async user=>{
+  clearCurrentProfileWatch();
   if(!user){
-    stopSummaryLoads();
-    stopSummaryPrefetch(true);
-    summaryWatchReady.clear();
-    summaryManualClass=false;
-    summarySelectionChurch="";
-    summaryStableOrderCache.clear();
-    stopAttendanceSubscriptions();
-    stopBaseWatchers();
-    state.user=null;state.profile=null;state.role="guest";
-    state.churches={};state.users={};state.classes={};state.students={};
-    state.trash={};state.activities={};
-    state.attendance={};
-    attendanceLoaded.clear();attendanceErrors.clear();
-    attendanceWeekLoaded.clear();attendanceWeekErrors.clear();
-    attendanceBatchAllowed.clear();attendanceRosterCache.clear();attendanceWeekStateCache.clear();
-    summaryHistoryProgress.clear();
-    hideAuthLoading(); $("loginView").classList.remove("hidden"); $("appView").classList.add("hidden"); return;
+    state.user=null;state.profile=null;state.role="guest";state.churchId=null;
+    hideAuthLoading();$("loginView").classList.remove("hidden");$("appView").classList.add("hidden");return;
   }
   state.user=user;
   const adminSnap=await get(ref(db,"admins/"+user.uid));
@@ -1582,8 +1434,8 @@ onAuthStateChanged(auth, async user=>{
   }else{
     const s=await get(ref(db,"users/"+user.uid)); state.profile=s.val();
     if(!state.profile){
-      try{await set(ref(db,'accountRequests/'+user.uid),{uid:user.uid,name:user.displayName||'',email:user.email||'',provider:user.providerData?.[0]?.providerId||'password',status:'pending',requestedAt:Date.now()});}
-      catch(err){console.warn('Account request requires the optional Firebase accountRequests rules.',err);}
+      try{await saveGoogleProfilePhotoForRequest(user);}
+      catch(err){console.warn('Account request requires the Firebase accountRequests rules.',err);}
       await signOut(auth);
       return showStatus('loginStatus','Access pending: ask the administrator to approve your account. Existing users retain access.',false);
     }
@@ -1591,36 +1443,46 @@ onAuthStateChanged(auth, async user=>{
       await signOut(auth);return showStatus('loginStatus','Account pending or disabled. Contact administrator.',false);
     }
     state.role=state.profile.role; state.churchId=state.profile.churchId;
+    // Best effort: users may refresh their own Google photo without access to
+    // role/church/status fields. Fails safely until photo-only rules are published.
+    syncApprovedGooglePhoto(user,state.profile);
   }
   hideAuthLoading();
   $("loginView").classList.add("hidden"); $("appView").classList.remove("hidden");
   $("userText").textContent=state.profile?.name || roleLabel(state.role);
-  applyRole(); loadData();
+  applyRole();loadData();
+  if(!canAdmin()){
+    const expectedRole=state.role,expectedChurch=state.profile?.churchId;
+    stopCurrentProfileWatch=onValue(ref(db,"users/"+user.uid),snap=>{
+      if(auth.currentUser?.uid!==user.uid)return;
+      const live=snap.val();
+      if(!live||live.status==="disabled"||live.status==="pending"||
+          live.active===false||live.role!==expectedRole||live.churchId!==expectedChurch){
+        clearCurrentProfileWatch();
+        signOut(auth).then(()=>showStatus("loginStatus",
+          live?.status==="disabled"||live?.active===false
+            ?"Your account has been blocked. Contact the administrator."
+            :"Account access changed. Please sign in again.",false))
+          .catch(error=>showStatus("loginStatus",error.code||error.message,false));
+      }
+    },error=>console.warn("Unable to monitor account status:",error.code||error.message));
+  }
 });
 
 function applyRole(){
-  document.querySelectorAll(".nav-btn[data-page='church'],.nav-btn[data-page='roles'],.nav-btn[data-page='activity']").forEach(b=>b.classList.toggle("hidden",!canAdmin()));
+  document.querySelectorAll(".nav-btn[data-page='church'],.nav-btn[data-page='roles'],.nav-btn[data-page='users'],.nav-btn[data-page='activity']").forEach(b=>b.classList.toggle("hidden",!canAdmin()));
   if($("dashboardBtn")) $("dashboardBtn").classList.toggle("hidden",!(canAdmin()||canTeacher()));
-  document.querySelector(".nav-btn[data-page='classes']").classList.toggle("hidden",!(canAdmin()||canPastor()));
+  document.querySelector(".nav-btn[data-page='classes']").classList.toggle("hidden",!(canAdmin()||canPastor()||canTeacher()));
   cloudDisplay();
 }
 document.querySelectorAll(".nav-btn[data-page]").forEach(b=>b.onclick=()=>{ if(b.classList.contains("attend-tab")) playWeekPop(b); page(b.dataset.page); });
 if($("dashboardBtn")) $("dashboardBtn").onclick=()=>{ localStorage.setItem("dashboardLang", currentLang); location.href="./dashboard.html"; };
 function page(name){
-  const previous=activePage();
-  if(previous!==name){
-    if(previous==="summary")stopSummaryLoads();
-    stopAttendanceSubscriptions();
-    if(name==="attendance")stopSummaryPrefetch();
-    if(name==="summary")startSummaryLoads();
-  }
   if(name!=="summary")closeSummaryDayPopup(true);
-  if(name==="activity")ensureAdminActivityWatchers();
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
   $("page-"+name).classList.add("active");
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.page===name));
   renderAll();
-  if(name==="home"||name==="summary")scheduleSummaryPrefetch();
 }
 const activePage = () => document.querySelector(".page.active")?.id.replace("page-","") || "home";
 const isPage = name => activePage() === name;
@@ -1648,71 +1510,18 @@ function applyChoiceWipeAngle(value){
   }
 }
 
-let baseRenderFrame=0;
-function scheduleBaseRender(){
-  if(baseRenderFrame)return;
-  baseRenderFrame=requestAnimationFrame(()=>{
-    baseRenderFrame=0;
-    if(state.user)renderAll();
-  });
-}
-const baseWatchers=new Map();
-let baseWatchEpoch=0;
-let adminActivityWatchStarted=false;
-function stopBaseWatchers(){
-  baseWatchEpoch++;
-  for(const unsub of baseWatchers.values())try{unsub()}catch{}
-  baseWatchers.clear();
-  if(cloudWatchStop){try{cloudWatchStop()}catch{}cloudWatchStop=null;}
-  adminActivityWatchStarted=false;
-}
-function ensureAdminActivityWatchers(){
-  if(!canAdmin()||adminActivityWatchStarted||!state.user)return;
-  adminActivityWatchStarted=true;
-  watch("trash","trash");
-  watch("activities","activities");
-}
-function watch(path,target,sourceRef=ref(db,path)){
-  const key=target+"|"+path;
-  if(baseWatchers.has(key))return;
-  const epoch=baseWatchEpoch;
-  const unsubscribe=onValue(sourceRef, snap=>{
-    if(epoch!==baseWatchEpoch||!state.user)return;
-    const previousRecords=(target==="students"||target==="classes")?state[target]:null;
+function watch(path, target, sourceRef=ref(db,path)){
+  onValue(sourceRef, snap=>{
     state[target]=snap.val()||{};
-    if(target==="students"||target==="classes"){
-      // Any ongoing class scan used the old roster/class metadata.
-      stopSummaryPrefetch();
-      if(target==="students")invalidateChangedSummaryRosters(previousRecords,state.students);
-      if(target==="classes"){
-        for(const id of new Set([...Object.keys(previousRecords||{}),...Object.keys(state.classes)])){
-          if((previousRecords?.[id]?.churchId||"")!==(state.classes[id]?.churchId||"")){
-            invalidateSummaryRosterClass(id);
-          }
-        }
-      }
-      attendanceRosterVersion++;
-      attendanceRosterCache.clear();
-      attendanceWeekStateCache.clear();
-      summaryStableOrderCache.clear();
-      summarySignatureCache.clear();
-      summaryWatchReady.add(target);
-      scheduleSummaryPrefetch();
-    }
     if(target==="themeBackgroundsSettings" || target==="themeBackgroundsUser") applyThemeBackgroundSettings();
     if(target==="churches") applyThemeBackgroundSettings();
     if(target==="themeOptions") applyThemeOptionSettings();
-    scheduleBaseRender();
+    renderAll();
   }, err=>{
-    if(epoch!==baseWatchEpoch)return;
     console.warn(`Unable to load ${path}:`, err.code || err.message);
   });
-  baseWatchers.set(key,unsubscribe);
 }
 function loadData(){
-  stopBaseWatchers();
-  stopSummaryPrefetch();
-  summaryWatchReady.clear();
   cloudWatch();
   watch("settings/themeBackgrounds","themeBackgroundsSettings");
   if(state.user) watch(`users/${state.user.uid}/appSettings/themeBackgrounds`,"themeBackgroundsUser");
@@ -1720,10 +1529,11 @@ function loadData(){
   if(canAdmin()){
     watch("churches","churches");
     watch("users","users");
+    watch("accountRequests","accountRequests");
     watch("classes","classes");
     watch("students","students");
-    // Activity/Trash can contain large histories. Read only when opened.
-    if(isPage("activity"))ensureAdminActivityWatchers();
+    watch("trash","trash");
+    watch("activities","activities");
     return;
   }
   const churchId = roleChurch();
@@ -1744,400 +1554,17 @@ const includes = (text,q) => String(text||"").toLowerCase().includes(String(q||"
 const selectedChurchId = () => canAdmin() ? (state.selectedChurchId || "") : roleChurch();
 function setSelectedChurchId(churchId){
   const next=canAdmin() ? (churchId||"") : roleChurch();
-  const churchChanged=(next||"")!==selectedChurchId();
+  const previousChurch=selectedChurchId();
   state.selectedChurchId=next||"";
-  if(churchChanged){
-    summaryManualClass=false;
-    summarySelectionChurch="";
-    stopSummaryPrefetch();
-  }
+  if(previousChurch!==state.selectedChurchId&&$("homeClass"))$("homeClass").value="";
   if(canAdmin()) localStorage.setItem(adminSelectedChurchKey,state.selectedChurchId);
   ["homeChurch","studentChurch","attChurch","reportChurch","summaryChurch"].forEach(id=>{if($(id) && $(id).value!==state.selectedChurchId) $(id).value=state.selectedChurchId;});
-  ["studentClass","attClass","reportClass"].forEach(id=>{if($(id)) $(id).value="";});
-  if(churchChanged&&$("summaryClass"))$("summaryClass").value="";
+  ["studentClass","attClass","reportClass","summaryClass"].forEach(id=>{if($(id)) $(id).value="";});
   resetStudentRenderCache(); resetAttendanceRenderCache(); resetReportRenderCache(); resetSummaryRenderCache();
-  if(churchChanged)scheduleSummaryPrefetch();
 }
 const scopedStudents = () => visibleStudents().filter(s=>selectedChurchId() && s.churchId===selectedChurchId());
 const scopedClasses = () => visibleClasses().filter(c=>selectedChurchId() && c.churchId===selectedChurchId());
 const studentsByClass = classId => scopedStudents().filter(s=>(!classId||s.classId===classId));
-
-/* Summary selects exactly one class. Remembered multi-class choices are for
-   background prefetch only, and never auto-select a class on the screen. */
-const summaryLastClassPrefix="kid2pro_summary_last_class_v1:";
-let summarySelectionChurch="";
-let summaryManualClass=false;
-const summaryStableOrderCache=new Map();
-function summaryChurchClasses(churchId){
-  return visibleClasses().filter(c=>!!churchId&&c.churchId===churchId);
-}
-function summaryLastClassKey(churchId){
-  return summaryLastClassPrefix+(state.user?.uid||"guest")+":"+churchId;
-}
-function summaryRememberedClass(churchId){
-  const classes=summaryChurchClasses(churchId);
-  if(classes.length===1)return classes[0].id;
-  try{
-    const saved=localStorage.getItem(summaryLastClassKey(churchId))||"";
-    return classes.some(cls=>cls.id===saved)?saved:"";
-  }catch{return "";}
-}
-function syncSummaryClassSelection(){
-  const select=$("summaryClass");
-  if(!select)return "";
-  const churchId=selectedChurchId();
-  if(churchId!==summarySelectionChurch){
-    summarySelectionChurch=churchId;
-    summaryManualClass=false;
-  }
-  const classes=summaryChurchClasses(churchId);
-  let value="";
-  if(classes.length===1)value=classes[0].id;
-  else if(classes.length>1&&summaryManualClass&&classes.some(c=>c.id===select.value))value=select.value;
-  else summaryManualClass=false;
-  if(select.value!==value)select.value=value;
-  syncCustomSelect("summaryClass");
-  return value;
-}
-function selectedSummaryClassId(){
-  const classes=summaryChurchClasses(selectedChurchId());
-  if(classes.length===1)return classes[0].id;
-  if(classes.length>1&&summaryManualClass){
-    const chosen=$("summaryClass")?.value||"";
-    if(classes.some(c=>c.id===chosen))return chosen;
-  }
-  return "";
-}
-
-/* Full-period, session-scoped Summary preparation.
-   Downloading is asynchronous; display only complete, verified class totals.
-   Firebase paths and security rules are unchanged. */
-const summaryWatchReady=new Set();
-const summaryPrepared=new Map();
-const summarySignatureCache=new Map();
-function invalidateSummaryRosterClass(classId){
-  if(!classId)return;
-  for(const key of [...attendanceWeekLoaded]){
-    if(key.endsWith("/"+classId))attendanceWeekLoaded.delete(key);
-  }
-  for(const key of [...attendanceWeekStateCache.keys()]){
-    if(key.endsWith("/"+classId))attendanceWeekStateCache.delete(key);
-  }
-  summaryPrepared.delete(classId);
-  summarySignatureCache.delete(classId);
-  summaryStableOrderCache.delete(classId);
-}
-function invalidateChangedSummaryRosters(before,after){
-  const ids=new Set([...Object.keys(before||{}),...Object.keys(after||{})]);
-  let changed=false;
-  for(const id of ids){
-    const old=before?.[id],fresh=after?.[id];
-    if((old?.classId||"")!==(fresh?.classId||"")||
-      (old?.churchId||"")!==(fresh?.churchId||"")){
-      invalidateSummaryRosterClass(old?.classId);
-      invalidateSummaryRosterClass(fresh?.classId);
-      changed=true;
-    }
-  }
-  return changed;
-}
-let summaryPrepEpoch=0,summaryPrepTimer=0,summaryPrepWorking=false,summaryPrepActiveClass="";
-let summaryPrepQueue=[];
-const SUMMARY_PREP_GROUP_CONCURRENCY=3;
-const SUMMARY_PREP_STUDENT_CONCURRENCY=6;
-function summaryPrepSignature(classId){
-  const cls=state.classes[classId];
-  if(!cls)return "";
-  const lastSunday=summaryCandidateDates(classId).at(-1)||"";
-  const cached=summarySignatureCache.get(classId);
-  if(cached?.version===attendanceRosterVersion&&cached.lastSunday===lastSunday){
-    return cached.signature;
-  }
-  const ids=attendanceClassStudents(classId).slice().sort();
-  const signature=JSON.stringify([
-    cls.churchId||"",cls.startDate||"",cls.endDate||"",cls.status||"",
-    lastSunday,ids.map(id=>[id,state.students[id]?.name||""])
-  ]);
-  summarySignatureCache.set(classId,{version:attendanceRosterVersion,lastSunday,signature});
-  return signature;
-}
-function summaryPreparedFor(classId){
-  const record=summaryPrepared.get(classId);
-  if(record&&record.signature!==summaryPrepSignature(classId)){
-    summaryPrepared.delete(classId);
-    return null;
-  }
-  return record||null;
-}
-function summaryPreparationProgress(classId){
-  const record=summaryPreparedFor(classId);
-  if(!record)return {status:"idle",done:0,total:summaryCandidateDates(classId).length,error:""};
-  return record;
-}
-function summaryBuildReady(classId,record){
-  if(!record||record.signature!==summaryPrepSignature(classId))return false;
-  const ids=attendanceClassStudents(classId);
-  if(!record.dates.every(date=>attendanceWeekFullyRead(date,classId)))return false;
-  const counts=new Map(ids.map(id=>[id,0]));
-  const recordedDates=[];
-  for(const date of record.dates){
-    const marks=state.attendance[date]?.[classId]||{};
-    let anyPresent=false;
-    for(const id of ids){
-      if(marks[id]==="present"){
-        counts.set(id,counts.get(id)+1);
-        anyPresent=true;
-      }
-    }
-    if(anyPresent)recordedDates.push(date);
-  }
-  const order=ids.slice().sort((a,b)=>
-    (counts.get(b)||0)-(counts.get(a)||0)||
-    String(state.students[a]?.name||"").localeCompare(String(state.students[b]?.name||""))||
-    String(a).localeCompare(String(b)));
-  record.counts=counts;
-  record.order=order;
-  record.recordedFirst=recordedDates[0]||"";
-  record.recordedLast=recordedDates.at(-1)||"";
-  record.done=record.total;
-  record.status="ready";
-  record.error="";
-  summaryStableOrderCache.delete(classId);
-  if(isPage("summary")&&selectedSummaryClassId()===classId)scheduleSummaryRender();
-  return true;
-}
-function summaryUpdateReadyCounts(classId){
-  const record=summaryPreparedFor(classId);
-  if(!record||record.status!=="ready")return;
-  if(!summaryBuildReady(classId,record)){
-    summaryPrepared.delete(classId);
-    if(isPage("summary")&&selectedSummaryClassId()===classId){
-      queueSummaryPreparation(classId,true);
-      scheduleSummaryRender();
-    }
-  }
-}
-function stopSummaryPrefetch(clearCache=false){
-  summaryPrepEpoch++;
-  clearTimeout(summaryPrepTimer);
-  summaryPrepTimer=0;
-  summaryPrepQueue=[];
-  summaryPrepWorking=false;
-  const interrupted=summaryPrepActiveClass;
-  summaryPrepActiveClass="";
-  const record=summaryPrepared.get(interrupted);
-  if(record?.status==="preparing")record.status="idle";
-  if(clearCache){
-    summaryPrepared.clear();
-    summarySignatureCache.clear();
-  }
-}
-function summaryQueueRemainingClasses(){
-  const church=selectedChurchId();
-  const choices=summaryChurchClasses(church);
-  if(!choices.length)return [];
-  const remembered=summaryRememberedClass(church);
-  return choices.map(c=>c.id).sort((a,b)=>
-    (a===remembered?-1:b===remembered?1:0)||
-    String(state.classes[a]?.name||"").localeCompare(String(state.classes[b]?.name||"")));
-}
-function queueSummaryPreparation(classId,priority=false,retry=false){
-  if(!state.user||!classId||isPage("attendance")||
-     !summaryWatchReady.has("classes")||!summaryWatchReady.has("students"))return;
-  if(!summaryChurchClasses(selectedChurchId()).some(c=>c.id===classId))return;
-  const current=summaryPreparedFor(classId);
-  if(current?.status==="ready"&&!retry)return;
-  if(current?.status==="error"&&!retry)return;
-  if(retry){
-    summaryPrepared.delete(classId);
-    attendanceBatchAllowed.delete(classId); // recheck rules if permissions changed
-    for(const date of summaryCandidateDates(classId)){
-      attendanceWeekErrors.delete(attendanceWeekKey(date,classId));
-      for(const id of attendanceClassStudents(classId)){
-        const key=attendanceStudentKey(date,classId,id);
-        attendanceErrors.delete(key);
-        summaryRetryAfter.delete(key);
-        summaryTransientRetry.delete(key);
-      }
-    }
-  }
-  if(priority&&summaryPrepActiveClass&&summaryPrepActiveClass!==classId){
-    stopSummaryPrefetch(); // foreground selection preempts background classes
-  }
-  if(summaryPrepActiveClass===classId||summaryPrepQueue.includes(classId))return;
-  if(priority)summaryPrepQueue.unshift(classId);
-  else summaryPrepQueue.push(classId);
-  pumpSummaryPreparation();
-}
-function scheduleSummaryPrefetch(){
-  // Full-history background preparation is disabled for the fast Summary.
-  // Progressive on-demand history loads only while the Summary page is open.
-}
-function summaryPrepStillValid(epoch,userId,classId,signature){
-  return epoch===summaryPrepEpoch&&state.user?.uid===userId&&!isPage("attendance")&&
-    summaryChurchClasses(selectedChurchId()).some(c=>c.id===classId)&&
-    summaryPrepSignature(classId)===signature;
-}
-async function summaryReadPreparedWeek(date,classId,valid){
-  if(attendanceWeekFullyRead(date,classId))return;
-  const key=attendanceWeekKey(date,classId);
-  if(attendanceBatchAllowed.get(classId)!==false){
-    try{
-      const snapshot=await summaryReadOnce("attendance/"+key);
-      if(!valid())return;
-      attendanceBatchAllowed.set(classId,true);
-      applyAttendanceWeek(date,classId,snapshot.val());
-      return;
-    }catch(error){
-      if(!valid())return;
-      if(!summaryIsDenied(error))throw error;
-      attendanceBatchAllowed.set(classId,false);
-    }
-  }
-  const ids=attendanceClassStudents(classId).filter(id=>
-    !attendanceLoaded.has(attendanceStudentKey(date,classId,id)));
-  let firstError=null;
-  for(let i=0;i<ids.length;i+=SUMMARY_PREP_STUDENT_CONCURRENCY){
-    if(!valid())return;
-    const results=await Promise.allSettled(ids.slice(i,i+SUMMARY_PREP_STUDENT_CONCURRENCY).map(async id=>{
-      const path=attendanceStudentKey(date,classId,id);
-      const snapshot=await summaryReadStudent("attendance/"+path,path);
-      if(!valid())return;
-      state.attendance[date] ||= {};
-      state.attendance[date][classId] ||= {};
-      const mark=snapshot.val();
-      if(mark==null)delete state.attendance[date][classId][id];
-      else state.attendance[date][classId][id]=mark;
-      attendanceLoaded.add(path);
-      attendanceErrors.delete(path);
-      summaryRetryAfter.delete(path);
-      summaryTransientRetry.delete(path);
-    }));
-    if(!valid())return;
-    results.forEach((item,index)=>{
-      if(item.status==="rejected"){
-        const path=attendanceStudentKey(date,classId,ids[i+index]);
-        attendanceErrors.add(path);
-        firstError ||= item.reason;
-      }
-    });
-    invalidateAttendanceWeek(date,classId);
-  }
-  if(firstError)throw firstError;
-  if(!attendanceWeekFullyRead(date,classId))throw Error("INCOMPLETE_ATTENDANCE_WEEK");
-}
-async function prepareSummaryClass(classId,epoch,userId){
-  const signature=summaryPrepSignature(classId);
-  const dates=summaryCandidateDates(classId);
-  const valid=()=>summaryPrepStillValid(epoch,userId,classId,signature);
-  if(!valid())return;
-  const previous=summaryPreparedFor(classId);
-  if(previous?.status==="ready")return;
-  const record={signature,dates,status:"preparing",done:0,total:dates.length,
-    error:"",counts:null,order:null};
-  summaryPrepared.set(classId,record);
-  const update=()=>{
-    if(!valid())return;
-    record.done=dates.filter(date=>attendanceWeekFullyRead(date,classId)).length;
-    if(isPage("summary")&&selectedSummaryClassId()===classId)scheduleSummaryRender();
-  };
-  update();
-  if(!attendanceClassStudents(classId).length){
-    record.total=0;record.dates=[];
-    summaryBuildReady(classId,record);
-    return;
-  }
-  const pending=dates.slice().reverse().filter(date=>!attendanceWeekFullyRead(date,classId));
-  try{
-    // One initial permission probe prevents a burst of rejected group reads.
-    if(pending.length&&attendanceBatchAllowed.get(classId)===undefined){
-      await summaryReadPreparedWeek(pending.shift(),classId,valid);
-      if(!valid())return;
-      update();
-    }
-    while(pending.length&&valid()){
-      const size=attendanceBatchAllowed.get(classId)===false?1:SUMMARY_PREP_GROUP_CONCURRENCY;
-      const batch=pending.splice(0,size);
-      const results=await Promise.allSettled(batch.map(date=>summaryReadPreparedWeek(date,classId,valid)));
-      if(!valid())return;
-      update();
-      const failed=results.find(x=>x.status==="rejected");
-      if(failed)throw failed.reason;
-      // Yield between batches so attendance and UI interactions stay responsive.
-      await new Promise(resolve=>setTimeout(resolve,0));
-    }
-    if(!valid())return;
-    if(!summaryBuildReady(classId,record))throw Error("INCOMPLETE_ATTENDANCE_HISTORY");
-  }catch(error){
-    if(!valid())return;
-    record.status="error";
-    record.error=summaryIsDenied(error)?"PERMISSION_DENIED":
-      String(error?.code||error?.message||"ATTENDANCE_READ_FAILED");
-    console.warn("Summary preparation incomplete",classId,record.error);
-    update();
-  }
-}
-function pumpSummaryPreparation(){
-  if(summaryPrepWorking||!state.user)return;
-  const epoch=summaryPrepEpoch,userId=state.user.uid;
-  summaryPrepWorking=true;
-  (async()=>{
-    while(epoch===summaryPrepEpoch&&summaryPrepQueue.length){
-      const classId=summaryPrepQueue.shift();
-      summaryPrepActiveClass=classId;
-      await prepareSummaryClass(classId,epoch,userId);
-    }
-  })().catch(error=>console.warn("Summary preparation failed",error))
-    .finally(()=>{
-      if(epoch!==summaryPrepEpoch)return;
-      summaryPrepWorking=false;
-      summaryPrepActiveClass="";
-      if(summaryPrepQueue.length)pumpSummaryPreparation();
-    });
-}
-function retrySummaryPreparation(classId){
-  if(classId!==selectedSummaryClassId())return;
-  queueSummaryPreparation(classId,true,true);
-  scheduleSummaryRender();
-}
-// Rank by total confirmed Present checks. Cache the rendered order so
-// individual Firebase updates change counts/squares without shuffling rows.
-// Re-rank only after the current week window settles, then once more when
-// the entire historical period is confirmed. Ranks are also refreshed on
-// reentering Summary or when class membership changes.
-let summaryRankRefreshTimer=0;
-function scheduleSummaryRankRefresh(){
-  if(summaryRankRefreshTimer)return;
-  summaryRankRefreshTimer=setTimeout(()=>{
-    summaryRankRefreshTimer=0;
-    if(isPage("summary"))scheduleSummaryRender();
-  },950);
-}
-function summaryStableStudents(students,classId,counts,recentSettled,allSettled){
-  const cached=summaryStableOrderCache.get(classId);
-  const byId=new Map(students.map(st=>[st.id,st]));
-  const sameRoster=!!cached&&cached.version===attendanceRosterVersion&&
-    cached.ids.length===students.length&&cached.ids.every(id=>byId.has(id));
-  const phase=allSettled?2:recentSettled?1:0;
-  if(sameRoster&&phase<=cached.phase){
-    return cached.ids.map(id=>byId.get(id));
-  }
-  // Do not move student rows while the user is scrolling or reading a popup.
-  if(sameRoster&&(Date.now()-summaryLastUserScrollAt<850||
-     !$("summaryDayOverlay")?.classList.contains("hidden"))){
-    scheduleSummaryRankRefresh();
-    return cached.ids.map(id=>byId.get(id));
-  }
-  const sorted=students.slice().sort((a,b)=>
-    (counts.get(b.id)||0)-(counts.get(a.id)||0)||
-    String(a.name||"").localeCompare(String(b.name||""))||
-    String(a.id).localeCompare(String(b.id)));
-  summaryStableOrderCache.set(classId,{
-    version:attendanceRosterVersion,ids:sorted.map(st=>st.id),phase
-  });
-  return sorted;
-}
-
 const studentPageChurchId = () => selectedChurchId();
 const studentPageClasses = () => {
   const churchId=studentPageChurchId();
@@ -2183,46 +1610,49 @@ function hideAttendanceLoadingSoon(){
   }));
 }
 function scheduleAttendanceRender(){
-  if(!isPage("attendance")||attRenderTimer)return;
+  if(!isPage("attendance")) return;
   showAttendanceLoading();
-  // A single throttled render coalesces concurrent student snapshots.
-  attRenderTimer=setTimeout(()=>{
-    attRenderTimer=0;
-    if(isPage("attendance"))renderAttendance(true);
-  },40);
+  clearTimeout(attRenderTimer);
+  attRenderTimer=setTimeout(()=>renderAttendance(true),70);
+  clearTimeout(attRangeSortTimer);
+  attRangeSortTimer=setTimeout(()=>{
+    if(isPage("attendance")){
+      resetAttendanceRenderCache();
+      renderAttendance(true);
+    }
+  },180);
 }
 function resetAttendanceRenderCache(){
   attWeekbarHtml="";
   attListHtml="";
 }
 function scheduleStudentRender(){
-  if(!isPage("students")||studentRenderTimer)return;
-  studentRenderTimer=setTimeout(()=>{
-    studentRenderTimer=0;
-    if(isPage("students"))renderStudents(true);
-  },48);
+  if(!isPage("students")) return;
+  clearTimeout(studentRenderTimer);
+  studentRenderTimer=setTimeout(()=>renderStudents(true),70);
+  clearTimeout(studentRangeSortTimer);
+  studentRangeSortTimer=setTimeout(()=>{
+    if(isPage("students")){
+      resetStudentRenderCache();
+      renderStudents(true);
+    }
+  },180);
 }
 function resetStudentRenderCache(){
   studentListHtml="";
 }
 function scheduleReportRender(){
-  if(!isPage("reports")||reportRenderTimer)return;
-  reportRenderTimer=setTimeout(()=>{
-    reportRenderTimer=0;
-    if(isPage("reports"))renderReports();
-  },48);
+  if(!isPage("reports")) return;
+  clearTimeout(reportRenderTimer);
+  reportRenderTimer=setTimeout(()=>renderReports(),70);
 }
 function resetReportRenderCache(){
   reportListHtml="";
 }
 function scheduleSummaryRender(){
-  if(!isPage("summary")||summaryRenderTimer)return;
-  // Throttle, rather than debounce: steady Firebase snapshots cannot delay
-  // rendering until the last callback finally finishes.
-  summaryRenderTimer=setTimeout(()=>{
-    summaryRenderTimer=0;
-    if(isPage("summary"))renderSummary();
-  },48);
+  if(!isPage("summary")) return;
+  clearTimeout(summaryRenderTimer);
+  summaryRenderTimer=setTimeout(renderSummary,100);
 }
 function resetSummaryRenderCache(){ summaryListHtml=""; }
 function resetStudentForm(){
@@ -2243,7 +1673,8 @@ $("saveRole").onclick=async()=>{
   const uid=clean($("roleUid").value), name=clean($("roleName").value), email=clean($("roleEmail").value), role=$("roleType").value, churchId=$("roleChurch").value;
   if(!uid||!name||!churchId)return showStatus("roleStatus",tr("addRoleFields"),false);
   const action=editingRoleId?"updated":"created";
-  const data={uid,name,email,role,churchId,active:true,updatedAt:Date.now()};
+  const existing=state.users[uid]||{};
+  const data={...existing,uid,name,email,role,churchId,active:existing.status!=="disabled",updatedAt:Date.now()};
   if(await write("users/"+uid,data,"roleStatus",editingRoleId?tr("roleUpdated"):tr("roleSaved"))){ await logActivity(action,"users",uid,name); editingRoleId=""; $("roleUid").disabled=false; $("roleUid").value=$("roleName").value=$("roleEmail").value=""; renderRoles(); }
 };
 function classDateValue(value){
@@ -2252,41 +1683,102 @@ function classDateValue(value){
   const d=new Date(v+"T12:00:00");
   return Number.isNaN(d.getTime())||dateKey(d)!==v?"":v;
 }
+function syncClassLifecycleSwitch(){
+  const input=$("classLifecycle"),button=$("classLifecycleSwitch"),text=$("classLifecycleValue");
+  if(!input||!button||!text)return;
+  const active=input.value!=="archived";
+  button.setAttribute("aria-checked",String(active));
+  text.textContent=tr(active?"classActive":"classArchived");
+  // The top switch and the inline switch edit the same pending status.
+  if(editingClassId){
+    const row=[...document.querySelectorAll("#classList .class-row[data-class-id]")]
+      .find(item=>item.dataset.classId===editingClassId);
+    const toggle=row?.querySelector(".class-inline-toggle");
+    if(toggle){
+      toggle.setAttribute("aria-checked",String(active));
+      toggle.setAttribute("aria-label",tr("classLifecycle")+": "+tr(active?"classActive":"classArchived"));
+      toggle.title=tr(active?"classActive":"classArchived");
+      row.querySelector(".class-row-state")?.classList.toggle("archived",!active);
+    }
+  }
+}
+$("classLifecycleSwitch").addEventListener("click",()=>{
+  const input=$("classLifecycle");
+  input.value=input.value==="archived"?"active":"archived";
+  syncClassLifecycleSwitch();
+});
+$("classLifecycle").addEventListener("change",syncClassLifecycleSwitch);
+document.addEventListener("click",event=>{
+  const menu=$("classInfoMenu");
+  if(menu?.open&&!menu.contains(event.target))menu.open=false;
+});
 function resetClassForm(){
   editingClassId="";
   $("className").value="";
   $("classStartDate").value=today();
   $("classEndDate").value="";
   $("classLifecycle").value="active";
+  syncClassLifecycleSwitch();
+  if($("classInfoMenu"))$("classInfoMenu").open=false;
   $("cancelClassEdit").classList.add("hidden");
   $("classStatus").textContent="";
   syncCustomSelect("classChurch");
 }
-$("cancelClassEdit").onclick=()=>{resetClassForm();renderClasses();};
+function cancelClassEditing(){
+  if(classSaving)return;
+  resetClassForm();
+  renderClasses();
+}
+$("cancelClassEdit").onclick=cancelClassEditing;
 $("classStartDate").value=today();
 $("saveClass").onclick=async()=>{
+  if(classSaving)return false;
+  // Teachers can save only classes they own; Firebase independently checks UID.
+  if(!(canAdmin()||canPastor()||canTeacher())){
+    showStatus("classStatus","Permission denied.",false);
+    return false;
+  }
+  if(editingClassId&&!canEditClass(state.classes[editingClassId])){
+    showStatus("classStatus","You can edit only classes you created in your own church.",false);
+    return false;
+  }
   const name=clean($("className").value),churchId=canAdmin()?$("classChurch").value:roleChurch();
-  if(!name||!churchId){showStatus("classStatus",tr("className"),false);return;}
+  if(!name||!churchId){showStatus("classStatus",tr("className"),false);return false;}
   const old=editingClassId?(state.classes[editingClassId]||{}):{};
   const start=$("classStartDate").value,end=$("classEndDate").value;
-  // Existing undated classes can be edited without imposing a new start date.
-  if(!start&&!editingClassId){showStatus("classStatus",tr("classStartRequired"),false);return;}
+  // Existing undated classes may still be edited without supplying a new date.
+  if(!start&&!editingClassId){showStatus("classStatus",tr("classStartRequired"),false);return false;}
   if((start&&!classDateValue(start))||(end&&!classDateValue(end))){
-    showStatus("classStatus",tr("classDateInvalid"),false);return;
+    showStatus("classStatus",tr("classDateInvalid"),false);return false;
   }
-  if(start&&end&&end<start){showStatus("classStatus",tr("classDateInvalid"),false);return;}
+  if(start&&end&&end<start){showStatus("classStatus",tr("classDateInvalid"),false);return false;}
   const lifecycle=$("classLifecycle").value==="archived"?"archived":"active";
   const id=editingClassId||push(ref(db,"classes")).key;
   const isEditing=!!editingClassId,action=isEditing?"updated":"created";
   const data={...old,name,churchId,startDate:start||old.startDate||"",endDate:end||"",status:lifecycle,
-    archivedAt:lifecycle==="archived"?(old.archivedAt||Date.now()):null,updatedAt:Date.now()};
-  if(await write("classes/"+id,data,"classStatus",isEditing?tr("classUpdated"):tr("classSaved"))){
+    archivedAt:lifecycle==="archived"?(old.archivedAt||Date.now()):null,
+    // Keep creator identity immutable on updates.
+    ...(isEditing?{}:{createdByUid:state.user.uid,createdByEmail:state.user.email||"",createdAt:Date.now()}),
+    updatedAt:Date.now()};
+  classSaving=true;
+  $("saveClass").disabled=true;
+  renderClasses();
+  try{
+    const saved=await write("classes/"+id,data,"classStatus",isEditing?tr("classUpdated"):tr("classSaved"));
+    if(!saved)return false; // Keep Edit mode and all pending values on Firebase error.
     await logActivity(action,"classes",id,name);
     resetClassForm();
     resetSummaryRenderCache();
     renderSelects();
+    // The class observer updates the list when the new record arrives.
+    return true;
+  }catch(error){
+    showStatus("classStatus",error.code||error.message,false);
+    return false;
+  }finally{
+    classSaving=false;
+    $("saveClass").disabled=false;
     renderClasses();
-    // No student or attendance records are modified.
   }
 };
 // Cloudinary unsigned upload. The admin-controlled preset must restrict uploads.
@@ -2391,18 +1883,87 @@ async function logActivity(type, path, id, label, extra={}){
   }catch(e){ console.warn("Activity log failed:", e.code||e.message); }
 }
 async function del(path,id){
-  if(!confirm(tr("deleteConfirm"))) return;
+  const admin=canAdmin();
+  const teacherStudentDelete=path==="students"&&(canTeacher()||canPastor());
+  if(!state.user||(!admin&&!teacherStudentDelete)){
+    alert("Permission denied.");
+    return;
+  }
+  // Teachers and pastors may delete only students from their own church.
+  // The Firebase student-level rules independently enforce this boundary.
+  if(!admin&&(!roleChurch()||state.students[id]?.churchId!==roleChurch())){
+    alert("You can only delete students from your own church.");
+    return;
+  }
+  const message=admin?tr("deleteConfirm"):
+    (currentLang==="km"
+      ?"លុបសិស្សនេះជាអចិន្ត្រៃយ៍មែនទេ? មិនអាចស្ដារពីធុងសំរាមបានទេ។"
+      :"Permanently delete this student? It cannot be restored from Trash.");
+  if(!confirm(message))return;
   try{
     const snap=await get(ref(db,path+"/"+id));
     const data=snap.val();
-    if(!data) return alert(tr("itemNotFound"));
+    if(!data)return alert(tr("itemNotFound"));
+    if(!admin&&data.churchId!==roleChurch()){
+      alert("You can only delete students from your own church.");
+      return;
+    }
     const label=labelFor(path,data,id);
-    await set(ref(db,"trash/"+path+"/"+id),{path,id,label,data,deletedAt:Date.now(),deletedBy:state.profile?.name||state.user?.email||state.user?.uid||""});
+    if(admin){
+      // Preserve the existing recoverable admin deletion workflow.
+      await set(ref(db,"trash/"+path+"/"+id),{path,id,label,data,deletedAt:Date.now(),deletedBy:state.profile?.name||state.user?.email||state.user?.uid||""});
+    }
+    // Teachers/pastors skip admin-only Trash; students/$id already allows
+    // deletion in their assigned church under the current Firebase rules.
     await remove(ref(db,path+"/"+id));
     await logActivity("deleted",path,id,label);
-  }
-  catch(e){ alert(e.code||e.message); }
+    if(path==="students"&&editingStudentId===id)resetStudentForm();
+  }catch(e){alert(e.code||e.message)}
 }
+// Teachers may delete only classes they created in their assigned church.
+// Deletion is direct because the existing Trash path is admin-only.
+// Historical attendance references are never removed by this action.
+async function deleteOwnedClass(id){
+  if(!state.user||!canTeacher()||!roleChurch()){
+    alert("Permission denied.");
+    return;
+  }
+  const known=state.classes[id];
+  if(!known||known.churchId!==roleChurch()||known.createdByUid!==state.user.uid){
+    alert("You can delete only classes you created in your own church.");
+    return;
+  }
+  try{
+    // Avoid orphaning currently enrolled students; move students first.
+    const studentsSnap=await get(query(ref(db,"students"),orderByChild("churchId"),equalTo(roleChurch())));
+    if(Object.values(studentsSnap.val()||{}).some(s=>s?.classId===id)){
+      alert(currentLang==="km"
+        ?"សូមផ្ទេរសិស្សចេញពីថ្នាក់នេះជាមុនសិន មុននឹងលុប។"
+        :"Move students to another class before deleting this class.");
+      return;
+    }
+    const warning=currentLang==="km"
+      ?"លុបថ្នាក់នេះជាអចិន្ត្រៃយ៍មែនទេ? ថ្នាក់នេះមិនអាចស្ដារពីធុងសំរាមបានទេ។ កំណត់ត្រាវត្តមានចាស់ៗនឹងនៅសល់។"
+      :"Permanently delete your class? It cannot be restored from Trash. Existing attendance history will remain in Firebase.";
+    if(!confirm(warning))return;
+    const snap=await get(ref(db,"classes/"+id));
+    const actual=snap.val();
+    if(!actual)return alert(tr("itemNotFound"));
+    if(actual.churchId!==roleChurch()||actual.createdByUid!==state.user.uid){
+      alert("You can delete only classes you created in your own church.");
+      return;
+    }
+    // Firebase class-level .write rule independently checks owner and church.
+    await remove(ref(db,"classes/"+id));
+    await logActivity("deleted","classes",id,labelFor("classes",actual,id));
+    if(editingClassId===id)resetClassForm();
+    renderClasses();
+  }catch(error){
+    alert(error.code||error.message);
+  }
+}
+window.deleteOwnedClass=deleteOwnedClass;
+
 async function restoreItem(path,id){
   if(!confirm(tr("restoreConfirm"))) return;
   try{
@@ -2479,6 +2040,9 @@ function setOptions(id, html){
 function renderSelects(){
   const ch=visibleChurches().map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join("");
   setOptions("homeChurch",(canAdmin()?`<option value="">${esc(tr("selectChurch"))}</option>`:"")+ch);
+  setOptions("homeClass",`<option value="">${esc(tr("summaryAllClasses"))}</option>`+
+    scopedClasses().sort((a,b)=>String(a.name||"").localeCompare(String(b.name||"")))
+      .map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join(""));
   ["roleChurch","classChurch"].forEach(id=>setOptions(id,ch));
   setOptions("studentChurch",(canAdmin()?`<option value="">${esc(tr("selectChurch"))}</option>`:"")+ch);
   ["homeChurch","studentChurch","attChurch","reportChurch"].forEach(id=>{ if($(id) && selectedChurchId() && [...$(id).options].some(o=>o.value===selectedChurchId())) $(id).value=selectedChurchId(); syncCustomSelect(id); });
@@ -2489,14 +2053,13 @@ function renderSelects(){
   setOptions("reportClass",`<option value="">${esc(tr("selectClass"))}</option>`+reportClasses().map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join(""));
   setOptions("summaryChurch",(canAdmin()?`<option value="">${esc(tr("selectChurch"))}</option>`:"")+ch);
   if($("summaryChurch") && selectedChurchId()) $("summaryChurch").value=selectedChurchId();
-  setOptions("summaryClass",`<option value="">${esc(tr("selectClass"))}</option>`+reportClasses().map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join(""));
-  syncSummaryClassSelection();
+  setOptions("summaryClass",`<option value="">${esc(tr("summaryAllClasses"))}</option>`+reportClasses().map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join(""));
   const attChurchOptions=(canAdmin()?`<option value="">${esc(tr("selectChurch"))}</option>`:"")+visibleChurches().map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join("");
   setOptions("attChurch",attChurchOptions);
   if($("attChurch") && selectedChurchId()) $("attChurch").value=selectedChurchId();
   const attClassOptions=`<option value="">${esc(tr("selectClass"))}</option>`+attendanceClasses().map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join("");
   setOptions("attClass",attClassOptions);
-  ["homeChurch","studentChurch","attChurch","reportChurch","summaryChurch","studentClass","attClass","reportClass","summaryClass"].forEach(syncCustomSelect);
+  ["homeChurch","homeClass","studentChurch","attChurch","reportChurch","summaryChurch","studentClass","attClass","reportClass","summaryClass"].forEach(syncCustomSelect);
   renderThemeBackgroundAdmin();
 }
 const themeChoices=()=>window.SSTheme?.themes || [];
@@ -2577,44 +2140,206 @@ function renderThemeBackgroundThumbs(){
   });
 }
 function listenAttendance(date,classId,studentId){
-  if(!date||!classId||!studentId)return;
-  const key=attendanceStudentKey(date,classId,studentId);
-  if(attendanceListeners.has(key))return;
-  const epoch=attendanceSubscriptionEpoch;
-  // Used by Attendance, Student details, and fallback Summary reads only.
-  const unsubscribe=onValue(ref(db,"attendance/"+key),snap=>{
-    if(epoch!==attendanceSubscriptionEpoch||!state.user)return;
+  if(!date||!classId||!studentId) return;
+  const key=`${date}/${classId}/${studentId}`;
+  if(attendanceListeners.has(key)) return;
+  attendanceListeners.add(key);
+  onValue(ref(db,"attendance/"+key),snap=>{
     state.attendance[date] ||= {};
     state.attendance[date][classId] ||= {};
-    const value=snap.val();
-    if(value==null)delete state.attendance[date][classId][studentId];
-    else state.attendance[date][classId][studentId]=value;
+    const val=snap.val();
     attendanceLoaded.add(key);
     attendanceErrors.delete(key);
-    invalidateAttendanceWeek(date,classId);
-    summaryUpdateReadyCounts(classId);
-    if(isPage("summary"))scheduleSummaryRender();
-    else{
+    if(val == null) delete state.attendance[date][classId][studentId];
+    else state.attendance[date][classId][studentId]=val;
+    // Historical Summary scans can open many scoped subscriptions. Avoid
+    // rerendering unrelated pages for each snapshot; they refresh on navigation.
+    if(isPage("summary")){
+      scheduleSummaryRender();
+    }else{
       scheduleAttendanceRender();
-      if(isPage("home"))renderHomeReport();
+      if(isPage("home")) renderHomeReport();
       scheduleStudentRender();
-      if(isPage("students")||!$("studentModal")?.classList.contains("hidden"))renderStudentDetails();
+      if(isPage("students") || !$("studentModal")?.classList.contains("hidden")) renderStudentDetails();
       scheduleReportRender();
       renderStats();
     }
-  },error=>{
-    if(epoch!==attendanceSubscriptionEpoch||!state.user)return;
+  },err=>{
     attendanceErrors.add(key);
-    invalidateAttendanceWeek(date,classId);
-    console.warn("Unable to load attendance",key,error.code||error.message);
-    if(isPage("summary"))scheduleSummaryRender();
-    else scheduleAttendanceRender();
+    console.warn(`Unable to load attendance ${key}:`,err.code||err.message);
+    scheduleSummaryRender();
   });
-  attendanceListeners.set(key,unsubscribe);
 }
-function renderPage(name){ ({home:renderHomeReport,church:renderChurches,roles:renderRoles,classes:renderClasses,students:renderStudents,attendance:renderAttendance,summary:renderSummary,reports:renderReports,activity:renderActivity}[name]||(()=>{}))(); }
+function renderPage(name){ ({home:renderHomeReport,church:renderChurches,roles:renderRoles,users:renderUsers,classes:renderClasses,students:renderStudents,attendance:renderAttendance,summary:renderSummary,reports:renderReports,activity:renderActivity}[name]||(()=>{}))(); }
 function renderAll(){ renderSelects(); renderStats(); renderPage(activePage()); }
 function renderChurches(){ $("churchList").innerHTML=visibleChurches().map(c=>`<div class="card"><div class="card-main"><div class="card-title"><b>${esc(c.name)}</b></div><div class="actions"><button class="btn icon-btn edit-btn" onclick="editChurch('${esc(c.id)}')" title="${tr("edit")}"><i class="ri-edit-line"></i></button>${editingChurchId===c.id ? `<button class="btn icon-btn danger" onclick="del('churches','${esc(c.id)}')" title="${tr("delete")}"><i class="ri-delete-bin-line"></i></button>` : ""}</div></div></div>`).join("")||`<div class="empty">${tr("noChurch")}</div>`; }
+
+/* Admin Users: Google request UIDs are taken from Firebase keys, never entered manually. */
+let umTab="pending",umSelected="",umDraftRole="teacher",umDraftChurch="",umDraftName="",umSaving=false;
+function umIsAdmin(){return !!state.user&&canAdmin()}
+function umRecords(tab){
+  if(!umIsAdmin())return [];
+  const all=Object.entries(state.users||{});
+  if(tab==="pending")return Object.entries(state.accountRequests||{})
+    .filter(([id,r])=>r&&r.status==="pending"&&r.uid===id&&!state.users?.[id])
+    .map(([id,r])=>({id,...r,pending:true}));
+  return all.filter(([id,u])=>u&&u.role!=="admin"&&id!==state.user.uid&&
+    (tab==="blocked"?u.status==="disabled"||u.status==="pending"||u.active===false:
+      u.status!=="disabled"&&u.status!=="pending"&&u.active!==false))
+    .map(([id,u])=>({id,...u,pending:false}));
+}
+function umSelectedRecord(){
+  if(!umSelected)return null;
+  const pending=umSelected.startsWith("pending:");
+  const id=umSelected.slice(pending?8:5);
+  const r=pending?state.accountRequests?.[id]:state.users?.[id];
+  if(!r||(!pending&&r.role==="admin")||(pending&&(r.status!=="pending"||r.uid!==id||state.users?.[id])))return null;
+  return {id,...r,pending};
+}
+function renderUsers(){
+  if(!$("umList"))return;
+  if(!umIsAdmin()){
+    $("umList").textContent="";
+    $("umEditor").textContent="";
+    return;
+  }
+  const pending=umRecords("pending"),active=umRecords("active"),blocked=umRecords("blocked");
+  $("umPendingCount").textContent=pending.length;
+  $("umActiveCount").textContent=active.length;
+  $("umBlockedCount").textContent=blocked.length;
+  $("umPendingLabel").textContent=currentLang==="km"?"រង់ចាំ":"Pending";
+  $("umActiveLabel").textContent=currentLang==="km"?"សកម្ម":"Active";
+  $("umBlockedLabel").textContent=currentLang==="km"?"បានបិទ":"Blocked";
+  const tabs={pending:currentLang==="km"?"រង់ចាំ":"Pending",active:currentLang==="km"?"សកម្ម":"Active",blocked:currentLang==="km"?"បានបិទ":"Blocked"};
+  document.querySelectorAll("[data-um-tab]").forEach(b=>{
+    b.textContent=tabs[b.dataset.umTab]||b.dataset.umTab;
+    b.classList.toggle("active",b.dataset.umTab===umTab);
+    b.setAttribute("aria-pressed",String(b.dataset.umTab===umTab));
+  });
+  const pool=umTab==="pending"?pending:umTab==="blocked"?blocked:active;
+  const items=pool.slice()
+    .sort((a,b)=>String(a.name||a.email||"").localeCompare(String(b.name||b.email||"")));
+  $("umList").innerHTML=items.map(u=>{
+    const role=u.pending?(currentLang==="km"?"រង់ចាំ":"Pending"):roleLabel(u.role);
+    const info=u.pending?role:[role,churchName(u.churchId)].filter(Boolean).join(" • ");
+    const title=u.pending?(currentLang==="km"?"ពិនិត្យ":"Review"):(currentLang==="km"?"គ្រប់គ្រង":"Manage");
+    return '<div class="um-user-row">'+umPhotoHtml(u)+
+      '<div class="um-user-text"><strong>'+esc(u.name||u.email||"Google User")+'</strong>'+
+      '<small>'+esc(u.email||"")+'</small><small>'+esc(info)+'</small></div>'+
+      '<button type="button" class="btn um-manage" data-um-select="'+esc((u.pending?"pending:":"user:")+u.id)+'">'+title+'</button></div>';
+  }).join("")||'<div class="um-no-users">'+(currentLang==="km"?"មិនមានអ្នកប្រើ":"No matching users")+'</div>';
+  umBindPhotoFallbacks($("umList"));
+  const selected=umSelectedRecord();
+  if(!selected){umSelected="";$("umEditor").textContent="";return;}
+  const existingTab=selected.pending?"pending":
+    (selected.status==="disabled"||selected.status==="pending"||selected.active===false)?"blocked":"active";
+  if(existingTab!==umTab){umSelected="";$("umEditor").textContent="";return;}
+  const choices=visibleChurches().map(c=>'<option value="'+esc(c.id)+'" '+(umDraftChurch===c.id?"selected":"")+'>'+esc(c.name)+'</option>').join("");
+  const kh=currentLang==="km";
+  const options='<option value="">'+(kh?"ជ្រើសរើសពួកជំនុំ":"Select church")+'</option>'+choices;
+  const secondary=selected.pending?
+    '<button class="btn danger" type="button" data-um-action="reject">'+(kh?"បដិសេធ":"Reject")+'</button>':
+    selected.status==="disabled"?
+    '<button class="btn primary" type="button" data-um-action="reactivate">'+(kh?"បើកឡើងវិញ":"Reactivate")+'</button>':
+    '<button class="btn danger" type="button" data-um-action="block">'+(kh?"បិទគណនី":"Block")+'</button>';
+  const primary=selected.pending?
+    '<button class="btn primary" type="button" data-um-action="approve">'+(kh?"អនុម័ត":"Approve")+'</button>':
+    '<button class="btn primary" type="button" data-um-action="save">'+(kh?"រក្សាទុកការកែប្រែ":"Save changes")+'</button>';
+  $("umEditor").innerHTML='<div class="um-edit-card"><div class="um-edit-top">'+umPhotoHtml(selected)+'<div style="min-width:0;flex:1"><strong>'+esc(selected.name||selected.email||"Google User")+'</strong>'+
+    '<small>'+esc(selected.email||"")+'</small></div><button type="button" class="btn icon-btn" data-um-action="close" aria-label="Close"><i class="ri-close-line"></i></button></div>'+
+    '<div class="um-edit-fields"><label class="um-name-field">'+(kh?"ឈ្មោះ":"Name")+
+    '<input id="umName" class="input" maxlength="120" value="'+esc(umDraftName)+'"></label>'+
+    '<label>'+(kh?"តួនាទី":"Role")+'<select id="umRole" class="input"><option value="teacher" '+(umDraftRole==="teacher"?"selected":"")+'>Teacher</option>'+
+    '<option value="pastor" '+(umDraftRole==="pastor"?"selected":"")+'>Pastor</option></select></label>'+
+    '<label>'+(kh?"ពួកជំនុំ":"Church")+'<select id="umChurch" class="input">'+options+'</select></label></div>'+
+    '<div class="um-edit-actions">'+primary+secondary+'</div></div>';
+  umBindPhotoFallbacks($("umEditor"));
+  $("umEditor").querySelectorAll("[data-um-action]").forEach(b=>b.disabled=umSaving);
+}
+function umSelect(key){
+  if(!umIsAdmin())return;
+  umSelected=key;
+  const item=umSelectedRecord();
+  if(!item){umSelected="";renderUsers();return;}
+  umDraftRole=item.role==="pastor"?"pastor":"teacher";
+  umDraftChurch=item.churchId||"";
+  umDraftName=item.name||item.email||"";
+  renderUsers();
+  $("umEditor")?.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+async function umPerform(action){
+  if(!umIsAdmin()||umSaving)return;
+  if(action==="close"){umSelected="";renderUsers();return;}
+  const chosen=umSelectedRecord();
+  if(!chosen)return;
+  const uid=chosen.id;
+  if(uid===state.user.uid||chosen.role==="admin")return showStatus("umStatus","Administrator accounts are protected.",false);
+  const pending=chosen.pending;
+  if((action==="approve"||action==="reject")!==pending&&(action==="approve"||action==="reject"||pending))return;
+  if(!["approve","reject","save","block","reactivate"].includes(action))return;
+  if(!pending&&!state.users?.[uid])return;
+  if(action==="block"&&!confirm(currentLang==="km"?"បិទការចូលប្រើប្រាស់គណនីនេះមែនទេ?":"Block this user's access?"))return;
+  if(action==="reject"&&!confirm(currentLang==="km"?"បដិសេធសំណើចូលប្រើនេះមែនទេ?":"Reject this Google access request?"))return;
+  if(action==="reactivate"&&!confirm(currentLang==="km"?"បើកគណនីនេះឡើងវិញមែនទេ?":"Reactivate this account?"))return;
+  const needsDetails=["approve","save","reactivate"].includes(action);
+  if(needsDetails&&(!umDraftName.trim()||!["teacher","pastor"].includes(umDraftRole)||
+      !Object.hasOwn(state.churches||{},umDraftChurch))){
+    return showStatus("umStatus",currentLang==="km"?"សូមបញ្ចូលឈ្មោះ តួនាទី និងពួកជំនុំ។":"Choose a name, role, and existing church.",false);
+  }
+  umSaving=true;renderUsers();
+  try{
+    const now=Date.now(),old=state.users?.[uid]||{};
+    const pendingPhoto=googleProfilePhotoURL(chosen.photoURL);
+    if(pending&&chosen.uid!==uid)throw Error("Account request UID mismatch.");
+    if(action==="approve"){
+      const record={...old,uid,name:umDraftName.trim(),email:chosen.email||"",role:umDraftRole,
+        churchId:umDraftChurch,...(pendingPhoto?{photoURL:pendingPhoto}:{}),status:"active",active:true,accountDecision:"approved",
+        approvedAt:now,approvedBy:state.user.uid,updatedAt:now};
+      await update(ref(db),{["users/"+uid]:record,["accountRequests/"+uid]:null});
+    }else if(action==="reject"){
+      // Keep a disabled record so the rejected Google account cannot request access again.
+      const record={uid,name:chosen.name||chosen.email||"Google User",email:chosen.email||"",
+        role:"teacher",churchId:"",...(pendingPhoto?{photoURL:pendingPhoto}:{}),status:"disabled",active:false,accountDecision:"rejected",
+        blockedAt:now,blockedBy:state.user.uid,updatedAt:now};
+      await update(ref(db),{["users/"+uid]:record,["accountRequests/"+uid]:null});
+    }else{
+      const record={...old,uid};
+      if(action==="save"||action==="reactivate"){
+        record.name=umDraftName.trim();record.role=umDraftRole;record.churchId=umDraftChurch;
+      }
+      if(action==="block"){
+        record.status="disabled";record.active=false;record.accountDecision="blocked";
+        record.blockedAt=now;record.blockedBy=state.user.uid;
+      }else if(action==="reactivate"){
+        record.status="active";record.active=true;record.accountDecision="approved";
+        record.reactivatedAt=now;record.reactivatedBy=state.user.uid;
+      }
+      record.updatedAt=now;
+      await set(ref(db,"users/"+uid),record);
+    }
+    await logActivity("updated","users",uid,chosen.email||chosen.name||uid,{managementAction:action});
+    umSelected="";showStatus("umStatus",currentLang==="km"?"បានរក្សាទុកជោគជ័យ។":"User access updated.",true);
+  }catch(error){
+    showStatus("umStatus",error.code||error.message,false);
+  }finally{umSaving=false;renderUsers();}
+}
+$("page-users").querySelector(".um-tabs").addEventListener("click",e=>{
+  const btn=e.target.closest("[data-um-tab]");
+  if(!btn||!umIsAdmin())return;
+  umTab=btn.dataset.umTab;umSelected="";renderUsers();
+});
+$("umList").addEventListener("click",e=>{
+  const btn=e.target.closest("[data-um-select]");if(btn)umSelect(btn.dataset.umSelect);
+});
+$("umEditor").addEventListener("input",e=>{if(e.target.id==="umName")umDraftName=e.target.value;});
+$("umEditor").addEventListener("change",e=>{
+  if(e.target.id==="umRole")umDraftRole=e.target.value;
+  if(e.target.id==="umChurch")umDraftChurch=e.target.value;
+});
+$("umEditor").addEventListener("click",e=>{
+  const btn=e.target.closest("[data-um-action]");if(btn)umPerform(btn.dataset.umAction);
+});
+
 function renderRoles(){
   const users=Object.entries(state.users).map(([id,u])=>({id,...u})).filter(u=>canAdmin()&&u.role!=="admin");
   const row=u=>`<div class="card"><div class="card-main"><div class="card-title"><b>${esc(u.name)}</b><small>${esc(roleLabel(u.role))}${u.email ? " &bull; "+esc(u.email) : ""}</small></div><div class="actions"><button class="btn icon-btn edit-btn" onclick="editRole('${esc(u.id)}')" title="${tr("edit")}"><i class="ri-edit-line"></i></button>${editingRoleId===u.id ? `<button class="btn icon-btn danger" onclick="del('users','${esc(u.id)}')" title="${tr("delete")}"><i class="ri-delete-bin-line"></i></button>` : ""}</div></div></div>`;
@@ -2626,28 +2351,96 @@ function renderRoles(){
   }).join("");
   $("roleList").innerHTML=html||`<div class="empty">${tr("noUsers")}</div>`;
 }
-function renderClasses(){
-  const classes=visibleClasses().sort((a,b)=>String(churchName(a.churchId)||"").localeCompare(String(churchName(b.churchId)||""))||String(a.name||"").localeCompare(String(b.name||"")));
-  const row=c=>{
-    const archived=c.status==="archived";
-    const dates=[c.startDate?c.startDate:tr("classNotSet"),c.endDate||"…"].join(" — ");
-    return `<div class="card"><div class="card-main"><div class="card-title">
-      <b>${esc(c.name)}</b><small>${esc(churchName(c.churchId))}</small>
-      <div class="class-record-info"><span class="class-state-pill ${archived?"archived":""}">${esc(tr(archived?"classArchived":"classActive"))}</span><span class="class-period-text">${esc(dates)}</span></div>
-    </div><div class="actions"><button class="btn icon-btn edit-btn" onclick="editClass('${esc(c.id)}')" title="${tr("edit")}"><i class="ri-edit-line"></i></button>${editingClassId===c.id ? `<button class="btn icon-btn danger" onclick="del('classes','${esc(c.id)}')" title="${tr("delete")}"><i class="ri-delete-bin-line"></i></button>` : ""}</div></div></div>`;
-  };
-  const churchIds=[...new Set([...visibleChurches().map(c=>c.id),...classes.map(c=>c.churchId).filter(Boolean)])];
-  const html=churchIds.map(id=>{
-    const group=classes.filter(c=>c.churchId===id);
-    if(!group.length) return "";
-    return `<div class="role-group-title">${esc(churchName(id)||tr("noChurch"))}</div><div class="role-group">${group.map(row).join("")}</div>`;
-  }).join("");
-  $("classList").innerHTML=html||`<div class="empty">${tr("noClass")}</div>`;
+// Local-only collapse state; never written to Firebase.
+const classGroupExpanded=new Map();
+const classGroupStorageKey=()=>"kid2pro_class_groups_v1:"+(state.user?.uid||"guest");
+const priorClassGroupStorageKey=()=>"kid3pro_class_groups_v1:"+(state.user?.uid||"guest");
+let classGroupLoadedFor="";
+function loadClassGroupExpanded(){
+  const key=classGroupStorageKey();
+  if(classGroupLoadedFor===key)return;
+  classGroupLoadedFor=key;
+  classGroupExpanded.clear();
+  try{
+    const saved=JSON.parse(localStorage.getItem(key)??localStorage.getItem(priorClassGroupStorageKey())??"{}");
+    for(const [id,open] of Object.entries(saved))if(typeof open==="boolean")classGroupExpanded.set(id,open);
+  }catch{}
 }
+function rememberClassGroup(id,open){
+  loadClassGroupExpanded();
+  classGroupExpanded.set(id,!!open);
+  try{localStorage.setItem(classGroupStorageKey(),
+    JSON.stringify(Object.fromEntries(classGroupExpanded)))}catch{}
+}
+function renderClasses(){
+  const classes=visibleClasses().sort((a,b)=>
+    String(churchName(a.churchId)||"").localeCompare(String(churchName(b.churchId)||""))||
+    String(a.name||"").localeCompare(String(b.name||"")));
+  const churchIds=[...new Set([...visibleChurches().map(c=>c.id),
+    ...classes.map(c=>c.churchId).filter(Boolean)])];
+  loadClassGroupExpanded();
+  const row=c=>{
+    const editing=editingClassId===c.id&&canEditClass(c);
+    const archived=editing?$("classLifecycle").value==="archived":c.status==="archived";
+    const own=canTeacher()&&state.user?.uid===c.createdByUid&&c.churchId===roleChurch();
+    const editable=canEditClass(c);
+    const editBtn=editable&&!editing
+      ?`<button type="button" class="btn icon-btn edit-btn" onclick="editClass('${esc(c.id)}')" title="${tr("edit")}" aria-label="${tr("edit")}: ${esc(c.name)}"><i class="ri-edit-line"></i></button>`
+      :"";
+    const disabled=classSaving?" disabled":"";
+    const switchBtn=editing
+      ?`<button type="button" class="class-inline-toggle" role="switch" aria-checked="${!archived}"
+          aria-label="${esc(tr("classLifecycle")+": "+tr(archived?"classArchived":"classActive"))}"
+          title="${esc(tr(archived?"classArchived":"classActive"))}" onclick="toggleClassRowStatus('${esc(c.id)}')"${disabled}>
+          <span class="class-inline-track" aria-hidden="true"><span class="class-inline-thumb"></span></span></button>`
+      :"";
+    const deleteBtn=editing
+      ?(canAdmin()||canPastor()
+        ?`<button type="button" class="btn icon-btn danger" onclick="del('classes','${esc(c.id)}')" title="${tr("delete")}" aria-label="${tr("delete")}: ${esc(c.name)}"${disabled}><i class="ri-delete-bin-line"></i></button>`
+        :own?`<button type="button" class="btn icon-btn danger" onclick="deleteOwnedClass('${esc(c.id)}')" title="${tr("delete")}" aria-label="${tr("delete")}: ${esc(c.name)}"${disabled}><i class="ri-delete-bin-line"></i></button>`:"")
+      :"";
+    const saveBtn=editing
+      ?`<button type="button" class="btn icon-btn class-inline-save" onclick="saveClassRow('${esc(c.id)}')" title="${esc(tr("save"))}" aria-label="${esc(tr("save"))}: ${esc(c.name)}"${disabled}><i class="ri-check-line"></i></button>`
+      :"";
+    const cancelBtn=editing
+      ?`<button type="button" class="btn icon-btn class-inline-cancel" onclick="cancelClassRow('${esc(c.id)}')" title="${esc(tr("classCancel"))}" aria-label="${esc(tr("classCancel"))}: ${esc(c.name)}"${disabled}><i class="ri-close-line"></i></button>`
+      :"";
+    const dateLabel=(c.startDate||tr("classNotSet"))+" – "+(c.endDate||"…");
+    return `<div class="class-row${editing?" is-editing":""}${classSaving&&editing?" is-saving":""}"
+        data-class-id="${esc(c.id)}"${classSaving&&editing?' aria-busy="true"':""}>
+      <div class="class-row-main">
+        <span class="class-row-state ${archived?"archived":""}" title="${esc(tr(archived?"classArchived":"classActive"))}"></span>
+        <i class="ri-folder-line class-row-folder" aria-hidden="true"></i>
+        <strong class="class-row-title" title="${esc(c.name)}">${esc(c.name)}</strong>
+        <span class="class-row-dates" title="${esc(dateLabel)}">${esc(dateLabel)}</span>
+      </div><div class="class-row-actions">${editBtn}${switchBtn}${deleteBtn}${saveBtn}${cancelBtn}</div>
+    </div>`;
+  };
+  const list=$("classList");
+  list.innerHTML=churchIds.map((id,i)=>{
+    const group=classes.filter(c=>c.churchId===id);
+    if(!group.length)return "";
+    const open=classGroupExpanded.has(id)?classGroupExpanded.get(id):i===0;
+    return `<details class="class-church-group" data-church-id="${esc(id)}" ${open?"open":""}>
+      <summary class="class-church-header">
+        <span class="class-church-title">${esc(churchName(id)||tr("noChurch"))}</span>
+        <span class="class-church-count">${group.length} ${currentLang==="km"?"ថ្នាក់":group.length===1?"class":"classes"}</span>
+        <i class="ri-arrow-down-s-line class-church-arrow" aria-hidden="true"></i>
+      </summary><div class="class-church-rows">${group.map(row).join("")}</div>
+    </details>`;
+  }).join("")||`<div class="empty">${tr("noClass")}</div>`;
+}
+$("classList").addEventListener("toggle",e=>{
+  const details=e.target;
+  if(!details.classList?.contains("class-church-group"))return;
+  const id=details.dataset.churchId;
+  if(id)rememberClassGroup(id,details.open);
+},true);
 
 let editingChurchId = "";
 let editingRoleId = "";
 let editingClassId = "";
+let classSaving = false;
 let editingStudentId = "";
 let selectedDetailStudentId = "";
 
@@ -2688,20 +2481,46 @@ function editRole(id){
   page("roles");
   window.scrollTo({top:0,behavior:"smooth"});
 }
+function canEditClass(c){
+  return !!c&&(canAdmin()||
+    (canPastor()&&c.churchId===roleChurch())||
+    (canTeacher()&&!!state.user?.uid&&c.createdByUid===state.user.uid&&
+      !!roleChurch()&&c.churchId===roleChurch()));
+}
 function editClass(id){
-  const c = state.classes[id];
-  if(!c) return;
-  editingClassId = id;
-  $("className").value = c.name || "";
-  if($("classChurch")) $("classChurch").value = c.churchId || "";
+  if(classSaving)return;
+  const c=state.classes[id];
+  if(!canEditClass(c))return;
+  editingClassId=id;
+  $("className").value=c.name||"";
+  if($("classChurch"))$("classChurch").value=c.churchId||"";
   $("classStartDate").value=classDateValue(c.startDate);
   $("classEndDate").value=classDateValue(c.endDate);
   $("classLifecycle").value=c.status==="archived"?"archived":"active";
+  syncClassLifecycleSwitch();
+  if($("classInfoMenu"))$("classInfoMenu").open=false;
   $("cancelClassEdit").classList.remove("hidden");
   syncCustomSelects();
-  page("classes");
-  window.scrollTo({top:0,behavior:"smooth"});
+  // Stay on the selected row when editing from the Class page on mobile.
+  if(!isPage("classes"))page("classes");
+  else renderClasses();
 }
+function toggleClassRowStatus(id){
+  if(classSaving||editingClassId!==id||!canEditClass(state.classes[id]))return;
+  $("classLifecycle").value=$("classLifecycle").value==="archived"?"active":"archived";
+  syncClassLifecycleSwitch();
+}
+async function saveClassRow(id){
+  if(classSaving||editingClassId!==id||!canEditClass(state.classes[id]))return false;
+  return await $("saveClass").onclick(); // Identical validation and Firebase write.
+}
+function cancelClassRow(id){
+  if(classSaving||editingClassId!==id||!canEditClass(state.classes[id]))return;
+  cancelClassEditing();
+}
+window.toggleClassRowStatus=toggleClassRowStatus;
+window.saveClassRow=saveClassRow;
+window.cancelClassRow=cancelClassRow;
 function editStudent(id){
   const s = state.students[id];
   if(!s) return;
@@ -2836,14 +2655,19 @@ function renderStats(){
 }
 
 function buildHomeReport(date=currentSunday()){
-  const students=scopedStudents();
-  if(canAdmin() && !selectedChurchId()) return tr("selectChurch");
+  if(canAdmin()&&!selectedChurchId())return tr("selectChurch");
+  const selectedClass=$("homeClass")?.value||"";
+  // Never generate a cross-church report when a stale class selection exists.
+  const matchingClass=selectedClass?
+    scopedClasses().find(c=>c.id===selectedClass):null;
+  if(selectedClass&&!matchingClass)return tr("selectClass");
+  const students=scopedStudents().filter(s=>!matchingClass||s.classId===matchingClass.id);
   students.forEach(s=>listenAttendance(date,s.classId,s.id));
   const rec=state.attendance[date]||{};
-  const churches=visibleChurches().filter(c=>c.id===selectedChurchId() && students.some(s=>s.churchId===c.id));
-  return (churches.length?churches:visibleChurches().filter(c=>c.id===selectedChurchId())).map(ch=>{
-    const present=students.filter(s=>s.churchId===ch.id && rec[s.classId]?.[s.id]==="present");
+  return visibleChurches().filter(c=>c.id===selectedChurchId()).map(ch=>{
+    const present=students.filter(s=>s.churchId===ch.id&&rec[s.classId]?.[s.id]==="present");
     const lines=[`ពួកជំនុំ ${ch.name||""} ${fmtDMY(date)}`];
+    if(matchingClass)lines.push(`ថ្នាក់ ${matchingClass.name||""}`);
     present.forEach((s,i)=>lines.push(`${khNum(i+1)}${i<9?"   ":"  "}${s.name||""}`));
     lines.push(`សរុប ៖   ${khNum(present.length)} នាក់`);
     return lines.join("\n");
@@ -2878,6 +2702,7 @@ function prevHomeReport(){ moveHomeReport(-1); }
 function nextHomeReport(){ moveHomeReport(1); }
 
 if($("homeChurch")) $("homeChurch").onchange=()=>{setSelectedChurchId($("homeChurch").value);renderSelects();renderAll();};
+if($("homeClass")) $("homeClass").onchange=()=>{renderHomeReport();};
 if($("studentChurch")) $("studentChurch").onchange=()=>{setSelectedChurchId($("studentChurch").value);renderSelects();scheduleStudentRender();};
 if($("studentClass")) $("studentClass").onchange=()=>{resetStudentRenderCache();scheduleStudentRender();};
 if($("studentSearch")) $("studentSearch").oninput=e=>{state.studentQ=e.target.value;resetStudentRenderCache();scheduleStudentRender();};
@@ -2906,10 +2731,10 @@ function bindSwipe(el,onSwipe,wheel=false){
   el.addEventListener("touchend",e=>{const t=e.changedTouches[0],dx=t.clientX-x,dy=t.clientY-y;if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy))onSwipe(dx<0?1:-1);},{passive:true});
   if(wheel) el.addEventListener("wheel",e=>{if(Math.abs(e.deltaX)>Math.abs(e.deltaY)){e.preventDefault();onSwipe(e.deltaX>0?1:-1);}},{passive:false});
 }
-function setAttMonth(delta){ stopAttendanceSubscriptions(); $("attMonth").value=shiftMonth($("attMonth").value,delta); syncMonthDisplay("attMonth","attMonthText"); state.selectedSunday=""; resetAttendanceRenderCache(); playSwipeWipe($("attMonth")?.closest(".month-field"),delta); renderAttendance(); }
-$("attMonth").value=monthNow(); syncMonthDisplay("attMonth","attMonthText"); $("attMonth").onchange=()=>{stopAttendanceSubscriptions();syncMonthDisplay("attMonth","attMonthText");state.selectedSunday=""; resetAttendanceRenderCache(); renderAttendance();};
-if($("attChurch")) $("attChurch").onchange=()=>{stopAttendanceSubscriptions();setSelectedChurchId($("attChurch").value); renderSelects(); syncCustomSelect("attChurch"); syncCustomSelect("attClass"); renderAttendance();};
-if($("attClass")) $("attClass").onchange=()=>{stopAttendanceSubscriptions();syncCustomSelect("attClass");resetAttendanceRenderCache();renderAttendance();};
+function setAttMonth(delta){ $("attMonth").value=shiftMonth($("attMonth").value,delta); syncMonthDisplay("attMonth","attMonthText"); state.selectedSunday=""; resetAttendanceRenderCache(); playSwipeWipe($("attMonth")?.closest(".month-field"),delta); renderAttendance(); }
+$("attMonth").value=monthNow(); syncMonthDisplay("attMonth","attMonthText"); $("attMonth").onchange=()=>{syncMonthDisplay("attMonth","attMonthText");state.selectedSunday=""; resetAttendanceRenderCache(); renderAttendance();};
+if($("attChurch")) $("attChurch").onchange=()=>{setSelectedChurchId($("attChurch").value); renderSelects(); syncCustomSelect("attChurch"); syncCustomSelect("attClass"); renderAttendance();};
+if($("attClass")) $("attClass").onchange=()=>{syncCustomSelect("attClass");resetAttendanceRenderCache();renderAttendance();};
 if($("prevMonth")) $("prevMonth").onclick=()=>setAttMonth(-1);
 if($("nextMonth")) $("nextMonth").onclick=()=>setAttMonth(1);
 bindSwipe($("attMonth")?.closest(".month-field"),setAttMonth,true);
@@ -2923,27 +2748,14 @@ function moveSunday(delta){
   if(!ss.length) return;
   const i=Math.max(0,ss.indexOf(state.selectedSunday)), next=ss[Math.max(0,Math.min(ss.length-1,i+delta))];
   if(next===state.selectedSunday) return;
-  stopAttendanceSubscriptions();
   state.selectedSunday=next; resetAttendanceRenderCache(); playSwipeWipe($("weekbar"),delta); renderAttendance();
 }
 bindSwipe($("weekbar"),moveSunday);
 bindSwipe($("copyHomeReport")?.closest(".report-copy-head"),moveHomeReport,true);
 if($("reportChurch")) $("reportChurch").onchange=()=>{setSelectedChurchId($("reportChurch").value);renderSelects();renderReports();};
 if($("reportClass")) $("reportClass").onchange=()=>{resetReportRenderCache();renderReports();};
-if($("summaryChurch")) $("summaryChurch").onchange=()=>{
-  stopSummaryLoads();stopAttendanceSubscriptions();startSummaryLoads();
-  setSelectedChurchId($("summaryChurch").value);renderSelects();renderSummary();
-};
-if($("summaryClass")) $("summaryClass").onchange=()=>{
-  const classId=$("summaryClass").value,churchId=selectedChurchId();
-  summaryManualClass=!!classId&&summaryChurchClasses(churchId).some(c=>c.id===classId);
-  if(summaryManualClass&&state.user){
-    try{localStorage.setItem(summaryLastClassKey(churchId),classId)}catch{}
-  }
-  stopSummaryLoads();stopAttendanceSubscriptions();startSummaryLoads();
-  syncSummaryClassSelection();
-  renderSummary();
-};
+if($("summaryChurch")) $("summaryChurch").onchange=()=>{setSelectedChurchId($("summaryChurch").value);renderSelects();renderSummary();};
+if($("summaryClass")) $("summaryClass").onchange=()=>{resetSummaryRenderCache();renderSummary();};
 if($("summaryList")) $("summaryList").addEventListener("click",e=>{
   const cell=e.target.closest(".summary-day");
   if(cell){
@@ -3154,7 +2966,6 @@ const summarySyncStorageKey="kid2pro_summary_sync_scroll";
 let summarySyncEnabled=false;
 try{summarySyncEnabled=localStorage.getItem(summarySyncStorageKey)==="1"}catch{}
 let summarySyncWeek=0;
-let summaryRenderedStart="";
 let summaryScrollRestore=null;
 const summarySyncProgrammed=new WeakMap();
 function summaryWeekGap(start,end){
@@ -3350,23 +3161,20 @@ $("summaryDayOverlay").addEventListener("click",event=>{
 document.addEventListener("keydown",event=>{
   if(event.key==="Escape" && !$("summaryDayOverlay").classList.contains("hidden"))closeSummaryDayPopup();
 });
-const summaryDateCache=new Map();
 function summaryCandidateDates(classId){
   const cls=state.classes[classId]||{};
   const todaySunday=currentSunday();
-  const first=classDateValue(cls.startDate)||`${Number(todaySunday.slice(0,4))-2}-01-01`;
+  const earliestLegacy=`${Number(todaySunday.slice(0,4))-2}-01-01`;
+  // Explicit class dates override the legacy history-discovery start.
+  const start=classDateValue(cls.startDate)||earliestLegacy;
   const configuredEnd=classDateValue(cls.endDate);
   const last=configuredEnd&&configuredEnd<todaySunday?configuredEnd:todaySunday;
-  const cacheKey=classId+"|"+first+"|"+last;
-  if(summaryDateCache.has(cacheKey))return summaryDateCache.get(cacheKey);
-  if(first>last)return [];
-  const firstSunday=new Date(first+"T12:00:00");
+  if(start>last)return [];
+  const firstSunday=new Date(start+"T12:00:00");
   firstSunday.setDate(firstSunday.getDate()+(7-firstSunday.getDay())%7);
-  const dates=[];
-  for(let d=dateKey(firstSunday),i=0;d<=last&&i<780;d=shiftDate(d,7),i++)dates.push(d);
-  if(summaryDateCache.size>100)summaryDateCache.clear();
-  summaryDateCache.set(cacheKey,dates);
-  return dates;
+  const result=[];
+  for(let d=dateKey(firstSunday),i=0;d<=last&&i<780;d=shiftDate(d,7),i++)result.push(d);
+  return result;
 }
 function summaryClassPeriods(students){
   const byClass=new Map();
@@ -3376,36 +3184,27 @@ function summaryClassPeriods(students){
     byClass.get(st.classId).push(st);
   });
   const periods=new Map();
-  let hasEarlier=false;
   byClass.forEach((classStudents,classId)=>{
-    const cls=state.classes[classId];
-    if(!cls){
-      periods.set(classId,{dates:[],loading:true});
-      return;
-    }
-    const allDates=summaryCandidateDates(classId);
-    const dates=allDates.slice(-summaryHistoryWeeks);
-    if(allDates.length>summaryHistoryWeeks)hasEarlier=true;
-    // Recent Sunday reads run first; historical snapshots load later in chunks.
-    dates.slice().reverse().forEach((date,index)=>
-      queueSummaryWeek(date,classId,index<SUMMARY_RECENT_LIVE_WEEKS));
-    const recorded=dates.filter(date=>attendanceWeekState(date,classId)==="recorded");
+    const cls=state.classes[classId]||{};
+    const dates=summaryCandidateDates(classId);
+    classStudents.forEach(st=>dates.forEach(date=>listenAttendance(date,classId,st.id)));
+    const recorded=dates.filter(date=>classStudents.some(st=>
+      state.attendance[date]?.[classId]?.[st.id]==="present"));
     const first=recorded[0],last=recorded[recorded.length-1];
     const dated=!!classDateValue(cls.startDate);
     const fixedEnd=!!classDateValue(cls.endDate);
-    // Legacy classes without Start Date must keep their weekly cells visible
-    // while the recent attendance window is loading. Hiding all cells until a
-    // Present mark arrives causes an indefinite "Loading" row when the class
-    // last met outside the first 8-week window.
+    // With an explicit start, display the entire configured period, including
+    // neutral unrecorded Sundays. Archived classes without an end stop at the
+    // last recorded week rather than extending to today indefinitely.
     const within=dated?(cls.status==="archived"&&!fixedEnd
-      ?(last?dates.filter(date=>date<=last):dates):dates)
-      :(first&&last?dates.filter(date=>date>=first&&date<=last):dates);
-    const loading=allDates.length>summaryHistoryWeeks||
-      dates.some(date=>!attendanceWeekComplete(date,classId));
-    periods.set(classId,{dates:within,allDates,loading});
-    summaryHistoryProgress.set(classId,summaryHistoryWeeks);
+      ?(last?dates.filter(date=>date<=last):[]):dates)
+      :(first&&last?dates.filter(date=>date>=first&&date<=last):[]);
+    const loading=dates.some(date=>classStudents.some(st=>{
+      const key=`${date}/${classId}/${st.id}`;
+      return !attendanceLoaded.has(key)&&!attendanceErrors.has(key);
+    }));
+    periods.set(classId,{dates:within,loading});
   });
-  scheduleMoreSummaryHistory(hasEarlier);
   return periods;
 }
 function layoutSummarySyncSpacers(list){
@@ -3421,162 +3220,50 @@ function layoutSummarySyncSpacers(list){
     });
   });
 }
-// Fast synced scrolling: cached geometry and one write batch per animation frame.
-let summarySyncRows=[];
-let summarySyncFrame=0;
-let summarySyncLeader=null;
-let summarySyncResizeFrame=0;
-let summaryCueFrame=0;
-function summaryUpdateScrollCues(){
-  summaryCueFrame=0;
-  summarySyncRows.forEach(({scroll,wrap,max})=>{
-    const atEdge=max>3&&scroll.scrollLeft<max-3;
-    wrap.classList.toggle("has-overflow",atEdge);
-  });
-}
-function summaryQueueScrollCues(){
-  if(!summaryCueFrame)summaryCueFrame=requestAnimationFrame(summaryUpdateScrollCues);
-}
-function summaryApplySyncedFrame(){
-  summarySyncFrame=0;
-  const source=summarySyncLeader;
-  if(!summarySyncEnabled||!source)return;
-  const driver=summarySyncRows.find(row=>row.scroll===source);
-  if(!driver)return;
-  const offset=source.scrollLeft;
-  summarySyncWeek=offset/driver.step;
-  for(const row of summarySyncRows){
-    if(row.scroll===source)continue;
-    const target=Math.min(row.max,Math.max(0,summarySyncWeek*row.step));
-    if(Math.abs(row.scroll.scrollLeft-target)>0.75){
-      summarySyncProgrammed.set(row.scroll,target);
-      row.scroll.scrollLeft=target;
-    }
-  }
-  summaryQueueScrollCues();
-}
-function summaryOnNativeScroll(scroll){
-  const programmed=summarySyncProgrammed.get(scroll);
-  if(programmed!==undefined){
-    summarySyncProgrammed.delete(scroll);
-    if(Math.abs(scroll.scrollLeft-programmed)<2){
-      summaryQueueScrollCues();
-      return;
-    }
-  }
-  summaryLastUserScrollAt=Date.now();
-  if(summarySyncEnabled){
-    summarySyncLeader=scroll;
-    if(!summarySyncFrame)summarySyncFrame=requestAnimationFrame(summaryApplySyncedFrame);
-  }
-  summaryQueueScrollCues();
-}
-function summaryMeasureScrollRows(list){
-  layoutSummarySyncSpacers(list);
-  summarySyncRows=[...list.querySelectorAll(".summary-grid-scroll")].map(scroll=>{
-    const wrap=scroll.closest(".summary-strip-wrap");
-    const first=scroll.querySelector(".summary-day");
-    if(!wrap||!first)return null;
-    return {scroll,wrap,step:summaryScrollStep(scroll),
-      max:Math.max(0,scroll.scrollWidth-scroll.clientWidth)};
-  }).filter(Boolean);
-}
 function refreshSummaryScrollCues(list){
-  if(summarySyncFrame){cancelAnimationFrame(summarySyncFrame);summarySyncFrame=0;}
-  if(summaryCueFrame){cancelAnimationFrame(summaryCueFrame);summaryCueFrame=0;}
-  summarySyncLeader=null;
-  summaryMeasureScrollRows(list);
-  // Event handlers are attached only when the row DOM is created.
-  for(const row of summarySyncRows){
-    row.scroll.addEventListener("scroll",()=>summaryOnNativeScroll(row.scroll),{passive:true});
-    if(summarySyncEnabled){
-      const target=Math.min(row.max,Math.max(0,summarySyncWeek*row.step));
-      summarySyncProgrammed.set(row.scroll,target);
-      row.scroll.scrollLeft=target;
+  layoutSummarySyncSpacers(list);
+  const scrollers=[...list.querySelectorAll(".summary-grid-scroll")];
+  scrollers.forEach(scroll=>{
+    const wrap=scroll.closest(".summary-strip-wrap");
+    if(!wrap)return;
+    const update=()=>{
+      wrap.classList.toggle("has-overflow",scroll.scrollWidth>scroll.clientWidth+4 &&
+        scroll.scrollLeft+scroll.clientWidth<scroll.scrollWidth-3);
+    };
+    if(summarySyncEnabled&&scroll.querySelector(".summary-day")){
+      scroll.scrollLeft=summarySyncWeek*summaryScrollStep(scroll);
     }
-  }
-  summaryQueueScrollCues();
+    scroll.addEventListener("scroll",()=>{
+      update();
+      if(!summarySyncEnabled||!scroll.querySelector(".summary-day"))return;
+      const expected=summarySyncProgrammed.get(scroll);
+      if(expected!==undefined&&Math.abs(scroll.scrollLeft-expected)<2){
+        summarySyncProgrammed.delete(scroll);return;
+      }
+      summarySyncProgrammed.delete(scroll);
+      summarySyncWeek=scroll.scrollLeft/summaryScrollStep(scroll);
+      scrollers.forEach(other=>{
+        if(other===scroll||!other.querySelector(".summary-day"))return;
+        const target=summarySyncWeek*summaryScrollStep(other);
+        if(Math.abs(other.scrollLeft-target)>1){
+          summarySyncProgrammed.set(other,target);
+          other.scrollLeft=target;
+        }
+      });
+    },{passive:true});
+    update();
+  });
 }
 window.addEventListener("resize",()=>{
-  if(!isPage("summary")||summarySyncResizeFrame)return;
-  summarySyncResizeFrame=requestAnimationFrame(()=>{
-    summarySyncResizeFrame=0;
-    if(!isPage("summary"))return;
-    summaryMeasureScrollRows($("summaryList"));
-    if(summarySyncEnabled){
-      for(const row of summarySyncRows){
-        const target=Math.min(row.max,Math.max(0,summarySyncWeek*row.step));
-        summarySyncProgrammed.set(row.scroll,target);
-        row.scroll.scrollLeft=target;
-      }
-    }
-    summaryQueueScrollCues();
-  });
+  if(!isPage("summary"))return;
+  const list=$("summaryList");
+  layoutSummarySyncSpacers(list);
+  if(summarySyncEnabled){
+    list.querySelectorAll(".summary-grid-scroll").forEach(sc=>{
+      if(sc.querySelector(".summary-day"))sc.scrollLeft=summarySyncWeek*summaryScrollStep(sc);
+    });
+  }
 });
-function tryUpdateSummaryRowsInPlace(list,next){
-  const existing=[...list.querySelectorAll(":scope > .summary-card")];
-  if(!existing.length)return false;
-  const template=document.createElement("template");
-  template.innerHTML=next;
-  const incoming=[...template.content.querySelectorAll(":scope > .summary-card")];
-  if(existing.length!==incoming.length)return false;
-  // Only patch if names, photos, order, dates and spacers are unchanged.
-  // Otherwise use the full render, which also restores scroll positions.
-  for(let i=0;i<existing.length;i++){
-    const oldRow=existing[i],newRow=incoming[i];
-    if(oldRow.dataset.summaryStudent!==newRow.dataset.summaryStudent||
-       oldRow.querySelector(".summary-student-name")?.textContent!==newRow.querySelector(".summary-student-name")?.textContent||
-       oldRow.querySelector(".summary-avatar")?.dataset.src!==newRow.querySelector(".summary-avatar")?.dataset.src)return false;
-    const previous=[...oldRow.querySelectorAll(".summary-day")];
-    const current=[...newRow.querySelectorAll(".summary-day")];
-    if(previous.length!==current.length||
-       previous[0]?.dataset.date!==current[0]?.dataset.date||
-       previous[previous.length-1]?.dataset.date!==current[current.length-1]?.dataset.date||
-       oldRow.querySelector(".summary-sync-spacer.leading")?.dataset.weeks!==
-       newRow.querySelector(".summary-sync-spacer.leading")?.dataset.weeks||
-       oldRow.querySelector(".summary-sync-spacer.trailing")?.dataset.weeks!==
-       newRow.querySelector(".summary-sync-spacer.trailing")?.dataset.weeks)return false;
-  }
-  for(let i=0;i<existing.length;i++){
-    const oldRow=existing[i],newRow=incoming[i];
-    const oldHeat=oldRow.querySelector(".summary-heatmap");
-    const newHeat=newRow.querySelector(".summary-heatmap");
-    if(oldHeat&&newHeat){
-      const oldSquares=[...oldHeat.querySelectorAll(".summary-day")];
-      const newSquares=[...newHeat.querySelectorAll(".summary-day")];
-      if(oldSquares.length){
-        // Keep each existing scroller and spacer intact. Replacing the whole
-        // heatmap would discard measured spacer widths and break date alignment.
-        for(let j=0;j<oldSquares.length;j++){
-          const oldSquare=oldSquares[j],newSquare=newSquares[j];
-          if(oldSquare.className!==newSquare.className)oldSquare.className=newSquare.className;
-          if(oldSquare.textContent!==newSquare.textContent)oldSquare.textContent=newSquare.textContent;
-          for(const attr of ["title","aria-label"]){
-            if(oldSquare.getAttribute(attr)!==newSquare.getAttribute(attr)){
-              oldSquare.setAttribute(attr,newSquare.getAttribute(attr)||"");
-            }
-          }
-        }
-      }else if(oldHeat.innerHTML!==newHeat.innerHTML){
-        oldHeat.innerHTML=newHeat.innerHTML;
-      }
-    }
-    const oldBadge=oldRow.querySelector(".summary-count");
-    const newBadge=newRow.querySelector(".summary-count");
-    if(oldBadge&&newBadge){
-      if(oldBadge.title!==newBadge.title)oldBadge.title=newBadge.title;
-      if(oldBadge.getAttribute("aria-label")!==newBadge.getAttribute("aria-label")){
-        oldBadge.setAttribute("aria-label",newBadge.getAttribute("aria-label")||"");
-      }
-      const oldCount=oldBadge.querySelector("strong");
-      const newCount=newBadge.querySelector("strong");
-      if(oldCount&&newCount&&oldCount.textContent!==newCount.textContent){
-        oldCount.textContent=newCount.textContent;
-      }
-    }
-  }
-  return true;
-}
 function renderSummary(){
   if(!isPage("summary"))return;
   const list=$("summaryList");
@@ -3587,36 +3274,20 @@ function renderSummary(){
     if(summaryListHtml!==html){summaryListHtml=html;list.innerHTML=html;}
     return;
   }
-  const classFilter=selectedSummaryClassId();
-  if(!classFilter){
-    const html=`<div class="empty">${esc(tr("summaryChooseClass"))}</div>`;
-    if(summaryListHtml!==html){summaryListHtml=html;list.innerHTML=html;}
-    return;
-  }
-  // Restore Kid3Pro's progressive Summary behavior: render student rows as
-  // attendance arrives, rather than blocking until the full history is read.
-  // Keep Kid2Pro's bounded newest-first week reads, scroll sync and popup UI.
-  const visible=reportStudents(classFilter);
+  const classFilter=$("summaryClass")?.value||"";
+  const allChurchStudents=reportStudents("");
+  const visible=allChurchStudents.filter(st=>!classFilter||st.classId===classFilter);
   const periods=summaryClassPeriods(visible);
   const rows=visible.map(st=>{
-    const period=periods.get(st.classId);
-    const dates=period?.dates||[];
-    const present=dates.reduce((count,date)=>
-      count+(state.attendance[date]?.[st.classId]?.[st.id]==="present"?1:0),0);
-    return {st,dates,present,loading:period?.loading||false};
-  }).sort((a,b)=>b.present-a.present||
-    String(a.st.name||"").localeCompare(String(b.st.name||""))||
-    String(a.st.id).localeCompare(String(b.st.id)));
-  const countLabel=tr("summaryPresentCount");
+    const dates=periods.get(st.classId)?.dates||[];
+    const present=dates.filter(date=>state.attendance[date]?.[st.classId]?.[st.id]==="present").length;
+    return {st,dates,present,loading:periods.get(st.classId)?.loading||false};
+  }).sort((a,b)=>b.present-a.present||String(a.st.name||"").localeCompare(String(b.st.name||"")));
   const available=rows.filter(r=>r.dates.length);
   const globalStart=summarySyncEnabled&&available.length?
     available.reduce((d,r)=>!d||r.dates[0]<d?r.dates[0]:d,""):"";
   const globalEnd=summarySyncEnabled&&available.length?
     available.reduce((d,r)=>!d||r.dates[r.dates.length-1]>d?r.dates[r.dates.length-1]:d,""):"";
-  if(summarySyncEnabled&&summaryRenderedStart&&globalStart&&globalStart<summaryRenderedStart){
-    summarySyncWeek+=summaryWeekGap(globalStart,summaryRenderedStart);
-  }
-  summaryRenderedStart=globalStart;
   const next=rows.map(({st,dates,present,loading})=>{
     const sources=studentPhotoSources(st),src=sources[0]||"";
     const photo=src
@@ -3624,7 +3295,8 @@ function renderSummary(){
       :`<i class="ri-user-smile-line" aria-hidden="true"></i>`;
     const squares=dates.map(date=>{
       const key=`${date}/${st.classId}/${st.id}`;
-      const status=attendanceDisplayStatus(date,st.classId,st.id);
+      const status=attendanceErrors.has(key)?"error":!attendanceLoaded.has(key)?"pending":
+        attendanceDisplayStatus(date,st.classId,st.id);
       const label=status==="present"?tr("present"):status==="absent"?tr("absent"):
         status==="pending"?tr("summaryLoading"):status==="error"?tr("summaryUnavailable"):tr("summaryNoRecord");
       const kind=status==="present"?"yes":status==="absent"?"no":status==="pending"?"pending":"none";
@@ -3644,31 +3316,19 @@ function renderSummary(){
           <div class="summary-grid-scroll" tabindex="0" aria-label="${esc(st.name||tr("student"))}"><div class="summary-heatmap">${leadingSpacer}${squares}${trailingSpacer}</div></div>
         </div>
       </div>
-      <div class="summary-count" title="${esc(countLabel)}" aria-label="${esc(countLabel)}"><i>✓</i><strong>${present}</strong></div>
+      <div class="summary-count" title="${esc(tr("summaryPresentCount"))}"><i>✓</i><strong>${present}</strong></div>
     </div>`;
   }).join("")||`<div class="empty">${esc(tr("noStudents"))}</div>`;
   if(next===summaryListHtml)return;
-  if(tryUpdateSummaryRowsInPlace(list,next)){
-    summaryListHtml=next;
-    return;
-  }
-  const positions=summaryScrollRestore||new Map([...list.querySelectorAll("[data-summary-student]")].map(el=>{
-    const scroll=el.querySelector(".summary-grid-scroll");
-    return [el.dataset.summaryStudent,{left:scroll?.scrollLeft||0,
-      first:scroll?.querySelector(".summary-day")?.dataset.date||""}];
-  }));
+  const positions=summaryScrollRestore||new Map([...list.querySelectorAll("[data-summary-student]")].map(el=>[
+    el.dataset.summaryStudent,el.querySelector(".summary-grid-scroll")?.scrollLeft||0
+  ]));
   summaryScrollRestore=null;
   summaryListHtml=next;
   list.innerHTML=next;
   list.querySelectorAll("[data-summary-student]").forEach(el=>{
     const scroll=el.querySelector(".summary-grid-scroll");
-    if(!scroll||summarySyncEnabled)return;
-    const remembered=positions.get(el.dataset.summaryStudent);
-    const left=typeof remembered==="object"?(remembered?.left||0):(remembered||0);
-    const previous=typeof remembered==="object"?remembered?.first:"";
-    const first=scroll.querySelector(".summary-day")?.dataset.date||"";
-    const shift=previous&&first&&first<previous?summaryWeekGap(first,previous)*summaryScrollStep(scroll):0;
-    scroll.scrollLeft=left+shift;
+    if(scroll&&!summarySyncEnabled)scroll.scrollLeft=positions.get(el.dataset.summaryStudent)||0;
   });
   refreshSummaryScrollCues(list);
   if(selectedSummaryDay){
@@ -3697,7 +3357,7 @@ function renderAttendance(useRangeSort=true){
   if(attWeekbarHtml!==weekbarHtml){
     attWeekbarHtml=weekbarHtml;
     $("weekbar").innerHTML=weekbarHtml;
-    document.querySelectorAll("[data-day]").forEach(b=>b.onclick=()=>{stopAttendanceSubscriptions();state.selectedSunday=b.dataset.day;attWeekbarHtml="";renderAttendance();});
+    document.querySelectorAll("[data-day]").forEach(b=>b.onclick=()=>{state.selectedSunday=b.dataset.day;attWeekbarHtml="";renderAttendance();});
   }
   const churchId=attendanceChurchId(), classId=$("attClass")?.value||"";
   if(!churchId || !classId){
@@ -3790,8 +3450,6 @@ function renderAttendance(useRangeSort=true){
     state.attendance[state.selectedSunday][classId] ||= {};
     if(next===null) delete state.attendance[state.selectedSunday][classId][sid];
     else state.attendance[state.selectedSunday][classId][sid]=next;
-    invalidateAttendanceWeek(state.selectedSunday,classId);
-    summaryUpdateReadyCounts(classId);
     playWeekPop(btn.closest(".att-card"));
     renderAttendance();
     setTimeout(()=>{if(state.popAttendanceKey===popKey){state.popAttendanceKey=""; renderAttendance();}},420);
@@ -3799,8 +3457,6 @@ function renderAttendance(useRangeSort=true){
     if(!ok){
       if(prev==null) delete state.attendance[state.selectedSunday]?.[classId]?.[sid];
       else state.attendance[state.selectedSunday][classId][sid]=prev;
-      invalidateAttendanceWeek(state.selectedSunday,classId);
-      summaryUpdateReadyCounts(classId);
       renderAttendance();
     }else{
       const st=state.students[sid]||{};

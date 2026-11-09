@@ -1,4 +1,4 @@
-/* Love Kid Pro – Chrome/Android/iOS Progressive Web App installation. */
+/* Restored Love Kid 3 Pro – Chrome/Android/iOS Progressive Web App installation. */
 (()=>{
   "use strict";
   const isInstalled=()=>window.matchMedia("(display-mode: standalone)").matches||
@@ -60,7 +60,7 @@
     const b=document.createElement("button");
     b.type="button";
     b.className="lk-install-action "+className;
-    b.title="Install Love Kid Pro on this device";
+    b.title="Install Love Kid 3 Pro on this device";
     b.setAttribute("aria-label",b.title);
     b.innerHTML=icon+'<span class="lk-install-label"></span>';
     b.querySelector(".lk-install-label").textContent=installText();
@@ -98,8 +98,8 @@
     dialog.className="lk-install-dialog";
     dialog.setAttribute("role","dialog");
     dialog.setAttribute("aria-modal","true");
-    dialog.setAttribute("aria-label","Install Love Kid Pro");
-    dialog.innerHTML='<div class="lk-install-head"><b>Install Love Kid Pro</b><button class="lk-install-close" type="button">Close ✕</button></div>'+
+    dialog.setAttribute("aria-label","Install Love Kid 3 Pro");
+    dialog.innerHTML='<div class="lk-install-head"><b>Install Love Kid 3 Pro</b><button class="lk-install-close" type="button">Close ✕</button></div>'+
       '<p>Install this website on your phone or computer to open it like an app. An internet connection is required to sign in and sync attendance.</p>'+body;
     modal.append(dialog);
     modal.addEventListener("click",e=>{if(e.target===modal)closeModal();});
@@ -130,8 +130,8 @@
   });
   function init(){
     addStyles();
-    // Appinfo is available on both the attendance app and Dashboard.
-    // Keep the login-page install option for users who have not signed in.
+    // Install shortcut belongs in the App Info popup, not the home header or Dashboard.
+    // Keep the login option before sign-in, as in Kid2Pro.
     addButton(document.querySelector("#ssAppInfoPopup"),"lk-info",true);
     addButton(document.querySelector("#loginView .login-actions"),"lk-login");
     update();
@@ -140,7 +140,7 @@
       window.addEventListener("load",()=>{
         navigator.serviceWorker.register("./sw.js",{scope:"./"})
           .then(reg=>reg.update().catch(()=>{}))
-          .catch(err=>console.warn("Love Kid Pro service worker:",err));
+          .catch(err=>console.warn("Love Kid 3 Pro service worker:",err));
       },{once:true});
     }
   }
