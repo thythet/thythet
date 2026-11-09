@@ -598,8 +598,7 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
   #page-classes .class-row-actions .icon-btn{width:32px;height:32px;min-width:32px;min-height:32px;flex-basis:32px}
 }
 /* Home weekly copy: swipeable chips backed by the existing homeClass select; no data writes. */
-#page-home .home-class-filter{display:flex;flex-direction:column;align-items:stretch;gap:7px;min-width:0;margin-bottom:11px}
-#page-home .home-class-filter label{font-size:12px;font-weight:850;color:var(--muted)}
+#page-home .home-class-filter{display:flex;flex-direction:column;align-items:stretch;min-width:0;margin:0 0 11px}
 #page-home .home-class-chips{display:flex;align-items:center;gap:8px;min-width:0;width:100%;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scroll-snap-type:x proximity;padding:2px 1px 6px}
 #page-home .home-class-chips::-webkit-scrollbar{display:none}
 #page-home .home-class-chip{display:inline-flex;flex:0 0 auto;align-items:center;justify-content:center;gap:6px;max-width:min(75vw,260px);min-height:43px;padding:9px 14px;border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.08);color:var(--text);font-size:13px;font-weight:850;white-space:nowrap;cursor:pointer;scroll-snap-align:start;transition:background .16s ease,border-color .16s ease,box-shadow .16s ease}
@@ -813,23 +812,20 @@ body.summary-popup-open{overflow:hidden}
         <div class="stat"><span>Present</span><b id="statPresent">0</b></div>
       </div>
     </div>
-    <div class="panel glass">
-      <div class="home-class-filter">
-        <label id="homeClassLabel">Class for this week's report</label>
-        <select id="homeClass" class="input native-select-hidden" aria-label="Class for this week's report" tabindex="-1"></select>
-        <div id="homeClassChips" class="home-class-chips" role="group" aria-labelledby="homeClassLabel"></div>
-      </div>
-      <div class="report-copy-head">
-        <span class="week-swipe-wipe"></span>
-        <button id="prevHomeReport" class="btn report-nav" title="Previous Sunday"><i class="ri-arrow-left-s-line"></i></button>
-        <button id="copyHomeReport" class="btn report-copy-btn">COPY THIS WEEK <span id="homeReportDate"></span></button>
-        <button id="nextHomeReport" class="btn report-nav" title="Next Sunday"><i class="ri-arrow-right-s-line"></i></button>
-      </div>
-      <div class="copy-report">
-        <textarea id="homeReportText" class="input report-text" readonly></textarea>
-      </div>
-      <div id="homeReportStatus" class="status"></div>
+    <div class="home-class-filter">
+      <select id="homeClass" class="input native-select-hidden" aria-label="Class for this week's report" tabindex="-1"></select>
+      <div id="homeClassChips" class="home-class-chips" role="group" aria-label="Class for weekly copy"></div>
     </div>
+    <div class="report-copy-head">
+      <span class="week-swipe-wipe"></span>
+      <button id="prevHomeReport" class="btn report-nav" title="Previous Sunday"><i class="ri-arrow-left-s-line"></i></button>
+      <button id="copyHomeReport" class="btn report-copy-btn">COPY THIS WEEK <span id="homeReportDate"></span></button>
+      <button id="nextHomeReport" class="btn report-nav" title="Next Sunday"><i class="ri-arrow-right-s-line"></i></button>
+    </div>
+    <div class="copy-report">
+      <textarea id="homeReportText" class="input report-text" readonly></textarea>
+    </div>
+    <div id="homeReportStatus" class="status"></div>
   </section>
 
   <section id="page-church" class="page">
@@ -1267,7 +1263,7 @@ function applyTranslations(){
   if($("userText") && state.profile) $("userText").textContent=state.profile?.name || roleLabel(state.role);
   setPlaceholder("email","email"); setPlaceholder("password","key"); setPlaceholder("churchName","churchName"); setPlaceholder("roleName","name"); setPlaceholder("roleEmail","email"); setPlaceholder("roleUid","firebaseUid"); setPlaceholder("className","className"); setPlaceholder("studentName","studentName"); setPlaceholder("studentAge","age"); setPlaceholder("studentPhoto","profilePhoto"); setPlaceholder("studentSearch","searchStudents"); setPlaceholder("attSearch","search");
   setText("#remember span","remember"); setText("#page-home h2","overview"); setText(".home-stats .stat:nth-child(1) span","churches"); setText(".home-stats .stat:nth-child(2) span","students"); setText(".home-stats .stat:nth-child(3) span","present"); setText("#page-church h2","church"); setText("#page-roles h2","assignRole"); setText("#page-classes h2","classes"); setText("#page-students h2","students"); setText("#page-attendance h2","attendancePage"); setText("#page-reports h2","monthlyReport");
-  setText("#homeClassLabel","homeClassCopy");
+  if($("homeClassChips"))$("homeClassChips").setAttribute("aria-label",tr("homeClassCopy"));
   setText("#classStartLabel","classStartDate"); setText("#classEndLabel","classEndDate");
   setText("#classLifecycleLabel","classLifecycle"); setText("#classDateHelp","classDateHelp");
   if($("classInfoTitle"))$("classInfoTitle").textContent=currentLang==="km"?"ព័ត៌មានថ្នាក់":"Class information";
