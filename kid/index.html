@@ -1459,7 +1459,7 @@ async function syncApprovedGooglePhoto(user,profile){
 function myProfileDateInfo(profile,user){
   const kh=currentLang==="kh";
   const dates=[
-    [profile?.approvedAt,kh?"អនុម័ត":"Approved"],
+    [profile?.approvedAt,kh?"ចូលប្រើ":"Access granted"],
     [profile?.joinedAt,kh?"បានចូលរួម":"Joined"],
     [profile?.createdAt,kh?"បង្កើតកំណត់ត្រា":"School record created"],
     [user?.metadata?.creationTime,kh?"បង្កើតគណនីចូល":"Sign-in account created"]
@@ -1483,7 +1483,9 @@ function renderMyProfile(){
   const joined=myProfileDateInfo(profile,user);
   $("myProfileDateLabel").textContent=joined.label;
   $("myProfileDate").textContent=joined.date;
-  $("myProfileChurchLabel").textContent=kh?"ពួកជំនុំបម្រើ":"Serving church";
+  $("myProfileChurchLabel").textContent=kh?"ពួកជំនុំដែលបម្រើ":"Serving church";
+  $("myProfileSignOut").setAttribute("aria-label",kh?"ចាកចេញពីគណនី":"Sign Out");
+  $("myProfileSignOut").setAttribute("title",kh?"ចាកចេញពីគណនី":"Sign Out");
   const churchId=profile.churchId||state.churchId||"";
   $("myProfileChurch").textContent=canAdmin()?(kh?"គ្រប់ពួកជំនុំ":"All churches"):
     (churchName(churchId)||(churchId?(kh?"មិនមានទិន្នន័យ":"Not available"):(kh?"មិនទាន់កំណត់":"Unassigned")));
@@ -1516,14 +1518,21 @@ $("userText").addEventListener("click",()=>{
   else closeMyProfile();
 });
 $("closeMyProfile").addEventListener("click",closeMyProfile);
+$("myProfileSignOut").addEventListener("click",async()=>{
+  $("myProfileSignOut").disabled=true;
+  try{await signOut(auth);closeMyProfile();}
+  catch(error){console.error("Profile sign out failed",error);$("myProfileSignOut").disabled=false;}
+});
 $("myProfileOverlay").addEventListener("pointerdown",event=>{
   if(event.target===$("myProfileOverlay"))closeMyProfile();
 });
 document.addEventListener("keydown",event=>{
   if(event.key==="Escape")closeMyProfile();
   if(event.key==="Tab"&&!$("myProfileOverlay").classList.contains("hidden")){
-    event.preventDefault();
-    $("closeMyProfile").focus();
+    const focusable=[$("closeMyProfile"),$("myProfileSignOut")];
+    const index=focusable.indexOf(document.activeElement);
+    if(event.shiftKey&&index<=0){event.preventDefault();focusable[focusable.length-1].focus();}
+    else if(!event.shiftKey&&index===focusable.length-1){event.preventDefault();focusable[0].focus();}
   }
 });
 
@@ -3698,7 +3707,8 @@ setupIOSTouchFeedback();
     <div class="my-profile-head"><strong id="myProfileTitle">My Profile</strong><button id="closeMyProfile" type="button" class="my-profile-close" aria-label="Close profile"><i class="ri-close-line" aria-hidden="true"></i></button></div>
     <div class="my-profile-identity">
       <span class="my-profile-avatar"><img id="myProfileAvatar" alt="" hidden referrerpolicy="no-referrer"><i id="myProfileFallback" class="ri-user-3-line" aria-hidden="true"></i></span>
-      <div class="my-profile-details"><strong id="myProfileName"></strong><small id="myProfileEmail"></small><span id="myProfileRole" class="my-profile-role"></span></div>
+      <div class="my-profile-details"><div class="my-profile-name-row"><strong id="myProfileName"></strong><span id="myProfileRole" class="my-profile-role"></span></div><small id="myProfileEmail"></small></div>
+      <button id="myProfileSignOut" class="my-profile-signout" type="button" aria-label="Sign Out" title="Sign Out"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" /></svg></button>
     </div>
     <div class="my-profile-field"><span id="myProfileDateLabel">Joined</span><strong id="myProfileDate"></strong></div>
     <div class="my-profile-field"><span id="myProfileChurchLabel">Serving church</span><strong id="myProfileChurch"></strong></div>
