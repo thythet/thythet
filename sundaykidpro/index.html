@@ -1084,15 +1084,8 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signI
 import { getDatabase, ref, set, update, push, onValue, remove, get, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 // Student images upload directly to Cloudinary; no upload API secret in the client.
 
-const firebaseConfig = {
-  apiKey: "AIzaSyD4SGK5Gvo1xtrljap1zay1bwDxlrlGmoY",
-  authDomain: "sunday-school-system-7f1f8.firebaseapp.com",
-  databaseURL: "https://sunday-school-system-7f1f8-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "sunday-school-system-7f1f8",
-  storageBucket: "sunday-school-system-7f1f8.firebasestorage.app",
-  messagingSenderId: "855692058999",
-  appId: "1:855692058999:web:b3c41eae77488670b50172"
-};
+import {firebaseConfig,enforceClientDeployment} from "./client-config.js";
+enforceClientDeployment("attendance");
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
@@ -1559,7 +1552,7 @@ onAuthStateChanged(auth, async user=>{
       await signOut(auth);
       return showStatus('loginStatus','Access pending: ask the administrator to approve your account. Existing users retain access.',false);
     }
-    if(state.profile.status==='disabled'||state.profile.status==='pending'){
+    if(state.profile.status==='disabled'||state.profile.status==='pending'||state.profile.active===false){
       await signOut(auth);return showStatus('loginStatus','Account pending or disabled. Contact administrator.',false);
     }
     state.role=state.profile.role; state.churchId=state.profile.churchId;
@@ -3129,20 +3122,28 @@ function renderReports(){
   const students=reportStudents(classId);
   students.forEach(st=>ss.forEach(date=>listenAttendance(date,st.classId,st.id)));
   students.forEach(st=>allDates.forEach(date=>listenAttendance(date,st.classId,st.id)));
+  // No Record is neutral, not absent; class dates bound all percentages.
+  const reportRecorded=(date,st)=>{
+    const cls=state.classes[st.classId]||{};
+    const start=classDateValue(cls.startDate),end=classDateValue(cls.endDate);
+    return date<=currentSunday() && (!start||date>=start) &&
+      (!end||date<=end) && attendanceWeekState(date,st.classId)==="recorded";
+  };
   const rows=students.map(st=>{
-    const present=ss.filter(date=>state.attendance[date]?.[st.classId]?.[st.id]==="present").length;
-    const allPresent=allDates.filter(date=>state.attendance[date]?.[st.classId]?.[st.id]==="present").length;
-    const pct=ss.length?Math.round(present/ss.length*100):0;
-    return {...st,present,allPresent,pct};
+    const recorded=ss.filter(date=>reportRecorded(date,st));
+    const present=recorded.filter(date=>state.attendance[date]?.[st.classId]?.[st.id]==="present").length;
+    const allPresent=allDates.filter(date=>reportRecorded(date,st)&&state.attendance[date]?.[st.classId]?.[st.id]==="present").length;
+    const pct=recorded.length?Math.round(present/recorded.length*100):0;
+    return {...st,present,allPresent,pct,recordedCount:recorded.length};
   }).sort((a,b)=>b.allPresent-a.allPresent || b.pct-a.pct || b.present-a.present || a.name.localeCompare(b.name));
   const grandTotal=rows.reduce((n,r)=>n+r.allPresent,0);
-  const attendedWeeks=allDates.filter(date=>students.some(st=>state.attendance[date]?.[st.classId]?.[st.id]==="present"));
+  const attendedWeeks=allDates.filter(date=>students.some(st=>reportRecorded(date,st)));
   const attendedMonths=new Set(attendedWeeks.map(date=>date.slice(0,7))).size;
   $("reportTotal").textContent=rows.length; $("reportAvg").textContent=grandTotal; $("reportWeeks").innerHTML=`${attendedWeeks.length}<sup>W</sup>/${attendedMonths}<sup>M</sup>`;
   const nextReportListHtml=rows.map(r=>{
     const src=studentPhotoSrc(r);
     const photo=src ? `<img src="${esc(src)}" alt="" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><i class="ri-user-smile-line" hidden></i>` : `<i class="ri-user-smile-line"></i>`;
-    return `<div class="card report-row"><button class="report-photo" type="button" data-preview-src="${esc(src)}" data-preview-name="${esc(r.name)}">${photo}</button><div class="report-info"><div class="report-title-row"><b>${esc(r.name)}</b><span class="report-count-pill">${r.allPresent}</span><small>${esc(className(r.classId))}</small></div><div class="report-bottom"><div class="meter"><i style="width:${r.pct}%"></i></div><div class="report-pills"><div class="pill">${r.present}/${ss.length}</div><div class="pill">${r.pct}%</div></div></div></div></div>`;
+    return `<div class="card report-row"><button class="report-photo" type="button" data-preview-src="${esc(src)}" data-preview-name="${esc(r.name)}">${photo}</button><div class="report-info"><div class="report-title-row"><b>${esc(r.name)}</b><span class="report-count-pill">${r.allPresent}</span><small>${esc(className(r.classId))}</small></div><div class="report-bottom"><div class="meter"><i style="width:${r.pct}%"></i></div><div class="report-pills"><div class="pill">${r.present}/${r.recordedCount}</div><div class="pill">${r.pct}%</div></div></div></div></div>`;
   }).join("")||`<div class="empty">${tr("noReport")}</div>`;
   if(reportListHtml!==nextReportListHtml){
     reportListHtml=nextReportListHtml;

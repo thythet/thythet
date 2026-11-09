@@ -60,7 +60,7 @@
     const b=document.createElement("button");
     b.type="button";
     b.className="lk-install-action "+className;
-    b.title="Install Love Kid 3 Pro on this device";
+    b.title="Install SundayKidPro on this device";
     b.setAttribute("aria-label",b.title);
     b.innerHTML=icon+'<span class="lk-install-label"></span>';
     b.querySelector(".lk-install-label").textContent=installText();
@@ -98,8 +98,8 @@
     dialog.className="lk-install-dialog";
     dialog.setAttribute("role","dialog");
     dialog.setAttribute("aria-modal","true");
-    dialog.setAttribute("aria-label","Install Love Kid 3 Pro");
-    dialog.innerHTML='<div class="lk-install-head"><b>Install Love Kid 3 Pro</b><button class="lk-install-close" type="button">Close ✕</button></div>'+
+    dialog.setAttribute("aria-label","Install SundayKidPro");
+    dialog.innerHTML='<div class="lk-install-head"><b>Install SundayKidPro</b><button class="lk-install-close" type="button">Close ✕</button></div>'+
       '<p>Install this website on your phone or computer to open it like an app. An internet connection is required to sign in and sync attendance.</p>'+body;
     modal.append(dialog);
     modal.addEventListener("click",e=>{if(e.target===modal)closeModal();});

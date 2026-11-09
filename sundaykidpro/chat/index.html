@@ -6166,17 +6166,9 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, signInAnonymously, onAuth
 import { getDatabase, ref, set, update, get, push, onValue, onDisconnect, serverTimestamp, query, orderByChild, limitToLast, remove, runTransaction } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
 import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-storage.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBof66mcb0L-GHFvn1wNVAhSFeHaIzep4M",
-  authDomain: "thechat-a79b9.firebaseapp.com",
-  databaseURL: "https://thechat-a79b9-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "thechat-a79b9",
-  storageBucket: "thechat-a79b9.firebasestorage.app",
-  messagingSenderId: "352306422331",
-  appId: "1:352306422331:web:9b15b0283104f48d99321e",
-  measurementId: "G-L3KHEB15ZG"
-};
-const BOOTSTRAP_ADMIN_EMAIL = "thythetopen@gmail.com";
+import {chatFirebaseConfig as firebaseConfig,clientDeployment,enforceClientDeployment} from "../client-config.js";
+enforceClientDeployment("chat");
+const BOOTSTRAP_ADMIN_EMAIL = clientDeployment.chatBootstrapAdminEmail;
 const DEFAULT_CONFIG = {
   branding: { appName:"thechat" },
   ui: { theme:"light", font:"inter", accent:"#0b6fe8", wallpaper:"", blur:34, radius:26, sidebar:292, bubble:18 },

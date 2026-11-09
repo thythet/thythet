@@ -87,15 +87,8 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { getDatabase, ref, get, onValue, query, orderByChild, equalTo } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
 
-const firebaseConfig={
-  apiKey:'AIzaSyD4SGK5Gvo1xtrljap1zay1bwDxlrlGmoY',
-  authDomain:'sunday-school-system-7f1f8.firebaseapp.com',
-  databaseURL:'https://sunday-school-system-7f1f8-default-rtdb.asia-southeast1.firebasedatabase.app',
-  projectId:'sunday-school-system-7f1f8',
-  storageBucket:'sunday-school-system-7f1f8.firebasestorage.app',
-  messagingSenderId:'855692058999',
-  appId:'1:855692058999:web:b3c41eae77488670b50172'
-};
+import {firebaseConfig,enforceClientDeployment} from "./client-config.js";
+enforceClientDeployment("attendance");
 const ADMIN_SELECTED_CHURCH_KEY='ss_admin_selected_church';
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getDatabase(app),$=id=>document.getElementById(id);
 const googleProvider=new GoogleAuthProvider();
@@ -248,7 +241,10 @@ onAuthStateChanged(auth,async user=>{
     state.role=role||'guest';
     state.churchId=profile?.churchId||null;
     state.userName=String(profile?.name||profile?.email||'').trim();
-    if(role==='teacher' || role==='admin'){
+    // Admin is granted only by the separate admins/<uid> record.
+    // Never admit disabled/pending account records to the dashboard.
+    if(role==='teacher' && profile?.churchId &&
+       profile.status!=='disabled' && profile.status!=='pending' && profile.active!==false){
       allowed=true;
     }
   }
@@ -354,7 +350,22 @@ function studentStartDate(s){
   const d=new Date(str);
   return Number.isNaN(d.getTime())?'':dateKey(d);
 }
-function countStudent(s,dates){let total=0,present=0;const start=studentStartDate(s);for(const date of dates){if(!date||start&&date<start)continue;total++;const rec=state.attendance?.[date]?.[s.classId]?.[s.id];if(isPresent(rec))present++}return {total,present,absent:Math.max(total-present,0),rate:total?Math.round(present/total*100):0}}
+// Same No Record rule as the main app: no Present check => exclude week.
+function dashboardWeekRecorded(date,classId){return Object.values(state.attendance?.[date]?.[classId]||{}).some(isPresent)}
+function countStudent(s,dates){
+  let total=0,present=0;
+  const start=studentStartDate(s),cls=state.classes[s.classId]||{};
+  const classStart=String(cls.startDate||'').slice(0,10),classEnd=String(cls.endDate||'').slice(0,10);
+  const latest=startOfWeek();
+  for(const date of dates){
+    if(!date||date>latest||(start&&date<start)||
+       (classStart&&date<classStart)||(classEnd&&date>classEnd)||
+       !dashboardWeekRecorded(date,s.classId))continue;
+    total++;
+    if(isPresent(state.attendance?.[date]?.[s.classId]?.[s.id]))present++;
+  }
+  return {total,present,absent:Math.max(total-present,0),rate:total?Math.round(present/total*100):0};
+}
 
 function buildFilters(){let oldCh=$('churchFilter').value||localStorage.getItem(ADMIN_SELECTED_CHURCH_KEY)||'',oldCl=$('classFilter').value;const churches=allChurches();if(!canManageAll()&&!oldCh&&churches[0])oldCh=churches[0].id;$('churchFilter').innerHTML='<option value="">'+t('selectChurch')+'</option>'+churches.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');$('churchFilter').value=[...$('churchFilter').options].some(o=>o.value===oldCh)?oldCh:'';const ch=$('churchFilter').value;$('classFilter').innerHTML='<option value="">'+t('allClasses')+'</option>'+allClasses().filter(c=>ch&&c.churchId===ch).map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');if([...$('classFilter').options].some(o=>o.value===oldCl))$('classFilter').value=oldCl;syncCustomSelects()}
 $('search').addEventListener('input',computeAndRender);
@@ -407,7 +418,7 @@ function renderCharts(arr){
   state.classChart=new Chart($('classChart'),{type:'bar',data:{labels:cls.map(x=>x[0]),datasets:[{label:'This month %',data:cls.map(x=>x[1])}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#dbeafe'}}},scales:{x:{ticks:{color:'#a7b3c6'},grid:{color:'rgba(255,255,255,.08)'}},y:{min:0,max:100,ticks:{color:'#a7b3c6'},grid:{color:'rgba(255,255,255,.08)'}}}}})
 }
 function openModal(id){const s=state.stats.find(x=>x.id===id);if(!s)return;const from=yearNow()+'-01',to=monthNow();$('modal').classList.remove('hidden');$('modal').innerHTML=`<div class="modal-card glass"><div class="modal-head"><div class="avatar ${photoSources(s).length?'has-photo':''}" ${photoSources(s).length?`data-photo-id="${esc(s.id)}"`:''}>${avatar(s)}</div><div><h2>${esc(s.name||'No name')}</h2><p>${esc(getClass(s.classId))} · ${esc(getChurch(s.churchId))}</p></div><button class="btn danger" id="closeModal"><i class="ri-close-line"></i></button></div><div class="detail-grid"><div class="detail-stat"><span>This Week</span><b>${s.week.present}/${s.week.total}</b></div><div class="detail-stat"><span>This Month</span><b>${s.month.present}/${s.month.total}</b></div><div class="detail-stat"><span>This Year</span><b>${s.year.present}/${s.year.total}</b></div><div class="detail-stat"><span>Year Rate</span><b>${s.year.rate}%</b></div></div><div class="range-box"><input id="fromMonth" class="input" type="month" value="${from}"><input id="toMonth" class="input" type="month" value="${to}"><button id="calcRange" class="btn green-glass-btn">Calculate</button></div><div id="rangeResult" class="detail-grid"></div><h2>Sunday Heatmap</h2><div id="heatmap" class="heatmap"></div></div>`;$('closeModal').onclick=closeModal;$('calcRange').onclick=()=>renderRange(s);bindStudentActions();renderRange(s);localizeModal()}
-async function renderRange(s){const from=$('fromMonth').value||yearNow()+'-01',to=$('toMonth').value||monthNow(),days=sundaysBetween(from,to);$('calcRange').textContent=t('loading')||'Loading...';await loadAttendanceLeaves([s],days);$('calcRange').textContent=t('calculate');const c=countStudent(s,days);$('rangeResult').innerHTML=`<div class="detail-stat"><span>Total Sundays</span><b>${c.total}</b></div><div class="detail-stat"><span>Present</span><b>${c.present}</b></div><div class="detail-stat"><span>Absent</span><b>${c.absent}</b></div><div class="detail-stat"><span>Rate</span><b>${c.rate}%</b></div>`;$('heatmap').innerHTML=days.map(d=>{const yes=isPresent(state.attendance?.[d]?.[s.classId]?.[s.id]);return `<div class="day ${yes?'yes':'no'}" title="${d}">${yes?'✓':'×'}</div>`}).join('')||'<div class="empty">'+t('noSundays')+'</div>';localizeModal()}
+async function renderRange(s){const from=$('fromMonth').value||yearNow()+'-01',to=$('toMonth').value||monthNow(),days=sundaysBetween(from,to);$('calcRange').textContent=t('loading')||'Loading...';await loadAttendanceLeaves([s],days);$('calcRange').textContent=t('calculate');const c=countStudent(s,days);$('rangeResult').innerHTML=`<div class="detail-stat"><span>Total Sundays</span><b>${c.total}</b></div><div class="detail-stat"><span>Present</span><b>${c.present}</b></div><div class="detail-stat"><span>Absent</span><b>${c.absent}</b></div><div class="detail-stat"><span>Rate</span><b>${c.rate}%</b></div>`;$('heatmap').innerHTML=days.map(d=>{const recorded=dashboardWeekRecorded(d,s.classId),yes=isPresent(state.attendance?.[d]?.[s.classId]?.[s.id]);return `<div class="day ${recorded?(yes?'yes':'no'):''}" title="${d} — ${recorded?(yes?'Present':'Absent'):'No Record'}">${recorded?(yes?'✓':'×'):'·'}</div>`}).join('')||'<div class="empty">'+t('noSundays')+'</div>';localizeModal()}
 function openPhotoPreview(id){
   const s=state.stats.find(x=>x.id===id);
   if(!s)return;
