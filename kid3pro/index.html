@@ -2778,7 +2778,12 @@ function bindSwipe(el,onSwipe,wheel=false){
   if(wheel) el.addEventListener("wheel",e=>{if(Math.abs(e.deltaX)>Math.abs(e.deltaY)){e.preventDefault();onSwipe(e.deltaX>0?1:-1);}},{passive:false});
 }
 function setAttMonth(delta){ $("attMonth").value=shiftMonth($("attMonth").value,delta); syncMonthDisplay("attMonth","attMonthText"); state.selectedSunday=""; resetAttendanceRenderCache(); playSwipeWipe($("attMonth")?.closest(".month-field"),delta); renderAttendance(); }
-$("attMonth").value=monthNow(); syncMonthDisplay("attMonth","attMonthText"); $("attMonth").onchange=()=>{syncMonthDisplay("attMonth","attMonthText");state.selectedSunday=""; resetAttendanceRenderCache(); renderAttendance();};
+// Open on this week's Sunday (including weeks starting in the previous month).
+// Month navigation still clears selectedSunday and uses the month's first Sunday.
+state.selectedSunday=currentSunday();
+$("attMonth").value=state.selectedSunday.slice(0,7);
+syncMonthDisplay("attMonth","attMonthText");
+$("attMonth").onchange=()=>{syncMonthDisplay("attMonth","attMonthText");state.selectedSunday=""; resetAttendanceRenderCache(); renderAttendance();};
 if($("attChurch")) $("attChurch").onchange=()=>{setSelectedChurchId($("attChurch").value); renderSelects(); syncCustomSelect("attChurch"); syncCustomSelect("attClass"); renderAttendance();};
 if($("attClass")) $("attClass").onchange=()=>{syncCustomSelect("attClass");resetAttendanceRenderCache();renderAttendance();};
 if($("prevMonth")) $("prevMonth").onclick=()=>setAttMonth(-1);
