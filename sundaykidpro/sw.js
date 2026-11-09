@@ -1,5 +1,5 @@
 /* Love Kid Pro PWA app shell. Never cache Firebase responses or student data. */
-const CACHE="lovekid-3pro-shell-v27";
+const CACHE="sundaykidpro-shell-v27";
 const SHELL=[
   "./","./index.html","./dashboard.html",
   "./themes.css","./effects.css","./theme-switcher.js","./effect-switcher.js",
@@ -15,7 +15,7 @@ self.addEventListener("install",event=>{
 });
 self.addEventListener("activate",event=>{
   event.waitUntil(caches.keys().then(keys=>Promise.all(
-    keys.filter(key=>key.startsWith("lovekid-3pro-shell-")&&key!==CACHE).map(key=>caches.delete(key))
+    keys.filter(key=>key.startsWith("sundaykidpro-shell-")&&key!==CACHE).map(key=>caches.delete(key))
   )).then(()=>self.clients.claim()));
 });
 self.addEventListener("fetch",event=>{
