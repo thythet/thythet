@@ -2520,7 +2520,7 @@ function renderRoles(){
 }
 // Local-only collapse state; never written to Firebase.
 const classGroupExpanded=new Map();
-const classGroupStorageKey=()=>"kid3pro_class_groups_v1:"+(state.user?.uid||"guest");
+const classGroupStorageKey=()=>"sundaykidpro_class_groups_v1:"+(state.user?.uid||"guest");
 let classGroupLoadedFor="";
 function loadClassGroupExpanded(){
   const key=classGroupStorageKey();
@@ -3153,7 +3153,7 @@ function renderReports(){
 
 /* The Class schedule is authoritative when configured. Existing classes without
    dates retain the original recorded-week range. No attendance data is changed. */
-const summarySyncStorageKey="kid3pro_summary_sync_scroll";
+const summarySyncStorageKey="sundaykidpro_summary_sync_scroll";
 let summarySyncEnabled=false;
 try{summarySyncEnabled=localStorage.getItem(summarySyncStorageKey)==="1"}catch{}
 let summarySyncWeek=0;
