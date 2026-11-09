@@ -1484,7 +1484,8 @@ function renderMyProfile(){
   $("myProfileDateLabel").textContent=joined.label;
   $("myProfileDate").textContent=joined.date;
   $("myProfileChurchLabel").textContent=kh?"ពួកជំនុំដែលបម្រើ":"Serving church";
-  $("myProfileSignOutText").textContent=kh?"ចាកចេញពីគណនី":"Sign Out";
+  $("myProfileSignOut").setAttribute("aria-label",kh?"ចាកចេញពីគណនី":"Sign Out");
+  $("myProfileSignOut").setAttribute("title",kh?"ចាកចេញពីគណនី":"Sign Out");
   const churchId=profile.churchId||state.churchId||"";
   $("myProfileChurch").textContent=canAdmin()?(kh?"គ្រប់ពួកជំនុំ":"All churches"):
     (churchName(churchId)||(churchId?(kh?"មិនមានទិន្នន័យ":"Not available"):(kh?"មិនទាន់កំណត់":"Unassigned")));
@@ -3702,14 +3703,13 @@ setupIOSTouchFeedback();
 
 <div id="myProfileOverlay" class="my-profile-overlay hidden">
   <section id="myProfileDialog" class="my-profile-popup" role="dialog" aria-modal="true" aria-labelledby="myProfileTitle" tabindex="-1">
-    <div class="my-profile-head"><strong id="myProfileTitle">My Profile</strong><button id="closeMyProfile" type="button" class="my-profile-close" aria-label="Close profile"><i class="ri-close-line" aria-hidden="true"></i></button></div>
+    <div class="my-profile-head"><strong id="myProfileTitle">My Profile</strong><div class="my-profile-head-buttons"><button id="myProfileSignOut" class="my-profile-signout" type="button" aria-label="Sign Out" title="Sign Out"><i class="ri-logout-box-r-line" aria-hidden="true"></i></button><button id="closeMyProfile" type="button" class="my-profile-close" aria-label="Close profile"><i class="ri-close-line" aria-hidden="true"></i></button></div></div>
     <div class="my-profile-identity">
       <span class="my-profile-avatar"><img id="myProfileAvatar" alt="" hidden referrerpolicy="no-referrer"><i id="myProfileFallback" class="ri-user-3-line" aria-hidden="true"></i></span>
       <div class="my-profile-details"><div class="my-profile-name-row"><strong id="myProfileName"></strong><span id="myProfileRole" class="my-profile-role"></span></div><small id="myProfileEmail"></small></div>
     </div>
     <div class="my-profile-field"><span id="myProfileDateLabel">Joined</span><strong id="myProfileDate"></strong></div>
     <div class="my-profile-field"><span id="myProfileChurchLabel">Serving church</span><strong id="myProfileChurch"></strong></div>
-    <div class="my-profile-actions"><button id="myProfileSignOut" class="my-profile-signout" type="button"><i class="ri-logout-box-r-line" aria-hidden="true"></i><span id="myProfileSignOutText">Sign Out</span></button></div>
   </section>
 </div>
 <div id="photoPreview" class="photo-preview hidden">
