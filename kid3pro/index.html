@@ -180,10 +180,7 @@ select.input{appearance:none;background-image:linear-gradient(45deg,transparent 
 button:not(.month-icon):not(.eye):not(.go),[onclick]:not(.month-icon),.nav-btn,.btn,.student-card,.att-card,.check,.week-chip,.month-field{position:relative;overflow:hidden;transform:translateZ(0);transition:transform .16s cubic-bezier(.2,.8,.2,1),opacity .16s ease,background .18s ease,border-color .18s ease,box-shadow .18s ease,filter .18s ease;-webkit-touch-callout:none}
 .custom-select.needs-choice .custom-select-btn{border-color:rgba(112,220,155,.72)!important;box-shadow:0 0 0 0 rgba(112,220,155,.26),0 0 24px rgba(93,167,255,.18),inset 0 1px 0 rgba(255,255,255,.16);animation:choiceGlow var(--choice-glow-duration) cubic-bezier(.2,.8,.2,1) infinite}
 .custom-select.needs-choice .custom-select-btn:before{content:"";position:absolute;inset:-1px;border-radius:inherit;pointer-events:none;opacity:.72;background:linear-gradient(var(--choice-wipe-angle),transparent 0%,rgba(112,220,155,.07) 14%,rgba(93,167,255,.26) 45%,rgba(251,113,133,.14) 70%,transparent 100%);transform:translateX(-105%);animation:choiceWipe var(--choice-wipe-duration) cubic-bezier(.2,.8,.2,1) infinite}
-/* The same existing green/blue Choice Glow + Wipe is shared by all required selects. */
-@media(prefers-reduced-motion:reduce){
-  .custom-select.needs-choice .custom-select-btn::before{animation:none!important;opacity:0!important}
-}
+.custom-select.loop-choice .custom-select-btn:before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(var(--choice-wipe-angle),transparent 0%,rgba(255,255,255,.04) 18%,rgba(255,255,255,.22) 48%,rgba(147,197,253,.12) 72%,transparent 100%);transform:translateX(-105%);animation:choiceWipe var(--choice-wipe-duration) cubic-bezier(.2,.8,.2,1) infinite}
 @keyframes choiceGlow{0%,100%{box-shadow:0 0 0 0 rgba(112,220,155,.22),0 0 20px rgba(93,167,255,.18),inset 0 1px 0 rgba(255,255,255,.18)}50%{box-shadow:0 0 0 4px rgba(112,220,155,.14),0 0 34px rgba(93,167,255,.36),inset 0 1px 0 rgba(255,255,255,.26)}}
 @keyframes choiceWipe{0%{opacity:0;transform:translateX(-105%)}18%{opacity:.95}100%{opacity:0;transform:translateX(105%)}}
 button:focus,input:focus,select:focus{outline:none!important}
@@ -789,7 +786,7 @@ body.summary-popup-open{overflow:hidden}
 
   <section id="page-home" class="page active">
     <div class="panel glass">
-      <div class="panel-head"><h2>Overview</h2><select id="homeChurch" class="input native-select-hidden" required></select><div class="custom-select" data-select="homeChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div></div>
+      <div class="panel-head"><h2>Overview</h2><select id="homeChurch" class="input native-select-hidden"></select><div class="custom-select" data-select="homeChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div></div>
       <div class="stats home-stats">
         <div class="stat"><span>Churches</span><b id="statChurch">0</b></div>
         <div class="stat"><span>Students</span><b id="statStudent">0</b></div>
@@ -831,8 +828,8 @@ body.summary-popup-open{overflow:hidden}
         <input id="roleName" class="input" placeholder="Name">
         <input id="roleEmail" class="input" placeholder="Email">
         <input id="roleUid" class="input" placeholder="Firebase UID">
-        <select id="roleType" class="input native-select-hidden" required><option value="pastor">Pastor</option><option value="teacher">Teacher</option></select><div class="custom-select" data-select="roleType"><button class="custom-select-btn" type="button">Pastor</button><div class="custom-select-menu"></div></div>
-        <select id="roleChurch" class="input native-select-hidden" required></select><div class="custom-select" data-select="roleChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
+        <select id="roleType" class="input native-select-hidden"><option value="pastor">Pastor</option><option value="teacher">Teacher</option></select><div class="custom-select" data-select="roleType"><button class="custom-select-btn" type="button">Pastor</button><div class="custom-select-menu"></div></div>
+        <select id="roleChurch" class="input native-select-hidden"></select><div class="custom-select" data-select="roleChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
       </div>
       <button id="saveRole" class="btn primary" style="margin-top:10px;width:100%">Save Role</button>
       <div id="roleStatus" class="status"></div>
@@ -859,7 +856,7 @@ body.summary-popup-open{overflow:hidden}
   <section id="page-classes" class="page">
     <div class="panel glass">
       <h2>Class</h2>
-      <div class="class-name-row"><input id="className" class="input" placeholder="Class name" aria-label="Class name"><select id="classChurch" class="input native-select-hidden" aria-label="Church" required></select><div class="custom-select" data-select="classChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div></div>
+      <div class="class-name-row"><input id="className" class="input" placeholder="Class name" aria-label="Class name"><select id="classChurch" class="input native-select-hidden" aria-label="Church"></select><div class="custom-select" data-select="classChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div></div>
       <div class="class-period-fields">
         <label><span id="classStartLabel">Start Date</span><input id="classStartDate" type="date" class="input" aria-label="Start Date"></label>
         <label><span id="classEndLabel">End Date (optional)</span><input id="classEndDate" type="date" class="input" aria-label="End Date"></label>
@@ -891,12 +888,12 @@ body.summary-popup-open{overflow:hidden}
       <h2>Student</h2>
       <div class="student-line1">
         <input id="studentName" class="input" placeholder="Student name">
-        <select id="studentGender" class="input native-select-hidden" required><option value="Male">Male</option><option value="Female">Female</option></select><div class="custom-select" data-select="studentGender"><button class="custom-select-btn" type="button">Male</button><div class="custom-select-menu"></div></div>
+        <select id="studentGender" class="input native-select-hidden"><option value="Male">Male</option><option value="Female">Female</option></select><div class="custom-select" data-select="studentGender"><button class="custom-select-btn" type="button">Male</button><div class="custom-select-menu"></div></div>
         <input id="studentAge" class="input" placeholder="Age" type="number">
       </div>
       <div class="student-line2">
-        <select id="studentChurch" class="input native-select-hidden" required></select><div class="custom-select" data-select="studentChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
-        <select id="studentClass" class="input native-select-hidden" required></select><div class="custom-select" data-select="studentClass"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
+        <select id="studentChurch" class="input native-select-hidden"></select><div class="custom-select" data-select="studentChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
+        <select id="studentClass" class="input native-select-hidden"></select><div class="custom-select" data-select="studentClass"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
       </div>
       <div class="student-photo-row">
         <input id="studentPhoto" class="input" placeholder="Photo file name or uploaded URL">
@@ -928,7 +925,7 @@ body.summary-popup-open{overflow:hidden}
 
   <section id="page-attendance" class="page">
     <div class="panel glass">
-      <div class="att-head"><h2>Attendance</h2><select id="attChurch" class="input church-switch native-select-hidden" required></select><div class="custom-select church-switch-wrap" data-select="attChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div><select id="attClass" class="input class-switch native-select-hidden" required></select><div class="custom-select class-switch-wrap" data-select="attClass"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div></div>
+      <div class="att-head"><h2>Attendance</h2><select id="attChurch" class="input church-switch native-select-hidden"></select><div class="custom-select church-switch-wrap" data-select="attChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div><select id="attClass" class="input class-switch native-select-hidden"></select><div class="custom-select class-switch-wrap" data-select="attClass"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div></div>
       <div class="att-filter"><div class="month-field"><span class="week-swipe-wipe"></span><button id="prevMonth" class="month-icon left" title="Previous month"><i class="ri-arrow-left-s-line"></i></button><input id="attMonth" class="input" type="month"><span id="attMonthText" class="month-field-display"></span><span class="month-icon cal"><i class="ri-calendar-todo-line"></i></span><button id="nextMonth" class="month-icon right" title="Next month"><i class="ri-arrow-right-s-line"></i></button></div></div>
       <div id="weekbar" class="weekbar"></div>
       <div class="stats att-stats">
@@ -949,7 +946,7 @@ body.summary-popup-open{overflow:hidden}
 
   <section id="page-summary" class="page">
     <div class="summary-filters summary-filters-standalone">
-        <select id="summaryChurch" class="input native-select-hidden" aria-label="Church" required></select><div class="custom-select" data-select="summaryChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
+        <select id="summaryChurch" class="input native-select-hidden" aria-label="Church"></select><div class="custom-select" data-select="summaryChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
         <select id="summaryClass" class="input native-select-hidden" aria-label="Filter by class"></select><div class="custom-select" data-select="summaryClass"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
     </div>
     <div id="summaryList" class="list summary-list"></div>
@@ -980,7 +977,7 @@ body.summary-popup-open{overflow:hidden}
       </div>
       <div class="grid2">
         <div class="month-field"><span class="week-swipe-wipe"></span><button id="prevReportMonth" class="month-icon left" title="Previous month"><i class="ri-arrow-left-s-line"></i></button><input id="reportMonth" class="input" type="month"><span id="reportMonthText" class="month-field-display"></span><span class="month-icon cal"><i class="ri-calendar-todo-line"></i></span><button id="nextReportMonth" class="month-icon right" title="Next month"><i class="ri-arrow-right-s-line"></i></button></div>
-        <select id="reportChurch" class="input native-select-hidden" required></select><div class="custom-select" data-select="reportChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
+        <select id="reportChurch" class="input native-select-hidden"></select><div class="custom-select" data-select="reportChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
         <select id="reportClass" class="input native-select-hidden"></select><div class="custom-select report-class-select" data-select="reportClass"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div>
       </div>
       <div class="stats report-stats" style="margin-top:12px">
@@ -1486,7 +1483,6 @@ function page(name){
   $("page-"+name).classList.add("active");
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.page===name));
   renderAll();
-  updateRequiredSelectEffects();
 }
 const activePage = () => document.querySelector(".page.active")?.id.replace("page-","") || "home";
 const isPage = name => activePage() === name;
@@ -2007,30 +2003,13 @@ window.editClass = editClass;
 window.editStudent = editStudent;
 window.showStudentDetails = showStudentDetails;
 
-// Centralized: use existing choiceGlow/choiceWipe CSS only for unresolved required selects.
-function updateRequiredSelectEffects(id=null){
-  const wrappers=id?[document.querySelector(`.custom-select[data-select="${id}"]`)].filter(Boolean)
-    :document.querySelectorAll(".custom-select[data-select]");
-  for(const wrap of wrappers){
-    const select=$(wrap.dataset.select),page=wrap.closest(".page");
-    const options=select?[...select.options]:[];
-    // A placeholder-only Class dropdown must still guide the user, as it did originally.
-    // Avoid getClientRects(): reading layout while options render can clear the glow early
-    // (the app may still be hidden during sign-in) and force unnecessary reflows.
-    const hasOptions=options.length>0;
-    const valid=!!select?.value&&options.some(option=>option.value===select.value&&!option.disabled);
-    const visible=(!page||page.classList.contains("active"))&&!wrap.hidden&&
-      !wrap.classList.contains("hidden");
-    const enabled=!!select&&!select.disabled&&!wrap.querySelector(".custom-select-btn")?.disabled;
-    wrap.classList.toggle("needs-choice",!!select?.required&&visible&&enabled&&hasOptions&&!valid);
-    wrap.classList.remove("loop-choice");
-  }
-}
 function syncCustomSelect(id){
-  const select=$(id),wrap=document.querySelector(`.custom-select[data-select="${id}"]`);
-  if(!select||!wrap)return;
-  const btn=wrap.querySelector(".custom-select-btn"),menu=wrap.querySelector(".custom-select-menu");
+  const select=$(id), wrap=document.querySelector(`.custom-select[data-select="${id}"]`);
+  if(!select||!wrap) return;
+  const btn=wrap.querySelector(".custom-select-btn"), menu=wrap.querySelector(".custom-select-menu");
   btn.textContent=select.selectedOptions[0]?.textContent||"";
+  if(id==="attChurch" || id==="attClass") wrap.classList.toggle("needs-choice", !select.value);
+  if(id==="homeChurch") wrap.classList.toggle("loop-choice", !select.value);
   menu.innerHTML=[...select.options].map(o=>`<button type="button" class="custom-select-option ${o.value===select.value?"active":""}" data-value="${esc(o.value)}">${esc(o.textContent)}</button>`).join("");
   menu.querySelectorAll(".custom-select-option").forEach(opt=>opt.onclick=()=>{
     select.value=opt.dataset.value;
@@ -2038,35 +2017,19 @@ function syncCustomSelect(id){
     wrap.classList.remove("open");
     syncCustomSelect(id);
   });
-  updateRequiredSelectEffects(id);
 }
-function syncCustomSelects(){
-  document.querySelectorAll(".custom-select[data-select]").forEach(w=>syncCustomSelect(w.dataset.select));
-}
-let customSelectDismissBound=false;
+function syncCustomSelects(){ document.querySelectorAll(".custom-select[data-select]").forEach(w=>syncCustomSelect(w.dataset.select)); }
 function initCustomSelects(){
-  document.querySelectorAll(".custom-select[data-select]").forEach(w=>{
-    if(w.dataset.customSelectReady)return;
-    const button=w.querySelector(".custom-select-btn");
-    if(!button)return;
-    button.onclick=e=>{
+  document.querySelectorAll(".custom-select").forEach(w=>{
+    w.querySelector(".custom-select-btn").onclick=e=>{
       e.stopPropagation();
-      document.querySelectorAll(".custom-select.open").forEach(x=>{if(x!==w)x.classList.remove("open")});
+      document.querySelectorAll(".custom-select.open").forEach(x=>{ if(x!==w) x.classList.remove("open"); });
       w.classList.toggle("open");
     };
-    w.dataset.customSelectReady="1";
   });
-  if(!customSelectDismissBound){
-    document.addEventListener("click",()=>document.querySelectorAll(".custom-select.open").forEach(w=>w.classList.remove("open")));
-    customSelectDismissBound=true;
-  }
+  document.addEventListener("click",()=>document.querySelectorAll(".custom-select.open").forEach(w=>w.classList.remove("open")));
   syncCustomSelects();
 }
-// Covers native keyboard changes as well as custom-menu selections.
-document.addEventListener("change",event=>{
-  if(event.target?.tagName==="SELECT"&&event.target.required)
-    updateRequiredSelectEffects(event.target.id);
-});
 function setOptions(id, html){
   const el=$(id); if(!el) return;
   const previous=el.value;
@@ -2288,11 +2251,9 @@ function renderUsers(){
     '<input id="umName" class="input" maxlength="120" value="'+esc(umDraftName)+'"></label>'+
     '<label>'+(kh?"តួនាទី":"Role")+'<select id="umRole" class="input"><option value="teacher" '+(umDraftRole==="teacher"?"selected":"")+'>Teacher</option>'+
     '<option value="pastor" '+(umDraftRole==="pastor"?"selected":"")+'>Pastor</option></select></label>'+
-    '<label>'+(kh?"ពួកជំនុំ":"Church")+'<select id="umChurch" class="input native-select-hidden" required>'+options+'</select>'+
-    '<div class="custom-select" data-select="umChurch"><button class="custom-select-btn" type="button"></button><div class="custom-select-menu"></div></div></label></div>'+
+    '<label>'+(kh?"ពួកជំនុំ":"Church")+'<select id="umChurch" class="input">'+options+'</select></label></div>'+
     '<div class="um-edit-actions">'+primary+secondary+'</div></div>';
   umBindPhotoFallbacks($("umEditor"));
-  initCustomSelects(); // Bind the dynamically created Admin Users church selector once.
   $("umEditor").querySelectorAll("[data-um-action]").forEach(b=>b.disabled=umSaving);
 }
 function umSelect(key){
