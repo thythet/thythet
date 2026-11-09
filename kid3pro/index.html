@@ -1386,15 +1386,24 @@ function googleProfilePhotoURL(value){
        target.hostname.endsWith(".googleusercontent.com"))?target.href:"";
   }catch{return "";}
 }
+// Shared, validated Google portrait lookup for Auth, approval and Admin Users.
+function googlePhotoURLFromRecord(account){
+  if(!account)return "";
+  const providers=Array.isArray(account.providerData)?account.providerData:[];
+  const candidates=[account.photoURL,account.photoUrl,account.googlePhotoURL,
+    account.googlePhotoUrl,account.picture,
+    ...providers.filter(p=>p?.providerId==="google.com").map(p=>p.photoURL)];
+  return candidates.map(googleProfilePhotoURL).find(Boolean)||"";
+}
 function authGooglePhotoURL(user){
-  return googleProfilePhotoURL(user?.photoURL||
-    user?.providerData?.find(p=>p?.providerId==="google.com")?.photoURL);
+  // Another provider's invalid photoURL must not hide the real Google picture.
+  const googleProviders=Array.isArray(user?.providerData)?
+    user.providerData.filter(p=>p?.providerId==="google.com"):[];
+  return googleProviders.map(p=>googleProfilePhotoURL(p.photoURL)).find(Boolean)||
+    googlePhotoURLFromRecord(user);
 }
 function umPhotoHtml(user){
-  // Use existing stored Google-hosted photos; never guess a Google account URL.
-  const url=[user?.photoURL,user?.photoUrl,user?.googlePhotoURL,
-    user?.providerData?.find(p=>p?.providerId==="google.com")?.photoURL]
-    .map(googleProfilePhotoURL).find(Boolean)||"";
+  const url=googlePhotoURLFromRecord(user);
   return '<span class="um-avatar">'+
     (url?'<img src="'+esc(url)+'" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">':'')+
     '<i class="ri-user-3-line"'+(url?' hidden':'')+' aria-hidden="true"></i></span>';
@@ -1420,24 +1429,30 @@ async function saveGoogleProfilePhotoForRequest(user){
     console.warn("Unable to check pending Google request:",error.code||error.message);
   }
   if(existing){
-    if(existing.status==="pending"&&photoURL&&existing.photoURL!==photoURL){
-      try{await update(ref(db,path),{photoURL});}
-      catch(error){console.warn("Google photo URL requires the optional photo-only Firebase rules:",error.code||error.message);}
+    if(existing.status==="pending"&&photoURL&&googlePhotoURLFromRecord(existing)!==photoURL){
+      try{await set(ref(db,path+"/photoURL"),photoURL);}
+      catch(error){console.warn("Kid3Pro pending Google photo sync blocked: check accountRequests photo-only RTDB rules.",error.code||error.message);}
     }
     return;
   }
   if(photoURL){
     try{await set(ref(db,path),{...basic,photoURL});return;}
-    catch(error){console.warn("Google profile photo not permitted by current Firebase rules; retrying the original request.",error.code||error.message);}
+    catch(error){console.warn("Kid3Pro pending Google photo rejected by RTDB; preserving original account request.",error.code||error.message);}
   }
   // Backward-compatible fallback: old RTDB rules reject extra request fields.
   await set(ref(db,path),basic);
 }
 async function syncApprovedGooglePhoto(user,profile){
   const photoURL=authGooglePhotoURL(user);
-  if(!photoURL||!profile||profile.photoURL===photoURL)return;
-  try{await set(ref(db,"users/"+user.uid+"/photoURL"),photoURL);}
-  catch(error){console.warn("Updating approved user photo needs photo-only Firebase rules:",error.code||error.message);}
+  if(!user?.uid||!profile||!photoURL||googlePhotoURLFromRecord(profile)===photoURL)return;
+  // Only the authenticated user's own portrait may be synced; never role/church/status.
+  if(state.user?.uid!==user.uid)return;
+  try{
+    await set(ref(db,"users/"+user.uid+"/photoURL"),photoURL);
+    if(state.user?.uid===user.uid&&state.profile===profile)profile.photoURL=photoURL;
+  }catch(error){
+    console.warn("Kid3Pro approved Google photo sync blocked: check users/<own uid>/photoURL RTDB rules.",error.code||error.message);
+  }
 }
 
 // Read-only signed-in profile; all details come from existing Firebase/Auth state.
@@ -1472,8 +1487,7 @@ function renderMyProfile(){
   const churchId=profile.churchId||state.churchId||"";
   $("myProfileChurch").textContent=canAdmin()?(kh?"គ្រប់ពួកជំនុំ":"All churches"):
     (churchName(churchId)||(churchId?(kh?"មិនមានទិន្នន័យ":"Not available"):(kh?"មិនទាន់កំណត់":"Unassigned")));
-  const photo=authGooglePhotoURL(user)||
-    [profile.photoURL,profile.photoUrl,profile.googlePhotoURL].map(googleProfilePhotoURL).find(Boolean)||"";
+  const photo=authGooglePhotoURL(user)||googlePhotoURLFromRecord(profile);
   const img=$("myProfileAvatar"),fallback=$("myProfileFallback");
   img.hidden=true;fallback.hidden=false;
   if(photo){
@@ -2433,7 +2447,7 @@ async function umPerform(action){
   umSaving=true;renderUsers();
   try{
     const now=Date.now(),old=state.users?.[uid]||{};
-    const pendingPhoto=googleProfilePhotoURL(chosen.photoURL);
+    const pendingPhoto=googlePhotoURLFromRecord(chosen);
     if(pending&&chosen.uid!==uid)throw Error("Account request UID mismatch.");
     if(action==="approve"){
       const record={...old,uid,name:umDraftName.trim(),email:chosen.email||"",role:umDraftRole,
