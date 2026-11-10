@@ -5614,6 +5614,7 @@
     let feedLoadRequestId = 0;
     let feedRecoveryTimer = null;
     let feedRecoveryAttempt = 0;
+    let initialFeedWatchdog = null;
     let presenceHeartbeatTimer = null;
     let presenceUserUid = "";
 
@@ -5683,6 +5684,8 @@
         const runId = ++authStateRunId;
         // Discard pending retries and async results from the previous session.
         clearFeedRecovery();
+        if(initialFeedWatchdog) clearTimeout(initialFeedWatchdog);
+        initialFeedWatchdog = null;
         ++feedLoadRequestId;
         feedSnapshotVersion = 0;
         reconnectRetryInFlight = false;
@@ -5724,23 +5727,21 @@
             startUserPresence(user);
             watchNotifications();
 
-            // Install live listeners BEFORE the first one-shot read. A stalled
-            // get() must not prevent Firebase from delivering fresh posts.
+            // Like the reliable original /postsermon, start with one direct
+            // full-feed listener. Avoid a duplicate one-shot Firebase read and
+            // paginated query before the first feed has rendered.
             try{
               watchRealtimeData();
             }catch(error){
               console.warn("Could not start realtime data:", error);
-              scheduleFeedRecovery();
+              scheduleFeedRecovery(true);
             }
-
-            loadFirebasePosts().then(() => {
-              if(runId === authStateRunId) releaseAuthPreload();
-            }).catch(error => {
-              if(runId !== authStateRunId) return;
-              console.warn("Initial posts load failed:", error);
-              showFeedStartupError("Could not load posts. Retrying connection automatically.");
-              if(!isFirebasePermissionError(error)) scheduleFeedRecovery();
-            });
+            initialFeedWatchdog = setTimeout(() => {
+              initialFeedWatchdog = null;
+              if(runId !== authStateRunId || feedSnapshotVersion > 0) return;
+              showFeedStartupError("Still connecting to your posts. Trying another connection.");
+              scheduleFeedRecovery(true);
+            }, 4500);
 
             // Supplemental social data must never delay the feed or live updates.
             loadAudioStorageBases().catch(error => console.warn("Audio storage load skipped:", error));
@@ -7849,11 +7850,13 @@
             return;
           }
 
-          if(hasConnectedToFirebaseBefore) showConnectionPill("Connected", true, true);
+          const wasConnected = hasConnectedToFirebaseBefore;
+          if(wasConnected) showConnectionPill("Connected", true, true);
           hasConnectedToFirebaseBefore = true;
           markOnline();
-          // First successful connection must also recover a stalled initial feed.
-          if(feedSnapshotVersion === 0 || feedLoadFailed) scheduleFeedRecovery(true);
+          // A returning connection can recover the feed immediately. Initial
+          // connections give the full-feed listener time to deliver its data.
+          if(wasConnected && (feedSnapshotVersion === 0 || feedLoadFailed)) scheduleFeedRecovery(true);
         },
         error => console.warn("Could not watch connection status:", error)
       );
@@ -8058,7 +8061,7 @@
         applyAppSettings(value[APP_SETTINGS_POST_KEY] || {});
       }
       const latestPosts = postListFromSnapshotValue(value);
-      cleanupInvalidPostsForAdmin(latestPosts);
+      // Reading the feed must never delete historical database records.
 
       if(fullFeed){
         firebasePosts = latestPosts;
@@ -8101,6 +8104,8 @@
           scheduleAdminRealtimeRefresh();
           ++feedSnapshotVersion;
           feedLoadFailed = false;
+          if(initialFeedWatchdog) clearTimeout(initialFeedWatchdog);
+          initialFeedWatchdog = null;
           clearFeedRecovery();
         }catch(error){
           console.error("Could not display live posts:", error);
@@ -8121,8 +8126,12 @@
           // Firebase cancels a listener after an unrecoverable listen error.
           // Allow the next successful connection to subscribe again.
           postsUnsubscribe = null;
-          showFeedStartupError("Live feed disconnected. Retrying automatically.");
-          if(!isFirebasePermissionError(error)) scheduleFeedRecovery();
+          if(isFirebasePermissionError(error)){
+            showFeedStartupError("Firebase denied access to posts. Check database rules.");
+          }else{
+            showFeedStartupError("Live feed disconnected. Retrying automatically.");
+            scheduleFeedRecovery();
+          }
         }
       });
     }
@@ -8164,8 +8173,23 @@
 
     function watchRealtimeData(){
       if(!USE_FIREBASE || !currentUser || !fb.onValue) return;
-      postsUnsubscribe = watchPostsSnapshot(limitedPostsQuery(FIREBASE_POST_PAGE_SIZE));
+      postsUnsubscribe = watchPostsSnapshot(fb.dbRef(db, 'sermonPosts'), true);
 
+      // Defer secondary listeners briefly so the initial posts request gets
+      // network and browser priority, as in the older fast-loading app.
+      const sessionId = authStateRunId;
+      setTimeout(() => {
+        if(sessionId !== authStateRunId || !currentUser) return;
+        try{
+          watchSecondaryRealtimeData();
+        }catch(error){
+          console.warn("Could not start supplemental realtime watchers:", error);
+        }
+      }, 1000);
+    }
+
+    function watchSecondaryRealtimeData(){
+      if(!USE_FIREBASE || !currentUser || !fb.onValue) return;
       appSettingsUnsubscribe = fb.onValue(fb.dbRef(db, `sermonPosts/${APP_SETTINGS_POST_KEY}`), snap => {
         applyAppSettings(snap.val() || {});
       }, error => console.warn("Could not watch app settings:", error));
@@ -8914,7 +8938,7 @@
       try{
         if(currentUser && !postsUnsubscribe){
           try{
-            postsUnsubscribe = watchPostsSnapshot(limitedPostsQuery(FIREBASE_POST_PAGE_SIZE));
+            postsUnsubscribe = watchPostsSnapshot(fb.dbRef(db, 'sermonPosts'), true);
           }catch(error){
             console.warn("Could not restore live feed listener:", error);
           }
@@ -8941,6 +8965,28 @@
           timer = setTimeout(() => reject(new Error(label + " timed out")), timeoutMs);
         })
       ]).finally(() => clearTimeout(timer));
+    }
+
+    // A read-only HTTP fallback avoids an RTDB WebSocket that is stalled in
+    // this tab. Firebase Auth's current user's ID token is used for rules.
+    async function fetchPostsByRest(timeoutMs=8000){
+      const user = auth?.currentUser;
+      if(!user) throw new Error("No authenticated account for fallback");
+      const token = await Promise.race([
+        user.getIdToken(),
+        new Promise((_,reject) => setTimeout(() => reject(new Error("Token lookup timed out")), 3500))
+      ]);
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      try{
+        const url = new URL(firebaseConfig.databaseURL.replace(/\/$/, "") + "/sermonPosts.json");
+        url.searchParams.set("auth", token);
+        const response = await fetch(url.toString(), {method:"GET", cache:"no-store", signal:controller.signal});
+        if(!response.ok) throw new Error("Firebase HTTP fallback returned " + response.status);
+        return (await response.json()) || {};
+      }finally{
+        clearTimeout(timer);
+      }
     }
 
     function updateConnectionState(isOnline, fromEvent=false){
@@ -10334,44 +10380,27 @@
       const isStale = () => requestId !== feedLoadRequestId
         || sessionUid !== (currentUser?.uid || "")
         || (!sharedLink && snapshotVersion !== feedSnapshotVersion);
-      let snap;
-      let loadedFullFeed = !!sharedLink;
+      let val;
+      // Direct full-feed read matches the older app and does not require
+      // a Firebase '.indexOn' rule for createdAt pagination.
       try{
-        snap = await firebaseGetWithTimeout(
-          sharedLink ? fb.dbRef(db, 'sermonPosts') : limitedPostsQuery(FIREBASE_POST_PAGE_SIZE),
-          10000, "Initial posts query"
-        );
+        const snap = await firebaseGetWithTimeout(fb.dbRef(db, 'sermonPosts'), 6500, "Posts read");
+        val = snap.val() || {};
       }catch(error){
         if(isStale()) return false;
         if(sharedLink) throw error;
-        console.warn("Limited post load failed; retrying full feed load.", error);
-        snap = await firebaseGetWithTimeout(fb.dbRef(db, 'sermonPosts'), 10000, "Full feed fallback");
-        loadedFullFeed = true;
+        console.warn("Firebase socket read stalled; trying read-only HTTPS fallback:", error);
+        val = await fetchPostsByRest();
       }
       if(isStale()) return false;
-      let val = snap.val() || {};
-      let posts = postListFromSnapshotValue(val);
-      if(!sharedLink && !posts.length && !loadedFullFeed){
-        const fallbackSnap = await firebaseGetWithTimeout(
-          fb.dbRef(db, 'sermonPosts'), 10000, "Empty feed fallback"
-        ).catch(error => {
-          console.warn("Empty feed fallback failed:", error);
-          return null;
-        });
-        if(fallbackSnap){
-          val = fallbackSnap.val() || {};
-          posts = postListFromSnapshotValue(val);
-          loadedFullFeed = true;
-        }
-      }
-      if(isStale()) return false;
+      const posts = postListFromSnapshotValue(val);
+      const loadedFullFeed = true;
       firebasePosts = posts;
       firebaseFullFeedLoaded = loadedFullFeed;
       firebasePaginationStarted = loadedFullFeed;
       firebaseOlderCursor = loadedFullFeed ? null : cursorFromPostsSnapshot(val);
       firebaseHasOlderPosts = !loadedFullFeed && Object.keys(val).length >= FIREBASE_POST_PAGE_SIZE && !!firebaseOlderCursor;
       feedLoadFailed = false;
-      cleanupInvalidPostsForAdmin(posts);
       const linkedPost = linkedPostFromPosts(posts);
       const visiblePosts = sharedLink
         ? (linkedPost && isValidPost(linkedPost) && !isDeletedPost(linkedPost) && linkedPost.blockedByAdmin !== true && canViewPostAudience(linkedPost) && linkedPost.status !== "pending" ? [linkedPost] : [])
