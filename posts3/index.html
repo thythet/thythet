@@ -1689,8 +1689,13 @@
       justify-content:flex-end;
       flex-direction:column;
       gap:10px;
-      padding:16px 10px 84px;
+      box-sizing:border-box;
+      height:100vh;
+      height:100dvh;
+      min-height:0;
+      padding:max(10px, env(safe-area-inset-top)) 10px max(12px, env(safe-area-inset-bottom));
       margin-bottom:0;
+      overflow:hidden;
       background:rgba(3,10,18,.56);
       backdrop-filter:blur(12px);
       -webkit-backdrop-filter:blur(12px);
@@ -1701,6 +1706,10 @@
       width:min(100%, var(--card-width));
       display:flex;
       flex-direction:column;
+      flex:0 1 auto;
+      min-height:0;
+      max-height:min(110px, 20dvh);
+      overflow-y:auto;
       gap:8px;
       pointer-events:none;
     }
@@ -1824,17 +1833,22 @@
 
     .composer-card{
       width:min(100%, var(--card-width));
-      max-height:min(720px, calc(100vh - 196px));
+      flex:1 1 0%;
+      min-height:0;
+      max-height:960px;
+      display:flex;
+      flex-direction:column;
       border-radius:var(--card-radius);
       background:linear-gradient(145deg,#28114f,#103d69 56%,#087064);
       padding:var(--gap);
-      overflow:auto;
+      overflow:visible;
       box-shadow:0 24px 70px rgba(0,0,0,.42);
     }
     .composer-head{
       display:flex;
       align-items:center;
       justify-content:space-between;
+      flex:0 0 auto;
       gap:12px;
       margin-bottom:var(--gap);
       position:relative;
@@ -1935,12 +1949,23 @@
     }
     .composer-panel{
       display:none;
+      flex:1 1 auto;
+      min-height:0;
+      overflow-x:hidden;
+      overflow-y:auto;
+      overscroll-behavior-y:contain;
+      -webkit-overflow-scrolling:touch;
+      scrollbar-width:thin;
+      scrollbar-color:rgba(165,221,255,.35) transparent;
+      scroll-padding-block:14px;
       border:1px solid rgba(255,255,255,.1);
       border-radius:24px;
       background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));
-      padding:14px;
+      padding:14px 14px max(22px, env(safe-area-inset-bottom));
       box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
     }
+    .composer-panel::-webkit-scrollbar{width:5px}
+    .composer-panel::-webkit-scrollbar-thumb{border-radius:999px;background:rgba(165,221,255,.35)}
     .composer-panel.active{display:block}
     body.admin-user .composer-panel.composer-admin-only{
       display:none !important;
@@ -11472,6 +11497,7 @@
       setComposerTab("create");
       composer.classList.add('open');
       composer.setAttribute('aria-hidden', 'false');
+      composer.querySelector('[data-composer-panel="create"]')?.scrollTo(0, 0);
       syncBottomNavState();
     }
 
@@ -11893,6 +11919,7 @@
       setComposerTab("create");
       composer.classList.add('open');
       composer.setAttribute('aria-hidden', 'false');
+      composer.querySelector('[data-composer-panel="create"]')?.scrollTo(0, 0);
       syncBottomNavState();
     }
 
