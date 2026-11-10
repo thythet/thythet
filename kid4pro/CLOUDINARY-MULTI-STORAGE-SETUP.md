@@ -4,9 +4,9 @@ Kid4Pro supports multiple user-owned Cloudinary storage configurations and Admin
 
 ## Firebase setup (manual approval required)
 
-The complete proposed **Realtime Database** rules are in [firebase-rules-kid4pro.json](./firebase-rules-kid4pro.json). The rules in this file are based on the rules supplied by the owner in the conversation, retaining the original rule sections and adding only the three new paths below.
+**Do not store or publish the complete Realtime Database rules in this public repository.** Keep the complete rules privately and manage them only in Firebase Console. The three new permission paths required for this feature are described below; merge them into your privately held current rules, test, and publish through Firebase Console.
 
-**These rules are NOT live until an authorized administrator explicitly publishes them in Firebase Console.** Back up the currently published rules, compare them with the rules supplied for this update, and test in the Firebase Emulator before publishing. Do not paste only the three new sections without ensuring valid JSON inside the existing `rules` object.
+**These rules are NOT live until an authorized administrator explicitly publishes them in Firebase Console.** Back up your currently published rules, merge the three new Cloudinary paths into your existing private JSON, and test in the Firebase Emulator before publishing. Do not replace or weaken the existing sections.
 
 New paths:
 
