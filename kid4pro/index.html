@@ -179,6 +179,8 @@ select.input{appearance:none;background-image:linear-gradient(45deg,transparent 
 .nav-btn{min-width:76px;padding:10px 8px;font-size:12px;font-weight:950;text-align:center;color:#dbeafe}
 .nav-btn i{display:block;font-size:25px}.nav-btn.active{background:linear-gradient(135deg,rgba(93,167,255,.44),rgba(122,121,255,.32));border-color:rgba(147,197,253,.42)}.attend-tab,.attend-tab.active{background:linear-gradient(135deg,rgba(34,197,94,.58),rgba(20,184,166,.34));border-color:rgba(134,239,172,.52);box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}.attend-tab:before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(var(--choice-wipe-angle),transparent 0%,rgba(255,255,255,.03) 18%,rgba(255,255,255,.23) 48%,rgba(187,247,208,.10) 72%,transparent 100%);transform:translateX(-105%);animation:choiceWipe var(--choice-wipe-duration) cubic-bezier(.2,.8,.2,1) infinite}
 .page{display:none}.page.active{display:block}
+/* Kid4Pro: keep historical Report code for restoration, but hide all entry points. */
+.nav-btn[data-page="reports"],#page-reports{display:none!important}
 
 /* Cards */
 .list{display:flex;flex-direction:column;gap:9px}
@@ -882,7 +884,7 @@ body.summary-popup-open{overflow:hidden}
       <button class="nav-btn" data-page="classes"><i class="ri-folder-line"></i>Class</button>
       <button class="nav-btn" data-page="students"><i class="ri-group-line"></i>Student</button>
       <button class="nav-btn" data-page="storage"><i class="ri-cloud-line"></i>Storage</button>
-      <button class="nav-btn" data-page="reports"><i class="ri-bar-chart-box-line"></i>Report</button>
+      <button class="nav-btn hidden" data-page="reports" hidden aria-hidden="true" tabindex="-1"><i class="ri-bar-chart-box-line"></i>Report</button>
       <button class="nav-btn" data-page="activity"><i class="ri-history-line"></i>Activity</button>
       <button class="nav-btn" data-page="themes"><i class="ri-palette-line"></i>Themes</button>
       <button class="nav-btn" id="openChatBtn" type="button"><i class="ri-chat-3-line"></i>Chat</button>
@@ -1108,7 +1110,7 @@ body.summary-popup-open{overflow:hidden}
     </div>
   </section>
 
-  <section id="page-reports" class="page">
+  <section id="page-reports" class="page hidden" hidden aria-hidden="true">
     <div class="panel glass">
       <div class="report-head">
         <h2>Monthly Report</h2>
@@ -1829,6 +1831,8 @@ function applyRole(){
 document.querySelectorAll(".nav-btn[data-page]").forEach(b=>b.onclick=()=>{ if(b.classList.contains("attend-tab")) playWeekPop(b); page(b.dataset.page); });
 if($("dashboardBtn")) $("dashboardBtn").onclick=()=>{ localStorage.setItem("dashboardLang", currentLang); location.href="./dashboard.html"; };
 function page(name){
+  // Kid4Pro: Report is archived in source but not a navigable page.
+  if(name==="reports") name="home";
   cloudClosePhotoPicker();
   if(name!=="summary")closeSummaryDayPopup(true);
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
