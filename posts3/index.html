@@ -5610,6 +5610,10 @@
     let authStateRunId = 0;
     let hasConnectedToFirebaseBefore = false;
     let reconnectRetryInFlight = false;
+    let feedSnapshotVersion = 0;
+    let feedLoadRequestId = 0;
+    let feedRecoveryTimer = null;
+    let feedRecoveryAttempt = 0;
     let presenceHeartbeatTimer = null;
     let presenceUserUid = "";
 
@@ -5677,6 +5681,11 @@
 
       fb.onAuthStateChanged(auth, async user => {
         const runId = ++authStateRunId;
+        // Discard pending retries and async results from the previous session.
+        clearFeedRecovery();
+        ++feedLoadRequestId;
+        feedSnapshotVersion = 0;
+        reconnectRetryInFlight = false;
         let openFallbackTimer = null;
         try{
           setCurrentUserOffline().catch(error =>
@@ -5715,23 +5724,27 @@
             startUserPresence(user);
             watchNotifications();
 
-            const postsPromise = loadFirebasePosts().then(() => {
-              if(runId === authStateRunId) releaseAuthPreload();
-            }).catch(error => {
-              console.warn("Initial posts load failed:", error);
-              if(runId === authStateRunId) showFeedStartupError("Could not load posts. Check your connection.");
-            });
-
-            // Supplemental social data must not delay the feed or live updates.
-            loadAudioStorageBases().catch(error => console.warn("Audio storage load skipped:", error));
-            loadSocialData().catch(error => console.warn("Social data load skipped:", error));
-            await postsPromise;
-            if(runId !== authStateRunId) return;
+            // Install live listeners BEFORE the first one-shot read. A stalled
+            // get() must not prevent Firebase from delivering fresh posts.
             try{
               watchRealtimeData();
             }catch(error){
               console.warn("Could not start realtime data:", error);
+              scheduleFeedRecovery();
             }
+
+            loadFirebasePosts().then(() => {
+              if(runId === authStateRunId) releaseAuthPreload();
+            }).catch(error => {
+              if(runId !== authStateRunId) return;
+              console.warn("Initial posts load failed:", error);
+              showFeedStartupError("Could not load posts. Retrying connection automatically.");
+              if(!isFirebasePermissionError(error)) scheduleFeedRecovery();
+            });
+
+            // Supplemental social data must never delay the feed or live updates.
+            loadAudioStorageBases().catch(error => console.warn("Audio storage load skipped:", error));
+            loadSocialData().catch(error => console.warn("Social data load skipped:", error));
             if(isAdmin()) loadAdminRequests().catch(error => console.warn("Admin requests load skipped:", error));
             releaseAuthPreload();
           }else{
@@ -7831,13 +7844,16 @@
         fb.dbRef(db, '.info/connected'),
         snap => {
           if(currentUser?.uid !== user.uid || activePresenceRef !== presenceRef) return;
-          if(snap.val() !== true) return;
-
-          if(hasConnectedToFirebaseBefore){
-            retryFeedAfterReconnect();
+          if(snap.val() !== true){
+            showConnectionPill("Reconnecting to Firebase...", false);
+            return;
           }
+
+          if(hasConnectedToFirebaseBefore) showConnectionPill("Connected", true, true);
           hasConnectedToFirebaseBefore = true;
           markOnline();
+          // First successful connection must also recover a stalled initial feed.
+          if(feedSnapshotVersion === 0 || feedLoadFailed) scheduleFeedRecovery(true);
         },
         error => console.warn("Could not watch connection status:", error)
       );
@@ -8079,9 +8095,18 @@
 
     function watchPostsSnapshot(ref, fullFeed=false){
       return fb.onValue(ref, snap => {
-        applyPostsSnapshot(snap.val() || {}, fullFeed);
-        renderRoleUI();
-        scheduleAdminRealtimeRefresh();
+        try{
+          applyPostsSnapshot(snap.val() || {}, fullFeed);
+          renderRoleUI();
+          scheduleAdminRealtimeRefresh();
+          ++feedSnapshotVersion;
+          feedLoadFailed = false;
+          clearFeedRecovery();
+        }catch(error){
+          console.error("Could not display live posts:", error);
+          showFeedStartupError("Feed refresh failed. Retrying automatically.");
+          scheduleFeedRecovery();
+        }
       }, error => {
         console.warn("Could not watch posts:", error);
         if(!fullFeed){
@@ -8089,7 +8114,11 @@
             postsUnsubscribe = watchPostsSnapshot(fb.dbRef(db, 'sermonPosts'), true);
           }catch(fallbackError){
             console.warn("Could not start fallback posts watcher:", fallbackError);
+            if(!isFirebasePermissionError(fallbackError)) scheduleFeedRecovery();
           }
+        }else{
+          showFeedStartupError("Live feed disconnected. Retrying automatically.");
+          if(!isFirebasePermissionError(error)) scheduleFeedRecovery();
         }
       });
     }
@@ -8849,24 +8878,64 @@
       }
     }
 
+    function isFirebasePermissionError(error){
+      return /permission[\s_-]*denied/i.test(String(error?.code || "") + " " + String(error?.message || ""));
+    }
+
+    function clearFeedRecovery(){
+      if(feedRecoveryTimer) clearTimeout(feedRecoveryTimer);
+      feedRecoveryTimer = null;
+      feedRecoveryAttempt = 0;
+    }
+
+    function scheduleFeedRecovery(immediate=false){
+      if(!USE_FIREBASE || (!currentUser && !hasSharedPostLink())) return;
+      if(navigator.onLine === false) return;
+      if(feedRecoveryTimer){
+        if(!immediate) return;
+        clearTimeout(feedRecoveryTimer);
+      }
+      const delay = immediate ? 150 : Math.min(30000, 1500 * 2 ** Math.min(feedRecoveryAttempt++, 4));
+      feedRecoveryTimer = setTimeout(() => {
+        feedRecoveryTimer = null;
+        retryFeedAfterReconnect();
+      }, delay);
+    }
+
     async function retryFeedAfterReconnect(){
       if(!USE_FIREBASE || reconnectRetryInFlight) return;
       if(!currentUser && !hasSharedPostLink()) return;
       reconnectRetryInFlight = true;
+      const runId = authStateRunId;
       try{
         await loadFirebasePosts();
+        if(runId === authStateRunId) clearFeedRecovery();
       }catch(error){
         console.warn("Could not refresh feed after reconnect:", error);
+        if(runId === authStateRunId){
+          showFeedStartupError("Connection interrupted. Retrying automatically.");
+          if(!isFirebasePermissionError(error)) scheduleFeedRecovery();
+        }
       }finally{
         reconnectRetryInFlight = false;
       }
+    }
+
+    function firebaseGetWithTimeout(query, timeoutMs=10000, label="Firebase read"){
+      let timer;
+      return Promise.race([
+        fb.get(query),
+        new Promise((_, reject) => {
+          timer = setTimeout(() => reject(new Error(label + " timed out")), timeoutMs);
+        })
+      ]).finally(() => clearTimeout(timer));
     }
 
     function updateConnectionState(isOnline, fromEvent=false){
       if(isOnline){
         if(fromEvent){
           showConnectionPill("Back online", true, true);
-          retryFeedAfterReconnect();
+          scheduleFeedRecovery(true);
         }
         return;
       }
@@ -10247,25 +10316,43 @@
       const sharedLink = hasSharedPostLink();
       const sharedPreview = !currentUser && sharedLink;
       if(!currentUser && !sharedLink) return renderAuthGate();
+      const requestId = ++feedLoadRequestId;
+      const sessionUid = currentUser?.uid || "";
+      const snapshotVersion = feedSnapshotVersion;
+      const isStale = () => requestId !== feedLoadRequestId
+        || sessionUid !== (currentUser?.uid || "")
+        || (!sharedLink && snapshotVersion !== feedSnapshotVersion);
       let snap;
       let loadedFullFeed = !!sharedLink;
       try{
-        snap = await fb.get(sharedLink ? fb.dbRef(db, 'sermonPosts') : limitedPostsQuery(FIREBASE_POST_PAGE_SIZE));
+        snap = await firebaseGetWithTimeout(
+          sharedLink ? fb.dbRef(db, 'sermonPosts') : limitedPostsQuery(FIREBASE_POST_PAGE_SIZE),
+          10000, "Initial posts query"
+        );
       }catch(error){
+        if(isStale()) return;
+        if(sharedLink) throw error;
         console.warn("Limited post load failed; retrying full feed load.", error);
-        snap = await fb.get(fb.dbRef(db, 'sermonPosts'));
+        snap = await firebaseGetWithTimeout(fb.dbRef(db, 'sermonPosts'), 10000, "Full feed fallback");
         loadedFullFeed = true;
       }
+      if(isStale()) return;
       let val = snap.val() || {};
       let posts = postListFromSnapshotValue(val);
       if(!sharedLink && !posts.length && !loadedFullFeed){
-        const fallbackSnap = await fb.get(fb.dbRef(db, 'sermonPosts')).catch(() => null);
+        const fallbackSnap = await firebaseGetWithTimeout(
+          fb.dbRef(db, 'sermonPosts'), 10000, "Empty feed fallback"
+        ).catch(error => {
+          console.warn("Empty feed fallback failed:", error);
+          return null;
+        });
         if(fallbackSnap){
           val = fallbackSnap.val() || {};
           posts = postListFromSnapshotValue(val);
           loadedFullFeed = true;
         }
       }
+      if(isStale()) return;
       firebasePosts = posts;
       firebaseFullFeedLoaded = loadedFullFeed;
       firebasePaginationStarted = loadedFullFeed;
@@ -12785,6 +12872,13 @@
     setCleanImageView(cleanImageViewEnabled);
     window.addEventListener('offline', () => updateConnectionState(false, true));
     window.addEventListener('online', () => updateConnectionState(true, true));
+    // Mobile browsers can suspend Firebase sockets while in the background.
+    document.addEventListener('visibilitychange', () => {
+      if(!document.hidden && navigator.onLine !== false
+        && (feedSnapshotVersion === 0 || feedLoadFailed)){
+        scheduleFeedRecovery(true);
+      }
+    });
     document.addEventListener('keydown', event => {
       if(event.key === "Escape") exitAppMediaFullscreen();
     });
