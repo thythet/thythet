@@ -2320,6 +2320,11 @@
       border-color:#9fe0ff;
       color:#06131d;
     }
+    .app-confirm-btn.ok.danger{
+      background:#e66c7c;
+      border-color:#ff9aa7;
+      color:#fff;
+    }
     .duplicate-image-sheet{
       width:min(400px,100%);
       background:linear-gradient(145deg,rgba(33,39,72,.98),rgba(13,66,80,.98));
@@ -12553,23 +12558,35 @@
     });
     document.getElementById('requestCreatorBtn').addEventListener('click', requestCreatorAccess);
 
-    function appConfirm(message){
+    function appConfirm(message, {confirmLabel="OK", cancelLabel="Cancel", danger=false}={}){
       const board = document.getElementById('appConfirmBoard');
       const messageNode = document.getElementById('appConfirmMessage');
-      if(!board || !messageNode) return Promise.resolve(window.confirm(message));
+      // If the dialog is unavailable, do not use a browser-native prompt or
+      // execute a destructive action without an explicit confirmation.
+      if(!board || !messageNode || board.classList.contains('open')) return Promise.resolve(false);
+      const okBtn = board.querySelector('[data-confirm-ok]');
+      const cancelBtn = board.querySelector('[data-confirm-cancel]');
+      if(!okBtn || !cancelBtn) return Promise.resolve(false);
       messageNode.textContent = message;
+      okBtn.textContent = confirmLabel;
+      cancelBtn.textContent = cancelLabel;
+      okBtn.classList.toggle('danger', !!danger);
       board.classList.add('open');
       board.setAttribute('aria-hidden', 'false');
+      const previousFocus = document.activeElement;
+      cancelBtn.focus();
       return new Promise(resolve => {
-        const okBtn = board.querySelector('[data-confirm-ok]');
-        const cancelBtn = board.querySelector('[data-confirm-cancel]');
         const cleanup = result => {
           board.classList.remove('open');
           board.setAttribute('aria-hidden', 'true');
-          okBtn?.removeEventListener('click', okHandler);
-          cancelBtn?.removeEventListener('click', cancelHandler);
+          okBtn.removeEventListener('click', okHandler);
+          cancelBtn.removeEventListener('click', cancelHandler);
           board.removeEventListener('click', boardHandler);
-          document.removeEventListener('keydown', keyHandler);
+          document.removeEventListener('keydown', keyHandler, true);
+          okBtn.textContent = "OK";
+          cancelBtn.textContent = "Cancel";
+          okBtn.classList.remove('danger');
+          if(previousFocus?.isConnected && typeof previousFocus.focus === "function") previousFocus.focus({preventScroll:true});
           resolve(result);
         };
         const okHandler = () => cleanup(true);
@@ -12578,12 +12595,16 @@
           if(event.target === board) cleanup(false);
         };
         const keyHandler = event => {
-          if(event.key === "Escape") cleanup(false);
+          if(event.key === "Escape"){
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            cleanup(false);
+          }
         };
-        okBtn?.addEventListener('click', okHandler);
-        cancelBtn?.addEventListener('click', cancelHandler);
+        okBtn.addEventListener('click', okHandler);
+        cancelBtn.addEventListener('click', cancelHandler);
         board.addEventListener('click', boardHandler);
-        document.addEventListener('keydown', keyHandler);
+        document.addEventListener('keydown', keyHandler, true);
       });
     }
 
@@ -13143,7 +13164,11 @@
         if(!currentUser || (currentUser.uid !== post.authorUid && !isAdmin())){
           return alert("You can only delete your own posts.");
         }
-        const confirmed = window.confirm("Move this sermon post to Recovery trash?");
+        const confirmed = await appConfirm("Move this sermon post to Recovery trash?", {
+          confirmLabel:"Move to Trash",
+          cancelLabel:"Cancel",
+          danger:true
+        });
         if(!confirmed) return;
 
         deleteBtn.disabled = true;
