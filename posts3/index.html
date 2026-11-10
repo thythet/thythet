@@ -8113,10 +8113,14 @@
           try{
             postsUnsubscribe = watchPostsSnapshot(fb.dbRef(db, 'sermonPosts'), true);
           }catch(fallbackError){
+            postsUnsubscribe = null;
             console.warn("Could not start fallback posts watcher:", fallbackError);
             if(!isFirebasePermissionError(fallbackError)) scheduleFeedRecovery();
           }
         }else{
+          // Firebase cancels a listener after an unrecoverable listen error.
+          // Allow the next successful connection to subscribe again.
+          postsUnsubscribe = null;
           showFeedStartupError("Live feed disconnected. Retrying automatically.");
           if(!isFirebasePermissionError(error)) scheduleFeedRecovery();
         }
@@ -8908,8 +8912,16 @@
       reconnectRetryInFlight = true;
       const runId = authStateRunId;
       try{
-        await loadFirebasePosts();
-        if(runId === authStateRunId) clearFeedRecovery();
+        if(currentUser && !postsUnsubscribe){
+          try{
+            postsUnsubscribe = watchPostsSnapshot(limitedPostsQuery(FIREBASE_POST_PAGE_SIZE));
+          }catch(error){
+            console.warn("Could not restore live feed listener:", error);
+          }
+        }
+        const loaded = await loadFirebasePosts();
+        // A superseded request must not cancel the newer request's retry.
+        if(runId === authStateRunId && loaded !== false) clearFeedRecovery();
       }catch(error){
         console.warn("Could not refresh feed after reconnect:", error);
         if(runId === authStateRunId){
@@ -10330,13 +10342,13 @@
           10000, "Initial posts query"
         );
       }catch(error){
-        if(isStale()) return;
+        if(isStale()) return false;
         if(sharedLink) throw error;
         console.warn("Limited post load failed; retrying full feed load.", error);
         snap = await firebaseGetWithTimeout(fb.dbRef(db, 'sermonPosts'), 10000, "Full feed fallback");
         loadedFullFeed = true;
       }
-      if(isStale()) return;
+      if(isStale()) return false;
       let val = snap.val() || {};
       let posts = postListFromSnapshotValue(val);
       if(!sharedLink && !posts.length && !loadedFullFeed){
@@ -10352,7 +10364,7 @@
           loadedFullFeed = true;
         }
       }
-      if(isStale()) return;
+      if(isStale()) return false;
       firebasePosts = posts;
       firebaseFullFeedLoaded = loadedFullFeed;
       firebasePaginationStarted = loadedFullFeed;
@@ -10408,6 +10420,7 @@
       }
       // Admin requests are optional on first paint; load without blocking.
       if(isAdmin()) loadAdminRequests().catch(error => console.warn("Admin requests load skipped:", error));
+      return true;
     }
 
     function syncImageLinkValues(){
