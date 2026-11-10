@@ -5105,7 +5105,7 @@
               <div class="composer-status" id="composerStatus" role="status" aria-live="polite"></div>
               <div class="composer-quality-control">
                 <span class="composer-quality-label">HD</span>
-                <button class="admin-post-status-toggle" id="hdQualityToggle" type="button" title="Turn on HD image quality" aria-label="Turn on HD image quality" aria-pressed="false">
+                <button class="admin-post-status-toggle published" id="hdQualityToggle" type="button" title="Turn off HD image quality" aria-label="Turn off HD image quality" aria-pressed="true">
                   <span class="switch-dot" aria-hidden="true"></span>
                 </button>
               </div>
@@ -5700,7 +5700,7 @@
     const acceptedDuplicateImageRows = new Set();
     let duplicateImageReviewPromise = null;
     let imageLinkValues = [""];
-    let imageHdValues = [false];
+    let imageHdValues = [true];
     let audioLinkValues = [""];
     let audioPublicValues = [false];
     let audioStorageBases = [];
@@ -10616,16 +10616,17 @@
     }
 
     function syncImageLinkValues(){
-      const previousLinks = imageLinkValues;
       const previousHd = imageHdValues;
       const inputs = [...document.querySelectorAll('.image-link-input')];
       imageLinkValues = inputs.map(input => input.value);
       imageHdValues = inputs.map(input => {
         const oldIndex = Number(input.dataset.linkIndex || 0);
-        return input.value ? (input.value === previousLinks[oldIndex] ? !!previousHd[oldIndex] : false) : !!previousHd[oldIndex];
+        // Keep the row's HD setting when a URL is pasted or replaced.
+        // An explicit OFF selection must still be respected.
+        return previousHd[oldIndex] === undefined ? hdUploadEnabled() : !!previousHd[oldIndex];
       });
       if(!imageLinkValues.length) imageLinkValues = [""];
-      if(!imageHdValues.length) imageHdValues = [false];
+      if(!imageHdValues.length) imageHdValues = [hdUploadEnabled()];
     }
 
     function normalizeImageLink(link=""){
@@ -10755,7 +10756,7 @@
         ? (values.length ? values : [""]).slice(0, limit)
         : (values.length ? values : [""]);
       imageLinkValues = normalized;
-      imageHdValues = normalized.map((_, index) => !!imageHdValues[index]);
+      imageHdValues = normalized.map((_, index) => imageHdValues[index] === undefined ? hdUploadEnabled() : !!imageHdValues[index]);
       container.innerHTML = normalized.map((value, index) => `
         <div class="image-link-row ${value ? "has-image" : ""}" data-image-row-index="${index}">
           <button class="image-drag-handle ${value ? "has-thumb" : ""}" type="button" title="Drag to reorder image" aria-label="Drag to reorder image">
@@ -10805,7 +10806,9 @@
       const limit = imageLimit();
       const clean = links.map(link => safeImageURL(link)).filter(Boolean);
       const limited = Number.isFinite(limit) ? clean.slice(0, limit) : clean;
-      imageHdValues = limited.map((_, index) => !!hdImages[index]);
+      imageHdValues = limited.length
+        ? limited.map((_, index) => !!hdImages[index])
+        : [hdUploadEnabled()];
       renderImageLinkFields(limited.length ? limited : [""]);
     }
 
@@ -11449,6 +11452,8 @@
       acceptedDuplicateImageRows.clear();
 
       editingPostId = post?.id || "";
+      // Fresh posts default to HD; editing preserves the stored post setting.
+      setHdUploadEnabled(post ? !!post.hdUpload || (Array.isArray(post.hdImages) && post.hdImages.some(Boolean)) : true);
       syncComposerPublishButtons();
       if(statusEl){
         statusEl.textContent = editingPostId ? "Editing existing post." : "";
@@ -11580,7 +11585,9 @@
             : (cloudinarySelect.options[0]?.value || "");
           renderCloudinaryStorageMenu();
         }
-        setHdUploadEnabled(!!draft.hdUpload);
+        // Respect a saved OFF choice. Old drafts without HD metadata use
+        // the new default only for otherwise empty image rows.
+        setHdUploadEnabled(draft.hdUpload === undefined ? true : !!draft.hdUpload);
         setImageLinks(draft.images || [], draft.hdImages || []);
         setAudioLinks(Array.isArray(draft.audioUrls) && draft.audioUrls.length ? draft.audioUrls : (draft.audioUrl ? [draft.audioUrl] : []), Array.isArray(draft.audioPublic) ? draft.audioPublic : []);
         if(audioFileNameInput) audioFileNameInput.value = draft.audioFile || "";
@@ -11600,9 +11607,9 @@
       document.getElementById('composerForm').reset();
       setAudioLinks([]);
       if(audioFileNameInput) audioFileNameInput.value = "";
+      setHdUploadEnabled(true);
       setImageLinks([]);
       setAudienceValue("followers", []);
-      setHdUploadEnabled(false);
       setComposerMode(null);
       clearComposerDraft();
     }
@@ -11778,7 +11785,8 @@
         e.target.reset();
         setAudioLinks([]);
         clearComposerDraft();
-        setHdUploadEnabled(false);
+        setHdUploadEnabled(true);
+        setImageLinks([]);
         setComposerMode(null);
         closeComposer(false);
         setComposerStatus(
@@ -11817,8 +11825,9 @@
         };
         demoPosts.unshift(post);
         e.target.reset();
-        setHdUploadEnabled(false);
-        closeComposer();
+        setHdUploadEnabled(true);
+        setImageLinks([]);
+        closeComposer(false);
         renderPosts(demoPosts);
       }
     }
@@ -11877,6 +11886,7 @@
       }
       if(!composer.classList.contains('open')){
         setComposerMode(null);
+        setImageLinks([]);
         loadComposerDraft();
       }
       renderCloudinaryStorageSelect();
@@ -13222,6 +13232,7 @@
       closeAudioToolboxes();
     });
 
+    setHdUploadEnabled(true);
     renderImageLinkFields();
     renderAudioLinkFields();
     setDarkMode(darkModeEnabled);
