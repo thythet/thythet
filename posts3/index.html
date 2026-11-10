@@ -2320,6 +2320,48 @@
       border-color:#9fe0ff;
       color:#06131d;
     }
+    .duplicate-image-sheet{
+      width:min(400px,100%);
+      background:linear-gradient(145deg,rgba(33,39,72,.98),rgba(13,66,80,.98));
+    }
+    .duplicate-image-heading{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size:17px;
+      font-weight:900;
+      margin-bottom:12px;
+    }
+    .duplicate-image-heading i{
+      font-size:23px;
+      color:#ffcf72;
+    }
+    .duplicate-image-description{
+      margin:0 0 12px;
+      color:rgba(236,246,255,.88);
+      font-size:13px;
+      line-height:1.6;
+      font-weight:600;
+    }
+    .duplicate-image-url{
+      border:1px solid rgba(255,255,255,.13);
+      border-radius:12px;
+      background:rgba(255,255,255,.07);
+      color:rgba(234,245,255,.8);
+      padding:10px 12px;
+      font-size:11px;
+      overflow-wrap:anywhere;
+      max-height:76px;
+      overflow-y:auto;
+      margin-bottom:20px;
+    }
+    .duplicate-image-sheet .app-confirm-actions{
+      justify-content:stretch;
+    }
+    .duplicate-image-sheet .app-confirm-btn{
+      flex:1 1 0;
+      min-width:0;
+    }
     .connection-pill{
       position:fixed;
       left:50%;
@@ -5250,6 +5292,18 @@
     </div>
   </section>
 
+  <section class="app-confirm-board" id="duplicateImageBoard" aria-hidden="true">
+    <div class="app-confirm-sheet duplicate-image-sheet" role="dialog" aria-modal="true" aria-labelledby="duplicateImageTitle" aria-describedby="duplicateImageMessage">
+      <div class="duplicate-image-heading" id="duplicateImageTitle"><i class="ri-error-warning-line" aria-hidden="true"></i> Image Already Posted</div>
+      <p class="duplicate-image-description" id="duplicateImageMessage">This image has already been posted. Do you want to continue anyway?</p>
+      <div class="duplicate-image-url" id="duplicateImageUrl"></div>
+      <div class="app-confirm-actions">
+        <button class="app-confirm-btn cancel" type="button" id="duplicateImageRemoveBtn">Remove</button>
+        <button class="app-confirm-btn ok" type="button" id="duplicateImageAcceptBtn">Accept</button>
+      </div>
+    </div>
+  </section>
+
   <section class="seen-board" id="policyBoard" aria-hidden="true">
     <div class="seen-sheet" role="dialog" aria-modal="true" aria-labelledby="policyTitle">
       <div class="seen-head">
@@ -5634,6 +5688,8 @@
     let postShareCounts = {};
     let editingPostId = "";
     let publishInProgress = false;
+    const acceptedDuplicateImageRows = new Set();
+    let duplicateImageReviewPromise = null;
     let imageLinkValues = [""];
     let imageHdValues = [false];
     let audioLinkValues = [""];
@@ -10539,44 +10595,99 @@
       return keys;
     }
 
-    function sanitizeImageLinkInputs({excludePostId=editingPostId, showStatus=false}={}){
-      const inputs = [...document.querySelectorAll('.image-link-input')];
-      const usedInForm = new Set();
-      const usedOnPlatform = existingImageKeys(excludePostId);
-      let removedPlatform = false;
-      let removedDuplicate = false;
-
-      inputs.forEach(input => {
-        input.classList.remove('image-link-alert');
-        const raw = input.value.trim();
-        const key = normalizeImageLink(raw);
-        if(!key) return;
-        if(usedOnPlatform.has(key)){
-          input.value = "";
-          input.placeholder = "Image already posted";
-          input.classList.add('image-link-alert');
-          removedPlatform = true;
-          return;
-        }
-        if(usedInForm.has(key)){
-          input.value = "";
-          input.placeholder = "Duplicate image";
-          input.classList.add('image-link-alert');
-          removedDuplicate = true;
-          return;
-        }
-        usedInForm.add(key);
+    function showDuplicateImageConfirmation(url, alreadyPosted){
+      const board = document.getElementById('duplicateImageBoard');
+      const message = document.getElementById('duplicateImageMessage');
+      const preview = document.getElementById('duplicateImageUrl');
+      const title = document.getElementById('duplicateImageTitle');
+      const acceptBtn = document.getElementById('duplicateImageAcceptBtn');
+      const removeBtn = document.getElementById('duplicateImageRemoveBtn');
+      // Fail closed if the confirmation dialog is unavailable.
+      if(!board || !acceptBtn || !removeBtn) return Promise.resolve("cancel");
+      title.textContent = alreadyPosted ? "Image Already Posted" : "Duplicate Image Link";
+      message.textContent = alreadyPosted
+        ? "This image has already been posted. Do you want to continue using the same image URL?"
+        : "This image URL is already in this post. Do you want to use it again?";
+      preview.textContent = url;
+      board.classList.add('open');
+      board.setAttribute('aria-hidden', 'false');
+      const previousFocus = document.activeElement;
+      acceptBtn.focus();
+      return new Promise(resolve => {
+        let finished = false;
+        const finish = decision => {
+          if(finished) return;
+          finished = true;
+          board.classList.remove('open');
+          board.setAttribute('aria-hidden', 'true');
+          acceptBtn.removeEventListener('click', onAccept);
+          removeBtn.removeEventListener('click', onRemove);
+          board.removeEventListener('click', onBackdrop);
+          document.removeEventListener('keydown', onKeydown, true);
+          if(previousFocus?.isConnected && typeof previousFocus.focus === "function") previousFocus.focus({preventScroll:true});
+          resolve(decision);
+        };
+        const onAccept = () => finish("accept");
+        const onRemove = () => finish("remove");
+        const onBackdrop = event => {
+          if(event.target === board) finish("cancel");
+        };
+        const onKeydown = event => {
+          if(event.key === "Escape"){
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            finish("cancel");
+          }
+        };
+        acceptBtn.addEventListener('click', onAccept);
+        removeBtn.addEventListener('click', onRemove);
+        board.addEventListener('click', onBackdrop);
+        document.addEventListener('keydown', onKeydown, true);
       });
+    }
 
-      syncImageLinkValues();
-      if(showStatus && (removedPlatform || removedDuplicate)){
-        const statusEl = document.getElementById('composerStatus');
-        if(statusEl){
-          statusEl.textContent = removedPlatform ? "Image already posted." : "Duplicate image removed.";
-          statusEl.className = "composer-status error";
+    function reviewDuplicateImageLinks(){
+      // Typing, Cloudinary uploads and both Publish buttons all share this
+      // review, preventing overlapping dialogs and accidental double-posting.
+      if(duplicateImageReviewPromise) return duplicateImageReviewPromise;
+      duplicateImageReviewPromise = (async () => {
+        const inputs = [...document.querySelectorAll('.image-link-input')];
+        const previouslyPosted = existingImageKeys(editingPostId);
+        const seenInThisPost = new Set();
+        for(let index = 0; index < inputs.length; index++){
+          const input = inputs[index];
+          const link = input.value.trim();
+          const key = normalizeImageLink(link);
+          if(!key || !safeImageURL(link)) continue;
+          const duplicateInForm = seenInThisPost.has(key);
+          const alreadyPosted = previouslyPosted.has(key);
+          seenInThisPost.add(key);
+          input.classList.remove('image-link-alert');
+          if(!alreadyPosted && !duplicateInForm) continue;
+          const approval = index + ":" + key;
+          if(acceptedDuplicateImageRows.has(approval)) continue;
+          const decision = await showDuplicateImageConfirmation(link, alreadyPosted);
+          if(decision === "accept"){
+            acceptedDuplicateImageRows.add(approval);
+            continue;
+          }
+          if(decision === "remove"){
+            if(normalizeImageLink(input.value) === key){
+              input.value = "";
+              input.classList.add('image-link-alert');
+              syncImageLinkValues();
+              saveComposerDraft();
+            }
+            setComposerStatusMessage("Duplicate image removed. Review your post before publishing.", "error");
+          }else{
+            setComposerStatusMessage("Duplicate image confirmation canceled. Nothing was published.", "error");
+          }
+          // Removing/canceling never triggers a post upload implicitly.
+          return false;
         }
-      }
-      return {removedPlatform, removedDuplicate, ok:!removedPlatform && !removedDuplicate};
+        return true;
+      })().finally(() => { duplicateImageReviewPromise = null; });
+      return duplicateImageReviewPromise;
     }
 
     function renderImageLinkFields(values=imageLinkValues){
@@ -10808,9 +10919,9 @@
         imageLinkValues[index] = cloudinaryDisplayImageUrl(result.secure_url);
         imageHdValues[index] = useHd;
         renderImageLinkFields(imageLinkValues);
-        sanitizeImageLinkInputs({showStatus:true});
+        const duplicateAccepted = await reviewDuplicateImageLinks();
         saveComposerDraft();
-        setComposerStatusMessage("Image uploaded.", "success");
+        if(duplicateAccepted) setComposerStatusMessage("Image uploaded.", "success");
         hideUploadProgress(progressId, 650);
       }catch(error){
         console.error("Cloudinary upload failed:", error);
@@ -11277,6 +11388,7 @@
 
     function setComposerMode(post=null){
       const statusEl = document.getElementById('composerStatus');
+      acceptedDuplicateImageRows.clear();
 
       editingPostId = post?.id || "";
       syncComposerPublishButtons();
@@ -11438,6 +11550,7 @@
 
     function closeComposer(saveDraft=true){
       if(saveDraft) saveComposerDraft();
+      acceptedDuplicateImageRows.clear();
       setAudienceDropdownOpen(false);
       composer.classList.remove('open');
       composer.setAttribute('aria-hidden', 'true');
@@ -11481,7 +11594,7 @@
         try{
         publishInProgress = true;
         syncComposerPublishButtons();
-        setComposerStatus("Publishing...");
+        setComposerStatus("Checking image links...");
         const signedInUser = auth && auth.currentUser ? auth.currentUser : currentUser;
         currentUser = signedInUser;
         updateAuthUI();
@@ -11501,10 +11614,6 @@
 
         const wasEditing = !!editingPostId;
         const editingPost = editingPostId ? firebasePosts.find(post => post.id === editingPostId) : null;
-        if(!wasEditing && !clientActionAllowed(`publish:${signedInUser.uid}`, 4, 10 * 60000)){
-          setComposerStatus("Please wait before publishing another post.", "error");
-          return;
-        }
         if(editingPostId && !editingPost){
           setComposerStatus("Could not find the post to edit. Refresh and try again.", "error");
           return;
@@ -11524,14 +11633,10 @@
           }
         }
 
-        const imageCheck = sanitizeImageLinkInputs({excludePostId:editingPostId, showStatus:true});
+        if(!await reviewDuplicateImageLinks()) return;
         const cleanImagePayload = getImagePayload();
         images = cleanImagePayload.images;
         hdImages = cleanImagePayload.hdImages;
-        if(!imageCheck.ok){
-          setComposerStatus(imageCheck.removedPlatform ? "Image already posted." : "Duplicate image removed.", "error");
-          return;
-        }
 
         if(!audioUrls.length && audioFileNameInput?.value.trim()){
           audioUrl = safeAudioURL(await detectAudioFromStorage(false));
@@ -11556,6 +11661,12 @@
           setComposerStatus("Select at least one user for the selected audience.", "error");
           return;
         }
+
+        if(!wasEditing && !clientActionAllowed(`publish:${signedInUser.uid}`, 4, 10 * 60000)){
+          setComposerStatus("Please wait before publishing another post.", "error");
+          return;
+        }
+        setComposerStatus(wasEditing ? "Updating..." : "Publishing...");
 
         const postRef = editingPostId
           ? fb.dbRef(db, `sermonPosts/${editingPostId}`)
@@ -12248,8 +12359,12 @@
         deleteAudioStorageBase(Number(deleteBtn.dataset.audioBaseIndex));
       }
     });
-    document.getElementById('imageLinkRows').addEventListener('input', () => {
-      sanitizeImageLinkInputs({showStatus:true});
+    document.getElementById('imageLinkRows').addEventListener('input', event => {
+      // Do not erase URLs while someone is typing or pasting.
+      if(event.target.closest('.image-link-input')){
+        event.target.classList.remove('image-link-alert');
+        syncImageLinkValues();
+      }
     });
     let imageDragState = null;
     function finishImageDrag(commit=true){
@@ -12370,6 +12485,7 @@
           syncImageLinkValues();
           renderImageLinkFields(imageLinkValues);
           saveComposerDraft();
+          reviewDuplicateImageLinks().catch(error => console.warn("Could not review image links:", error));
         }
         return;
       }
