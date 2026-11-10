@@ -20,8 +20,8 @@ Shared storage is fetched one record at a time from `cloudinaryAccounts/$ownerUi
 
 1. In Cloudinary, create an **unsigned image-only** upload preset with strict format and file-size limits and a controlled folder.
 2. In Kid4Pro, sign in as an approved Admin, Teacher, or Pastor.
-3. Open the new **Storage** tab → **My Cloudinary Storage** → **Add Cloudinary Storage**.
-4. Enter a storage label, Cloud Name, unsigned upload preset, and optionally a folder. Fields marked * are required; Cloud Name and preset must match Cloudinary. Read the short security note and choose **Save Storage**. The browser records the existing acknowledgement timestamp when saved, without an extra checkbox.
+3. Open the new **Storage** tab and choose **Add Storage**. The compact storage list is shown by default; the form opens only when adding or editing.
+4. Enter a Storage Name, Cloud Name, unsigned Upload Preset, and optionally a folder. Fields marked * are required; Cloud Name and preset must match Cloudinary. Read the concise security note and choose **Save Storage**. The browser still records an acknowledgement timestamp on save without an extra checkbox. Use the existing KH/EN app switch to translate storage labels, actions, form hints, messages, and upload options.
 5. Open the **Student** tab and tap **Upload Photo**. When personal or shared storage is available, a Select-Class-style dropdown lists all permitted destinations (including legacy storage, if configured). Choose a destination to open the native photo picker. With legacy storage only, the photo picker opens immediately. With no configured storage, the app opens the Storage page and prompts for setup. For a default storage across devices, choose **Use** on the Storage page.
 6. For Admin: choose **Share** next to an Admin-owned storage, select approved Teachers or Pastors, and select **Save Sharing**. Recipients see the shared storage as read-only.
 
@@ -35,6 +35,13 @@ The old `settings/cloudinary` is still displayed as **School Storage (legacy)** 
 - Deleting a storage entry does **not** delete previously uploaded images.
 - Revoking a Firebase share removes future access to the Firebase configuration, but cannot revoke a preset value already known to a user.
 - Changing the same Firebase project's live rules affects all applications using that database. Existing rule blocks were preserved in the prepared file, but test old Kid2Pro/Kid3Pro reads/writes and account permissions before and after publishing.
+
+## Streamlined storage interface and photo icon
+
+- Storage opens to a compact list with a single heading and storage count; the add/edit form is hidden unless requested. Cancel or navigating away restores the list.
+- Both Khmer (KH) and English (EN) cover the storage form, actions, sharing controls, and storage upload selection messages; the existing app language switch controls them.
+- The Student Upload Photo button uses a visible inline camera SVG, independent of the icon font.
+- No changes were made to Firebase rules, Cloudinary configuration schema, student records, or older Kid versions.
 
 ## Student photo picker behavior
 

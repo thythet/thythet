@@ -469,6 +469,38 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
   #page-students .cloud-photo-picker{left:0;right:0;width:100%}
 }
 
+
+/* Kid4Pro streamlined bilingual Storage page — isolated layout */
+#page-storage .storage-page-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+#page-storage .storage-page-heading h2{margin:0}
+#page-storage #cloudinaryBadge{margin:0;font-size:12px;line-height:1.4;color:var(--muted);font-weight:750}
+#page-storage .cloud-panel{border:0;border-radius:0;background:none;margin:0}
+#page-storage .cloud-form{max-width:780px;margin:0;padding:0}
+#page-storage .cloud-storage-list{gap:7px}
+#page-storage .cloud-storage-card{padding:11px 13px;border-radius:14px}
+#page-storage .cloud-storage-desc{font-size:11px;margin:2px 0 5px}
+#page-storage .cloud-storage-card:has(.cloud-storage-actions:empty) .cloud-storage-desc:empty{display:none}
+#page-storage .cloud-new-btn{width:auto;min-height:42px;min-width:180px;margin-top:11px;padding:9px 15px;border-radius:13px;display:inline-flex;gap:7px}
+#page-storage .cloud-empty{padding:14px 11px;border:1px dashed var(--line);border-radius:13px}
+#page-storage #cloudEditor,#page-storage #cloudSharePanel{max-width:600px;margin:0;padding:4px 0 0;border:0;border-radius:0;background:none}
+#page-storage #cloudEditor h3,#page-storage #cloudSharePanel h3{font-size:16px;margin:0 0 7px}
+#page-storage #cloudEditor .cloud-fields{grid-template-columns:1fr;gap:10px}
+#page-storage #cloudEditor .cloud-fields .cloud-field:last-child{grid-column:auto}
+#page-storage #cloudEditor .cloud-fields .cloud-field-head{align-items:center}
+#page-storage #cloudEditor .cloud-required-help{margin:0 0 10px}
+#page-storage #cloudEditor .cloud-security-note{padding:8px 10px;border:none;background:rgba(147,197,253,.055);font-size:11px;line-height:1.5}
+#page-storage #cloudEditor .cloud-actions .btn,#page-storage #cloudSharePanel .btn{min-height:38px}
+#page-storage .cloud-form:has(#cloudEditor:not(.hidden)) #cloudStorageList,
+#page-storage .cloud-form:has(#cloudSharePanel:not(.hidden)) #cloudStorageList,
+#page-storage .cloud-form:has(#cloudEditor:not(.hidden)) #cloudNewBtn,
+#page-storage .cloud-form:has(#cloudSharePanel:not(.hidden)) #cloudNewBtn{display:none!important}
+#page-storage #cloudSaveStatus:empty{display:none}
+#page-students .student-upload-btn .upload-camera-icon{display:block;flex:0 0 22px;width:22px;height:22px;stroke:currentColor;opacity:1}
+@media(max-width:640px){
+ #page-storage .storage-page-heading{gap:7px;margin-bottom:12px}
+ #page-storage #cloudEditor,#page-storage #cloudSharePanel{max-width:100%}
+ #page-storage .cloud-new-btn{width:100%}
+}
 /* Compact single-line student attendance rows (kid2pro only). */
 #page-summary .summary-top-panel{margin-bottom:10px}
 #page-summary .summary-filters{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
@@ -1003,7 +1035,7 @@ body.summary-popup-open{overflow:hidden}
       <div class="student-photo-row">
         <input id="studentPhoto" class="input" placeholder="Photo file name or uploaded URL">
         <div class="photo-upload-action">
-          <button type="button" id="studentUploadButton" class="btn student-upload-btn" aria-haspopup="true" aria-expanded="false" aria-controls="cloudPhotoPicker"><i class="ri-camera-4-line" aria-hidden="true"></i><span>Upload Photo</span></button>
+          <button type="button" id="studentUploadButton" class="btn student-upload-btn" aria-haspopup="true" aria-expanded="false" aria-controls="cloudPhotoPicker"><svg class="upload-camera-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 7h3l2-3h6l2 3h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z"/><circle cx="12" cy="13.5" r="3.5"/></svg><span id="studentUploadLabel">Upload Photo</span></button>
           <input type="file" id="studentPhotoUpload" accept="image/jpeg,image/png,image/webp" hidden>
           <div id="cloudPhotoPicker" class="cloud-photo-picker hidden" aria-label="Select upload storage">
             <div class="cloud-photo-picker-heading"><i class="ri-cloud-upload-line" aria-hidden="true"></i><span id="cloudPhotoPickerTitle">Select upload storage</span></div>
@@ -1023,44 +1055,43 @@ body.summary-popup-open{overflow:hidden}
 
   <section id="page-storage" class="page">
     <div class="panel glass">
-      <h2 id="storagePageTitle">Storage</h2>
-      <details id="cloudinarySettingsPanel" class="cloud-panel" open><summary><i class="ri-cloud-line"></i> My Cloudinary Storage <span id="cloudinaryBadge">Loading…</span></summary>
+      <div class="storage-page-heading"><h2 id="storagePageTitle">Storage</h2><span id="cloudinaryBadge">Loading…</span></div>
+      <div id="cloudinarySettingsPanel" class="cloud-panel">
       <div class="cloud-form">
         <div id="cloudStorageList" class="cloud-storage-list"></div>
-        <button id="cloudNewBtn" class="btn cloud-new-btn" type="button"><i class="ri-add-line"></i> Add Cloudinary Storage</button>
+        <button id="cloudNewBtn" class="btn cloud-new-btn" type="button"><i class="ri-add-line" aria-hidden="true"></i> <span id="cloudNewLabel">Add Storage</span></button>
         <div id="cloudEditor" class="hidden">
-          <h3 id="cloudEditorTitle">Add storage</h3>
-          <p class="cloud-required-help"><span class="cloud-required-star" aria-hidden="true">*</span> Required fields · Cloud Name and Preset must match Cloudinary exactly.</p>
+          <h3 id="cloudEditorTitle">Add Storage</h3>
+          <p class="cloud-required-help"><span class="cloud-required-star" aria-hidden="true">*</span> <span id="cloudRequiredHelp">Required</span></p>
           <div class="cloud-fields">
             <label class="cloud-field cloud-field-required" for="cloudLabelInput">
-              <span class="cloud-field-head"><span>Storage Name <span class="cloud-required-star" aria-hidden="true">*</span></span><small>Your own label</small></span>
+              <span class="cloud-field-head"><span><span id="cloudLabelCaption">Storage Name</span> <span class="cloud-required-star" aria-hidden="true">*</span></span></span>
               <input id="cloudLabelInput" class="input" type="text" placeholder="e.g. Sunday School Photos" maxlength="60" required aria-required="true" autocomplete="off">
             </label>
             <label class="cloud-field cloud-field-required" for="cloudNameInput">
-              <span class="cloud-field-head"><span>Cloud Name <span class="cloud-required-star" aria-hidden="true">*</span></span><small>Exact match</small></span>
+              <span class="cloud-field-head"><span><span id="cloudNameCaption">Cloud Name</span> <span class="cloud-required-star" aria-hidden="true">*</span></span></span>
               <input id="cloudNameInput" class="input" type="text" placeholder="Your Cloudinary cloud name" maxlength="80" required aria-required="true" autocomplete="off" autocapitalize="off" spellcheck="false">
             </label>
             <label class="cloud-field cloud-field-required" for="cloudPresetInput">
-              <span class="cloud-field-head"><span>Unsigned Upload Preset <span class="cloud-required-star" aria-hidden="true">*</span></span><small>Exact match</small></span>
+              <span class="cloud-field-head"><span><span id="cloudPresetCaption">Upload Preset</span> <span class="cloud-required-star" aria-hidden="true">*</span></span></span>
               <input id="cloudPresetInput" class="input" type="text" placeholder="Your unsigned preset name" maxlength="100" required aria-required="true" autocomplete="off" autocapitalize="off" spellcheck="false">
             </label>
             <label class="cloud-field cloud-field-optional" for="cloudFolderInput">
-              <span class="cloud-field-head"><span>Upload Folder</span><small>Optional</small></span>
+              <span class="cloud-field-head"><span id="cloudFolderCaption">Upload Folder</span><small id="cloudOptionalCaption">Optional</small></span>
               <input id="cloudFolderInput" class="input" type="text" placeholder="Leave empty to use preset folder" maxlength="180" autocomplete="off" autocapitalize="off" spellcheck="false">
             </label>
           </div>
-          <p class="cloud-security-note" role="note"><i class="ri-information-line" aria-hidden="true"></i><span>Unsigned presets can be used outside this app; photo URLs may be public. Use a restricted image-only preset, upload permitted photos only, and never enter API keys or secrets.</span></p>
-          <div class="cloud-actions"><button id="cloudSaveBtn" type="button" class="btn primary">Save Storage</button><button id="cloudCancelBtn" type="button" class="btn">Cancel</button><button id="cloudDeleteBtn" type="button" class="btn danger hidden">Delete</button></div>
+          <p class="cloud-security-note" role="note"><i class="ri-information-line" aria-hidden="true"></i><span id="cloudSecurityCaption">Use a restricted unsigned preset. Never enter an API secret.</span></p>
+          <div class="cloud-actions"><button id="cloudSaveBtn" type="button" class="btn primary">Save</button><button id="cloudCancelBtn" type="button" class="btn">Cancel</button><button id="cloudDeleteBtn" type="button" class="btn danger hidden">Delete</button></div>
         </div>
         <div id="cloudSharePanel" class="cloud-share-panel hidden">
-          <div class="cloud-share-head"><h3 id="cloudShareTitle">Share storage with users</h3><button type="button" id="cloudShareClose" class="btn">✕</button></div>
-          <p class="cloud-hint">Only selected approved users can load this configuration. Shared users cannot edit or re-share it.</p>
+          <div class="cloud-share-head"><h3 id="cloudShareTitle">Share storage</h3><button type="button" id="cloudShareClose" class="btn">✕</button></div>
+          <p class="cloud-hint" id="cloudShareHint">Selected users can upload. They cannot edit or share this storage.</p>
           <div id="cloudShareUsers" class="cloud-share-users"></div>
           <button type="button" id="cloudShareSave" class="btn primary">Save Sharing</button>
         </div>
         <div id="cloudSaveStatus" class="status" aria-live="polite"></div>
-      </div></details>
-      
+      </div></div>
     </div>
   </section>
 
@@ -1306,21 +1337,22 @@ function cloudDisplay(){
   const allowed=cloudAllowed(),panel=$("cloudinarySettingsPanel");
   panel.classList.toggle("hidden",!allowed);
   if(!allowed)return;
+  cloudTranslateUI();
   const items=cloudItems(),selectedKey=cloudCurrent()?.key||"";
-  $("cloudinaryBadge").textContent=Object.keys(cloudState.own).length+" my storage · "+Object.keys(cloudState.shared).length+" shared";
+  $("cloudinaryBadge").textContent=Object.keys(cloudState.own).length+" "+cTr("own")+" · "+Object.keys(cloudState.shared).length+" "+cTr("sharedCount");
   const list=$("cloudStorageList");list.replaceChildren();
-  if(!items.length){const e=document.createElement("div");e.className="cloud-empty";e.textContent="No Cloudinary account configured. Add your own or ask Admin to share storage.";list.append(e);}
+  if(!items.length){const e=document.createElement("div");e.className="cloud-empty";e.textContent=cTr("noStorage");list.append(e);}
   items.forEach(i=>{
     const row=document.createElement("div");row.className="cloud-storage-card";
     const main=document.createElement("div");main.className="cloud-storage-main";
-    const name=document.createElement("span");name.className="cloud-storage-name";name.textContent=i.label;main.append(name);
-    if(i.key===selectedKey){const mark=document.createElement("span");mark.className="cloud-storage-mark";mark.textContent="Selected";main.append(mark);}
+    const name=document.createElement("span");name.className="cloud-storage-name";name.textContent=i.legacy?cTr("legacy"):i.shared?(i.label.replace(/ \(shared\)$/,"")+" · "+cTr("sharedSuffix")):i.label;main.append(name);
+    if(i.key===selectedKey){const mark=document.createElement("span");mark.className="cloud-storage-mark";mark.textContent=cTr("selected");main.append(mark);}
     row.append(main);
-    const meta=document.createElement("div");meta.className="cloud-storage-desc";meta.textContent=i.config.cloudName+(i.shared?" · Shared, read only":i.legacy?" · Used by older Kid versions":"");row.append(meta);
+    const meta=document.createElement("div");meta.className="cloud-storage-desc";meta.textContent=i.legacy?"":i.config.cloudName+(i.shared?" · "+cTr("readOnly"):"");if(meta.textContent)row.append(meta);
     const actions=document.createElement("div");actions.className="cloud-storage-actions";
     const btn=(label,action)=>{const b=document.createElement("button");b.type="button";b.className="btn";b.textContent=label;b.onclick=action;actions.append(b);};
-    if(i.key!==selectedKey)btn("Use",()=>cloudSetDefault(i.key));
-    if(i.own){btn("Edit",()=>cloudEdit(i.id));if(canAdmin())btn("Share",()=>cloudShareOpen(i.id));}
+    if(i.key!==selectedKey)btn(cTr("use"),()=>cloudSetDefault(i.key));
+    if(i.own){btn(cTr("editAction"),()=>cloudEdit(i.id));if(canAdmin())btn(cTr("share"),()=>cloudShareOpen(i.id));}
     row.append(actions);list.append(row);
   });
   cloudShareRender();
@@ -1337,7 +1369,7 @@ function cloudWatch(){
   const uid=state.user.uid;
   function watchCloud(path,callback){
     cloudState.watchers.push(onValue(ref(db,path),snap=>{if(state.user?.uid===uid){callback(snap.val());cloudDisplay();}},
-      err=>{if(state.user?.uid===uid)cloudMessage("Cloudinary permissions: "+(err.code||err.message)+" ("+path+")");}));
+      err=>{if(state.user?.uid===uid)cloudMessage(cTr("cloudPermission")+(err.code||err.message)+" ("+path+")");}));
   }
   watchCloud("settings/cloudinary",data=>{cloudState.legacy=cloudNormalize(data);});
   watchCloud("cloudinaryAccounts/"+uid,data=>{cloudState.own=data||{};});
@@ -1368,38 +1400,39 @@ function cloudSharedRefresh(uid){
 async function cloudSetDefault(key){
   if(!state.user||!cloudItems().some(i=>i.key===key))return;
   const uid=state.user.uid;
-  try{await set(ref(db,"cloudinaryDefaults/"+uid),{key});if(state.user?.uid===uid){cloudState.defaultKey=key;cloudDisplay();cloudMessage("Default storage saved across devices.",true);}}
-  catch(e){cloudMessage("Unable to sync default. Publish the Kid4Pro Firebase rules first: "+(e.code||e.message));}
+  try{await set(ref(db,"cloudinaryDefaults/"+uid),{key});if(state.user?.uid===uid){cloudState.defaultKey=key;cloudDisplay();cloudMessage(cTr("defaultSaved"),true);}}
+  catch(e){cloudMessage(cTr("defaultFailed")+(e.code||e.message));}
 }
 function cloudEdit(id){
   if(id&&!cloudState.own[id])return;
   const v=cloudNormalize(id?cloudState.own[id]:{});
   cloudState.editId=id||"";
-  $("cloudEditorTitle").textContent=id?"Edit Cloudinary Storage":"Add Cloudinary Storage";
+  cloudMessage("",true);
+  $("cloudEditorTitle").textContent=cTr(id?"edit":"add");
   $("cloudLabelInput").value=v.label;$("cloudNameInput").value=v.cloudName;$("cloudPresetInput").value=v.preset;$("cloudFolderInput").value=v.folder;
   $("cloudDeleteBtn").classList.toggle("hidden",!id);
   $("cloudSharePanel").classList.add("hidden");$("cloudEditor").classList.remove("hidden");$("cloudLabelInput").focus();
 }
-function cloudEditorClose(){cloudState.editId="";$("cloudEditor").classList.add("hidden");}
+function cloudEditorClose(){cloudState.editId="";$("cloudEditor").classList.add("hidden");cloudMessage("",true);cloudTranslateUI();}
 async function cloudSave(){
   if(!cloudAllowed()||cloudState.busy)return;
   const c=cloudNormalize({label:$("cloudLabelInput").value,cloudName:$("cloudNameInput").value,preset:$("cloudPresetInput").value,folder:$("cloudFolderInput").value,ack:Date.now()});
-  if(!c.label||c.label.length>60){cloudMessage("Enter a storage name (1–60 characters).");return;}
-  if(!/^[\w-]{2,80}$/.test(c.cloudName)||!/^[\w-]{1,100}$/.test(c.preset)){cloudMessage("Invalid Cloud Name or unsigned upload preset.");return;}
-  if(c.folder&&(!/^[\w /.-]{1,180}$/.test(c.folder)||c.folder.split("/").includes(".."))){cloudMessage("Invalid upload folder.");return;}
+  if(!c.label||c.label.length>60){cloudMessage(cTr("validName"));return;}
+  if(!/^[\w-]{2,80}$/.test(c.cloudName)||!/^[\w-]{1,100}$/.test(c.preset)){cloudMessage(cTr("validCloud"));return;}
+  if(c.folder&&(!/^[\w /.-]{1,180}$/.test(c.folder)||c.folder.split("/").includes(".."))){cloudMessage(cTr("validFolder"));return;}
   // Saving after displaying the concise security notice records the existing ack timestamp.
   const uid=state.user.uid,id=cloudState.editId||push(ref(db,"cloudinaryAccounts/"+uid)).key;
   cloudState.busy=true;$("cloudSaveBtn").disabled=true;
   try{
     await set(ref(db,"cloudinaryAccounts/"+uid+"/"+id),c);
-    cloudEditorClose();cloudMessage("Storage saved to Firebase.",true);
+    cloudEditorClose();cloudMessage(cTr("saved"),true);
     if(!cloudState.defaultKey)await cloudSetDefault(uid+"|"+id);
-  }catch(e){cloudMessage("Storage not saved. Check Kid4Pro Firebase rules: "+(e.code||e.message));}
+  }catch(e){cloudMessage(cTr("saveFailed")+(e.code||e.message));}
   finally{cloudState.busy=false;$("cloudSaveBtn").disabled=false;}
 }
 async function cloudDelete(){
   const uid=state.user?.uid,id=cloudState.editId;
-  if(!uid||!id||!cloudState.own[id]||!confirm("Delete this configuration? Uploaded photos will remain in Cloudinary."))return;
+  if(!uid||!id||!cloudState.own[id]||!confirm(cTr("deletePrompt")))return;
   cloudState.busy=true;
   try{
     await remove(ref(db,"cloudinaryAccounts/"+uid+"/"+id));
@@ -1408,13 +1441,13 @@ async function cloudDelete(){
       Object.entries(cloudState.allGrants).forEach(([recipient,owners])=>{if(owners?.[uid]?.[id]===true)patch["cloudinaryShared/"+recipient+"/"+uid+"/"+id]=null;});
       if(Object.keys(patch).length)await update(ref(db),patch);
     }
-    cloudEditorClose();cloudMessage("Storage removed. Existing student photos were not deleted.",true);
-  }catch(e){cloudMessage("Could not remove storage/grants: "+(e.code||e.message));}
+    cloudEditorClose();cloudMessage(cTr("deleted"),true);
+  }catch(e){cloudMessage(cTr("deleteFailed")+(e.code||e.message));}
   finally{cloudState.busy=false;}
 }
 function cloudShareOpen(id){
   if(!canAdmin()||!cloudState.own[id])return;
-  cloudState.shareId=id;$("cloudShareTitle").textContent="Share: "+(cloudState.own[id].label||"Storage");
+  cloudState.shareId=id;cloudMessage("",true);$("cloudShareTitle").textContent=cTr("shareTitle")+": "+(cloudState.own[id].label||"Cloudinary");
   $("cloudEditor").classList.add("hidden");$("cloudSharePanel").classList.remove("hidden");cloudShareRender();
 }
 function cloudShareRender(){
@@ -1423,7 +1456,7 @@ function cloudShareRender(){
   const users=Object.entries(state.users||{}).filter(([k,u])=>k!==uid&&u&&["teacher","pastor"].includes(u.role)&&u.status!=="pending"&&u.status!=="disabled"&&u.active!==false)
     .sort((a,b)=>String(a[1].name||"").localeCompare(String(b[1].name||"")));
   el.replaceChildren();
-  if(!users.length){el.textContent="No approved users available.";return;}
+  if(!users.length){el.textContent=cTr("noUsers");return;}
   users.forEach(([key,u])=>{
     const row=document.createElement("label");row.className="cloud-share-user";
     const check=document.createElement("input");check.type="checkbox";check.value=key;check.checked=cloudState.allGrants?.[key]?.[uid]?.[id]===true;
@@ -1439,10 +1472,10 @@ async function cloudShareSave(){
     const old=cloudState.allGrants?.[c.value]?.[uid]?.[id]===true;
     if(old!==c.checked)patch["cloudinaryShared/"+c.value+"/"+uid+"/"+id]=c.checked?true:null;
   });
-  if(!Object.keys(patch).length){cloudMessage("No sharing changes.",true);return;}
+  if(!Object.keys(patch).length){cloudMessage(cTr("noChanges"),true);return;}
   cloudState.busy=true;$("cloudShareSave").disabled=true;
-  try{await update(ref(db),patch);$("cloudSharePanel").classList.add("hidden");cloudState.shareId="";cloudMessage("Storage access updated.",true);}
-  catch(e){cloudMessage("Sharing failed. Check Kid4Pro Firebase rules: "+(e.code||e.message));}
+  try{await update(ref(db),patch);$("cloudSharePanel").classList.add("hidden");cloudState.shareId="";cloudMessage(cTr("shareSaved"),true);}
+  catch(e){cloudMessage(cTr("shareFailed")+(e.code||e.message));}
   finally{cloudState.busy=false;$("cloudShareSave").disabled=false;}
 }
 $("cloudNewBtn").onclick=()=>cloudEdit("");
@@ -1476,6 +1509,70 @@ const I18N = {
 };
 let currentLang = localStorage.getItem("ss_lang") || "kh";
 const tr = key => (I18N[currentLang] && I18N[currentLang][key]) || I18N.en[key] || key;
+// Kid4Pro storage labels: only public UI strings, no Firebase configuration.
+const CLOUD_TEXT={
+ en:{
+  add:"Add Storage",edit:"Edit Storage",manage:"Storage",own:"personal",sharedCount:"shared",required:"* Required",
+  storageName:"Storage Name",cloudName:"Cloud Name",preset:"Upload Preset",folder:"Upload Folder",optional:"Optional",
+  phName:"e.g. Sunday School Photos",phCloud:"Cloudinary cloud name",phPreset:"Unsigned preset name",phFolder:"Leave blank to use the preset folder",
+  note:"Use a restricted unsigned preset. Never enter an API secret.",save:"Save Storage",cancel:"Cancel",delete:"Delete",
+  shareTitle:"Share Storage",shareInfo:"Selected users can upload, but cannot edit or share this storage.",shareSave:"Save Sharing",
+  legacy:"School Storage (legacy)",selected:"Selected",use:"Use",editAction:"Edit",share:"Share",
+  sharedSuffix:"Shared",readOnly:"Shared · read-only",noStorage:"No storage yet. Add your own, or ask Admin to share one.",
+  noUsers:"No approved users available.",noChanges:"No changes to save.",defaultSaved:"Default storage saved.",
+  defaultFailed:"Could not save default storage: ",validName:"Enter a storage name (1–60 characters).",
+  validCloud:"Enter a valid Cloud Name and unsigned preset.",validFolder:"Invalid upload folder.",
+  saved:"Storage saved.",saveFailed:"Unable to save storage: ",
+  deletePrompt:"Delete this storage configuration? Existing photos will remain online.",
+  deleted:"Storage removed. Existing photos are preserved.",deleteFailed:"Could not remove storage: ",
+  shareSaved:"Sharing updated.",shareFailed:"Could not update sharing: ",
+  selectStorage:"Select upload storage",uploadPhoto:"Upload Photo",chooseStorage:"Select storage",
+  missingStorage:"No storage available. Add storage on the Storage page.",
+  missingChoice:"The selected storage is unavailable. Choose another.",
+  invalidPhoto:"Use JPG, PNG, or WebP under 5 MB.",accessDenied:"Permission denied.",
+  chooseChurch:"Choose a church first.",uploading:"Uploading",uploaded:"Uploaded! Click Save to link this photo.",uploadFailed:"Upload failed: ",
+  cloudPermission:"Storage sync unavailable: "
+ },
+ kh:{
+  add:"បន្ថែមកន្លែងផ្ទុក",edit:"កែប្រែកន្លែងផ្ទុក",manage:"កន្លែងផ្ទុក",own:"ផ្ទាល់ខ្លួន",sharedCount:"បានចែករំលែក",required:"* ត្រូវបំពេញ",
+  storageName:"ឈ្មោះកន្លែងផ្ទុក",cloudName:"ឈ្មោះ Cloud",preset:"Upload Preset",folder:"ថតផ្ទុក",optional:"មិនចាំបាច់",
+  phName:"ឧ. រូបថតសាលាថ្ងៃអាទិត្យ",phCloud:"ឈ្មោះ Cloudinary",phPreset:"ឈ្មោះ Unsigned Preset",phFolder:"ទុកទទេ ដើម្បីប្រើថតក្នុង Preset",
+  note:"សូមប្រើ Unsigned Preset ដែលមានការកំណត់សុវត្ថិភាព។ កុំបញ្ចូល API Secret។",save:"រក្សាទុក",cancel:"បោះបង់",delete:"លុប",
+  shareTitle:"ចែករំលែកកន្លែងផ្ទុក",shareInfo:"អ្នកដែលបានជ្រើសអាចបង្ហោះរូបថត ប៉ុន្តែមិនអាចកែប្រែ ឬចែករំលែកបន្តបានទេ។",shareSave:"រក្សាទុកការចែករំលែក",
+  legacy:"កន្លែងផ្ទុកសាលា (ចាស់)",selected:"បានជ្រើសរើស",use:"ប្រើ",editAction:"កែប្រែ",share:"ចែករំលែក",
+  sharedSuffix:"បានចែករំលែក",readOnly:"បានចែករំលែក · មើលតែប៉ុណ្ណោះ",noStorage:"មិនទាន់មានកន្លែងផ្ទុក។ សូមបន្ថែម ឬសុំ Admin ចែករំលែក។",
+  noUsers:"មិនមានអ្នកប្រើដែលបានអនុម័តទេ។",noChanges:"មិនមានការផ្លាស់ប្តូរទេ។",defaultSaved:"បានរក្សាទុកកន្លែងផ្ទុកលំនាំដើម។",
+  defaultFailed:"មិនអាចរក្សាទុកកន្លែងផ្ទុកលំនាំដើម៖ ",validName:"សូមបញ្ចូលឈ្មោះកន្លែងផ្ទុក (១–៦០ តួអក្សរ)។",
+  validCloud:"សូមបញ្ចូល Cloud Name និង Unsigned Preset ត្រឹមត្រូវ។",validFolder:"ឈ្មោះថតមិនត្រឹមត្រូវ។",
+  saved:"បានរក្សាទុកកន្លែងផ្ទុក។",saveFailed:"មិនអាចរក្សាទុកកន្លែងផ្ទុក៖ ",
+  deletePrompt:"លុបការកំណត់កន្លែងផ្ទុកនេះមែនទេ? រូបថតចាស់នឹងនៅដដែល។",
+  deleted:"បានលុបការកំណត់។ រូបថតចាស់នៅដដែល។",deleteFailed:"មិនអាចលុបកន្លែងផ្ទុក៖ ",
+  shareSaved:"បានកែប្រែការចែករំលែក។",shareFailed:"មិនអាចកែប្រែការចែករំលែក៖ ",
+  selectStorage:"ជ្រើសរើសកន្លែងផ្ទុករូបថត",uploadPhoto:"បង្ហោះរូបថត",chooseStorage:"ជ្រើសរើសកន្លែងផ្ទុក",
+  missingStorage:"មិនមានកន្លែងផ្ទុកទេ។ សូមបន្ថែមនៅទំព័រកន្លែងផ្ទុក។",
+  missingChoice:"កន្លែងផ្ទុកដែលបានជ្រើសមិនមានទៀតទេ។ សូមជ្រើសរើសម្តងទៀត។",
+  invalidPhoto:"ប្រើ JPG, PNG ឬ WebP ទំហំក្រោម 5 MB។",accessDenied:"មិនមានសិទ្ធិប្រើប្រាស់។",
+  chooseChurch:"សូមជ្រើសរើសពួកជំនុំជាមុន។",uploading:"កំពុងបង្ហោះ",uploaded:"បង្ហោះរួចរាល់! ចុច រក្សាទុក ដើម្បីភ្ជាប់រូបថត។",uploadFailed:"បង្ហោះមិនបាន៖ ",
+  cloudPermission:"មិនអាចធ្វើសមកាលកម្មកន្លែងផ្ទុក៖ "
+ }
+};
+const cTr=key=>CLOUD_TEXT[currentLang]?.[key]||CLOUD_TEXT.en[key]||key;
+function cloudTranslateUI(){
+ const map={cloudNewLabel:"add",cloudRequiredHelp:"required",cloudLabelCaption:"storageName",
+  cloudNameCaption:"cloudName",cloudPresetCaption:"preset",cloudFolderCaption:"folder",
+  cloudOptionalCaption:"optional",cloudSecurityCaption:"note",cloudSaveBtn:"save",
+  cloudCancelBtn:"cancel",cloudDeleteBtn:"delete",cloudShareHint:"shareInfo",
+  cloudShareSave:"shareSave",cloudPhotoPickerTitle:"selectStorage",studentUploadLabel:"uploadPhoto"};
+ Object.entries(map).forEach(([id,key])=>{const node=$(id);if(node)node.textContent=cTr(key)});
+ const placeholders={cloudLabelInput:"phName",cloudNameInput:"phCloud",cloudPresetInput:"phPreset",cloudFolderInput:"phFolder"};
+ Object.entries(placeholders).forEach(([id,key])=>{if($(id))$(id).placeholder=cTr(key)});
+ if($("cloudPhotoPicker"))$("cloudPhotoPicker").setAttribute("aria-label",cTr("selectStorage"));
+ if($("studentUploadButton"))$("studentUploadButton").setAttribute("aria-label",cTr("uploadPhoto"));
+ if($("cloudShareClose"))$("cloudShareClose").setAttribute("aria-label",cTr("cancel"));
+ if($("cloudEditorTitle"))$("cloudEditorTitle").textContent=cTr(cloudState.editId?"edit":"add");
+ if(cloudState.shareId&&$("cloudShareTitle"))$("cloudShareTitle").textContent=cTr("shareTitle")+": "+(cloudState.own[cloudState.shareId]?.label||"Cloudinary");
+}
+
 const genderLabel = value => value === "Female" ? tr("female") : value === "Male" ? tr("male") : value || "";
 const roleLabel = value => value === "admin" ? tr("roleAdmin") : value === "pastor" ? tr("rolePastor") : value === "teacher" ? tr("roleTeacher") : value || "";
 function setText(selector,key){ document.querySelectorAll(selector).forEach(el=>el.textContent=tr(key)); }
@@ -1486,6 +1583,7 @@ function setLanguage(lang){
   currentLang = lang === "en" ? "en" : "kh";
   localStorage.setItem("ss_lang", currentLang);
   applyTranslations();
+  if($("cloudSaveStatus")) $("cloudSaveStatus").textContent="";
   renderAll();
   if($("myProfileOverlay")&&!$("myProfileOverlay").classList.contains("hidden"))renderMyProfile();
 }
@@ -1518,6 +1616,8 @@ function applyTranslations(){
   setText("#attLoadingText","loading");
   document.querySelectorAll(".nav-btn[data-page]").forEach(btn=>{ const key=btn.dataset.page==="attendance"?"attendance":btn.dataset.page; btn.innerHTML=iconHtml(btn)+tr(key); });
   if($("dashboardBtn")) $("dashboardBtn").innerHTML = iconHtml($("dashboardBtn")) + tr("dashboard");
+  cloudTranslateUI();
+  cloudDisplay();
   setSelectLabel("roleType","pastor","pastor"); setSelectLabel("roleType","teacher","teacher"); setSelectLabel("studentGender","Male","male"); setSelectLabel("studentGender","Female","female"); syncCustomSelects();
   setTheme(document.body.classList.contains("compact") ? "compact" : "normal");
 }
@@ -1833,6 +1933,13 @@ if($("dashboardBtn")) $("dashboardBtn").onclick=()=>{ localStorage.setItem("dash
 function page(name){
   // Kid4Pro: Report is archived in source but not a navigable page.
   if(name==="reports") name="home";
+  // Each new visit to Storage starts on the compact list rather than an old form.
+  if(name==="storage" && activePage()!=="storage"){
+    cloudEditorClose();
+    cloudState.shareId="";
+    $("cloudSharePanel").classList.add("hidden");
+    cloudMessage("",true);
+  }
   cloudClosePhotoPicker();
   if(name!=="summary")closeSummaryDayPopup(true);
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
@@ -2197,15 +2304,15 @@ function cloudStartPhotoPicker(){
   if(!hasPersonalOrShared){
     const legacy=items.find(i=>i.legacy);
     if(legacy){cloudPickPhotoStorage(legacy.key);return;}
-    showStatus("studentUploadStatus","No Cloudinary storage available. Add storage on the Storage page.",false);
-    page("storage");$("cloudinarySettingsPanel").open=true;return;
+    showStatus("studentUploadStatus",cTr("missingStorage"),false);
+    page("storage");return;
   }
   options.replaceChildren();
   const selected=cloudCurrent()?.key;
   items.forEach(item=>{
     const option=document.createElement("button");option.type="button";
     option.className="custom-select-option cloud-photo-option"+(item.key===selected?" active":"");
-    const label=document.createElement("span");label.className="cloud-photo-option-label";label.textContent=item.label;
+    const label=document.createElement("span");label.className="cloud-photo-option-label";label.textContent=item.legacy?cTr("legacy"):item.shared?(item.label.replace(/ \(shared\)$/,"")+" · "+cTr("sharedSuffix")):item.label;
     const icon=document.createElement("i");icon.className=item.key===selected?"ri-check-line":"ri-cloud-line";icon.setAttribute("aria-hidden","true");
     option.append(label,icon);
     option.onclick=event=>{event.stopPropagation();cloudPickPhotoStorage(item.key);};
@@ -2223,7 +2330,7 @@ function cloudPickPhotoStorage(key){
   const option=cloudItems().find(i=>i.key===key);
   if(!option||!cloudValid(option.config)){
     cloudClosePhotoPicker();
-    showStatus("studentUploadStatus","Selected storage is no longer available. Please choose again.",false);
+    showStatus("studentUploadStatus",cTr("missingChoice"),false);
     return;
   }
   cloudClosePhotoPicker();
@@ -2245,32 +2352,32 @@ $("studentPhotoUpload").addEventListener("change",async e=>{
   resetStudentUploadProgress();
   const fail=message=>{status.textContent=message;status.classList.add("error");};
   if(!["image/jpeg","image/png","image/webp"].includes(file.type)||file.size>5*1024*1024){
-    fail("Use JPG, PNG or WebP under 5 MB.");return;
+    fail(cTr("invalidPhoto"));return;
   }
   if(!state.user||!["admin","teacher","pastor"].includes(state.role)){
-    fail("Permission denied.");return;
+    fail(cTr("accessDenied"));return;
   }
   const church=canAdmin()?$("studentChurch").value:roleChurch();
-  if(!church){fail("Choose a church first.");return;}
+  if(!church){fail(cTr("chooseChurch"));return;}
   const cfg=cloudItems().find(i=>i.key===chosenKey)?.config;
   if(!cloudValid(cfg)){
-    fail("No Cloudinary storage available. Add your own or ask Admin to share one.");return;
+    fail(cTr("missingStorage"));return;
   }
   const save=$("saveStudent");
   input.disabled=true;$("studentUploadButton").disabled=true;save.disabled=true;
   setStudentUploadProgress(0);
-  status.textContent="Uploading 0%";
+  status.textContent=cTr("uploading")+" 0%";
   try{
     const url=await cloudUpload(file,cfg,n=>{
       setStudentUploadProgress(n);
-      status.textContent="Uploading "+n+"%";
+      status.textContent=cTr("uploading")+" "+n+"%";
     });
     setStudentUploadProgress(100);
     $("studentPhoto").value=url;
-    status.textContent="Uploaded! Click Save to link this photo to the student.";
+    status.textContent=cTr("uploaded");
   }catch(err){
     $("studentUploadProgress").classList.add("failed");
-    fail("Upload failed: "+err.message);
+    fail(cTr("uploadFailed")+err.message);
   }finally{
     input.disabled=false;
     $("studentUploadButton").disabled=false;
