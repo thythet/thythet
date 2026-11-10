@@ -153,7 +153,7 @@ select.input{appearance:none;background-image:linear-gradient(45deg,transparent 
 
 /* Login */
 .login-wrap{min-height:calc(100vh - 32px);display:grid;place-items:start center;padding-top:clamp(54px,14vh,150px)}
-.login-card{width:min(92vw,520px);padding:34px}
+.login-card{width:min(92vw,520px);padding:16px 0;background:transparent;border:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
 .brand{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:22px;text-align:center}
 .logo{width:54px;height:54px;border-radius:18px;display:grid;place-items:center;font-size:30px;background:linear-gradient(135deg,rgba(93,167,255,.36),rgba(122,121,255,.24));border:1px solid rgba(255,255,255,.15);flex:0 0 auto}
 .brand h1{margin:0;font-size:18px;letter-spacing:0;line-height:1.25;white-space:normal;overflow:visible;text-overflow:clip;min-width:0;max-width:220px}
@@ -169,7 +169,13 @@ select.input{appearance:none;background-image:linear-gradient(45deg,transparent 
 .lang-switch{display:flex;align-items:center;justify-content:flex-end}
 .lang-btn{min-width:48px;height:32px;border-radius:13px;border:1px solid rgba(251,113,133,.38);background:linear-gradient(135deg,rgba(251,113,133,.34),rgba(127,29,29,.18));color:#ffe4e6;font-size:12px;font-weight:1000;box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 10px 24px rgba(127,29,29,.16);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
 .lang-btn:active{transform:scale(.96)}
-.login-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px}.login-actions .remember{margin-top:0}
+.login-actions{display:flex;align-items:center;justify-content:flex-start;gap:8px;margin-top:12px}.login-actions .remember{margin-top:0;min-width:0}.login-actions .lang-switch{margin-left:auto;flex:0 0 auto}
+
+/* Kid4Pro borderless login: inputs and controls keep their own styles */
+#loginView #googleLoginBtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:52px;padding:12px 16px;margin:14px 0 6px;border-radius:14px;border:1px solid #cbd5e1;background:#fff;color:#253148;font-weight:750;text-align:center;cursor:pointer}
+#loginView #googleLoginBtn .google-g-icon{display:block;width:24px;height:24px;flex:0 0 24px}
+#loginView #googleLoginBtn:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}
+@media(max-width:360px){#loginView #googleLoginBtn{gap:8px;padding:10px;font-size:14px}}
 
 /* Top */
 .top{position:sticky;top:max(10px,var(--android-safe-top),env(safe-area-inset-top));z-index:20;padding:14px;margin-bottom:12px}
@@ -262,7 +268,7 @@ body.compact .title{font-size:21px!important}
 @media(max-width:640px){.student-line1{grid-template-columns:1fr 104px 78px}.student-line2{grid-template-columns:1fr 1fr}.student-save-row{grid-template-columns:7fr 3fr}.student-actions{justify-content:flex-start}.student-detail-head{grid-template-columns:68px 1fr auto;gap:9px}.student-photo-btn{width:68px;height:68px;border-radius:20px;font-size:32px}.detail-week{grid-template-columns:42px 1fr 48px}}
 /* ===== STUDENT DETAILS + THEME END ===== */
 
-@media(max-width:640px){body{padding:max(12px,var(--android-safe-top),env(safe-area-inset-top)) max(12px,var(--android-safe-right),env(safe-area-inset-right)) max(12px,var(--android-safe-bottom),env(safe-area-inset-bottom)) max(12px,var(--android-safe-left),env(safe-area-inset-left))}.login-card{padding:28px}.brand h1{font-size:18px}.grid2,.grid3,.stats,.toolbar,.theme-bg-tools,.theme-style-tools{grid-template-columns:1fr}.att-head{grid-template-columns:1fr}.att-filter{grid-template-columns:1fr}.att-filter .input{padding-left:10px;padding-right:10px}.month-field .input{padding-left:76px!important;padding-right:76px!important;text-align:center}.month-icon{width:30px;height:30px}.month-icon.left{left:6px}.month-icon.cal{right:39px}.month-icon.right{right:6px}.att-stats,.report-stats,.home-stats{grid-template-columns:repeat(3,minmax(0,1fr))!important}.att-stats .stat,.report-stats .stat,.home-stats .stat{padding:10px}.att-stats .stat b,.report-stats .stat b,.home-stats .stat b{font-size:24px}.card{grid-template-columns:1fr}.actions{justify-content:flex-end}.student-card .card-main{display:grid;grid-template-columns:42px 1fr auto}.att-card{grid-template-columns:36px 1fr 48px}.report-row{grid-template-columns:minmax(84px,29%) 1fr!important;gap:10px;padding:11px}.report-photo{border-radius:17px}.report-info b{font-size:20px}.report-info small{font-size:13px}.report-pills{gap:7px;margin-top:8px}.report-row .pill{padding:6px 7px}.photo-preview-title{font-size:24px}.nav-btn{min-width:70px}}
+@media(max-width:640px){body{padding:max(12px,var(--android-safe-top),env(safe-area-inset-top)) max(12px,var(--android-safe-right),env(safe-area-inset-right)) max(12px,var(--android-safe-bottom),env(safe-area-inset-bottom)) max(12px,var(--android-safe-left),env(safe-area-inset-left))}.login-card{padding:12px 0}.brand h1{font-size:18px}.grid2,.grid3,.stats,.toolbar,.theme-bg-tools,.theme-style-tools{grid-template-columns:1fr}.att-head{grid-template-columns:1fr}.att-filter{grid-template-columns:1fr}.att-filter .input{padding-left:10px;padding-right:10px}.month-field .input{padding-left:76px!important;padding-right:76px!important;text-align:center}.month-icon{width:30px;height:30px}.month-icon.left{left:6px}.month-icon.cal{right:39px}.month-icon.right{right:6px}.att-stats,.report-stats,.home-stats{grid-template-columns:repeat(3,minmax(0,1fr))!important}.att-stats .stat,.report-stats .stat,.home-stats .stat{padding:10px}.att-stats .stat b,.report-stats .stat b,.home-stats .stat b{font-size:24px}.card{grid-template-columns:1fr}.actions{justify-content:flex-end}.student-card .card-main{display:grid;grid-template-columns:42px 1fr auto}.att-card{grid-template-columns:36px 1fr 48px}.report-row{grid-template-columns:minmax(84px,29%) 1fr!important;gap:10px;padding:11px}.report-photo{border-radius:17px}.report-info b{font-size:20px}.report-info small{font-size:13px}.report-pills{gap:7px;margin-top:8px}.report-row .pill{padding:6px 7px}.photo-preview-title{font-size:24px}.nav-btn{min-width:70px}}
 .att-list-search{position:relative!important}
 .att-list-search i{left:18px!important;width:34px!important;text-align:center!important;z-index:2!important;font-size:20px!important}
 .att-list-search .input{padding-left:66px!important;text-indent:0!important}
@@ -890,7 +896,7 @@ body.summary-popup-open{overflow:hidden}
 </div>
 
 <div id="loginView" class="login-wrap hidden">
-  <div class="login-card glass">
+  <div class="login-card">
     <div class="brand"><div class="logo"><i class="ri-school-line"></i></div><h1 id="loginTitle">គ្រូកុមារ</h1></div>
     <input id="email" class="input" placeholder="Email">
     <div class="key-wrap" style="margin-top:10px">
@@ -899,7 +905,15 @@ body.summary-popup-open{overflow:hidden}
       <button id="loginBtn" class="go"><i class="ri-arrow-right-line"></i></button>
     </div>
     <div class="login-actions"><div id="remember" class="remember active"><div class="circle"></div><span>Remember Login</span></div><div class="lang-switch"><button class="lang-btn" id="loginLangBtn" type="button">KH</button></div></div>
-    <button id="googleLoginBtn" type="button" style="width:100%;padding:13px;border-radius:14px;margin:14px 0 6px;background:#fff;color:#253148;font-weight:750;border:1px solid #cbd5e1;cursor:pointer"><span style="font-size:19px;margin-right:7px">G</span> Continue with Google</button><div style="font-size:12px;opacity:.75;margin:4px 0 8px">Access requires an approved school account.</div><div id="loginStatus" class="status"></div>
+    <button id="googleLoginBtn" type="button" aria-label="Continue with Google">
+      <svg class="google-g-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Google" focusable="false">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.27 5.48-4.8 7.18l7.73 6C44.38 38.01 46.98 31.62 46.98 24.55z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.95-.76-4.59s.28-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24s.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.87-5.8l-7.73-6c-2.15 1.45-4.92 2.3-8.14 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+      </svg>
+      <span>Continue with Google</span>
+    </button><div style="font-size:12px;opacity:.75;margin:4px 0 8px">Access requires an approved school account.</div><div id="loginStatus" class="status"></div>
   </div>
 </div>
 
