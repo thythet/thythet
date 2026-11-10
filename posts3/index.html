@@ -1686,16 +1686,20 @@
       z-index:90;
       display:none;
       align-items:center;
-      justify-content:flex-end;
+      justify-content:flex-start;
       flex-direction:column;
       gap:10px;
       box-sizing:border-box;
       height:100vh;
       height:100dvh;
       min-height:0;
-      padding:max(10px, env(safe-area-inset-top)) 10px max(12px, env(safe-area-inset-bottom));
+      padding:max(10px, env(safe-area-inset-top)) 10px max(24px, env(safe-area-inset-bottom));
       margin-bottom:0;
-      overflow:hidden;
+      overflow-x:hidden;
+      overflow-y:auto;
+      overscroll-behavior-y:contain;
+      -webkit-overflow-scrolling:touch;
+      scroll-padding-top:14px;
       background:rgba(3,10,18,.56);
       backdrop-filter:blur(12px);
       -webkit-backdrop-filter:blur(12px);
@@ -1706,10 +1710,9 @@
       width:min(100%, var(--card-width));
       display:flex;
       flex-direction:column;
-      flex:0 1 auto;
-      min-height:0;
-      max-height:min(110px, 20dvh);
-      overflow-y:auto;
+      flex:0 0 auto;
+      max-height:none;
+      overflow:visible;
       gap:8px;
       pointer-events:none;
     }
@@ -1833,9 +1836,10 @@
 
     .composer-card{
       width:min(100%, var(--card-width));
-      flex:1 1 0%;
+      flex:0 0 auto;
       min-height:0;
-      max-height:960px;
+      height:auto;
+      max-height:none;
       display:flex;
       flex-direction:column;
       border-radius:var(--card-radius);
@@ -1851,8 +1855,13 @@
       flex:0 0 auto;
       gap:12px;
       margin-bottom:var(--gap);
-      position:relative;
-      z-index:5;
+      position:sticky;
+      top:max(8px, env(safe-area-inset-top));
+      z-index:30;
+      background:linear-gradient(135deg,rgba(40,22,81,.98),rgba(26,51,103,.98));
+      border-radius:14px;
+      padding:6px 4px;
+      box-shadow:0 8px 18px rgba(3,10,24,.15);
     }
     .composer-tabs{
       display:flex;
@@ -1949,23 +1958,17 @@
     }
     .composer-panel{
       display:none;
-      flex:1 1 auto;
+      flex:0 0 auto;
       min-height:0;
-      overflow-x:hidden;
-      overflow-y:auto;
-      overscroll-behavior-y:contain;
-      -webkit-overflow-scrolling:touch;
-      scrollbar-width:thin;
-      scrollbar-color:rgba(165,221,255,.35) transparent;
-      scroll-padding-block:14px;
+      height:auto;
+      max-height:none;
+      overflow:visible;
       border:1px solid rgba(255,255,255,.1);
       border-radius:24px;
       background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));
-      padding:14px 14px max(22px, env(safe-area-inset-bottom));
+      padding:14px 14px 22px;
       box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
     }
-    .composer-panel::-webkit-scrollbar{width:5px}
-    .composer-panel::-webkit-scrollbar-thumb{border-radius:999px;background:rgba(165,221,255,.35)}
     .composer-panel.active{display:block}
     body.admin-user .composer-panel.composer-admin-only{
       display:none !important;
@@ -11497,7 +11500,8 @@
       setComposerTab("create");
       composer.classList.add('open');
       composer.setAttribute('aria-hidden', 'false');
-      composer.querySelector('[data-composer-panel="create"]')?.scrollTo(0, 0);
+      // The entire overlay scrolls; a new or edited post opens at the top.
+      composer.scrollTop = 0;
       syncBottomNavState();
     }
 
@@ -11919,7 +11923,8 @@
       setComposerTab("create");
       composer.classList.add('open');
       composer.setAttribute('aria-hidden', 'false');
-      composer.querySelector('[data-composer-panel="create"]')?.scrollTo(0, 0);
+      // The entire overlay scrolls; a new or edited post opens at the top.
+      composer.scrollTop = 0;
       syncBottomNavState();
     }
 
