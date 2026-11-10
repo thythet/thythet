@@ -1,3 +1,7 @@
+# SundayKidPro — upgrade notes (historical)
+
+**Current release:** The nested Chat app, Report page and standalone dashboard have been removed from `sundaykidpro/`. The Home COPY THIS WEEK feature and Summary are retained, and Firebase records are not modified. The historical notes below describe an earlier release, not the current app.
+
 # Love Kid — Option B staged safe upgrade (v1)
 
 ## What is implemented

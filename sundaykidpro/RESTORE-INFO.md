@@ -1,3 +1,5 @@
+> **Historical document.** The current `sundaykidpro/` release no longer contains the nested Chat PWA, Report tab or `dashboard.html`. Paths and features below describe the older Kid3Pro restore.
+
 # Kid3Pro — Restored historical Love Kid Pro
 
 This folder is a complete independent **source-code copy** of `kid2pro/` as it existed in GitHub commit

@@ -140,7 +140,13 @@
       window.addEventListener("load",()=>{
         navigator.serviceWorker.register("./sw.js",{scope:"./"})
           .then(reg=>reg.update().catch(()=>{}))
-          .catch(err=>console.warn("Love Kid 3 Pro service worker:",err));
+          .catch(err=>console.warn("SundayKidPro service worker:",err));
+        // Retire the former Chat PWA only within this application folder.
+        const oldChatScope=new URL("./chat/",location.href).href;
+        navigator.serviceWorker.getRegistrations().then(regs=>Promise.all(regs
+          .filter(reg=>reg.scope===oldChatScope).map(reg=>reg.unregister()))).catch(()=>{});
+        if("caches" in window)caches.keys().then(keys=>Promise.all(keys
+          .filter(key=>key.startsWith("sundaykidpro-thechat-v")).map(key=>caches.delete(key)))).catch(()=>{});
       },{once:true});
     }
   }
