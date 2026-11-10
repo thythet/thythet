@@ -11337,7 +11337,11 @@
     }
 
     function updateComposerTabVisibility(){
-      if(!isAdmin()) setComposerTab("create");
+      // Admins have Publish instead of Upgrade; don't reset a non-admin
+      // user's Upgrade panel during ordinary profile or feed refreshes.
+      if(isAdmin() && document.querySelector('[data-composer-panel="upgrade"]')?.classList.contains('active')){
+        setComposerTab("create");
+      }
     }
 
     function captionHasUrl(text=""){
