@@ -349,7 +349,7 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
 #page-students .student-upload-btn{display:inline-flex;align-items:center;justify-content:center;
   gap:7px;flex:0 0 auto;min-height:46px;white-space:nowrap;cursor:pointer}
 #page-students .student-upload-btn i{display:inline-block;font-size:20px;line-height:1}
-#page-students .student-upload-btn:has(input:disabled){opacity:.55;pointer-events:none;cursor:wait}
+#page-students .student-upload-btn:disabled{opacity:.55;pointer-events:none;cursor:wait}
 #page-students .student-upload-progress{width:100%;height:9px;margin:9px 0 0;overflow:hidden;
   border:1px solid rgba(74,222,128,.35);border-radius:999px;background:rgba(16,75,44,.36)}
 #page-students .student-upload-progress-fill{height:100%;width:0%;border-radius:inherit;
@@ -384,9 +384,6 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
 
 
 /* Kid4Pro user-specific Cloudinary storage manager */
-.cloud-upload-choice{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin-top:10px;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.04)}
-.cloud-upload-choice label{font-size:12px;font-weight:800;display:flex;gap:6px;align-items:center}
-#cloudUploadSelect{flex:1;min-width:150px}
 .cloud-storage-list{display:grid;gap:8px}
 .cloud-storage-card{padding:11px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.045)}
 .cloud-storage-main{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
@@ -406,7 +403,6 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
 .cloud-share-user{display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.05);padding:9px;border-radius:9px;font-size:12px}
 .cloud-share-user input{width:17px;height:17px;accent-color:#5da7ff}
 .cloud-empty{padding:11px;font-size:12px;color:var(--muted)}
-@media(max-width:640px){.cloud-upload-choice label{width:100%}#cloudUploadSelect{width:100%}}
 
 /* Kid4Pro Cloudinary editor: compact, clear required fields, neutral optional field. */
 #cloudEditor{margin-top:10px;padding-top:10px}
@@ -433,6 +429,42 @@ body.compact .att-list-search i{display:block!important;position:absolute!import
   #cloudEditor .cloud-fields{grid-template-columns:1fr;gap:9px}
   #cloudEditor .cloud-fields .cloud-field:last-child{grid-column:auto}
   #cloudEditor .cloud-fields .input{font-size:16px}
+}
+
+
+/* Kid4Pro Storage tab + Select-Class-style on-demand photo storage menu */
+#page-storage .cloud-panel{margin:0;background:transparent;border:none}
+#page-storage .cloud-panel>summary{padding:10px 2px 12px;border-bottom:1px solid var(--line);font-weight:900}
+#page-storage .cloud-form{padding:12px 0 2px}
+#page-storage .cloud-new-btn{min-height:42px}
+#page-students .student-photo-row{position:relative;overflow:visible}
+#page-students .student-photo-row:has(#cloudPhotoPicker:not(.hidden)){z-index:240}
+#page-students .photo-upload-action{position:relative;display:flex;flex:0 0 auto;min-width:0;overflow:visible}
+#page-students .photo-upload-action .student-upload-btn{min-height:46px;white-space:nowrap;cursor:pointer;overflow:visible}
+#page-students .photo-upload-action .student-upload-btn:disabled{opacity:.55;cursor:wait}
+#page-students .cloud-photo-picker{position:absolute;z-index:400;right:0;top:calc(100% + 8px);
+  width:min(320px,calc(100vw - 56px));min-width:min(100%,245px);padding:8px;
+  border:1px solid rgba(147,197,253,.38);border-radius:18px;
+  background:linear-gradient(145deg,rgba(18,35,63,.98),rgba(25,43,76,.96));
+  box-shadow:0 20px 45px rgba(2,6,23,.36),inset 0 1px 0 rgba(255,255,255,.14);
+  max-height:min(345px,65dvh);overflow-y:auto;overscroll-behavior:contain}
+#page-students .cloud-photo-picker.open-upward{top:auto;bottom:calc(100% + 8px)}
+#page-students .cloud-photo-picker-heading{display:flex;align-items:center;gap:7px;
+  padding:6px 7px 10px;color:#dbeafe;font-size:12px;font-weight:850}
+#page-students .cloud-photo-options{display:grid;gap:6px}
+#page-students .cloud-photo-option{display:flex;align-items:center;justify-content:space-between;
+  gap:9px;width:100%;min-height:43px;padding:10px 12px;border-radius:11px;
+  background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.09);
+  color:#f8fafc;text-align:left;font-weight:850;line-height:1.3;cursor:pointer}
+#page-students .cloud-photo-option:hover,#page-students .cloud-photo-option.active{
+  background:linear-gradient(135deg,rgba(93,167,255,.34),rgba(122,121,255,.24));
+  border-color:rgba(147,197,253,.4)}
+#page-students .cloud-photo-option-label{min-width:0;overflow-wrap:anywhere}
+#page-students .cloud-photo-option i{flex:none;font-size:19px;opacity:.85}
+@media(max-width:400px){
+  #page-students .photo-upload-action{flex:1 1 100%;width:100%}
+  #page-students .photo-upload-action .student-upload-btn{width:100%}
+  #page-students .cloud-photo-picker{left:0;right:0;width:100%}
 }
 
 /* Compact single-line student attendance rows (kid2pro only). */
@@ -849,6 +881,7 @@ body.summary-popup-open{overflow:hidden}
        <button class="nav-btn" data-page="users"><i class="ri-google-fill"></i>Users</button>
       <button class="nav-btn" data-page="classes"><i class="ri-folder-line"></i>Class</button>
       <button class="nav-btn" data-page="students"><i class="ri-group-line"></i>Student</button>
+      <button class="nav-btn" data-page="storage"><i class="ri-cloud-line"></i>Storage</button>
       <button class="nav-btn" data-page="reports"><i class="ri-bar-chart-box-line"></i>Report</button>
       <button class="nav-btn" data-page="activity"><i class="ri-history-line"></i>Activity</button>
       <button class="nav-btn" data-page="themes"><i class="ri-palette-line"></i>Themes</button>
@@ -967,14 +1000,29 @@ body.summary-popup-open{overflow:hidden}
       </div>
       <div class="student-photo-row">
         <input id="studentPhoto" class="input" placeholder="Photo file name or uploaded URL">
-        <label class="btn student-upload-btn"><i class="ri-camera-4-line" aria-hidden="true"><svg width="20" height="20" style="display:block" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M14.4336 3C15.136 3 15.7869 3.36852 16.1484 3.9707L16.9209 5.25684C17.0113 5.40744 17.174 5.5 17.3496 5.5H19C20.6569 5.5 22 6.84315 22 8.5V18C22 19.6569 20.6569 21 19 21H5C3.34315 21 2 19.6569 2 18V8.5C2 6.84315 3.34315 5.5 5 5.5H6.65039C6.82602 5.5 6.98874 5.40744 7.0791 5.25684L7.85156 3.9707C8.21306 3.36852 8.86403 3 9.56641 3H14.4336ZM8.79492 6.28613C8.34311 7.03915 7.52855 7.5 6.65039 7.5H5C4.44772 7.5 4 7.94772 4 8.5V18C4 18.5523 4.44772 19 5 19H19C19.5523 19 20 18.5523 20 18V8.5C20 7.94772 19.5523 7.5 19 7.5H17.3496C16.4715 7.5 15.6569 7.03915 15.2051 6.28613L14.4336 5H9.56641L8.79492 6.28613ZM12 8.5C14.4853 8.5 16.5 10.5147 16.5 13C16.5 15.4853 14.4853 17.5 12 17.5C9.51472 17.5 7.5 15.4853 7.5 13C7.5 10.5147 9.51472 8.5 12 8.5ZM12 10.5C10.6193 10.5 9.5 11.6193 9.5 13C9.5 14.3807 10.6193 15.5 12 15.5C13.3807 15.5 14.5 14.3807 14.5 13C14.5 11.6193 13.3807 10.5 12 10.5Z"/></svg></i><span>Upload Photo</span><input type="file" id="studentPhotoUpload" accept="image/jpeg,image/png,image/webp" hidden></label>
+        <div class="photo-upload-action">
+          <button type="button" id="studentUploadButton" class="btn student-upload-btn" aria-haspopup="true" aria-expanded="false" aria-controls="cloudPhotoPicker"><i class="ri-camera-4-line" aria-hidden="true"></i><span>Upload Photo</span></button>
+          <input type="file" id="studentPhotoUpload" accept="image/jpeg,image/png,image/webp" hidden>
+          <div id="cloudPhotoPicker" class="cloud-photo-picker hidden" aria-label="Select upload storage">
+            <div class="cloud-photo-picker-heading"><i class="ri-cloud-upload-line" aria-hidden="true"></i><span id="cloudPhotoPickerTitle">Select upload storage</span></div>
+            <div id="cloudPhotoOptions" class="cloud-photo-options" role="group" aria-labelledby="cloudPhotoPickerTitle"></div>
+          </div>
+        </div>
       </div>
       <div id="studentUploadProgress" class="student-upload-progress hidden" role="progressbar" aria-label="Photo upload progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
         <div id="studentUploadProgressFill" class="student-upload-progress-fill"></div>
       </div>
       <div id="studentUploadStatus" class="student-upload-status" aria-live="polite"></div>
- <div class="cloud-upload-choice"><label for="cloudUploadSelect"><i class="ri-hard-drive-2-line"></i> Upload photos to</label><select id="cloudUploadSelect" class="input" aria-label="Photo storage"><option>Loading…</option></select></div>
-      <details id="cloudinarySettingsPanel" class="cloud-panel"><summary><i class="ri-cloud-line"></i> My Cloudinary Storage <span id="cloudinaryBadge">Loading…</span></summary>
+ <div class="student-save-row"><input id="studentSearch" class="input" placeholder="Search students"><button id="saveStudent" class="btn primary">Save</button></div>
+      <div id="studentStatus" class="status"></div>
+    </div>
+    <div id="studentList" class="list"></div>
+  </section>
+
+  <section id="page-storage" class="page">
+    <div class="panel glass">
+      <h2 id="storagePageTitle">Storage</h2>
+      <details id="cloudinarySettingsPanel" class="cloud-panel" open><summary><i class="ri-cloud-line"></i> My Cloudinary Storage <span id="cloudinaryBadge">Loading…</span></summary>
       <div class="cloud-form">
         <div id="cloudStorageList" class="cloud-storage-list"></div>
         <button id="cloudNewBtn" class="btn cloud-new-btn" type="button"><i class="ri-add-line"></i> Add Cloudinary Storage</button>
@@ -1010,10 +1058,8 @@ body.summary-popup-open{overflow:hidden}
         </div>
         <div id="cloudSaveStatus" class="status" aria-live="polite"></div>
       </div></details>
-      <div class="student-save-row"><input id="studentSearch" class="input" placeholder="Search students"><button id="saveStudent" class="btn primary">Save</button></div>
-      <div id="studentStatus" class="status"></div>
+      
     </div>
-    <div id="studentList" class="list"></div>
   </section>
 
   <section id="page-attendance" class="page">
@@ -1250,18 +1296,15 @@ function cloudItems(){
   return items;
 }
 function cloudCurrent(){
-  const items=cloudItems(),key=$("cloudUploadSelect")?.value||cloudState.defaultKey;
-  return items.find(i=>i.key===key)||items.find(i=>i.key===cloudState.defaultKey)||items[0]||null;
+  const items=cloudItems();
+  return items.find(i=>i.key===cloudState.defaultKey)||items[0]||null;
 }
 function cloudMessage(message,ok=false){const e=$("cloudSaveStatus");e.textContent=message;e.className="status "+(ok?"ok":"err");}
 function cloudDisplay(){
-  const allowed=cloudAllowed(),panel=$("cloudinarySettingsPanel"),select=$("cloudUploadSelect");
-  panel.classList.toggle("hidden",!allowed);select.closest(".cloud-upload-choice").classList.toggle("hidden",!allowed);
+  const allowed=cloudAllowed(),panel=$("cloudinarySettingsPanel");
+  panel.classList.toggle("hidden",!allowed);
   if(!allowed)return;
-  const items=cloudItems(),old=select.value||cloudState.defaultKey;
-  select.replaceChildren();
-  if(!items.length){select.add(new Option("No storage — add one below",""));select.disabled=true;}
-  else{select.disabled=false;items.forEach(i=>select.add(new Option(i.label,i.key)));select.value=items.some(i=>i.key===cloudState.defaultKey)?cloudState.defaultKey:(items.some(i=>i.key===old)?old:items[0].key);}
+  const items=cloudItems(),selectedKey=cloudCurrent()?.key||"";
   $("cloudinaryBadge").textContent=Object.keys(cloudState.own).length+" my storage · "+Object.keys(cloudState.shared).length+" shared";
   const list=$("cloudStorageList");list.replaceChildren();
   if(!items.length){const e=document.createElement("div");e.className="cloud-empty";e.textContent="No Cloudinary account configured. Add your own or ask Admin to share storage.";list.append(e);}
@@ -1269,12 +1312,12 @@ function cloudDisplay(){
     const row=document.createElement("div");row.className="cloud-storage-card";
     const main=document.createElement("div");main.className="cloud-storage-main";
     const name=document.createElement("span");name.className="cloud-storage-name";name.textContent=i.label;main.append(name);
-    if(i.key===select.value){const mark=document.createElement("span");mark.className="cloud-storage-mark";mark.textContent="Selected";main.append(mark);}
+    if(i.key===selectedKey){const mark=document.createElement("span");mark.className="cloud-storage-mark";mark.textContent="Selected";main.append(mark);}
     row.append(main);
     const meta=document.createElement("div");meta.className="cloud-storage-desc";meta.textContent=i.config.cloudName+(i.shared?" · Shared, read only":i.legacy?" · Used by older Kid versions":"");row.append(meta);
     const actions=document.createElement("div");actions.className="cloud-storage-actions";
     const btn=(label,action)=>{const b=document.createElement("button");b.type="button";b.className="btn";b.textContent=label;b.onclick=action;actions.append(b);};
-    if(i.key!==select.value)btn("Use",()=>cloudSetDefault(i.key));
+    if(i.key!==selectedKey)btn("Use",()=>cloudSetDefault(i.key));
     if(i.own){btn("Edit",()=>cloudEdit(i.id));if(canAdmin())btn("Share",()=>cloudShareOpen(i.id));}
     row.append(actions);list.append(row);
   });
@@ -1285,6 +1328,7 @@ function cloudStop(){
   cloudState.sharedWatchers.forEach(fn=>{try{fn();}catch{}});cloudState.sharedWatchers.clear();
   cloudState.own={};cloudState.shared={};cloudState.grants={};cloudState.allGrants={};cloudState.legacy={};
   cloudState.defaultKey="";cloudState.editId="";cloudState.shareId="";
+  cloudClosePhotoPicker();photoUploadChoiceKey="";
 }
 function cloudWatch(){
   cloudStop();if(!cloudAllowed())return;
@@ -1403,12 +1447,12 @@ $("cloudNewBtn").onclick=()=>cloudEdit("");
 $("cloudSaveBtn").onclick=cloudSave;$("cloudCancelBtn").onclick=cloudEditorClose;$("cloudDeleteBtn").onclick=cloudDelete;
 $("cloudShareSave").onclick=cloudShareSave;
 $("cloudShareClose").onclick=()=>{$("cloudSharePanel").classList.add("hidden");cloudState.shareId="";};
-$("cloudUploadSelect").onchange=e=>cloudSetDefault(e.target.value);
+// Photo upload storage is selected on demand from the Student Upload Photo button.
 
 const I18N = {
   en: {
     appTitle:"Sunday School", loginTitle:"Sunday School", email:"Email", key:"Key", remember:"Remember Login",
-    home:"Home", attendance:"Attend", summary:"Sum", attendancePage:"Attendance", church:"Church", roles:"Roles", users:"Users", classes:"Class", students:"Student", reports:"Report", dashboard:"Dashboard", activity:"Activity", themes:"Themes", effects:"Effects", compact:"Compact", normal:"Normal", logout:"Logout",
+    home:"Home", attendance:"Attend", summary:"Sum", attendancePage:"Attendance", church:"Church", roles:"Roles", users:"Users", classes:"Class", students:"Student", storage:"Storage", reports:"Report", dashboard:"Dashboard", activity:"Activity", themes:"Themes", effects:"Effects", compact:"Compact", normal:"Normal", logout:"Logout",
     overview:"Overview", churches:"Churches", present:"Present", copyWeek:"COPY THIS WEEK", homeClassCopy:"Class for weekly copy", churchName:"Church name", save:"Save", assignRole:"Assign Role", name:"Name", firebaseUid:"Firebase UID", pastor:"Pastor", teacher:"Teacher", saveRole:"Save Role",
     className:"Class name", classStartDate:"Start Date", classEndDate:"End Date (optional)", classLifecycle:"Status", classActive:"Active", classArchived:"Archived", classDateHelp:"Start Date is required for new classes. Leave End Date empty for an ongoing class. Archived classes and their attendance history remain available.", classDateInvalid:"End Date must be on or after Start Date.", classStartRequired:"Please choose a Start Date for this new class.", classCancel:"Cancel editing", classNotSet:"Date not set", studentName:"Student name", male:"Male", female:"Female", age:"Age", profilePhoto:"Profile picture file name", searchStudents:"Search students", search:"Search",
     total:"Total", absent:"Absent", summaryPresentCount:"Present checks", summaryAbsentCount:"Absent checks", summaryNoRecord:"No record", summaryLoading:"Loading", summaryUnavailable:"Unavailable", summaryHint:"Tap a square to see its date and status.", summary13:"Last 3 months", summary26:"Last 6 months", summary52:"Last 12 months", summaryAllClasses:"All classes", summaryDayPopupTitle:"Attendance details", summaryGoDay:"Go to that day", summarySyncLabel:"Sync horizontal scrolling", summarySyncOn:"ON — rows show the same dates", summarySyncOff:"OFF — rows scroll individually", summaryPopupDate:"Date", summaryPopupStatus:"Status", monthlyReport:"Monthly Report", average:"Average", sundays:"Sundays", weekMonths:"Weeks/Months", restore:"Restore", attendanceChecker:"Attendance Checker", emptyTrash:"Empty Trash", clearChecker:"Clear Checker", clearCheckerConfirm:"Clear attendance checker logs permanently?", clearActivity:"Clear Activity", seeAll:"See all", seeLess:"See less", noChecker:"No attendance checks yet",
@@ -1418,7 +1462,7 @@ const I18N = {
   },
   kh: {
     appTitle:"សាលាថ្ងៃអាទិត្យ", loginTitle:"គ្រូកុមារ", email:"អ៊ីមែល", key:"លេខសម្ងាត់", remember:"ចងចាំការចូល",
-    home:"ទំព័រដើម", attendance:"វត្តមាន", summary:"សង្ខេប", attendancePage:"វត្តមាន", church:"ពួកជំនុំ", roles:"តួនាទី", users:"អ្នកប្រើ", classes:"ថ្នាក់", students:"សិស្ស", reports:"របាយ", dashboard:"ផ្ទាំងកុមារ", activity:"សកម្មភាព", themes:"រចនាប័ទ្ម", effects:"ចលនា", compact:"តូច", normal:"ធម្មតា", logout:"ចាកចេញ",
+    home:"ទំព័រដើម", attendance:"វត្តមាន", summary:"សង្ខេប", attendancePage:"វត្តមាន", church:"ពួកជំនុំ", roles:"តួនាទី", users:"អ្នកប្រើ", classes:"ថ្នាក់", students:"សិស្ស", storage:"ឃ្លាំងផ្ទុក", reports:"របាយ", dashboard:"ផ្ទាំងកុមារ", activity:"សកម្មភាព", themes:"រចនាប័ទ្ម", effects:"ចលនា", compact:"តូច", normal:"ធម្មតា", logout:"ចាកចេញ",
     overview:"សង្ខេប", churches:"ពួកជំនុំ", present:"មានវត្តមាន", copyWeek:"ចម្លងសប្តាហ៍នេះ", homeClassCopy:"ជ្រើសរើសថ្នាក់សម្រាប់ចម្លង", churchName:"ឈ្មោះពួកជំនុំ", save:"រក្សាទុក", assignRole:"កំណត់តួនាទី", name:"ឈ្មោះ", firebaseUid:"Firebase UID", pastor:"គ្រូគង្វាល", teacher:"គ្រូ", saveRole:"រក្សាទុកតួនាទី",
     className:"ឈ្មោះថ្នាក់", classStartDate:"ថ្ងៃចាប់ផ្ដើម", classEndDate:"ថ្ងៃបញ្ចប់ (មិនបាច់ក៏បាន)", classLifecycle:"ស្ថានភាព", classActive:"កំពុងដំណើរការ", classArchived:"បានបណ្ណសារ", classDateHelp:"ថ្នាក់ថ្មីត្រូវមានថ្ងៃចាប់ផ្ដើម។ ទុកថ្ងៃបញ្ចប់ទទេសម្រាប់ថ្នាក់កំពុងដំណើរការ។ ថ្នាក់ដែលបានបណ្ណសារនៅតែអាចមើលប្រវត្តិវត្តមានបាន។", classDateInvalid:"ថ្ងៃបញ្ចប់ត្រូវស្មើ ឬក្រោយថ្ងៃចាប់ផ្ដើម។", classStartRequired:"សូមជ្រើសរើសថ្ងៃចាប់ផ្ដើមសម្រាប់ថ្នាក់ថ្មី។", classCancel:"បោះបង់ការកែប្រែ", classNotSet:"មិនទាន់កំណត់ថ្ងៃ", studentName:"ឈ្មោះសិស្ស", male:"ប្រុស", female:"ស្រី", age:"អាយុ", profilePhoto:"ឈ្មោះឯកសាររូបថត", searchStudents:"ស្វែងរកសិស្ស", search:"ស្វែងរក",
     total:"សរុប", absent:"អវត្តមាន", summaryPresentCount:"ចំនួនមានវត្តមាន", summaryAbsentCount:"ចំនួនអវត្តមាន", summaryNoRecord:"មិនមានកំណត់ត្រា", summaryLoading:"កំពុងផ្ទុក", summaryUnavailable:"មិនអាចទាញទិន្នន័យ", summaryHint:"ចុចលើប្រអប់ដើម្បីមើលកាលបរិច្ឆេទ និងស្ថានភាព។", summary13:"៣ ខែចុងក្រោយ", summary26:"៦ ខែចុងក្រោយ", summary52:"១២ ខែចុងក្រោយ", summaryAllClasses:"គ្រប់ថ្នាក់", summaryDayPopupTitle:"ព័ត៌មានវត្តមាន", summaryGoDay:"ទៅកាន់ថ្ងៃនោះ", summarySyncLabel:"រំកិលផ្ដេកព្រមគ្នា", summarySyncOn:"បើក — រំកិលតាមថ្ងៃដូចគ្នា", summarySyncOff:"បិទ — រំកិលតាមសិស្សនីមួយៗ", summaryPopupDate:"កាលបរិច្ឆេទ", summaryPopupStatus:"ស្ថានភាព", monthlyReport:"របាយការណ៍ប្រចាំខែ", average:"មធ្យម", sundays:"ថ្ងៃអាទិត្យ", weekMonths:"សប្តាហ៍/ខែ", restore:"ស្តារឡើងវិញ", emptyTrash:"លុបធុងសំរាម", clearChecker:"Clear Checker", clearCheckerConfirm:"Clear attendance checker logs permanently?", clearActivity:"សម្អាតសកម្មភាព",
@@ -1450,7 +1494,7 @@ function applyTranslations(){
   if($("appTitle")) $("appTitle").textContent=tr("appTitle");
   if($("userText") && state.profile) $("userText").textContent=state.profile?.name || roleLabel(state.role);
   setPlaceholder("email","email"); setPlaceholder("password","key"); setPlaceholder("churchName","churchName"); setPlaceholder("roleName","name"); setPlaceholder("roleEmail","email"); setPlaceholder("roleUid","firebaseUid"); setPlaceholder("className","className"); setPlaceholder("studentName","studentName"); setPlaceholder("studentAge","age"); setPlaceholder("studentPhoto","profilePhoto"); setPlaceholder("studentSearch","searchStudents"); setPlaceholder("attSearch","search");
-  setText("#remember span","remember"); setText("#page-home h2","overview"); setText(".home-stats .stat:nth-child(1) span","churches"); setText(".home-stats .stat:nth-child(2) span","students"); setText(".home-stats .stat:nth-child(3) span","present"); setText("#page-church h2","church"); setText("#page-roles h2","assignRole"); setText("#page-classes h2","classes"); setText("#page-students h2","students"); setText("#page-attendance h2","attendancePage"); setText("#page-reports h2","monthlyReport");
+  setText("#remember span","remember"); setText("#page-home h2","overview"); setText(".home-stats .stat:nth-child(1) span","churches"); setText(".home-stats .stat:nth-child(2) span","students"); setText(".home-stats .stat:nth-child(3) span","present"); setText("#page-church h2","church"); setText("#page-roles h2","assignRole"); setText("#page-classes h2","classes"); setText("#page-students h2","students"); setText("#storagePageTitle","storage"); setText("#page-attendance h2","attendancePage"); setText("#page-reports h2","monthlyReport");
   if($("homeClassChips"))$("homeClassChips").setAttribute("aria-label",tr("homeClassCopy"));
   setText("#classStartLabel","classStartDate"); setText("#classEndLabel","classEndDate");
   setText("#classLifecycleLabel","classLifecycle"); setText("#classDateHelp","classDateHelp");
@@ -1779,11 +1823,13 @@ function applyRole(){
   document.querySelectorAll(".nav-btn[data-page='church'],.nav-btn[data-page='roles'],.nav-btn[data-page='users'],.nav-btn[data-page='activity']").forEach(b=>b.classList.toggle("hidden",!canAdmin()));
   if($("dashboardBtn")) $("dashboardBtn").classList.toggle("hidden",!(canAdmin()||canTeacher()));
   document.querySelector(".nav-btn[data-page='classes']").classList.toggle("hidden",!(canAdmin()||canPastor()||canTeacher()));
+  document.querySelector(".nav-btn[data-page='storage']").classList.toggle("hidden",!cloudAllowed());
   cloudDisplay();
 }
 document.querySelectorAll(".nav-btn[data-page]").forEach(b=>b.onclick=()=>{ if(b.classList.contains("attend-tab")) playWeekPop(b); page(b.dataset.page); });
 if($("dashboardBtn")) $("dashboardBtn").onclick=()=>{ localStorage.setItem("dashboardLang", currentLang); location.href="./dashboard.html"; };
 function page(name){
+  cloudClosePhotoPicker();
   if(name!=="summary")closeSummaryDayPopup(true);
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
   $("page-"+name).classList.add("active");
@@ -2130,8 +2176,66 @@ function setStudentUploadProgress(value){
   track.setAttribute("aria-valuenow",String(percent));
   fill.style.width=percent+"%";
 }
+
+// Upload Photo opens a class-style storage dropdown only when a personal/shared
+// configuration exists. Legacy-only uploads remain a single tap.
+let photoUploadChoiceKey="";
+function cloudClosePhotoPicker(){
+  const picker=$("cloudPhotoPicker"),button=$("studentUploadButton");
+  if(picker){picker.classList.add("hidden");picker.classList.remove("open-upward");}
+  if(button)button.setAttribute("aria-expanded","false");
+}
+function cloudStartPhotoPicker(){
+  const button=$("studentUploadButton"),picker=$("cloudPhotoPicker"),options=$("cloudPhotoOptions");
+  if(button.disabled||!cloudAllowed())return;
+  if(!picker.classList.contains("hidden")){cloudClosePhotoPicker();return;}
+  const items=cloudItems(),hasPersonalOrShared=items.some(i=>i.own||i.shared);
+  if(!hasPersonalOrShared){
+    const legacy=items.find(i=>i.legacy);
+    if(legacy){cloudPickPhotoStorage(legacy.key);return;}
+    showStatus("studentUploadStatus","No Cloudinary storage available. Add storage on the Storage page.",false);
+    page("storage");$("cloudinarySettingsPanel").open=true;return;
+  }
+  options.replaceChildren();
+  const selected=cloudCurrent()?.key;
+  items.forEach(item=>{
+    const option=document.createElement("button");option.type="button";
+    option.className="custom-select-option cloud-photo-option"+(item.key===selected?" active":"");
+    const label=document.createElement("span");label.className="cloud-photo-option-label";label.textContent=item.label;
+    const icon=document.createElement("i");icon.className=item.key===selected?"ri-check-line":"ri-cloud-line";icon.setAttribute("aria-hidden","true");
+    option.append(label,icon);
+    option.onclick=event=>{event.stopPropagation();cloudPickPhotoStorage(item.key);};
+    options.append(option);
+  });
+  document.querySelectorAll(".custom-select.open").forEach(w=>w.classList.remove("open"));
+  picker.classList.remove("hidden");
+  button.setAttribute("aria-expanded","true");
+  // Keep the list on screen when the trigger is near the bottom on mobile.
+  const rect=button.getBoundingClientRect();
+  picker.classList.toggle("open-upward",rect.bottom+Math.min(345,items.length*54+48)>window.innerHeight&&rect.top>160);
+}
+function cloudPickPhotoStorage(key){
+  if(!cloudAllowed()||$("studentPhotoUpload").disabled)return;
+  const option=cloudItems().find(i=>i.key===key);
+  if(!option||!cloudValid(option.config)){
+    cloudClosePhotoPicker();
+    showStatus("studentUploadStatus","Selected storage is no longer available. Please choose again.",false);
+    return;
+  }
+  cloudClosePhotoPicker();
+  photoUploadChoiceKey=key;
+  // Open native photo picker directly inside the user's selection gesture.
+  $("studentPhotoUpload").click();
+}
+$("studentUploadButton").onclick=event=>{event.stopPropagation();cloudStartPhotoPicker();};
+document.addEventListener("click",event=>{
+  if(!$("cloudPhotoPicker").classList.contains("hidden")&&!event.target.closest(".photo-upload-action"))cloudClosePhotoPicker();
+});
+document.addEventListener("keydown",event=>{if(event.key==="Escape")cloudClosePhotoPicker();});
+
 $("studentPhotoUpload").addEventListener("change",async e=>{
   const input=e.target,file=input.files?.[0],status=$("studentUploadStatus");
+  const chosenKey=photoUploadChoiceKey;photoUploadChoiceKey="";
   if(!file)return;
   input.value="";
   resetStudentUploadProgress();
@@ -2144,12 +2248,12 @@ $("studentPhotoUpload").addEventListener("change",async e=>{
   }
   const church=canAdmin()?$("studentChurch").value:roleChurch();
   if(!church){fail("Choose a church first.");return;}
-  const cfg=cloudCurrent()?.config;
+  const cfg=cloudItems().find(i=>i.key===chosenKey)?.config;
   if(!cloudValid(cfg)){
     fail("No Cloudinary storage available. Add your own or ask Admin to share one.");return;
   }
   const save=$("saveStudent");
-  input.disabled=true;save.disabled=true;
+  input.disabled=true;$("studentUploadButton").disabled=true;save.disabled=true;
   setStudentUploadProgress(0);
   status.textContent="Uploading 0%";
   try{
@@ -2165,6 +2269,7 @@ $("studentPhotoUpload").addEventListener("change",async e=>{
     fail("Upload failed: "+err.message);
   }finally{
     input.disabled=false;
+    $("studentUploadButton").disabled=false;
     save.disabled=false;
   }
 });

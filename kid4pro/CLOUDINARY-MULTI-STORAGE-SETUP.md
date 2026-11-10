@@ -20,9 +20,9 @@ Shared storage is fetched one record at a time from `cloudinaryAccounts/$ownerUi
 
 1. In Cloudinary, create an **unsigned image-only** upload preset with strict format and file-size limits and a controlled folder.
 2. In Kid4Pro, sign in as an approved Admin, Teacher, or Pastor.
-3. Open **Student → My Cloudinary Storage → Add Cloudinary Storage**.
+3. Open the new **Storage** tab → **My Cloudinary Storage** → **Add Cloudinary Storage**.
 4. Enter a storage label, Cloud Name, unsigned upload preset, and optionally a folder. Fields marked * are required; Cloud Name and preset must match Cloudinary. Read the short security note and choose **Save Storage**. The browser records the existing acknowledgement timestamp when saved, without an extra checkbox.
-5. Use the dropdown **Upload photos to** to choose the active storage. This default is saved in Firebase.
+5. Open the **Student** tab and tap **Upload Photo**. When personal or shared storage is available, a Select-Class-style dropdown lists all permitted destinations (including legacy storage, if configured). Choose a destination to open the native photo picker. With legacy storage only, the photo picker opens immediately. With no configured storage, the app opens the Storage page and prompts for setup. For a default storage across devices, choose **Use** on the Storage page.
 6. For Admin: choose **Share** next to an Admin-owned storage, select approved Teachers or Pastors, and select **Save Sharing**. Recipients see the shared storage as read-only.
 
 The old `settings/cloudinary` is still displayed as **School Storage (legacy)** if configured. It is read-only in Kid4Pro; older Kid versions continue using it.
@@ -35,6 +35,15 @@ The old `settings/cloudinary` is still displayed as **School Storage (legacy)** 
 - Deleting a storage entry does **not** delete previously uploaded images.
 - Revoking a Firebase share removes future access to the Firebase configuration, but cannot revoke a preset value already known to a user.
 - Changing the same Firebase project's live rules affects all applications using that database. Existing rule blocks were preserved in the prepared file, but test old Kid2Pro/Kid3Pro reads/writes and account permissions before and after publishing.
+
+## Student photo picker behavior
+
+- The Student form does not display a permanent Cloudinary storage dropdown or storage settings panel.
+- The Storage tab contains the complete personal-storage list, Add/Edit/Delete actions, default selection, and Admin sharing controls.
+- Upload Photo opens a compact glass option list only when a personal or shared storage is configured. Choosing a listed storage launches the device file picker directly.
+- No personal/shared storage + configured legacy account uses the existing legacy account without an extra choice.
+- No usable storage shows a notice and opens the Storage tab. A revoked storage cannot be used to upload.
+- The selected storage is per upload; selecting it does not silently change a saved default. The **Use** action on the Storage page still saves the default in Firebase.
 
 ## Manual smoke/regression tests
 
