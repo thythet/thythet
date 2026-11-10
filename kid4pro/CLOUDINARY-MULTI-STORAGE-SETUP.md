@@ -21,7 +21,7 @@ Shared storage is fetched one record at a time from `cloudinaryAccounts/$ownerUi
 1. In Cloudinary, create an **unsigned image-only** upload preset with strict format and file-size limits and a controlled folder.
 2. In Kid4Pro, sign in as an approved Admin, Teacher, or Pastor.
 3. Open **Student → My Cloudinary Storage → Add Cloudinary Storage**.
-4. Enter a storage label, Cloud Name, unsigned upload preset, and optionally a folder. Check the security warning and save.
+4. Enter a storage label, Cloud Name, unsigned upload preset, and optionally a folder. Fields marked * are required; Cloud Name and preset must match Cloudinary. Read the short security note and choose **Save Storage**. The browser records the existing acknowledgement timestamp when saved, without an extra checkbox.
 5. Use the dropdown **Upload photos to** to choose the active storage. This default is saved in Firebase.
 6. For Admin: choose **Share** next to an Admin-owned storage, select approved Teachers or Pastors, and select **Save Sharing**. Recipients see the shared storage as read-only.
 
