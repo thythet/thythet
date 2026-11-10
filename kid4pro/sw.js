@@ -1,5 +1,5 @@
 /* Love Kid Pro PWA app shell. Never cache Firebase responses or student data. */
-const CACHE="lovekid-4pro-shell-v6";
+const CACHE="lovekid-4pro-shell-v7";
 const SHELL=[
   "./","./index.html","./dashboard.html",
   "./themes.css","./effects.css","./theme-switcher.js","./effect-switcher.js",
