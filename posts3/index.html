@@ -1837,6 +1837,8 @@
       justify-content:space-between;
       gap:12px;
       margin-bottom:var(--gap);
+      position:relative;
+      z-index:5;
     }
     .composer-tabs{
       display:flex;
@@ -1885,6 +1887,51 @@
     }
     body.admin-user .composer-tab-btn.composer-admin-only{
       display:inline-flex !important;
+    }
+    .composer-audience-wrap{
+      position:relative;
+      display:flex;
+      flex:0 1 auto;
+      min-width:0;
+    }
+    .composer-audience-trigger{
+      width:100%;
+      gap:4px;
+    }
+    body.admin-user .composer-audience-wrap{flex:1 1 0}
+    .composer-header-publish{
+      display:none;
+      background:linear-gradient(135deg,rgba(80,176,214,.32),rgba(45,153,153,.28));
+      border-color:rgba(157,228,247,.45);
+      color:#fff;
+    }
+    body.admin-user .composer-header-publish{display:inline-flex}
+    body.admin-user .composer-user-upgrade{display:none}
+    .composer-audience-menu{
+      position:absolute;
+      top:calc(100% + 10px);
+      left:0;
+      display:block;
+      width:min(330px,calc(100vw - 36px));
+      max-height:min(390px,calc(100dvh - 180px));
+      overflow-y:auto;
+      overscroll-behavior:contain;
+      padding:14px;
+      border-radius:20px;
+      border:1px solid rgba(183,221,255,.29);
+      background:linear-gradient(150deg,rgba(37,40,80,.98),rgba(20,70,97,.98));
+      color:#fff;
+      box-shadow:0 22px 56px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.12);
+      z-index:25;
+    }
+    .composer-audience-menu[hidden]{display:none !important}
+    .composer-audience-menu .composer-panel-title{margin-bottom:12px}
+    .composer-head + .composer-panel{position:relative;z-index:0}
+    @media(max-width:400px){
+      .composer-head{gap:7px}
+      .composer-tabs{gap:5px}
+      .composer-tab-btn{font-size:11px;padding:0 5px}
+      .composer-head .profile-close-btn{width:34px;height:34px}
     }
     .composer-panel{
       display:none;
@@ -4947,8 +4994,23 @@
         <div class="composer-head">
           <div class="composer-tabs" id="composerTabs">
             <button class="composer-tab-btn active" type="button" data-composer-tab="create">Create Post</button>
-            <button class="composer-tab-btn" type="button" data-composer-tab="audience"><i class="ri-earth-line" aria-hidden="true"></i> Audience</button>
-            <button class="composer-tab-btn composer-admin-only" type="button" data-composer-tab="upgrade">Upgrade</button>
+            <div class="composer-audience-wrap" id="composerAudienceWrap">
+              <button class="composer-tab-btn composer-audience-trigger" id="composerAudienceBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="composerAudienceMenu"><i class="ri-earth-line" aria-hidden="true"></i> Audience <i class="ri-arrow-down-s-line" aria-hidden="true"></i></button>
+              <div class="composer-audience-menu" id="composerAudienceMenu" role="group" aria-label="Post audience" hidden>
+                <div class="composer-panel-title"><i class="ri-earth-line" aria-hidden="true"></i> Post audience</div>
+                <div class="audience-stack" id="audienceChoices">
+                  <button class="audience-choice" type="button" data-audience-value="public"><span>Public</span><span class="switch-dot" aria-hidden="true"></span></button>
+                  <button class="audience-choice" type="button" data-audience-value="following"><span>Only user you following</span><span class="switch-dot" aria-hidden="true"></span></button>
+                  <button class="audience-choice active" type="button" data-audience-value="followers"><span>Only your follower</span><span class="switch-dot" aria-hidden="true"></span></button>
+                  <button class="audience-choice" type="button" data-audience-value="followers_following"><span>Follower and following</span><span class="switch-dot" aria-hidden="true"></span></button>
+                  <button class="audience-choice" type="button" data-audience-value="only_me"><span>Only me</span><span class="switch-dot" aria-hidden="true"></span></button>
+                  <button class="audience-choice" type="button" data-audience-value="selected"><span>Only user I want to show</span><span class="switch-dot" aria-hidden="true"></span></button>
+                </div>
+                <div class="audience-user-list" id="audienceUserList"></div>
+              </div>
+            </div>
+            <button class="composer-tab-btn composer-user-upgrade" type="button" data-composer-tab="upgrade">Upgrade</button>
+            <button class="composer-tab-btn composer-header-publish composer-publish-btn" id="composerHeaderPublishBtn" type="submit" form="composerForm">Publish</button>
           </div>
           <button class="profile-close-btn" id="composerCloseBtn" type="button" aria-label="Close composer">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 6 6 18M6 6l12 12"/></svg>
@@ -4987,7 +5049,7 @@
             <div class="audio-selected" id="audioSelectedText">No storage audio selected.</div>
             <div class="composer-actions">
               <button class="btn danger" type="button" id="clearFormBtn">Clear</button>
-              <button class="btn primary" type="submit">Publish</button>
+              <button class="btn primary composer-publish-btn" type="submit">Publish</button>
             </div>
             <div class="composer-quality-row">
               <div class="composer-status" id="composerStatus" role="status" aria-live="polite"></div>
@@ -5000,21 +5062,7 @@
             </div>
           </form>
         </div>
-        <div class="composer-panel" data-composer-panel="audience">
-          <div class="composer-panel-copy">
-            <div class="composer-panel-title"><i class="ri-earth-line" aria-hidden="true"></i> Post audience</div>
-            <div class="audience-stack" id="audienceChoices">
-              <button class="audience-choice" type="button" data-audience-value="public"><span>Public</span><span class="switch-dot" aria-hidden="true"></span></button>
-              <button class="audience-choice" type="button" data-audience-value="following"><span>Only user you following</span><span class="switch-dot" aria-hidden="true"></span></button>
-              <button class="audience-choice active" type="button" data-audience-value="followers"><span>Only your follower</span><span class="switch-dot" aria-hidden="true"></span></button>
-              <button class="audience-choice" type="button" data-audience-value="followers_following"><span>Follower and following</span><span class="switch-dot" aria-hidden="true"></span></button>
-              <button class="audience-choice" type="button" data-audience-value="only_me"><span>Only me</span><span class="switch-dot" aria-hidden="true"></span></button>
-              <button class="audience-choice" type="button" data-audience-value="selected"><span>Only user I want to show</span><span class="switch-dot" aria-hidden="true"></span></button>
-            </div>
-            <div class="audience-user-list" id="audienceUserList"></div>
-          </div>
-        </div>
-        <div class="composer-panel composer-admin-only" data-composer-panel="upgrade">
+        <div class="composer-panel" data-composer-panel="upgrade">
           <div class="composer-panel-copy">
             <div class="composer-panel-title">Upgrade</div>
             <div class="composer-panel-text"></div>
@@ -5585,6 +5633,7 @@
     let activeImagePreloads = 0;
     let postShareCounts = {};
     let editingPostId = "";
+    let publishInProgress = false;
     let imageLinkValues = [""];
     let imageHdValues = [false];
     let audioLinkValues = [""];
@@ -11160,7 +11209,9 @@
     function setAudienceValue(value="public", users=[]){
       const audience = normalizeAudience(value);
       document.querySelectorAll('.audience-choice').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.audienceValue === audience);
+        const selected = btn.dataset.audienceValue === audience;
+        btn.classList.toggle('active', selected);
+        btn.setAttribute('aria-pressed', String(selected));
       });
       const list = document.getElementById('audienceUserList');
       if(list){
@@ -11215,13 +11266,20 @@
       };
     }
 
+    function syncComposerPublishButtons(busy=publishInProgress){
+      const label = editingPostId ? "Update" : "Publish";
+      composer.querySelectorAll('.composer-publish-btn').forEach(button => {
+        button.disabled = !!busy;
+        button.textContent = busy ? (editingPostId ? "Updating..." : "Publishing...") : label;
+        button.setAttribute("aria-busy", String(!!busy));
+      });
+    }
+
     function setComposerMode(post=null){
-      const form = document.getElementById('composerForm');
-      const publishBtn = form.querySelector('button[type="submit"]');
       const statusEl = document.getElementById('composerStatus');
 
       editingPostId = post?.id || "";
-      publishBtn.textContent = editingPostId ? "Update" : "Publish";
+      syncComposerPublishButtons();
       if(statusEl){
         statusEl.textContent = editingPostId ? "Editing existing post." : "";
         statusEl.className = "composer-status";
@@ -11241,10 +11299,36 @@
       composer.setAttribute('aria-hidden', 'false');
     }
 
+    function positionAudienceDropdown(){
+      const wrap = document.getElementById('composerAudienceWrap');
+      const menu = document.getElementById('composerAudienceMenu');
+      const card = wrap?.closest('.composer-card');
+      if(!wrap || !menu || !card) return;
+      const cardBox = card.getBoundingClientRect();
+      const wrapBox = wrap.getBoundingClientRect();
+      const width = Math.max(200, Math.min(330, cardBox.width - 28));
+      const left = Math.max(cardBox.left + 14, Math.min(wrapBox.left, cardBox.right - width - 14));
+      menu.style.width = width + "px";
+      menu.style.left = Math.round(left - wrapBox.left) + "px";
+    }
+
+    function setAudienceDropdownOpen(open=false){
+      const menu = document.getElementById('composerAudienceMenu');
+      const trigger = document.getElementById('composerAudienceBtn');
+      if(!menu || !trigger) return;
+      const isOpen = !!open && composer.classList.contains('open');
+      menu.hidden = !isOpen;
+      trigger.setAttribute('aria-expanded', String(isOpen));
+      trigger.classList.toggle('active', isOpen);
+      document.getElementById('composerAudienceWrap')?.classList.toggle('open', isOpen);
+      if(isOpen) positionAudienceDropdown();
+    }
+
     function setComposerTab(tab="create"){
-      if(!["create","audience","upgrade"].includes(tab)) tab = "create";
-      if(tab === "upgrade" && !isAdmin()) tab = "create";
-      document.querySelectorAll('.composer-tab-btn').forEach(btn => {
+      if(!["create","upgrade"].includes(tab)) tab = "create";
+      if(tab === "upgrade" && isAdmin()) tab = "create";
+      setAudienceDropdownOpen(false);
+      document.querySelectorAll('[data-composer-tab]').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.composerTab === tab);
       });
       document.querySelectorAll('[data-composer-panel]').forEach(panel => {
@@ -11350,18 +11434,19 @@
 
     function closeComposer(saveDraft=true){
       if(saveDraft) saveComposerDraft();
+      setAudienceDropdownOpen(false);
       composer.classList.remove('open');
       composer.setAttribute('aria-hidden', 'true');
     }
 
     async function publishPost(e){
       e.preventDefault();
+      if(publishInProgress) return;
       if(audioUploadBusy){
         setComposerStatusMessage("Wait for audio conversion and Cloudinary upload to finish.", "error");
         return;
       }
       const statusEl = document.getElementById('composerStatus');
-      const publishBtn = e.target.querySelector('button[type="submit"]');
       const setComposerStatus = (message, type="") => {
         if(!statusEl) return;
         statusEl.textContent = message;
@@ -11390,8 +11475,9 @@
 
       if(USE_FIREBASE){
         try{
+        publishInProgress = true;
+        syncComposerPublishButtons();
         setComposerStatus("Publishing...");
-        if(publishBtn) publishBtn.disabled = true;
         const signedInUser = auth && auth.currentUser ? auth.currentUser : currentUser;
         currentUser = signedInUser;
         updateAuthUI();
@@ -11461,8 +11547,9 @@
         }
         const audienceSettings = getAudienceSettings();
         if(audienceSettings.audience === "selected" && !audienceSettings.audienceUsers.length){
-          setComposerTab("audience");
-          setComposerStatus("Add at least one email or user ID for selected audience.", "error");
+          setComposerTab("create");
+          setAudienceDropdownOpen(true);
+          setComposerStatus("Select at least one user for the selected audience.", "error");
           return;
         }
 
@@ -11534,7 +11621,8 @@
           setComposerStatus("Publish failed. " + message, "error");
           alert("Publish failed.\n\n" + message + "\n\nIf this says permission_denied, update Realtime Database rules.");
         }finally{
-          if(publishBtn) publishBtn.disabled = false;
+          publishInProgress = false;
+          syncComposerPublishButtons();
         }
       }else{
         const post = {
@@ -11623,15 +11711,38 @@
     }
 
     document.getElementById('composerTabs')?.addEventListener('click', e => {
-      const tab = e.target.closest('.composer-tab-btn');
-      if(!tab) return;
-      setComposerTab(tab.dataset.composerTab || "create");
+      const trigger = e.target.closest('#composerAudienceBtn');
+      if(trigger){
+        const shouldOpen = trigger.getAttribute('aria-expanded') !== 'true';
+        if(shouldOpen) setComposerTab("create");
+        setAudienceDropdownOpen(shouldOpen);
+        return;
+      }
+      const tab = e.target.closest('[data-composer-tab]');
+      if(tab) setComposerTab(tab.dataset.composerTab || "create");
+    });
+    document.addEventListener('pointerdown', e => {
+      const wrap = document.getElementById('composerAudienceWrap');
+      if(wrap && !wrap.contains(e.target)) setAudienceDropdownOpen(false);
+    });
+    document.addEventListener('keydown', e => {
+      if(e.key === "Escape" && document.getElementById('composerAudienceBtn')?.getAttribute('aria-expanded') === 'true'){
+        setAudienceDropdownOpen(false);
+        document.getElementById('composerAudienceBtn')?.focus();
+        e.stopPropagation();
+      }
+    });
+    window.addEventListener('resize', () => {
+      if(document.getElementById('composerAudienceBtn')?.getAttribute('aria-expanded') === 'true') positionAudienceDropdown();
     });
     document.getElementById('audienceChoices')?.addEventListener('click', e => {
       const choice = e.target.closest('.audience-choice');
       if(!choice) return;
-      setAudienceValue(choice.dataset.audienceValue || "public", selectedAudienceUserIds());
+      const selectedValue = choice.dataset.audienceValue || "public";
+      setAudienceValue(selectedValue, selectedAudienceUserIds());
       saveComposerDraft();
+      // Keep the menu open so selected users can be checked.
+      if(selectedValue !== "selected") setAudienceDropdownOpen(false);
     });
     document.getElementById('audienceUserList')?.addEventListener('change', () => {
       const selected = selectedAudienceUserIds();
