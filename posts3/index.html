@@ -1911,17 +1911,44 @@
     body.admin-user .composer-tab-btn.composer-admin-only{
       display:inline-flex !important;
     }
-    .composer-audience-wrap{
+    .composer-audience-wrap,
+    body.admin-user .composer-audience-wrap{
       position:relative;
       display:flex;
-      flex:0 1 auto;
-      min-width:0;
+      align-items:center;
+      justify-content:center;
+      flex:0 0 38px;
+      width:38px;
+      min-width:38px;
     }
-    .composer-audience-trigger{
-      width:100%;
-      gap:4px;
+    .composer-tab-btn.composer-audience-trigger,
+    body.admin-user .composer-tab-btn.composer-audience-trigger{
+      flex:0 0 38px;
+      width:38px;
+      height:38px;
+      min-height:38px;
+      padding:0;
+      border:0;
+      border-radius:10px;
+      background:transparent;
+      box-shadow:none;
+      color:rgba(255,255,255,.86);
     }
-    body.admin-user .composer-audience-wrap{flex:1 1 0}
+    .composer-tab-btn.composer-audience-trigger:hover,
+    .composer-tab-btn.composer-audience-trigger.active{
+      border:0;
+      background:transparent;
+      box-shadow:none;
+      color:#fff;
+    }
+    .composer-audience-trigger i{
+      font-size:19px;
+      line-height:1;
+    }
+    .composer-audience-trigger:focus-visible{
+      outline:2px solid rgba(169,227,255,.7);
+      outline-offset:2px;
+    }
     .composer-header-publish{
       display:none;
       background:linear-gradient(135deg,rgba(80,176,214,.32),rgba(45,153,153,.28));
@@ -5073,7 +5100,7 @@
           <div class="composer-tabs" id="composerTabs">
             <button class="composer-tab-btn active" type="button" data-composer-tab="create">Create Post</button>
             <div class="composer-audience-wrap" id="composerAudienceWrap">
-              <button class="composer-tab-btn composer-audience-trigger" id="composerAudienceBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="composerAudienceMenu"><i class="ri-earth-line" aria-hidden="true"></i> Audience <i class="ri-arrow-down-s-line" aria-hidden="true"></i></button>
+              <button class="composer-tab-btn composer-audience-trigger" id="composerAudienceBtn" type="button" title="Audience" aria-label="Audience settings" aria-haspopup="true" aria-expanded="false" aria-controls="composerAudienceMenu"><i class="ri-earth-line" aria-hidden="true"></i></button>
               <div class="composer-audience-menu" id="composerAudienceMenu" role="group" aria-label="Post audience" hidden>
                 <div class="composer-panel-title"><i class="ri-earth-line" aria-hidden="true"></i> Post audience</div>
                 <div class="audience-stack" id="audienceChoices">
