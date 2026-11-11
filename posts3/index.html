@@ -5786,6 +5786,7 @@
     let initialFeedWatchdog = null;
     let initialHttpFeedTimer = null;
     let liveFeedSnapshotReceived = false;
+    let liveFeedRepairTimer = null;
     let presenceHeartbeatTimer = null;
 
     function setFeedConnectionPhase(phase, message=""){
@@ -5806,6 +5807,7 @@
       initialFeedWatchdog = null;
       clearFeedRecovery();
       setFeedConnectionPhase("http-feed-ready");
+      if(!liveFeedSnapshotReceived) scheduleLiveFeedRepair(sessionId);
       console.info("[posts3] Feed loaded through independent HTTPS connection");
       return true;
     }
@@ -5895,8 +5897,10 @@
         clearFeedRecovery();
         if(initialFeedWatchdog) clearTimeout(initialFeedWatchdog);
         if(initialHttpFeedTimer) clearTimeout(initialHttpFeedTimer);
+        if(liveFeedRepairTimer) clearTimeout(liveFeedRepairTimer);
         initialFeedWatchdog = null;
         initialHttpFeedTimer = null;
+        liveFeedRepairTimer = null;
         ++feedLoadRequestId;
         feedSnapshotVersion = 0;
         liveFeedSnapshotReceived = false;
@@ -8360,6 +8364,8 @@
           scheduleAdminRealtimeRefresh();
           ++feedSnapshotVersion;
           liveFeedSnapshotReceived = true;
+          if(liveFeedRepairTimer) clearTimeout(liveFeedRepairTimer);
+          liveFeedRepairTimer = null;
           feedLoadFailed = false;
           setFeedConnectionPhase("realtime-ready");
           if(initialFeedWatchdog) clearTimeout(initialFeedWatchdog);
@@ -9230,6 +9236,26 @@
       }, delay);
     }
 
+    function scheduleLiveFeedRepair(sessionId){
+      if(liveFeedSnapshotReceived || liveFeedRepairTimer || !currentUser) return;
+      liveFeedRepairTimer = setTimeout(() => {
+        liveFeedRepairTimer = null;
+        if(sessionId !== authStateRunId || liveFeedSnapshotReceived || !currentUser) return;
+        if(navigator.onLine === false){
+          scheduleLiveFeedRepair(sessionId);
+          return;
+        }
+        try{
+          if(typeof postsUnsubscribe === "function") postsUnsubscribe();
+          postsUnsubscribe = watchPostsSnapshot(fb.dbRef(db,"sermonPosts"),true);
+        }catch(error){
+          postsUnsubscribe = null;
+          console.warn("[posts3] Live listener repair failed:",error);
+        }
+        if(!liveFeedSnapshotReceived) scheduleLiveFeedRepair(sessionId);
+      },40000);
+    }
+
     async function retryFeedAfterReconnect(){
       if(!USE_FIREBASE || reconnectRetryInFlight || (!currentUser && !hasSharedPostLink())) return;
       reconnectRetryInFlight = true;
@@ -9253,6 +9279,7 @@
           else if(feedLoadFailed) applyPostsSnapshot(value,true);
           feedLoadFailed = false;
           clearFeedRecovery();
+          if(!liveFeedSnapshotReceived) scheduleLiveFeedRepair(runId);
           setFeedConnectionPhase("http-recovered");
         }else{
           const result = await loadFirebasePosts();
@@ -13418,9 +13445,11 @@
     window.addEventListener('online', () => updateConnectionState(true, true));
     // Mobile browsers can suspend Firebase sockets while in the background.
     document.addEventListener('visibilitychange', () => {
-      if(!document.hidden && navigator.onLine !== false
-        && (feedSnapshotVersion === 0 || feedLoadFailed)){
+      if(document.hidden || navigator.onLine === false) return;
+      if(feedSnapshotVersion === 0 || feedLoadFailed){
         scheduleFeedRecovery(true);
+      }else if(!liveFeedSnapshotReceived){
+        scheduleLiveFeedRepair(authStateRunId);
       }
     });
     document.addEventListener('keydown', event => {
