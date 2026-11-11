@@ -5784,7 +5784,31 @@
     let feedRecoveryTimer = null;
     let feedRecoveryAttempt = 0;
     let initialFeedWatchdog = null;
+    let initialHttpFeedTimer = null;
+    let liveFeedSnapshotReceived = false;
     let presenceHeartbeatTimer = null;
+
+    function setFeedConnectionPhase(phase, message=""){
+      document.documentElement.dataset.posts3Connection = phase;
+      if(!message || !currentUser || feedSnapshotVersion > 0) return;
+      const initial = document.querySelector('[data-feed-initial-status]');
+      if(initial && !initial.querySelector('button')) initial.textContent = message;
+    }
+
+    function applyInitialHttpPosts(value, sessionId){
+      // Do not render until the account is verified and the user is allowed.
+      if(sessionId !== authStateRunId || !currentUser || !currentProfile || isBlockedUser() || feedSnapshotVersion > 0) return false;
+      applyPostsSnapshot(value || {}, true);
+      renderRoleUI();
+      ++feedSnapshotVersion;
+      feedLoadFailed = false;
+      if(initialFeedWatchdog) clearTimeout(initialFeedWatchdog);
+      initialFeedWatchdog = null;
+      clearFeedRecovery();
+      setFeedConnectionPhase("http-feed-ready");
+      console.info("[posts3] Feed loaded through independent HTTPS connection");
+      return true;
+    }
     let presenceUserUid = "";
 
     function isAndroidWebViewApp(){
@@ -5807,14 +5831,30 @@
       renderAuthGate();
     }
 
-    if(USE_FIREBASE){
-      const appMod = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js");
-      const authMod = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js");
-      const dbMod = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js");
-
-      app = appMod.initializeApp(firebaseConfig);
-      auth = authMod.getAuth(app);
-      db = dbMod.getDatabase(app);
+    let firebaseBootstrapTimer = null;
+    let firebaseBootstrapAttempt = 0;
+    let firebaseBootstrapActive = false;
+    let firebaseBootstrapReady = false;
+    async function bootstrapFirebase(){
+      if(!USE_FIREBASE || firebaseBootstrapActive || firebaseBootstrapReady) return;
+      firebaseBootstrapActive = true;
+      firebaseBootstrapAttempt++;
+      setFeedConnectionPhase("sdk-loading");
+      try{
+        let sdkTimeout;
+        const [appMod, authMod, dbMod] = await Promise.race([
+          Promise.all([
+            import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js"),
+            import("https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js"),
+            import("https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js")
+          ]),
+          new Promise((_,reject) => {
+            sdkTimeout = setTimeout(() => reject(new Error("Firebase SDK download timed out")), 11000);
+          })
+        ]).finally(() => clearTimeout(sdkTimeout));
+        app = app || appMod.initializeApp(firebaseConfig);
+        auth = auth || authMod.getAuth(app);
+        db = db || dbMod.getDatabase(app);
 
       fb = {
         ...authMod,
@@ -5854,9 +5894,12 @@
         // Discard pending retries and async results from the previous session.
         clearFeedRecovery();
         if(initialFeedWatchdog) clearTimeout(initialFeedWatchdog);
+        if(initialHttpFeedTimer) clearTimeout(initialHttpFeedTimer);
         initialFeedWatchdog = null;
+        initialHttpFeedTimer = null;
         ++feedLoadRequestId;
         feedSnapshotVersion = 0;
+        liveFeedSnapshotReceived = false;
         reconnectRetryInFlight = false;
         let openFallbackTimer = null;
         try{
@@ -5883,16 +5926,34 @@
             if(!feed.querySelector('.post[data-post-id]')){
               feed.innerHTML = '<div class="empty" data-feed-initial-status>Connecting to your posts...</div>';
             }
+            setFeedConnectionPhase("profile-loading", "Checking your account and loading posts...");
             openFallbackTimer = setTimeout(() => {
-              if(runId !== authStateRunId) return;
-              showFeedStartupError('Connecting is taking longer than expected.');
+              if(runId !== authStateRunId || feedSnapshotVersion > 0) return;
+              showFeedStartupError("Firebase is slow. Retrying posts automatically.");
             }, 14000);
           }
           updateAuthUI();
           if(user){
-            // Profile first (needed for role/permissions), then load feed ASAP and parallelize the rest.
-            await ensureUserProfile(user);
+            // Begin a read-only HTTPS feed request while the profile is being
+            // verified. The results are not rendered until profile validation.
+            const profileReady = ensureUserProfile(user);
+            initialHttpFeedTimer = setTimeout(() => {
+              initialHttpFeedTimer = null;
+              if(runId !== authStateRunId || feedSnapshotVersion > 0) return;
+              setFeedConnectionPhase("https-preload", "Loading posts through backup connection...");
+              fetchPostsByRest(9000).then(async value => {
+                await profileReady;
+                if(runId === authStateRunId) applyInitialHttpPosts(value,runId);
+              }).catch(error => {
+                if(runId === authStateRunId && feedSnapshotVersion === 0){
+                  console.warn("[posts3] HTTPS feed preload unavailable:",error);
+                  setFeedConnectionPhase("https-unavailable", "Waiting for Firebase; automatic retry active...");
+                }
+              });
+            },1800);
+            await profileReady;
             if(runId !== authStateRunId) return;
+            setFeedConnectionPhase("feed-listening", "Connecting to your posts...");
             startUserPresence(user);
             watchNotifications();
 
@@ -5908,15 +5969,18 @@
             initialFeedWatchdog = setTimeout(() => {
               initialFeedWatchdog = null;
               if(runId !== authStateRunId || feedSnapshotVersion > 0) return;
-              showFeedStartupError("Still connecting to your posts. Trying another connection.");
+              setFeedConnectionPhase("feed-stalled");
+              showFeedStartupError("Posts have not responded. Reconnecting automatically.");
               scheduleFeedRecovery(true);
-            }, 4500);
+            },4500);
 
             // Supplemental social data must never delay the feed or live updates.
             loadAudioStorageBases().catch(error => console.warn("Audio storage load skipped:", error));
             loadSocialData().catch(error => console.warn("Social data load skipped:", error));
             if(isAdmin()) loadAdminRequests().catch(error => console.warn("Admin requests load skipped:", error));
             releaseAuthPreload();
+            const retryButton = document.getElementById('startupRetryBtn');
+            if(retryButton) retryButton.style.display = "none";
           }else{
             authGate.classList.remove('logged-in-preload');
             currentFollowing = {};
@@ -5954,6 +6018,26 @@
           if(openFallbackTimer) clearTimeout(openFallbackTimer);
         }
       });
+        firebaseBootstrapReady = true;
+        firebaseBootstrapAttempt = 0;
+        setFeedConnectionPhase("auth-restoring");
+      }catch(error){
+        console.warn("[posts3] Firebase SDK unavailable; retrying:", error);
+        setFeedConnectionPhase("sdk-retrying");
+        if(!currentUser){
+          const copy = document.getElementById('authCopy');
+          if(copy) copy.textContent = "Firebase unavailable. Retrying automatically...";
+          const button = document.getElementById('startupRetryBtn');
+          if(button) button.style.display = "inline-flex";
+        }
+        const delay = Math.min(30000, 2000 * 2 ** Math.min(firebaseBootstrapAttempt - 1, 4));
+        firebaseBootstrapTimer = setTimeout(() => {
+          firebaseBootstrapTimer = null;
+          bootstrapFirebase().catch(e => console.warn("[posts3] Firebase retry:",e));
+        },delay);
+      }finally{
+        firebaseBootstrapActive = false;
+      }
     }
 
     const icons = {
@@ -8275,7 +8359,9 @@
           renderRoleUI();
           scheduleAdminRealtimeRefresh();
           ++feedSnapshotVersion;
+          liveFeedSnapshotReceived = true;
           feedLoadFailed = false;
+          setFeedConnectionPhase("realtime-ready");
           if(initialFeedWatchdog) clearTimeout(initialFeedWatchdog);
           initialFeedWatchdog = null;
           clearFeedRecovery();
@@ -9145,29 +9231,51 @@
     }
 
     async function retryFeedAfterReconnect(){
-      if(!USE_FIREBASE || reconnectRetryInFlight) return;
-      if(!currentUser && !hasSharedPostLink()) return;
+      if(!USE_FIREBASE || reconnectRetryInFlight || (!currentUser && !hasSharedPostLink())) return;
       reconnectRetryInFlight = true;
       const runId = authStateRunId;
+      let shouldRetry = false;
       try{
-        if(currentUser && !postsUnsubscribe){
+        if(currentUser && (!liveFeedSnapshotReceived || !postsUnsubscribe)){
           try{
-            postsUnsubscribe = watchPostsSnapshot(fb.dbRef(db, 'sermonPosts'), true);
+            if(typeof postsUnsubscribe === "function") postsUnsubscribe();
+            postsUnsubscribe = watchPostsSnapshot(fb.dbRef(db,'sermonPosts'), true);
           }catch(error){
-            console.warn("Could not restore live feed listener:", error);
+            postsUnsubscribe = null;
+            console.warn("[posts3] Listener restoration failed:",error);
           }
         }
-        const loaded = await loadFirebasePosts();
-        // A superseded request must not cancel the newer request's retry.
-        if(runId === authStateRunId && loaded !== false) clearFeedRecovery();
+        setFeedConnectionPhase("https-retry", "Retrying posts through HTTPS...");
+        if(currentUser && !isBlockedUser()){
+          const value = await fetchPostsByRest(8000);
+          if(runId !== authStateRunId) return;
+          if(feedSnapshotVersion === 0) applyInitialHttpPosts(value,runId);
+          else if(feedLoadFailed) applyPostsSnapshot(value,true);
+          feedLoadFailed = false;
+          clearFeedRecovery();
+          setFeedConnectionPhase("http-recovered");
+        }else{
+          const result = await loadFirebasePosts();
+          if(runId === authStateRunId && result !== false) clearFeedRecovery();
+        }
       }catch(error){
-        console.warn("Could not refresh feed after reconnect:", error);
         if(runId === authStateRunId){
-          showFeedStartupError("Connection interrupted. Retrying automatically.");
-          if(!isFirebasePermissionError(error)) scheduleFeedRecovery();
+          console.warn("[posts3] HTTPS recovery unavailable; falling back to SDK:",error);
+          try{
+            const result = await loadFirebasePosts();
+            if(result === false) shouldRetry = true;
+            else clearFeedRecovery();
+          }catch(fallbackError){
+            console.warn("[posts3] SDK recovery failed:",fallbackError);
+            showFeedStartupError(isFirebasePermissionError(fallbackError)
+              ? "Firebase denied access to posts."
+              : "Posts temporarily unavailable. Retrying automatically.");
+            shouldRetry = !isFirebasePermissionError(fallbackError);
+          }
         }
       }finally{
         reconnectRetryInFlight = false;
+        if(shouldRetry && runId === authStateRunId) scheduleFeedRecovery();
       }
     }
 
@@ -9184,20 +9292,28 @@
     // A read-only HTTP fallback avoids an RTDB WebSocket that is stalled in
     // this tab. Firebase Auth's current user's ID token is used for rules.
     async function fetchPostsByRest(timeoutMs=8000){
-      const user = auth?.currentUser;
-      if(!user) throw new Error("No authenticated account for fallback");
-      const token = await Promise.race([
-        user.getIdToken(),
-        new Promise((_,reject) => setTimeout(() => reject(new Error("Token lookup timed out")), 3500))
-      ]);
+      // /sermonPosts is publicly readable in the shared rules. Avoid a
+      // stalled Firebase Auth token call unless public reads are denied.
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      const timer = setTimeout(() => controller.abort(),timeoutMs);
       try{
-        const url = new URL(firebaseConfig.databaseURL.replace(/\/$/, "") + "/sermonPosts.json");
-        url.searchParams.set("auth", token);
-        const response = await fetch(url.toString(), {method:"GET", cache:"no-store", signal:controller.signal});
-        if(!response.ok) throw new Error("Firebase HTTP fallback returned " + response.status);
-        return (await response.json()) || {};
+        const url = new URL(firebaseConfig.databaseURL.replace(/\/$/,"") + "/sermonPosts.json");
+        const request = () => fetch(url.toString(),{method:"GET",cache:"no-store",signal:controller.signal});
+        let response = await request();
+        if(response.status === 401 || response.status === 403){
+          const user = auth?.currentUser;
+          if(!user) throw new Error("Authenticated access required");
+          const token = await Promise.race([
+            user.getIdToken(),
+            new Promise((_,reject)=>setTimeout(()=>reject(new Error("Token read timed out")),3500))
+          ]);
+          url.searchParams.set("auth",token);
+          response = await request();
+        }
+        if(!response.ok) throw new Error("HTTPS post read failed with " + response.status);
+        const data = await response.json();
+        if(data && typeof data === "object" && data.error) throw new Error("Firebase REST rejected read");
+        return data || {};
       }finally{
         clearTimeout(timer);
       }
@@ -13311,7 +13427,8 @@
       if(event.key === "Escape") exitAppMediaFullscreen();
     });
     updateConnectionState(navigator.onLine !== false, false);
-    renderAuthGate(window.__sermonStartupRecovered ? "ready" : "checking");
+    renderAuthGate("checking");
+    bootstrapFirebase().catch(error => console.error("[posts3] Firebase boot:",error));
   </script>
 </body>
 </html>
