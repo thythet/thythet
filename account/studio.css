@@ -1,0 +1,38 @@
+
+/* Thet Site Studio — phase 1/2. Scoped controls preserve original template. */
+:root{--studio-accent:#8b5cf6}
+#thet-studio-toggle{position:fixed;right:18px;bottom:20px;z-index:2001;padding:10px 16px;border:1px solid #ffffff30;background:#181827;color:#fff;border-radius:999px;font:600 13px system-ui;box-shadow:0 10px 28px #0004;cursor:pointer}
+#thet-studio-panel{position:fixed;z-index:2200;inset:14px 14px 14px auto;width:min(370px,calc(100vw - 28px));overflow:auto;background:#111827;color:#f3f4f6;border:1px solid #ffffff27;border-radius:18px;box-shadow:0 24px 65px #0009;padding:18px;font:14px/1.5 system-ui;overscroll-behavior:contain}
+#thet-studio-panel *{box-sizing:border-box}
+#thet-studio-panel h2{font:700 20px system-ui;color:white;margin:0}
+#thet-studio-panel h3{font:700 13px system-ui;color:#d7dbea;margin:18px 0 9px}
+#thet-studio-panel p,#thet-studio-panel small{color:#aab3c4}
+#thet-studio-panel label{display:block;color:#e6e9f0;font-size:12px;margin:10px 0 5px}
+#thet-studio-panel input,#thet-studio-panel select,#thet-studio-panel textarea{display:block;width:100%;background:#1d2739;color:#fff;border:1px solid #45516a;border-radius:9px;padding:9px 10px;font:13px system-ui}
+#thet-studio-panel button{cursor:pointer;background:#343e54;border:1px solid #ffffff20;color:#f8fafc;padding:9px 10px;border-radius:9px;font:600 12px system-ui}
+#thet-studio-panel button:hover{background:#485775}
+#thet-studio-panel button.studio-primary{background:#7855d9}
+#thet-studio-panel button:focus-visible,#thet-studio-toggle:focus-visible{outline:3px solid #c4b5fd;outline-offset:2px}
+.studio-top{display:flex;justify-content:space-between;align-items:center;gap:9px}
+.studio-row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.studio-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.studio-theme{min-width:0}
+.studio-swatch{display:block;height:30px;border-radius:6px;margin-bottom:4px}
+.studio-hint{background:#202b3d;padding:10px;border-radius:10px;font-size:12px}
+.studio-section-row{display:flex;gap:5px;align-items:center;justify-content:space-between;border-bottom:1px solid #ffffff18;padding:8px 0}
+.studio-section-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:170px;font-size:12px}
+.studio-section-row button{padding:4px 7px!important}
+.studio-editing [data-studio-field]{outline:1px dashed #c4b5fd66;outline-offset:4px;cursor:text}
+.studio-editing [data-studio-field]:hover{outline:2px solid #a78bfa}
+.studio-editing img[data-studio-image]{cursor:pointer;outline:2px dashed #a78bfa;outline-offset:2px}
+.studio-editing [data-studio-field]:focus{outline:2px solid #a78bfa}
+.studio-section{max-width:1120px;margin:54px auto;padding:30px 20px;color:var(--title-color,#fff)}
+.studio-section h2{font-size:clamp(24px,3vw,38px);line-height:1.2;margin-bottom:12px}
+.studio-section p{max-width:620px;opacity:.88;margin-bottom:18px}
+.studio-section .studio-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:25px}
+.studio-section .studio-card{border:1px solid #ffffff4d;border-radius:18px;padding:20px;background:#ffffff15}
+.studio-section .studio-card h3{font-size:19px;margin-bottom:9px}
+.studio-section .studio-placeholder{min-height:150px;display:grid;place-items:center;border-radius:14px;background:linear-gradient(130deg,#ffffff24,#0000001f);margin-bottom:15px}
+.studio-editing .studio-section [data-studio-field]{min-height:1em}
+#thet-studio-toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#111827;color:white;z-index:3000;padding:10px 15px;border-radius:10px;font:13px system-ui;box-shadow:0 7px 28px #0006}
+@media(max-width:520px){#thet-studio-panel{inset:8px 8px 8px auto;width:calc(100vw - 16px)}.studio-section{margin:32px auto;padding:24px 16px}}
