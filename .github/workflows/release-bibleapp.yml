@@ -1,0 +1,77 @@
+name: Bible App — Windows and macOS Beta
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "bibleapp/**"
+      - ".github/workflows/release-bibleapp.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bibleapp-v0.1.0-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate-web:
+    name: Validate Bible and frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check source syntax and all 66 Bible files
+        working-directory: bibleapp
+        run: |
+          npm run check
+          node scripts/verify.mjs
+      - name: Inspect web assets
+        run: |
+          test -s bibleapp/web/index.html
+          test -s bibleapp/web/style.css
+          test -s bibleapp/web/sw.js
+          test -s bibleapp/src-tauri/icons/icon.png
+  build-and-release:
+    name: Build ${{ matrix.platform }}
+    needs: validate-web
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [windows-latest, macos-15, macos-15-intel]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: "bibleapp/src-tauri -> target"
+      - name: Install dependencies and generate platform icons
+        working-directory: bibleapp
+        run: |
+          npm install --no-audit --no-fund
+          npm run icons
+      - name: Build and upload Bible App installers
+        uses: tauri-apps/tauri-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: bibleapp
+          tagName: bibleapp-v__VERSION__
+          releaseName: "Bible App v__VERSION__ (Windows + macOS beta)"
+          releaseBody: |
+            Initial Bible App foundation: offline Khmer Bible 1954 reader,
+            full local search, verse selection, local notes, highlights,
+            bookmarks, Quick Slideshow and an early Smart Bible preview.
+
+            Google sign-in, PowerSlidePro launching, PPTX/DOCX/PDF exports,
+            signing/notarization and production testing are NOT included yet.
+            Unsigned macOS beta; users may need to authorize launching it.
+          releaseDraft: false
+          prerelease: true

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="km">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f6f8fb">
+<title>ព្រះគម្ពីរបរិសុទ្ធ — Bible App</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./assets/icon-192.png">
+<link rel="stylesheet" href="./style.css">
+<script src="./app.js" defer></script>
+</head>
+<body>
+<div id="app" class="shell">
+  <aside class="sidebar" aria-label="Bible navigation">
+    <div class="traffic" aria-hidden="true"><i></i><i></i><i></i></div>
+    <button id="accountButton" class="account-row" type="button"><span class="avatar">◉</span><span class="account-copy"><strong>Account</strong><small id="accountSubtitle">Guest · Offline-first</small></span><span class="chevron">›</span></button>
+    <div class="brand"><div class="brand-icon">▤</div><div><strong>ព្រះគម្ពីរបរិសុទ្ធ</strong><small>បកប្រែចាស់ ១៩៥៤</small></div></div>
+    <label class="book-search"><span>⌕</span><input id="bookSearch" placeholder="ស្វែងរក​..." aria-label="ស្វែងរកសៀវភៅ"></label>
+    <div class="testament-tabs" role="group" aria-label="Testament">
+      <button id="oldTab" type="button">គម្ពីរសញ្ញាចាស់</button>
+      <button id="newTab" type="button" class="active">គម្ពីរសញ្ញាថ្មី</button>
+    </div>
+    <div id="booksList" class="book-list" aria-label="Bible books"></div>
+    <button class="sidebar-tool" id="sidebarTools" type="button"><span aria-hidden="true">⚒</span> Tools <span class="chevron">›</span></button>
+  </aside>
+  <main class="main">
+    <header class="toolbar">
+      <button id="backButton" type="button" class="circle" title="Back to Bible Reader" aria-label="Back to Bible Reader">‹</button>
+      <h1 id="pageTitle">Bible Reader</h1>
+      <div class="toolbar-actions"><button id="searchButton" type="button" class="circle" title="Search Bible" aria-label="Search Bible">⌕</button><button id="themeButton" type="button" class="circle" title="Switch theme" aria-label="Switch theme">☾</button><button id="fontButton" type="button" class="circle" title="Bible text size" aria-label="Bible text size">A+</button></div>
+    </header>
+    <section class="page" id="readerPage">
+      <div class="hero"><div class="hero-icon">▤</div><h2 id="heroBook">យ៉ូហាន</h2><p id="heroSubtitle">John · បកប្រែចាស់ ១៩៥៤</p></div>
+      <div class="chapter-heading"><div><h2 id="chapterHeading">យ៉ូហាន ១</h2><p id="chapterMeta">Chapter 1</p></div><div class="chapter-controls"><button type="button" id="prevChapter" title="Previous chapter">‹</button><label class="sr-only" for="chapterSelect">Chapter</label><select id="chapterSelect"></select><button type="button" id="nextChapter" title="Next chapter">›</button></div></div>
+      <p class="hint">Click a verse · Shift-click for a range · Ctrl-click (Windows) or Command-click (Mac) to select separate verses.</p>
+      <div id="verses" class="verses" aria-label="Scripture verses"></div>
+      <div id="verseActions" class="verse-actions" hidden><span id="selectionCount"></span><button id="copySelected" type="button">⧉ Copy</button><button id="bookmarkSelected" type="button">♧ Save</button><div class="color-dots" role="group" aria-label="Highlight color"><button data-color="yellow" title="Yellow highlight" style="--dot:#fce26b">●</button><button data-color="green" title="Green highlight" style="--dot:#99e6bd">●</button><button data-color="pink" title="Pink highlight" style="--dot:#f4b8d2">●</button><button data-color="blue" title="Blue highlight" style="--dot:#a6cafa">●</button><button data-color="remove" title="Remove highlight" style="--dot:var(--muted)">×</button></div><button id="noteSelected" type="button">✎ Note</button><button id="presentSelected" type="button" class="primary">▣ Quick Slideshow</button></div>
+    </section>
+    <section class="page" id="accountPage" hidden><div class="page-hero"><div class="hero-icon">◉</div><h2>My Account</h2><p>Use Bible App offline, or connect your Google account when online.</p></div><div class="panel"><h3>Google Account</h3><p>Optional sign-in and cross-device sync are scheduled for a later development phase.</p><button id="googleLogin" class="google-button" type="button"><b class="google-g">G</b> Continue with Google</button><p class="hint">Google authentication is not active in this first release. Bible reading never requires login.</p></div><div class="cards"><button type="button" data-open="tools"><span>⚒</span><strong>Tools</strong><small>បង្កើតស្លាយ · Export · PowerSlidePro</small></button><button type="button" data-open="settings"><span>⚙</span><strong>Settings</strong><small>Appearance, font size and local data</small></button><button type="button" data-open="bookmarks"><span>♧</span><strong>Bookmarks</strong><small>Saved Scripture and reading notes</small></button></div></section>
+    <section class="page" id="toolsPage" hidden><div class="page-hero"><div class="hero-icon">⚒</div><h2>Tools</h2><p>Bible study and Scripture creation tools.</p></div><div class="cards"><button type="button" data-open="generator"><span>✦</span><strong>បង្កើតស្លាយ</strong><small>Smart Bible · Generate Scripture slides</small></button><button type="button" data-open="search"><span>⌕</span><strong>Search Bible</strong><small>Find text across all 66 books</small></button><button type="button" data-open="export"><span>⇩</span><strong>Export Center</strong><small>Export text now · More formats planned</small></button><button type="button" data-open="bookmarks"><span>♧</span><strong>Study Library</strong><small>Bookmarks, highlights and notes</small></button></div><div class="panel"><h3>Open in PowerSlidePro</h3><p>Bible App will open editable presentations in the separately installed PowerSlidePro application when desktop integration is complete.</p><button id="openPowerSlide" type="button">Open PowerSlidePro</button></div></section>
+    <section class="page" id="searchPage" hidden><div class="page-hero"><div class="hero-icon">⌕</div><h2>Bible Search</h2><p>Search the locally bundled Khmer 1954 Bible.</p></div><div class="panel"><label class="field-label" for="verseSearch">Search Scripture</label><input class="text-input" id="verseSearch" placeholder="ស្វែងរក​..." autocomplete="off"><p class="hint" id="searchStatus">Type a word or phrase. All Bible books are searched locally.</p></div><div id="searchResults" class="results"></div></section>
+    <section class="page" id="generatorPage" hidden><div class="page-hero"><div class="hero-icon">✦</div><h2>បង្កើតស្លាយ</h2><p>Smart Bible · Early offline generator preview</p></div><div class="panel"><label class="field-label" for="generatorInput">Paste Bible reference</label><textarea id="generatorInput" rows="4" placeholder="យ៉ូហាន 3:16-18"></textarea><div class="inline"><button id="generateSlides" type="button" class="primary">✦ Generate Bible Slides</button><span class="hint">Supports one reference at a time in v0.1</span></div><p class="hint">Full PowerSlidePro-style program parsing, slide editing and professional exports are later milestones.</p></div><div id="generatorOutput"></div></section>
+    <section class="page" id="bookmarksPage" hidden><div class="page-hero"><div class="hero-icon">♧</div><h2>Saved Scripture</h2><p>Your notes, highlights and bookmarks are stored locally on this device.</p></div><div id="bookmarksList" class="results"></div><div class="panel"><button id="backupButton" type="button">⇩ Download local JSON backup</button><p class="hint">Local backup is available now. Cloud sync and database migration are future work.</p></div></section>
+    <section class="page" id="settingsPage" hidden><div class="page-hero"><div class="hero-icon">⚙</div><h2>Settings</h2><p>Personalize your Bible reading.</p></div><div class="panel"><div class="setting-line"><span><strong>Appearance</strong><small>Light or dark Tahoe-style theme</small></span><button id="settingTheme" type="button">Switch theme</button></div><div class="setting-line"><span><strong>Scripture text size</strong><small>Comfortable Khmer reading</small></span><input id="settingFont" type="range" min="18" max="36" step="1" value="23"></div><div class="setting-line"><span><strong>Offline Scripture</strong><small>All 66 books are bundled with the desktop app</small></span><span>✓ Bundled</span></div></div></section>
+    <section class="page" id="exportPage" hidden><div class="page-hero"><div class="hero-icon">⇩</div><h2>Export Center</h2><p>Export Scripture and projects.</p></div><div class="panel"><div class="export-grid"><button id="exportTxt" type="button" class="primary">TXT · Export chapter</button><button id="exportJson" type="button">JSON · Export chapter</button><button type="button" disabled>PPTX · Planned</button><button type="button" disabled>DeckCraft · Planned</button><button type="button" disabled>DOCX · Planned</button><button type="button" disabled>PDF · Planned</button><button type="button" disabled>PNG / JPG · Planned</button><button type="button" disabled>SVG · Planned</button></div><p class="hint">Editable PowerPoint/DeckCraft, PDF and image formats will be added after the shared slide model is validated.</p></div></section>
+  </main>
+</div>
+<div id="presentation" class="presentation" hidden tabindex="-1"><div class="present-bar"><span>Quick Slideshow · Bible App</span><div><button id="presentPrev" type="button">‹</button><span id="presentNumber"></span><button id="presentNext" type="button">›</button><button id="presentExit" type="button">× Exit</button></div></div><div class="present-content"><h2 id="presentReference"></h2><p id="presentText"></p></div><p class="present-help">← → Navigate · Esc Exit</p></div>
+<div id="noteDialog" class="modal" hidden><div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="noteTitle"><h2 id="noteTitle">Verse note</h2><p id="noteReference"></p><textarea id="noteText" rows="6" aria-label="Study note"></textarea><div class="inline end"><button id="noteCancel" type="button">Cancel</button><button id="noteSave" class="primary" type="button">Save note</button></div></div></div>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>

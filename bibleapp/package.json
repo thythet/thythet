@@ -1,0 +1,15 @@
+{
+  "name": "bibleapp-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Khmer Bible 1954 offline-first desktop app",
+  "scripts": {
+    "icons": "tauri icon src-tauri/icons/icon.png",
+    "dev": "npm run icons && tauri dev",
+    "build": "npm run icons && tauri build",
+    "check": "node --check web/app.js && node --check web/search-worker.js"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.0.0"
+  }
+}
