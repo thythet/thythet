@@ -5,11 +5,11 @@ Standalone, offline-first Bible desktop application for Windows and macOS built 
 ## Current scope: v0.1.0 foundation
 
 - Bundled 66 Bible JSON files and original manifest copied unchanged from `tahoe83/data`.
-- Khmer Bible Reader with fixed Old/New Testament selectors, book search, chapter navigation, and a clean Tahoe-style reading canvas.
+- Khmer Bible Reader with compact, resizable sidebar, fixed Old/New Testament selectors, book search, chapter navigation, and a clean Tahoe-style reading canvas without decorative hero cards.
 - Individual, range (Shift) and disjoint (Ctrl on Windows / Cmd on macOS) verse selection.
 - Copy, bookmark, multi-color highlight and local notes for selected verses.
 - Quick Scripture presentation of selected verses (browser fullscreen where available).
-- Local search worker, themes and reader text-size preferences.
+- Local search worker, themes, Khmer/English interface switch, resizable sidebar and reader text-size preferences (all persistent).
 - Tools area with early `បង្កើតស្លាយ` reference preview. This is not yet the full PowerSlidePro-equivalent generator.
 - Google login, Firebase sync, production exporters, PowerSlidePro launching and installers are **not yet implemented**.
 
@@ -48,3 +48,8 @@ All 66 books and Khmer OS fonts are shipped in `web/`. No network is needed for 
 ## Preservation and distribution
 
 Only `bibleapp/` is modified. Tahoe83, existing PowerSlidePro, their cloud services and earlier Tahoe versions remain unchanged. Confirm redistribution permission for the Bible text and fonts before publishing public installers.
+
+## UI controls
+
+Drag the vertical divider between the Bible book sidebar and the reading canvas to resize it, or focus the divider and use Left/Right arrows. Switch EN / KH beside Dark Mode; Scripture and book titles always remain in original Khmer. Clicking a Testament tab opens a book from that Testament, preventing the reader and tab from disagreeing. Existing localStorage study keys are unchanged.
+

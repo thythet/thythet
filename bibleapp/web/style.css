@@ -27,3 +27,52 @@ button,input,select,textarea{font-size:14px}button{cursor:pointer;color:inherit}
 .modal{position:fixed;inset:0;z-index:65;background:#0007;display:grid;place-items:center;padding:20px}.modal-card{width:min(470px,100%);background:var(--panel);border-radius:16px;border:1px solid var(--border);padding:24px;box-shadow:0 25px 80px #0003}.modal-card h2{font-size:18px;margin:0 0 6px}.modal-card p{color:var(--muted);font-size:13px}.modal-card textarea{margin:10px 0}.end{justify-content:flex-end}.toast{position:fixed;bottom:24px;right:26px;z-index:80;padding:12px 16px;background:#10253c;color:#fff;border-radius:11px;box-shadow:0 10px 30px #0003;font-size:13px}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
 @media(max-width:850px){.shell{grid-template-columns:210px minmax(0,1fr)}.sidebar{padding:13px 9px;gap:12px}.page{padding:22px 17px 65px}.toolbar{padding:10px 15px}.verse-text{line-height:1.75}.testament-tabs button{font-size:10px}.verse-actions{position:static}}
 @media(max-width:560px){.shell{grid-template-columns:144px minmax(0,1fr);height:100dvh}.sidebar{padding:11px 6px;gap:10px}.traffic{padding:0 5px}.brand-icon{display:none}.brand strong{font-size:11px}.brand small{font-size:10px}.account-row{padding:8px 5px;gap:5px}.avatar{width:25px;height:25px;font-size:14px}.account-copy strong{font-size:11px}.account-copy small{font-size:9px}.book-item{padding:8px 5px}.book-item strong{font-size:11px}.book-item small{font-size:9px}.testament-tabs{grid-template-columns:1fr}.testament-tabs button{padding:6px 2px}.page{padding:13px 9px 45px}.toolbar{min-height:54px;padding:5px 8px;gap:5px}.toolbar h1{font-size:12px}.toolbar-actions{gap:3px}.circle{width:27px;height:27px;font-size:16px}.hero{padding:14px}.hero h2{font-size:17px}.hero p{font-size:10px}.hero-icon{width:35px;height:35px;font-size:21px}.chapter-heading h2{font-size:17px}.chapter-controls select{min-width:65px}.chapter-controls button{padding:3px 7px}.verses{padding:5px}.verse{gap:5px;padding:8px 3px}.verse-number{min-width:18px}.verse-text{font-size:18px}.page-hero{padding:18px}.page-hero h2{font-size:19px}.cards{grid-template-columns:1fr}}
+
+/* v0.1.1 — Compact, resizable Tahoe Admin-style Bible reader. */
+.shell{--sidebar-width:266px;position:relative;grid-template-columns:var(--sidebar-width) minmax(0,1fr)}
+.sidebar{gap:11px;padding:14px 13px 12px}
+.sidebar-resize{position:absolute;left:calc(var(--sidebar-width) - 5px);top:0;bottom:0;width:10px;z-index:12;cursor:col-resize;touch-action:none;user-select:none;outline-offset:-2px}
+.sidebar-resize:after{content:"";position:absolute;width:3px;left:4px;top:0;bottom:0;background:transparent;transition:background .14s ease}
+.sidebar-resize:hover:after,.sidebar-resize:focus-visible:after,.shell.resizing .sidebar-resize:after{background:var(--primary)}
+.shell.resizing,.shell.resizing *{cursor:col-resize!important;user-select:none!important}
+.brand{padding:0 4px 1px}.brand strong{font-size:16px;line-height:1.6}.brand small{font-size:12px;line-height:1.5}
+.book-list{gap:1px;padding-right:2px}
+.book-heading{padding:5px 9px 4px;font-size:10px}
+.book-item{gap:0;padding:6px 10px;border-radius:9px}
+.book-item strong{font-family:"Khmer Battambang",sans-serif;font-size:14px;line-height:1.45;font-weight:500}
+.book-item.active strong{font-weight:700}
+.book-item small{display:none}
+.book-search{height:37px}
+.avatar{background:#fff;border:1px solid #e1e6ee;width:37px;height:37px}
+.google-logo{width:25px;height:25px;display:block;flex:none}
+.google-button .google-logo{width:23px;height:23px}
+.language-switch{display:flex;align-items:center;gap:2px;padding:3px;border:1px solid var(--border);background:var(--bg);border-radius:11px;flex:none}
+.language-switch button{border:0;border-radius:8px;background:transparent;padding:6px 9px;font-size:11px;font-weight:700;line-height:1;color:var(--muted);min-width:30px}
+.language-switch button.active{background:var(--primary);color:#fff}
+.language-switch button:hover:not(.active){background:var(--active)}
+#readerPage{display:flex;flex-direction:column;overflow:hidden;max-width:none;padding:17px 28px 16px;min-height:0}
+#readerPage .chapter-heading{flex:none;margin:0 0 8px}
+#readerPage .reader-instructions{margin:0 0 10px;flex:none}
+#readerPage .verses{flex:1;min-height:0;max-height:none;padding:8px 15px;overflow:auto}
+#readerPage .verse{padding:9px 11px;gap:14px}
+#readerPage .verse-actions{flex:none;position:relative;bottom:auto;margin-top:10px;padding:9px}
+@media(max-width:850px){
+ .shell{grid-template-columns:var(--sidebar-width) minmax(0,1fr)}
+ .sidebar{gap:9px;padding:11px 9px}
+ #readerPage{padding:14px 15px}
+ .book-item{padding:5px 8px}
+}
+@media(max-width:560px){
+ .shell{grid-template-columns:var(--sidebar-width) minmax(0,1fr)}
+ .sidebar{gap:8px;padding:9px 6px}
+ .brand strong{font-size:12px}.brand small{font-size:10px}
+ .testament-tabs{grid-template-columns:1fr 1fr;gap:3px}
+ .testament-tabs button{padding:7px 1px;min-height:46px;font-size:9px;line-height:1.35}
+ .book-item strong{font-size:12px;line-height:1.4}
+ #readerPage{padding:10px 8px 12px}
+ #readerPage .verses{padding:5px}
+ #readerPage .verse{gap:7px;padding:8px 5px}
+ .toolbar{flex-wrap:wrap}
+ .toolbar h1{font-size:12px}
+ .language-switch{padding:2px}.language-switch button{font-size:10px;padding:6px 5px;min-width:24px}
+}
