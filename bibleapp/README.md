@@ -11,7 +11,7 @@ Standalone, offline-first Bible desktop application for Windows and macOS built 
 - Quick Scripture presentation of selected verses (browser fullscreen where available).
 - Local search worker, themes, Khmer/English interface switch, resizable sidebar and reader text-size preferences (all persistent).
 - Tools area with early `បង្កើតស្លាយ` reference preview. This is not yet the full PowerSlidePro-equivalent generator.
-- Google login, Firebase sync, production exporters, PowerSlidePro launching and installers are **not yet implemented**.
+- Firebase Google sign-in integration is ready to configure for the web edition, with admin approval and manual cloud backups. Native desktop Google OAuth, automatic sync, professional exporters and PowerSlidePro interoperability remain incomplete.
 
 ## Setup
 
@@ -61,7 +61,7 @@ The Web and Tauri interfaces share a single Tahoe Admin-style reader. The scroll
 
 The Reader toolbar shows the **current Khmer book name**; no large decorative hero card or reading instructions occupy the reading canvas. A horizontally scrolling row of chapter buttons stays synchronized with Previous, Next, and the chapter dropdown. Instructions for Shift/Ctrl/Command multi-verse selection live under **Account → Help** (also accessible through Tools).
 
-The toolbar contains a compact EN/KH switch, borderless Search and Appearance buttons, and a text-size popover with instant 18–36 px updates, +/- adjustments, and persistent preferences. The account entry has no guest-status subtitle; its sidebar icon, account hero, and sign-in button use the user's exact four-color Google G SVG. Google sign-in is **not yet functional**; the control continues to show a clear planned-feature message.
+The toolbar contains a compact EN/KH switch, borderless Search and Appearance buttons, and a text-size popover with instant 18–36 px updates, +/- adjustments, and persistent preferences. The account entry has no guest-status subtitle; its sidebar icon, account hero, and sign-in button use the user's exact four-color Google G SVG. Google sign-in is configured through Firebase Web App settings. It requires real project configuration; desktop Google OAuth still needs a secure system-browser flow.
 
 The refreshed web cache uses a network-first strategy for HTML/CSS/JavaScript while retaining local Scripture files offline. This release keeps the existing `bibleapp.study.v1` and `bibleapp.prefs.v1` storage keys and does not alter original Bible JSON.
 
@@ -135,3 +135,20 @@ The Tools page header and five navigation cards (Create Slides, Bible Search, Ex
 ## Sidebar window controls (UI cleanup)
 
 Removed the decorative red/yellow/green traffic-light dots from the Bible App sidebar in Web and Tauri desktop. The native macOS window controls remain managed by the OS and are unchanged. Offline cache updated to `bibleapp-web-v0.1.11`.
+
+
+## Firebase accounts and owner administration (v0.2.0)
+
+Bible App includes configurable Firebase Web Authentication and Realtime Database integration. These files do NOT constitute a live configured Firebase deployment.
+
+- Google sign-in from the HTTPS web edition; Google display name, email and UID are shown in Account.
+- All users start Pending and are approved by an active Owner or Admin.
+- Account → Manage users offers search, approval/blocking, and Member/Editor roles. Only Owner can grant Admin. Owner privileges are granted securely from a trusted Admin SDK computer, never from the browser.
+- Manual cloud backup Upload / Download / Restore. Both overwriting your cloud copy and restoring onto a device require confirmation.
+- Deny-by-default sample Realtime Database security rules, including protected access roles and private study data.
+- Trusted owner scripts to bootstrap the first Owner and to disable, enable, or delete a Firebase Authentication account.
+- Local Scripture and all 66 books remain available offline without a Google account. Existing study storage keys are unchanged.
+
+See firebase/SETUP.md for real Firebase configuration, domain authorization, manually publishing database rules, owner provisioning and production caveats. Public web configuration lives in web/firebase-config.js (never put a service-account private key there). Review firebase/database.rules.example.json and publish manually; no live rules are changed by the source commit. Admin SDK scripts are in admin/.
+
+**Not production-ready until live tested:** Actual Firebase credentials/config are not supplied, OAuth in Tauri desktop needs a secure system-browser PKCE integration, automatic cross-device conflict-safe sync and user self-service deletion are incomplete, and complete security-emulator / real-device acceptance tests, privacy policies and signed installers still need to be completed.

@@ -499,3 +499,36 @@ body[data-appearance^="tahoe-"] .sidebar-resize:hover:after{background:var(--pri
 #toolsPage .page-hero h2{margin-top:0}
 #toolsPage .cards button{gap:6px;min-height:86px;justify-content:center}
 #toolsPage .cards button strong{font-size:15px}
+
+
+/* Firebase accounts and owner-admin management — inherits Classic/Tahoe palettes. */
+.auth-profile,.cloud-actions{margin-top:16px;border-top:1px solid var(--border);padding-top:15px}
+.auth-profile-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.auth-profile-heading>div{min-width:0;display:flex;flex-direction:column;gap:3px}
+.auth-profile-heading strong{font-size:16px;overflow-wrap:anywhere}
+.auth-profile-heading small,.auth-uid{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.auth-uid code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;user-select:all}
+.auth-role{font-size:11px;font-weight:700;border-radius:100px;padding:5px 10px;background:var(--active);color:var(--text)}
+.auth-role[data-status="pending"]{background:#f9e8bd;color:#6c4508}
+.auth-role[data-status="blocked"]{background:#f7d5d5;color:#8a1a1a}
+.auth-role[data-status="active"]{background:#d8f2de;color:#18602b}
+.cloud-actions h4{font-size:14px;margin:0 0 4px}
+.cloud-actions .inline{flex-wrap:wrap}
+.cloud-actions button,.auth-profile button{min-height:36px}
+.admin-toolbar{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+.admin-toolbar input{flex:1;min-width:100px;padding:11px 12px;border:1px solid var(--border);border-radius:10px;background:var(--panel);color:var(--text);font:inherit}
+.users-list{display:flex;flex-direction:column;gap:6px;margin-top:14px}
+.user-admin-row{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:13px 10px;border-bottom:1px solid var(--border)}
+.user-admin-identity{min-width:0;display:flex;flex-direction:column;gap:3px;overflow-wrap:anywhere}
+.user-admin-identity strong{font-size:14px}
+.user-admin-identity small,.user-admin-identity code{color:var(--muted);font-size:11px;overflow-wrap:anywhere}
+.user-admin-identity code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.user-admin-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap}
+.user-admin-actions select,.user-admin-actions button{min-height:34px;border:1px solid var(--border);border-radius:8px;padding:6px 9px;background:var(--panel);color:var(--text);font:inherit;font-size:12px}
+.user-admin-actions button:not(:disabled){background:var(--primary);color:#fff;border-color:transparent}
+.user-admin-actions button:disabled,.user-admin-actions select:disabled{opacity:.5;cursor:not-allowed}
+@media(max-width:780px){
+  .user-admin-row{align-items:stretch;flex-direction:column;gap:8px}
+  .user-admin-actions{justify-content:flex-start}
+  .admin-toolbar{flex-wrap:wrap}
+}

@@ -3,7 +3,7 @@
 "use strict";
 const $ = (id) => document.getElementById(id);
 const BOOK_EN = "Genesis|Exodus|Leviticus|Numbers|Deuteronomy|Joshua|Judges|Ruth|1 Samuel|2 Samuel|1 Kings|2 Kings|1 Chronicles|2 Chronicles|Ezra|Nehemiah|Esther|Job|Psalms|Proverbs|Ecclesiastes|Song of Solomon|Isaiah|Jeremiah|Lamentations|Ezekiel|Daniel|Hosea|Joel|Amos|Obadiah|Jonah|Micah|Nahum|Habakkuk|Zephaniah|Haggai|Zechariah|Malachi|Matthew|Mark|Luke|John|Acts|Romans|1 Corinthians|2 Corinthians|Galatians|Ephesians|Philippians|Colossians|1 Thessalonians|2 Thessalonians|1 Timothy|2 Timothy|Titus|Philemon|Hebrews|James|1 Peter|2 Peter|1 John|2 John|3 John|Jude|Revelation".split("|");
-const pageTitles = {reader:"Bible Reader",account:"Account",tools:"Tools",search:"Bible Search",generator:"បង្កើតស្លាយ",settings:"Settings",bookmarks:"Bookmarks",export:"Export Center",help:"Help",appearance:"Appearance"};
+const pageTitles = {reader:"Bible Reader",account:"Account",tools:"Tools",search:"Bible Search",generator:"បង្កើតស្លាយ",settings:"Settings",bookmarks:"Bookmarks",export:"Export Center",help:"Help",appearance:"Appearance",users:"Manage users"};
 const tr=(k,vars={})=>{
   const table=window.BIBLE_LOCALES?.[state.prefs.lang==="en"?"en":"kh"]||{};
   const template=table[k]||window.BIBLE_LOCALES?.en?.[k]||k;
@@ -119,6 +119,7 @@ function setLanguage(lang,save=true){
   if(state.page==="generator"&&state.slides.length)renderSlides();
   if(!$("verseContextMenu").hidden)positionVerseMenu(menuPosition.x,menuPosition.y);
   if(state.page==="search"&&state.searchReady){if($("verseSearch").value.trim())doSearch();else $("searchStatus").textContent=tr("indexedAll");}
+  renderCloudState();
   if(save)persistPrefs();
 }
 function resizeLimits(){
@@ -163,7 +164,7 @@ function initSidebarResizer(){
   window.addEventListener("resize",()=>setSidebarWidth(state.prefs.sidebarWidth));
   setSidebarWidth(state.prefs.sidebarWidth);
 }
-function setPage(p){if(!(p in pageTitles))return;state.page=p;setZoomOpen(false);closeVerseMenu();$("quickReference").hidden=p!=="reader";Object.keys(pageTitles).forEach(k=>show(k+"Page",p===k));updatePageTitle();if(p==="bookmarks")renderSaved();if(p==="search"){initWorker();$("verseSearch").focus()}if(p==="generator"&&!$("generatorInput").value)$("generatorInput").value="យ៉ូហាន 3:16-18";if(p==="reader")renderReader()}
+function setPage(p){if(!(p in pageTitles))return;if(p==="users"&&!isCloudAdmin())return;state.page=p;setZoomOpen(false);closeVerseMenu();$("quickReference").hidden=p!=="reader";Object.keys(pageTitles).forEach(k=>show(k+"Page",p===k));updatePageTitle();if(p==="bookmarks")renderSaved();if(p==="search"){initWorker();$("verseSearch").focus()}if(p==="generator"&&!$("generatorInput").value)$("generatorInput").value="យ៉ូហាន 3:16-18";if(p==="reader")renderReader();if(p==="users")void refreshUsers()}
 function updateTestamentButtons(testament){
   $("oldTab").classList.toggle("active",testament==="old");
   $("newTab").classList.toggle("active",testament==="new");
@@ -706,6 +707,134 @@ function renderResults(d){$("searchStatus").textContent=tr("searchMatches",{n:d.
 function resolveRef(input){const cleaned=normalize(input).replace(/[៖]/g,":").replace(/[–—]/g,"-").replace(/\s+/g," ");const m=cleaned.match(/^(.+?)\s*(\d+)\s*:\s*(\d+)(?:\s*-\s*(\d+))?\s*$/);if(!m)throw Error(tr("invalidRef"));const name=m[1].trim();const matches=state.books.filter(b=>normalize(b.nameKm)===name||normalize(enFor(b))===name||b.id.toLowerCase()===name);if(matches.length!==1)throw Error(tr("unknownBook"));const chapter=Number(m[2]),start=Number(m[3]),end=m[4]?Number(m[4]):start;if(chapter<1||chapter>matches[0].chapterCount||start<1||end<start||end-start>150)throw Error(tr("invalidRange"));return {id:matches[0].id,chapter,start,end,name:matches[0].nameKm}}
 async function generateSlides(){try{const ref=resolveRef($("generatorInput").value);const data=await loadBook(ref.id);const verses=data.chapters[String(ref.chapter)]?.verses||{};const slides=[];for(let n=ref.start;n<=ref.end;n++){if(typeof verses[String(n)]!=="string")throw Error(tr("verseMissing",{n}));slides.push({ref:ref.name+" "+ref.chapter+":"+n,text:verses[String(n)]})}state.slides=slides;state.slide=0;renderSlides();toast(tr("slideCount",{n:slides.length}))}catch(err){$("generatorOutput").textContent=String(err.message||err)}}
 function renderSlides(){const root=$("generatorOutput");root.replaceChildren();if(!state.slides.length)return;const item=state.slides[state.slide],slide=document.createElement("div");slide.style.cssText="background:#152842;color:white;min-height:270px;padding:32px;border-radius:16px;margin:15px 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;text-align:center";const ref=document.createElement("strong");ref.style.cssText="font-size:18px;color:#c5dcfa";ref.textContent=item.ref;const text=document.createElement("div");text.style.cssText="font-family:'Khmer Battambang',sans-serif;font-size:28px;line-height:1.9";text.textContent=item.text;slide.append(ref,text);const nav=document.createElement("div");nav.className="inline";const prev=document.createElement("button");prev.textContent=tr("previous");const middle=document.createElement("span");middle.textContent=tr("slideProgress",{n:state.slide+1,total:state.slides.length});const next=document.createElement("button");next.textContent=tr("next");prev.onclick=()=>{state.slide=(state.slide+state.slides.length-1)%state.slides.length;renderSlides()};next.onclick=()=>{state.slide=(state.slide+1)%state.slides.length;renderSlides()};const present=document.createElement("button");present.textContent=tr("present");present.className="primary";present.onclick=()=>startPresentation(state.slides);nav.append(prev,middle,next,present);root.append(slide,nav)}
+
+/* Cloud accounts are opt-in. Never let a UI-only role determine database access:
+   the example Firebase Realtime Database rules enforce server-side permissions. */
+let cloudClient=null,cloudLoading=false,cloudError=null,cloudUser=null;
+let cloudAccess={role:"guest",status:"signed-out"};
+let cloudMessageKey="firebaseNotConfigured";
+let adminUsers=[];
+const cloudConfig=()=>window.BIBLEAPP_FIREBASE_CONFIG||{};
+const hasCloudConfig=()=>["apiKey","authDomain","databaseURL","projectId","appId"].every(k=>
+  typeof cloudConfig()[k]==="string"&&cloudConfig()[k].trim()&&!/YOUR_|REPLACE_|PLACEHOLDER/i.test(cloudConfig()[k])
+);
+const isCloudAdmin=()=>!!cloudUser&&cloudAccess.status==="active"&&["owner","admin"].includes(cloudAccess.role);
+function cloudRoleText(){
+  if(!cloudUser)return tr("guest");
+  const key={owner:"ownerRole",admin:"adminRole",editor:"editorRole",user:"memberRole"}[cloudAccess.role]||"memberRole";
+  const status={pending:"pendingStatus",blocked:"blockedStatus",active:"activeStatus"}[cloudAccess.status]||"pendingStatus";
+  return tr(key)+" · "+tr(status);
+}
+function renderCloudState(){
+  if(!$("authProfile"))return;
+  const signedIn=!!cloudUser,enabled=signedIn&&cloudAccess.status==="active",admin=isCloudAdmin();
+  $("googleLogin").hidden=signedIn;
+  $("authProfile").hidden=!signedIn;
+  $("cloudActions").hidden=!enabled;
+  $("adminLaunch").hidden=!admin;
+  $("authUserName").textContent=cloudUser?.displayName||tr("account");
+  $("authUserEmail").textContent=cloudUser?.email||"";
+  $("authUserUid").textContent=cloudUser?.uid||"";
+  $("authRole").textContent=cloudRoleText();
+  $("authRole").dataset.status=cloudAccess.status||"signed-out";
+  $("authHelp").textContent=cloudError?String(cloudError).slice(0,300):
+    tr(!hasCloudConfig()?"firebaseNotConfigured":!signedIn?
+      "firebaseReady":cloudAccess.status==="pending"?"awaitingApproval":
+      cloudAccess.status==="blocked"?"accountBlocked":"accountConnected");
+  $("googleLogin").disabled=cloudLoading;
+  if(state.page==="users"&&!admin)setPage("account");
+}
+async function initCloud(){
+  if(!hasCloudConfig()){cloudMessageKey="firebaseNotConfigured";renderCloudState();return}
+  cloudLoading=true;cloudError=null;renderCloudState();
+  try{
+    if(window.__TAURI_INTERNALS__||location.protocol==="tauri:"||location.hostname==="tauri.localhost"){
+      cloudError=tr("desktopGoogleUnsupported");
+      return;
+    }
+    const mod=await import("./cloud-auth.js");
+    cloudClient=await mod.createCloudClient(cloudConfig(),info=>{
+      cloudUser=info.user||null;
+      cloudAccess=info.access||{role:"guest",status:"signed-out"};
+      cloudError=info.error||null;
+      renderCloudState();
+    });
+  }catch(error){cloudError=String(error.message||error)}
+  finally{cloudLoading=false;renderCloudState()}
+}
+async function googleSignIn(){
+  if(!hasCloudConfig()){toast(tr("firebaseNotConfigured"));return}
+  if(cloudLoading){toast(tr("firebaseLoading"));return}
+  if(!cloudClient){toast(cloudError||tr("firebaseUnavailable"));return}
+  try{
+    $("googleLogin").disabled=true;
+    await cloudClient.signIn();
+  }catch(error){
+    if(!/popup-closed-by-user|cancelled-popup-request/.test(String(error.code||""))){
+      cloudError=String(error.message||error);
+      toast(tr("loginFailed")+": "+cloudError.slice(0,140));
+    }
+  }finally{$("googleLogin").disabled=false;renderCloudState()}
+}
+async function cloudAction(action){
+  try{
+    if(!cloudClient||!cloudUser||cloudAccess.status!=="active")throw Error(tr("accountNotActive"));
+    await action();
+  }catch(error){toast(tr("cloudError")+": "+String(error.message||error).slice(0,180))}
+}
+async function refreshUsers(){
+  if(!isCloudAdmin()||!cloudClient)return;
+  $("usersSummary").textContent=tr("loadingUsers");
+  try{
+    adminUsers=await cloudClient.listUsers();
+    renderUsersList();
+  }catch(error){$("usersSummary").textContent=tr("cloudError")+": "+String(error.message||error)}
+}
+function renderUsersList(){
+  const list=$("usersList");list.replaceChildren();
+  const query=normalize($("usersSearch").value);
+  const users=adminUsers.filter(user=>normalize([user.displayName,user.email,user.uid].join(" ")).includes(query));
+  const count=(kind)=>adminUsers.filter(u=>u.access.status===kind).length;
+  $("usersSummary").textContent=tr("usersSummary",{n:adminUsers.length,pending:count("pending"),active:count("active"),blocked:count("blocked")});
+  if(!users.length){list.textContent=tr("noUsers");return}
+  for(const profile of users){
+    const uid=String(profile.uid);
+    const row=document.createElement("div");row.className="user-admin-row";
+    const identity=document.createElement("div");identity.className="user-admin-identity";
+    const name=document.createElement("strong");name.textContent=String(profile.displayName||"User");
+    const email=document.createElement("small");email.textContent=String(profile.email||"");
+    const code=document.createElement("code");code.textContent=uid;
+    identity.append(name,email,code);
+    const role=document.createElement("select");role.setAttribute("aria-label",tr("userRole"));
+    const status=document.createElement("select");status.setAttribute("aria-label",tr("userStatus"));
+    const locked=profile.access.role==="owner"||(cloudAccess.role!=="owner"&&profile.access.role==="admin")||uid===cloudUser?.uid;
+    for(const value of ["user","editor","admin",...(profile.access.role==="owner"?["owner"]:[])]){
+      if(value==="admin"&&cloudAccess.role!=="owner"&&profile.access.role!=="admin")continue;
+      const option=document.createElement("option");option.value=value;
+      option.textContent=tr(({user:"memberRole",editor:"editorRole",admin:"adminRole",owner:"ownerRole"})[value]);
+      role.append(option);
+    }
+    role.value=profile.access.role;
+    for(const value of ["pending","active","blocked"]){
+      const option=document.createElement("option");option.value=value;
+      option.textContent=tr(({pending:"pendingStatus",active:"activeStatus",blocked:"blockedStatus"})[value]);
+      status.append(option);
+    }
+    status.value=profile.access.status;
+    role.disabled=status.disabled=locked;
+    const save=document.createElement("button");save.type="button";save.textContent=tr("saveUser");save.disabled=locked;
+    save.onclick=async()=>{
+      if(!confirm(tr("confirmUserAccess",{email:profile.email||uid})))return;
+      save.disabled=true;
+      try{await cloudClient.updateAccess(uid,role.value,status.value);toast(tr("userUpdated"));await refreshUsers()}
+      catch(error){toast(tr("cloudError")+": "+String(error.message||error))}
+      finally{save.disabled=locked}
+    };
+    const actions=document.createElement("div");actions.className="user-admin-actions";actions.append(role,status,save);
+    row.append(identity,actions);list.append(row);
+  }
+}
+
 function initializeEvents(){
 initDragSelection();
 $("accountButton").onclick=()=>setPage("account");$("backButton").onclick=()=>setPage("reader");$("searchButton").onclick=()=>setPage("search");
@@ -756,7 +885,30 @@ document.addEventListener("pointerdown",e=>{if(!$("zoomPopover").hidden&&!e.targ
 $("fontButton").addEventListener("keydown",e=>{if(e.key==="ArrowDown"){e.preventDefault();setZoomOpen(true)}});
 $("settingFont").oninput=e=>setFontSize(e.target.value);
 document.querySelectorAll("[data-open]").forEach(el=>el.onclick=()=>setPage(el.dataset.open));
-$("googleLogin").onclick=()=>toast(tr("googlePlanned"));
+$("googleLogin").onclick=()=>void googleSignIn();
+$("authLogout").onclick=()=>void (async()=>{try{await cloudClient?.signOut();toast(tr("signedOut"))}catch(error){toast(tr("cloudError")+": "+String(error.message||error))}})();
+$("adminLaunch").onclick=()=>setPage("users");
+$("usersRefresh").onclick=()=>void refreshUsers();
+$("usersSearch").oninput=renderUsersList;
+$("cloudUpload").onclick=()=>void cloudAction(async()=>{
+  if(!confirm(tr("confirmUploadCloud")))return;
+  await cloudClient.uploadStudy(state.study);
+  toast(tr("cloudUploaded"));
+});
+$("cloudDownload").onclick=()=>void cloudAction(async()=>{
+  const data=await cloudClient.downloadStudy();
+  if(!data){toast(tr("cloudNoBackup"));return}
+  saveFile(JSON.stringify({format:"BibleAppCloudBackup",createdAt:new Date().toISOString(),study:data},null,2),"bibleapp-cloud-backup.json","application/json");
+  toast(tr("cloudDownloaded"));
+});
+$("cloudRestore").onclick=()=>void cloudAction(async()=>{
+  const data=await cloudClient.downloadStudy();
+  if(!data){toast(tr("cloudNoBackup"));return}
+  if(!confirm(tr("confirmRestoreCloud")))return;
+  if(!["bookmarks","highlights","notes"].every(k=>data[k]&&typeof data[k]==="object"&&!Array.isArray(data[k])))throw Error("invalid-cloud-backup");
+  state.study={bookmarks:data.bookmarks,highlights:data.highlights,notes:data.notes};
+  persist();if(state.book)renderReader();toast(tr("cloudRestored"));
+});
 $("openPowerSlide").onclick=()=>toast(tr("powerPlanned"));
 $("verseSearch").oninput=doSearch;
 $("generateSlides").onclick=generateSlides;
@@ -772,6 +924,6 @@ document.addEventListener("keydown",e=>{
     else if(e.key==="ArrowLeft"||e.key==="ArrowUp"){movePresentation(-1);e.preventDefault()}
   }else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="f"){e.preventDefault();setPage("search")}
 })}
-async function start(){updateTheme();listenSystemAppearance();initSidebarResizer();initializeEvents();setLanguage(state.prefs.lang,false);try{const res=await fetch("./data/manifest.json");if(!res.ok)throw Error("Bible manifest unavailable");const manifest=await res.json();if(!Array.isArray(manifest.books)||manifest.books.length!==66)throw Error("Expected 66 Bible books");state.manifest=manifest;state.books=manifest.books;const last=getStored("bibleapp.lastplace",{id:"JHN",ch:1});await openBook(state.books.some(b=>b.id===last.id)?last.id:"JHN",last.ch||1);setPage("reader");if("serviceWorker"in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("./sw.js",{scope:"./"}).catch(()=>{});}catch(err){$("verses").textContent=tr("dataLoadError",{message:String(err.message||err)});toast(tr("dataUnavailable"))}}
+async function start(){updateTheme();listenSystemAppearance();initSidebarResizer();initializeEvents();setLanguage(state.prefs.lang,false);void initCloud();try{const res=await fetch("./data/manifest.json");if(!res.ok)throw Error("Bible manifest unavailable");const manifest=await res.json();if(!Array.isArray(manifest.books)||manifest.books.length!==66)throw Error("Expected 66 Bible books");state.manifest=manifest;state.books=manifest.books;const last=getStored("bibleapp.lastplace",{id:"JHN",ch:1});await openBook(state.books.some(b=>b.id===last.id)?last.id:"JHN",last.ch||1);setPage("reader");if("serviceWorker"in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("./sw.js",{scope:"./"}).catch(()=>{});}catch(err){$("verses").textContent=tr("dataLoadError",{message:String(err.message||err)});toast(tr("dataUnavailable"))}}
 start();
 })();

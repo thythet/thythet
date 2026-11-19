@@ -26,7 +26,10 @@
 ## 0.5 — Durable study workspace
 - [ ] SQLite notes, bookmarks, highlights, history, migrations, backups and restore
 - [ ] First launch migration from local prototype store
-- [ ] Optional Google sign-in using system-browser OAuth, Firebase sync and offline conflict rules
+- [x] Firebase Web Google sign-in integration, admin-approved profiles and owner bootstrap scripts (requires real project setup and live tests)
+- [x] Realtime Database rules example, admin UI and opt-in manual study backups
+- [ ] Secure Google login on Windows/macOS using system browser + PKCE
+- [ ] Automatic Firebase sync with offline conflict resolution and migration
 
 ## 0.6+ — Presentation/production
 - [ ] Second-display presenter window, remappable shortcuts, themes and font manager

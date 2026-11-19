@@ -4,3 +4,13 @@ src-tauri/gen/
 .DS_Store
 *.log
 dist/
+
+# Never commit private Firebase / Google Admin SDK credentials
+.env
+.env.*
+!firebase-config.js
+*service-account*.json
+*service_account*.json
+*firebase-adminsdk*.json
+*.p12
+*.pem
