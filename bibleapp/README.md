@@ -131,3 +131,7 @@ The automated UI checks now exercise Shift/Ctrl/Command selection state, normal 
 ## Tools page icon-free layout
 
 The Tools page header and five navigation cards (Create Slides, Bible Search, Export Center, Study Library, Help) now display titles and descriptions without decorative icons. The PowerSlidePro button, card navigation, all other pages, and saved Bible data are preserved. Offline cache revision: `bibleapp-web-v0.1.10`.
+
+## Sidebar window controls (UI cleanup)
+
+Removed the decorative red/yellow/green traffic-light dots from the Bible App sidebar in Web and Tauri desktop. The native macOS window controls remain managed by the OS and are unchanged. Offline cache updated to `bibleapp-web-v0.1.11`.

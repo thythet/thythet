@@ -6,6 +6,8 @@ import { runInNewContext } from "node:vm";
 const root=new URL("../web/",import.meta.url);
 const file=name=>readFileSync(new URL(name,root),"utf8");
 const html=file("index.html"),css=file("style.css"),js=file("app.js"),sw=file("sw.js"),i18n=file("i18n.js");
+assert(!html.includes('class="traffic"'),"Decorative macOS traffic-light dots must be removed from sidebar");
+assert(!css.includes(".traffic{")&&!css.includes(".traffic i"),"Decorative traffic-light CSS should be removed");
 const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
 const allIds=new Set(ids);
 assert.equal(allIds.size,ids.length,"Duplicate HTML IDs found");
@@ -76,7 +78,7 @@ for(const shade of ["blue","purple","pink","red","orange","yellow","green","gray
 }
 assert(!html.includes('id="verseActions"')&&/\.verse-context-menu\{position:fixed/.test(css),"Old formatting bar should be replaced by compact context menu");
 assert(/bibleapp\.study\.v1/.test(js)&&/bibleapp\.prefs\.v1/.test(js),"Persisted bookmarks/highlights/notes must remain in existing storage");
-assert(sw.includes("bibleapp-web-v0.1.10")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
+assert(sw.includes("bibleapp-web-v0.1.11")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
 assert(/#readerPage \.verses \.verse\.selected/.test(css)&&css.includes("background:#dcf3dc!important")&&css.includes("border:2px solid #4caf50!important"),"Selected verses must have a pale-green background and 2px green border");
 assert(css.includes('background:#dcf3dc!important')&&css.includes('border:2px solid #4caf50!important'),"Unhighlighted selections must retain pale green with 2px green border");
 for(const shade of ["blue","purple","pink","red","orange","yellow","green","gray"]){
