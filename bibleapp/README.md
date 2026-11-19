@@ -53,3 +53,14 @@ Only `bibleapp/` is modified. Tahoe83, existing PowerSlidePro, their cloud servi
 
 Drag the vertical divider between the Bible book sidebar and the reading canvas to resize it, or focus the divider and use Left/Right arrows. Switch EN / KH beside Dark Mode; Scripture and book titles always remain in original Khmer. Clicking a Testament tab opens a book from that Testament, preventing the reader and tab from disagreeing. Existing localStorage study keys are unchanged.
 
+
+
+## UI refinements (November 2026)
+
+The Web and Tauri interfaces share a single Tahoe Admin-style reader. The scrollable sidebar shows all 66 books in one Finder-style list, separated into Old and New Testament sections. The two top Testament buttons jump between sections rather than hiding books or changing the current Scripture. The selected book remains blue, with alternating muted rows. Sidebar width is adjustable and persisted.
+
+The Reader toolbar shows the **current Khmer book name**; no large decorative hero card or reading instructions occupy the reading canvas. A horizontally scrolling row of chapter buttons stays synchronized with Previous, Next, and the chapter dropdown. Instructions for Shift/Ctrl/Command multi-verse selection live under **Account → Help** (also accessible through Tools).
+
+The toolbar contains a compact EN/KH switch, borderless Search and Appearance buttons, and a text-size popover with instant 18–36 px updates, +/- adjustments, and persistent preferences. The account entry has no guest-status subtitle; its sidebar icon, account hero, and sign-in button use the user's exact four-color Google G SVG. Google sign-in is **not yet functional**; the control continues to show a clear planned-feature message.
+
+The refreshed web cache uses a network-first strategy for HTML/CSS/JavaScript while retaining local Scripture files offline. This release keeps the existing `bibleapp.study.v1` and `bibleapp.prefs.v1` storage keys and does not alter original Bible JSON.

@@ -3,7 +3,7 @@
 "use strict";
 const $ = (id) => document.getElementById(id);
 const BOOK_EN = "Genesis|Exodus|Leviticus|Numbers|Deuteronomy|Joshua|Judges|Ruth|1 Samuel|2 Samuel|1 Kings|2 Kings|1 Chronicles|2 Chronicles|Ezra|Nehemiah|Esther|Job|Psalms|Proverbs|Ecclesiastes|Song of Solomon|Isaiah|Jeremiah|Lamentations|Ezekiel|Daniel|Hosea|Joel|Amos|Obadiah|Jonah|Micah|Nahum|Habakkuk|Zephaniah|Haggai|Zechariah|Malachi|Matthew|Mark|Luke|John|Acts|Romans|1 Corinthians|2 Corinthians|Galatians|Ephesians|Philippians|Colossians|1 Thessalonians|2 Thessalonians|1 Timothy|2 Timothy|Titus|Philemon|Hebrews|James|1 Peter|2 Peter|1 John|2 John|3 John|Jude|Revelation".split("|");
-const pageTitles = {reader:"Bible Reader",account:"Account",tools:"Tools",search:"Bible Search",generator:"បង្កើតស្លាយ",settings:"Settings",bookmarks:"Bookmarks",export:"Export Center"};
+const pageTitles = {reader:"Bible Reader",account:"Account",tools:"Tools",search:"Bible Search",generator:"បង្កើតស្លាយ",settings:"Settings",bookmarks:"Bookmarks",export:"Export Center",help:"Help"};
 const tr=(k,vars={})=>{
   const table=window.BIBLE_LOCALES?.[state.prefs.lang==="en"?"en":"kh"]||{};
   const template=table[k]||window.BIBLE_LOCALES?.en?.[k]||k;
@@ -22,7 +22,30 @@ const enFor=(b)=>BOOK_EN[b.order-1]||b.id;
 const show=(id,val)=>{$(id).hidden=!val};
 let toastTimer=null;
 function toast(message){$("toast").textContent=message;show("toast",true);clearTimeout(toastTimer);toastTimer=setTimeout(()=>show("toast",false),3300)}
-function updateTheme(){document.body.classList.toggle("dark",!!state.prefs.dark);document.documentElement.style.setProperty("--verse-size",state.prefs.fontSize+"px");$("themeButton").textContent=state.prefs.dark?"☀":"☾";$("settingFont").value=state.prefs.fontSize}
+function updateTheme(){
+  document.body.classList.toggle("dark",!!state.prefs.dark);
+  document.documentElement.style.setProperty("--verse-size",state.prefs.fontSize+"px");
+  show("themeMoon",!state.prefs.dark);show("themeSun",!!state.prefs.dark);
+  $("settingFont").value=state.prefs.fontSize;
+  $("zoomSlider").value=state.prefs.fontSize;
+  $("zoomValue").textContent=state.prefs.fontSize+"px";
+  $("zoomMinus").disabled=state.prefs.fontSize<=18;
+  $("zoomPlus").disabled=state.prefs.fontSize>=36;
+}
+function setFontSize(value){
+  const size=Math.max(18,Math.min(36,Number(value)||23));
+  if(state.prefs.fontSize===size)return;
+  state.prefs.fontSize=size;persistPrefs();updateTheme();
+}
+function setZoomOpen(open){
+  show("zoomPopover",open);
+  $("fontButton").setAttribute("aria-expanded",String(open));
+  if(open)$("zoomSlider").focus({preventScroll:true});
+}
+function updatePageTitle(){
+  const name=state.page==="reader"&&state.book?bookMeta()?.nameKm:null;
+  $("pageTitle").textContent=name||tr(state.page);
+}
 function setLanguage(lang,save=true){
   state.prefs.lang=lang==="en"?"en":"kh";
   document.documentElement.lang=state.prefs.lang==="en"?"en":"km";
@@ -30,16 +53,14 @@ function setLanguage(lang,save=true){
   for(const el of document.querySelectorAll("[data-i18n-placeholder]"))el.placeholder=tr(el.dataset.i18nPlaceholder);
   for(const el of document.querySelectorAll("[data-i18n-title]"))el.title=tr(el.dataset.i18nTitle);
   for(const el of document.querySelectorAll("[data-i18n-aria]"))el.setAttribute("aria-label",tr(el.dataset.i18nAria));
-  for(const code of ["en","kh"]){
-    const selected=code===state.prefs.lang,button=$(code==="en"?"langEN":"langKH");
-    button.classList.toggle("active",selected);button.setAttribute("aria-pressed",String(selected));
-  }
+  $("languageToggle").classList.toggle("is-kh",state.prefs.lang==="kh");
+  $("languageToggle").setAttribute("aria-checked",String(state.prefs.lang==="kh"));
   $("sidebarResize").setAttribute("aria-label",tr("resizeSidebar"));
   $("sidebarResize").title=tr("resizeSidebar");
-  $("pageTitle").textContent=tr(state.page);
+  updatePageTitle();
   updateSelectionBar();
   if(state.books.length)setupSidebar();
-  if(state.book&&state.page==="reader")renderReader();
+  if(state.book&&state.page==="reader"){const top=$("verses").scrollTop;renderReader();$("verses").scrollTop=top;}
   if(state.page==="bookmarks")renderSaved();
   if(state.page==="generator"&&state.slides.length)renderSlides();
   if(state.page==="search"&&state.searchReady){if($("verseSearch").value.trim())doSearch();else $("searchStatus").textContent=tr("indexedAll");}
@@ -87,13 +108,58 @@ function initSidebarResizer(){
   window.addEventListener("resize",()=>setSidebarWidth(state.prefs.sidebarWidth));
   setSidebarWidth(state.prefs.sidebarWidth);
 }
-function setPage(p){if(!(p in pageTitles))return;state.page=p;Object.keys(pageTitles).forEach(k=>show(k+"Page",p===k));$("pageTitle").textContent=tr(p);if(p==="bookmarks")renderSaved();if(p==="search"){initWorker();$("verseSearch").focus()}if(p==="generator"&&!$("generatorInput").value)$("generatorInput").value="យ៉ូហាន 3:16-18";if(p==="reader")renderReader()}
-function setupSidebar(){const q=normalize($("bookSearch").value);const isOld=state.testament==="old";$("oldTab").classList.toggle("active",isOld);$("newTab").classList.toggle("active",!isOld);
-const books=state.books.filter(b=>(isOld?b.order<=39:b.order>39)&&(normalize(b.nameKm+" "+enFor(b)+" "+b.id).includes(q)));
-const root=$("booksList");root.replaceChildren();
-// Fixed Testament buttons serve as the section heading.
-for(const b of books){const item=document.createElement("button");item.type="button";item.className="book-item"+(state.bookId===b.id?" active":"");item.innerHTML="<strong></strong>";item.querySelector("strong").textContent=b.nameKm;item.onclick=()=>openBook(b.id,1);root.append(item)}
-if(!books.length){const none=document.createElement("p");none.className="hint";none.textContent=tr("notFoundBooks");root.append(none)}}
+function setPage(p){if(!(p in pageTitles))return;state.page=p;setZoomOpen(false);Object.keys(pageTitles).forEach(k=>show(k+"Page",p===k));updatePageTitle();if(p==="bookmarks")renderSaved();if(p==="search"){initWorker();$("verseSearch").focus()}if(p==="generator"&&!$("generatorInput").value)$("generatorInput").value="យ៉ូហាន 3:16-18";if(p==="reader")renderReader()}
+function updateTestamentButtons(testament){
+  $("oldTab").classList.toggle("active",testament==="old");
+  $("newTab").classList.toggle("active",testament==="new");
+  $("oldTab").setAttribute("aria-pressed",String(testament==="old"));
+  $("newTab").setAttribute("aria-pressed",String(testament==="new"));
+}
+function updateVisibleTestament(){
+  const list=$("booksList"),newSection=list.querySelector("#section-new");
+  if(!newSection){updateTestamentButtons("old");return}
+  const threshold=list.getBoundingClientRect().top+Math.min(75,list.clientHeight*.28);
+  updateTestamentButtons(newSection.getBoundingClientRect().top<=threshold?"new":"old");
+}
+function scrollToTestament(testament,behavior="smooth"){
+  const list=$("booksList"),section=$("section-"+testament);
+  if(!section)return;
+  const top=section.getBoundingClientRect().top-list.getBoundingClientRect().top+list.scrollTop;
+  list.scrollTo({top:Math.max(0,top-3),behavior});
+  updateTestamentButtons(testament);
+}
+function revealBookSelection(){
+  const list=$("booksList"),active=list.querySelector(".book-item.active");
+  if(!active||$("bookSearch").value.trim())return;
+  const top=active.getBoundingClientRect().top-list.getBoundingClientRect().top+list.scrollTop;
+  list.scrollTop=Math.max(0,top-Math.round(list.clientHeight*.28));
+  updateVisibleTestament();
+}
+function setupSidebar(revealSelected=false){
+  const list=$("booksList"),previousTop=list.scrollTop,q=normalize($("bookSearch").value);
+  list.replaceChildren();
+  let found=0;
+  for(const testament of ["old","new"]){
+    const books=state.books.filter(b=>(testament==="old"?b.testament==="OT":b.testament==="NT")&&normalize(b.nameKm+" "+enFor(b)+" "+b.id).includes(q));
+    if(!books.length)continue;
+    const section=document.createElement("section");section.className="book-section";section.id="section-"+testament;
+    const heading=document.createElement("div");heading.className="book-heading";
+    heading.textContent=tr(testament==="old"?"oldTestament":"newTestament");
+    section.append(heading);
+    books.forEach((b,i)=>{
+      const item=document.createElement("button");item.type="button";
+      item.className="book-item"+(i%2?" book-item-alt":"")+(state.bookId===b.id?" active":"");
+      item.setAttribute("aria-current",state.bookId===b.id?"true":"false");
+      const title=document.createElement("span");title.className="book-name";title.textContent=b.nameKm;
+      item.append(title);item.onclick=()=>openBook(b.id,1);section.append(item);
+    });
+    list.append(section);found+=books.length;
+  }
+  if(!found){const none=document.createElement("p");none.className="hint";none.textContent=tr("notFoundBooks");list.append(none)}
+  if(revealSelected)revealBookSelection();
+  else{list.scrollTop=previousTop;updateVisibleTestament()}
+}
+
 async function loadBook(id){const book=state.books.find(b=>b.id===id);if(!book)throw Error("Unknown Bible book: "+id);const response=await fetch("./data/books/"+encodeURIComponent(id)+".json");if(!response.ok)throw Error("Unable to read "+id+".json");const payload=await response.json();if(!payload.chapters||payload.id!==id)throw Error("Invalid Bible data for "+id);return payload}
 let bookRequestId=0;
 async function openBook(id,ch){
@@ -103,27 +169,75 @@ async function openBook(id,ch){
     if(request!==bookRequestId)return;
     const meta=state.books.find(x=>x.id===id);
     if(!meta)throw Error("Unknown Bible book");
+    const query=normalize($("bookSearch").value);
+    if(query&&!normalize(meta.nameKm+" "+enFor(meta)+" "+meta.id).includes(query))$("bookSearch").value="";
     state.book=b;state.bookId=id;
     state.chapter=Math.min(Math.max(1,Number(ch)||1),Number(b.chapterCount)||1);
     state.testament=meta.testament==="OT"?"old":"new";
     state.lastByTestament[state.testament]={id,ch:state.chapter};
     state.selection.clear();state.anchor=null;
-    setPage("reader");setupSidebar();saveReadingPlace();
+    setPage("reader");setupSidebar(true);saveReadingPlace();
   }catch(err){if(request===bookRequestId)toast(String(err.message||err))}
 }
-function changeTestament(testament){
-  if(!state.books.length)return;
-  const meta=bookMeta();
-  if(meta&&(meta.testament==="OT"?"old":"new")===testament){setPage("reader");setupSidebar();return}
-  const last=state.lastByTestament[testament];
-  const first=state.books.find(b=>testament==="old"?b.testament==="OT":b.testament==="NT");
-  if(first)openBook(last?.id||first.id,last?.ch||1);
-}
+function changeTestament(testament){if(!state.books.length)return;if($("bookSearch").value){$("bookSearch").value="";setupSidebar()}scrollToTestament(testament)}
 const saveReadingPlace=()=>{state.lastByTestament[state.testament]={id:state.bookId,ch:state.chapter};try{localStorage.setItem("bibleapp.lastplace",JSON.stringify({id:state.bookId,ch:state.chapter}))}catch{}};
 const bookMeta=()=>state.books.find(b=>b.id===state.bookId);
 function verseData(){const verses=state.book?.chapters?.[String(state.chapter)]?.verses||{};return Object.entries(verses).map(([n,text])=>({n:Number(n),text:String(text)})).sort((a,b)=>a.n-b.n)}
-function renderReader(){if(!state.book)return;const b=bookMeta();$("chapterHeading").textContent=b.nameKm+" "+kmNumber(state.chapter);$("chapterMeta").textContent=tr("chapterOf",{current:state.chapter,total:b.chapterCount});const select=$("chapterSelect");select.replaceChildren();for(let n=1;n<=b.chapterCount;n++){const option=document.createElement("option");option.value=n;option.textContent=tr("chapter")+" "+n;select.append(option)}select.value=state.chapter;
-const root=$("verses");root.replaceChildren();for(const v of verseData()){const row=document.createElement("div");row.className="verse"+(state.selection.has(v.n)?" selected":"");row.tabIndex=0;row.dataset.verse=v.n;row.dataset.highlight=state.study.highlights[key(v.n)]||"";row.setAttribute("role","button");row.setAttribute("aria-pressed",String(state.selection.has(v.n)));const number=document.createElement("span");number.className="verse-number";number.textContent=kmNumber(v.n);const text=document.createElement("span");text.className="verse-text";text.textContent=v.text;row.append(number,text);row.onclick=(e)=>selectVerse(v.n,e);row.onkeydown=(e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();selectVerse(v.n,e)}};root.append(row)}updateSelectionBar()}
+function renderChapterStrip(count){
+  const root=$("chapterStrip");root.replaceChildren();
+  root.setAttribute("aria-label",tr("chapters"));
+  let active=null;const fragment=document.createDocumentFragment();
+  for(let n=1;n<=count;n++){
+    const button=document.createElement("button");button.type="button";
+    button.className="chapter-pill"+(n===state.chapter?" active":"");
+    button.textContent=state.prefs.lang==="kh"?kmNumber(n):String(n);
+    button.setAttribute("aria-label",tr("chapter")+" "+n);
+    button.setAttribute("aria-current",String(n===state.chapter));
+    button.onclick=()=>goToChapter(n);
+    if(n===state.chapter)active=button;
+    fragment.append(button);
+  }
+  root.append(fragment);
+  if(active){
+    const offset=active.getBoundingClientRect().left-root.getBoundingClientRect().left+root.scrollLeft;
+    root.scrollLeft=Math.max(0,offset-(root.clientWidth-active.clientWidth)/2);
+  }
+}
+function goToChapter(n){
+  const next=Number(n);
+  if(!Number.isInteger(next)||next<1||next>Number(state.book?.chapterCount))return;
+  if(next===state.chapter)return;
+  state.chapter=next;state.selection.clear();state.anchor=null;
+  renderReader();saveReadingPlace();$("verses").scrollTop=0;
+}
+function renderReader(){
+  if(!state.book)return;
+  const b=bookMeta();if(!b)return;
+  updatePageTitle();
+  $("chapterHeading").textContent=b.nameKm+" "+kmNumber(state.chapter);
+  $("chapterMeta").textContent=tr("chapterOf",{current:state.chapter,total:b.chapterCount});
+  const select=$("chapterSelect");select.replaceChildren();
+  for(let n=1;n<=b.chapterCount;n++){
+    const option=document.createElement("option");option.value=n;
+    option.textContent=tr("chapter")+" "+(state.prefs.lang==="kh"?kmNumber(n):n);
+    select.append(option);
+  }
+  select.value=String(state.chapter);
+  renderChapterStrip(b.chapterCount);
+  const root=$("verses");root.replaceChildren();
+  for(const v of verseData()){
+    const row=document.createElement("div");row.className="verse"+(state.selection.has(v.n)?" selected":"");
+    row.tabIndex=0;row.dataset.verse=v.n;row.dataset.highlight=state.study.highlights[key(v.n)]||"";
+    row.setAttribute("role","button");row.setAttribute("aria-pressed",String(state.selection.has(v.n)));
+    const number=document.createElement("span");number.className="verse-number";number.textContent=kmNumber(v.n);
+    const text=document.createElement("span");text.className="verse-text";text.textContent=v.text;
+    row.append(number,text);row.onclick=e=>selectVerse(v.n,e);
+    row.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();selectVerse(v.n,e)}};
+    root.append(row);
+  }
+  updateSelectionBar();
+}
+
 function selectVerse(n,e){const list=verseData().map(v=>v.n);if(e.shiftKey&&state.anchor!=null){const a=list.indexOf(state.anchor),b=list.indexOf(n);if(a>=0&&b>=0){if(!(e.ctrlKey||e.metaKey))state.selection.clear();for(let i=Math.min(a,b);i<=Math.max(a,b);i++)state.selection.add(list[i])}}else if(e.ctrlKey||e.metaKey){if(state.selection.has(n))state.selection.delete(n);else state.selection.add(n);state.anchor=n}else{state.selection.clear();state.selection.add(n);state.anchor=n}for(const el of $("verses").children){const active=state.selection.has(Number(el.dataset.verse));el.classList.toggle("selected",active);el.setAttribute("aria-pressed",String(active))}updateSelectionBar()}
 function updateSelectionBar(){const count=state.selection.size;show("verseActions",count>0);$("selectionCount").textContent=tr("selectedCount",{n:count})}
 function selectedData(fallbackAll=false){const list=verseData();return list.filter(v=>state.selection.has(v.n)||(fallbackAll&&!state.selection.size))}
@@ -148,18 +262,26 @@ async function generateSlides(){try{const ref=resolveRef($("generatorInput").val
 function renderSlides(){const root=$("generatorOutput");root.replaceChildren();if(!state.slides.length)return;const item=state.slides[state.slide],slide=document.createElement("div");slide.style.cssText="background:#152842;color:white;min-height:270px;padding:32px;border-radius:16px;margin:15px 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;text-align:center";const ref=document.createElement("strong");ref.style.cssText="font-size:18px;color:#c5dcfa";ref.textContent=item.ref;const text=document.createElement("div");text.style.cssText="font-family:'Khmer Battambang',sans-serif;font-size:28px;line-height:1.9";text.textContent=item.text;slide.append(ref,text);const nav=document.createElement("div");nav.className="inline";const prev=document.createElement("button");prev.textContent=tr("previous");const middle=document.createElement("span");middle.textContent=tr("slideProgress",{n:state.slide+1,total:state.slides.length});const next=document.createElement("button");next.textContent=tr("next");prev.onclick=()=>{state.slide=(state.slide+state.slides.length-1)%state.slides.length;renderSlides()};next.onclick=()=>{state.slide=(state.slide+1)%state.slides.length;renderSlides()};const present=document.createElement("button");present.textContent=tr("present");present.className="primary";present.onclick=()=>startPresentation(state.slides);nav.append(prev,middle,next,present);root.append(slide,nav)}
 function initializeEvents(){
 $("accountButton").onclick=()=>setPage("account");$("sidebarTools").onclick=()=>setPage("tools");$("backButton").onclick=()=>setPage("reader");$("searchButton").onclick=()=>setPage("search");
-$("bookSearch").oninput=setupSidebar;$("oldTab").onclick=()=>changeTestament("old");$("newTab").onclick=()=>changeTestament("new");
-$("langEN").onclick=()=>setLanguage("en");$("langKH").onclick=()=>setLanguage("kh");
-$("prevChapter").onclick=()=>changeChapter(-1);$("nextChapter").onclick=()=>changeChapter(1);$("chapterSelect").onchange=()=>changeChapter(0,Number($("chapterSelect").value));
-function changeChapter(delta,absolute){const n=absolute||state.chapter+delta;if(n<1||n>Number(state.book?.chapterCount))return;state.chapter=n;state.selection.clear();state.anchor=null;renderReader();saveReadingPlace()}
+$("bookSearch").oninput=()=>setupSidebar();$("oldTab").onclick=()=>changeTestament("old");$("newTab").onclick=()=>changeTestament("new");
+$("booksList").addEventListener("scroll",updateVisibleTestament,{passive:true});
+$("languageToggle").onclick=()=>setLanguage(state.prefs.lang==="kh"?"en":"kh");
+$("prevChapter").onclick=()=>goToChapter(state.chapter-1);
+$("nextChapter").onclick=()=>goToChapter(state.chapter+1);
+$("chapterSelect").onchange=()=>goToChapter(Number($("chapterSelect").value));
+
 $("copySelected").onclick=()=>copyText(selectedText());$("bookmarkSelected").onclick=bookmarkSelected;$("noteSelected").onclick=startNote;
 document.querySelectorAll("[data-color]").forEach(b=>b.onclick=()=>highlightSelected(b.dataset.color));
 $("presentSelected").onclick=()=>startPresentation(selectedData().map(v=>({ref:reference(v),text:v.text})));
 $("presentPrev").onclick=()=>movePresentation(-1);$("presentNext").onclick=()=>movePresentation(1);$("presentExit").onclick=endPresentation;
 $("noteCancel").onclick=()=>show("noteDialog",false);$("noteSave").onclick=saveNote;
 $("themeButton").onclick=$("settingTheme").onclick=()=>{state.prefs.dark=!state.prefs.dark;persistPrefs();updateTheme()};
-$("fontButton").onclick=()=>{state.prefs.fontSize=state.prefs.fontSize>=32?20:state.prefs.fontSize+2;persistPrefs();updateTheme()};
-$("settingFont").oninput=(e)=>{state.prefs.fontSize=Number(e.target.value);persistPrefs();updateTheme()};
+$("fontButton").onclick=()=>setZoomOpen($("zoomPopover").hidden);
+$("zoomSlider").oninput=e=>setFontSize(e.target.value);
+$("zoomMinus").onclick=()=>setFontSize(state.prefs.fontSize-1);
+$("zoomPlus").onclick=()=>setFontSize(state.prefs.fontSize+1);
+document.addEventListener("pointerdown",e=>{if(!$("zoomPopover").hidden&&!e.target.closest(".zoom-anchor"))setZoomOpen(false)});
+$("fontButton").addEventListener("keydown",e=>{if(e.key==="ArrowDown"){e.preventDefault();setZoomOpen(true)}});
+$("settingFont").oninput=e=>setFontSize(e.target.value);
 document.querySelectorAll("[data-open]").forEach(el=>el.onclick=()=>setPage(el.dataset.open));
 $("googleLogin").onclick=()=>toast(tr("googlePlanned"));
 $("openPowerSlide").onclick=()=>toast(tr("powerPlanned"));
@@ -168,7 +290,14 @@ $("generateSlides").onclick=generateSlides;
 $("backupButton").onclick=()=>saveFile(JSON.stringify({version:1,createdAt:new Date().toISOString(),study:state.study,prefs:state.prefs},null,2),"bibleapp-backup.json","application/json");
 $("exportTxt").onclick=()=>saveFile(verseData().map(v=>reference(v)+" — "+v.text).join("\n"),state.bookId+"-"+state.chapter+".txt");
 $("exportJson").onclick=()=>saveFile(JSON.stringify({book:state.bookId,chapter:state.chapter,verses:verseData()},null,2),state.bookId+"-"+state.chapter+".json","application/json");
-document.addEventListener("keydown",e=>{if(!$("presentation").hidden){if(e.key==="Escape"){endPresentation();e.preventDefault()}else if(e.key==="ArrowRight"||e.key==="ArrowDown"){movePresentation(1);e.preventDefault()}else if(e.key==="ArrowLeft"||e.key==="ArrowUp"){movePresentation(-1);e.preventDefault()}}else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="f"){e.preventDefault();setPage("search")}})}
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"&&!$("zoomPopover").hidden){setZoomOpen(false);$("fontButton").focus();e.preventDefault();return}
+  if(!$("presentation").hidden){
+    if(e.key==="Escape"){endPresentation();e.preventDefault()}
+    else if(e.key==="ArrowRight"||e.key==="ArrowDown"){movePresentation(1);e.preventDefault()}
+    else if(e.key==="ArrowLeft"||e.key==="ArrowUp"){movePresentation(-1);e.preventDefault()}
+  }else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="f"){e.preventDefault();setPage("search")}
+})}
 async function start(){updateTheme();initSidebarResizer();initializeEvents();setLanguage(state.prefs.lang,false);try{const res=await fetch("./data/manifest.json");if(!res.ok)throw Error("Bible manifest unavailable");const manifest=await res.json();if(!Array.isArray(manifest.books)||manifest.books.length!==66)throw Error("Expected 66 Bible books");state.manifest=manifest;state.books=manifest.books;const last=getStored("bibleapp.lastplace",{id:"JHN",ch:1});await openBook(state.books.some(b=>b.id===last.id)?last.id:"JHN",last.ch||1);setPage("reader");if("serviceWorker"in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("./sw.js",{scope:"./"}).catch(()=>{});}catch(err){$("verses").textContent=tr("dataLoadError",{message:String(err.message||err)});toast(tr("dataUnavailable"))}}
 start();
 })();
