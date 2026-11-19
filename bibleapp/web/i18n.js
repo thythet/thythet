@@ -179,7 +179,8 @@ window.BIBLE_LOCALES={
     "developerCredit": "Developed by: THY THET",
     "developerCreated": "Created on: November 20, 2026",
     "developerPurpose": "This Bible application was developed to make reading and searching Scripture easier, as well as to help users create and prepare Bible presentation slides.",
-    "developerCopyright": "© 2026 THY THET. All rights reserved."
+    "developerCopyright": "© 2026 THY THET. All rights reserved.",
+    "developerSummary": "Created on: November 20, 2026 This Bible application was developed to make reading and searching Scripture easier, as well as to help users create and prepare Bible presentation slides."
   },
   "kh": {
     "reader": "អានព្រះគម្ពីរ",
@@ -360,6 +361,7 @@ window.BIBLE_LOCALES={
     "developerCredit": "អភិវឌ្ឍកម្មវិធីដោយ៖ ធី ថេត",
     "developerCreated": "បង្កើតនៅថ្ងៃទី៖ ២០ ខែវិច្ឆិកា ឆ្នាំ២០២៦",
     "developerPurpose": "កម្មវិធីនេះត្រូវបានបង្កើតឡើងក្នុងគោលបំណងជួយសម្រួលដល់ការអានព្រះបន្ទូល ការស្វែងរកព្រះបន្ទូល និងការរៀបចំស្លាយព្រះបន្ទូល។",
-    "developerCopyright": "© ២០២៦ ធី ថេត។ រក្សាសិទ្ធិគ្រប់យ៉ាង។"
+    "developerCopyright": "© ២០២៦ ធី ថេត។ រក្សាសិទ្ធិគ្រប់យ៉ាង។",
+    "developerSummary": "បង្កើតនៅថ្ងៃទី៖ ២០ ខែវិច្ឆិកា ឆ្នាំ២០២៦ កម្មវិធីនេះត្រូវបានបង្កើតឡើងក្នុងគោលបំណងជួយសម្រួលដល់ការអានព្រះបន្ទូល ការស្វែងរកព្រះបន្ទូល និងការរៀបចំស្លាយព្រះបន្ទូល។"
   }
 };

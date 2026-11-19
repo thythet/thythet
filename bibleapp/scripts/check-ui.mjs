@@ -76,7 +76,7 @@ for(const shade of ["blue","purple","pink","red","orange","yellow","green","gray
 }
 assert(!html.includes('id="verseActions"')&&/\.verse-context-menu\{position:fixed/.test(css),"Old formatting bar should be replaced by compact context menu");
 assert(/bibleapp\.study\.v1/.test(js)&&/bibleapp\.prefs\.v1/.test(js),"Persisted bookmarks/highlights/notes must remain in existing storage");
-assert(sw.includes("bibleapp-web-v0.1.7")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
+assert(sw.includes("bibleapp-web-v0.1.8")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
 assert(/#readerPage \.verses \.verse\.selected/.test(css)&&css.includes("background:#dcf3dc!important")&&css.includes("border:2px solid #4caf50!important"),"Selected verses must have a pale-green background and 2px green border");
 assert(css.includes('background:#dcf3dc!important')&&css.includes('border:2px solid #4caf50!important'),"Unhighlighted selections must retain pale green with 2px green border");
 for(const shade of ["blue","purple","pink","red","orange","yellow","green","gray"]){
@@ -101,8 +101,14 @@ assert(/const content=contentOverride\|\|selectedText\(\)/.test(js),"Share must 
 assert(/if\(!e\.target\.closest\(".verse-number"\)\)return/.test(js),
   "Whole-verse dragging must begin at the blue verse number only");
 assert(/e\.target\.closest\(".verse-text"\)/.test(js),"Text dragging must use native selection");
-assert(/if\(e\.target\.closest\(".verse-number"\)\)selectVerse\(v\.n,e\)/.test(js),
-  "Whole-verse click should start from number rather than the text");
+assert(/function shouldSelectVerseFromClick\(e\)/.test(js)&&/if\(shouldSelectVerseFromClick\(e\)\)selectVerse\(v\.n,e\)/.test(js),
+  "Whole-verse click should honor modifier keys anywhere on the row");
+assert(/return Boolean\(\(e\.shiftKey\|\|e\.ctrlKey\|\|e\.metaKey\)\&\&e\.target\.closest\(".verse"\)\)/.test(js),
+  "Shift, Ctrl and Command must work anywhere on a verse row");
+assert(/if\(e\.shiftKey\|\|e\.ctrlKey\|\|e\.metaKey\)\{[\s\S]{0,180}e\.preventDefault\(\)/.test(js),
+  "Modifier clicks in Scripture text must not extend native text selection");
+assert(/function applyVerseSelection\(n,e\)/.test(js),
+  "Whole-verse selection logic should be independent of native text drag");
 assert(css.includes('.verse-text{user-select:text;-webkit-user-select:text;cursor:text'),
   "Verse text needs native user-select:text");
 assert(css.includes('.verse-number{user-select:none;-webkit-user-select:none;cursor:crosshair'),
@@ -271,15 +277,63 @@ const footerAt=accountMarkup.indexOf('class="account-developer-footer"');
 assert(footerAt>0,"Account page must contain the developer information footer");
 assert(footerAt>accountMarkup.indexOf('class="cards"'),"Developer footer should appear after Account cards");
 assert.equal((html.match(/class="account-developer-footer"/g)||[]).length,1,"Developer footer should appear once");
-for(const key of ["developerInformation","developerCredit","developerCreated","developerPurpose","developerCopyright"]){
+for(const key of ["developerInformation","developerCredit","developerSummary","developerCopyright"]){
   assert(locales.en[key]&&locales.kh[key],"Developer footer must be translated: "+key);
 }
 assert.equal(locales.en.developerCredit,"Developed by: THY THET","English developer attribution must use THY THET");
 assert.equal(locales.kh.developerCredit,"អភិវឌ្ឍកម្មវិធីដោយ៖ ធី ថេត","Khmer developer attribution must use ធី ថេត");
-assert(locales.en.developerCreated.includes("November 20, 2026"),"English created date must be preserved");
-assert(locales.kh.developerCreated.includes("២០ ខែវិច្ឆិកា ឆ្នាំ២០២៦"),"Khmer created date must be preserved");
+assert(locales.en.developerSummary.includes("November 20, 2026"),"English created date must be preserved");
+assert(locales.kh.developerSummary.includes("២០ ខែវិច្ឆិកា ឆ្នាំ២០២៦"),"Khmer created date must be preserved");
 assert(locales.en.developerCopyright.includes("© 2026")&&locales.kh.developerCopyright.includes("© ២០២៦"),"Both languages must contain copyright");
-assert(css.includes("#accountPage:not([hidden]){display:flex;flex-direction:column}"),"Account footer should be bottom-aligned without revealing hidden page");
+assert(css.includes("#accountPage:not([hidden]){display:flex;flex-direction:column"),"Account footer should be bottom-aligned without revealing hidden page");
 assert(css.includes("#accountPage .account-developer-footer")&&css.includes("margin-top:auto"),"Developer footer should occupy the page bottom");
-console.log("Bible App checks passed: bilingual developer footer, text selection, saved/unsaved bookmarks, immediate highlight colors, all 66 books, bilingual interface, offline cache and prior features.");
+assert(accountMarkup.includes('class="developer-summary"')&&accountMarkup.includes('data-i18n="developerSummary"'),
+  "Developer creation date and purpose must be one continuous line of content");
+assert(!accountMarkup.includes('class="developer-created"')&&!accountMarkup.includes('class="developer-purpose"'),
+  "Developer date and purpose must not render in separate paragraphs");
+assert(accountMarkup.includes('data-i18n="developerCredit"')&&accountMarkup.includes('data-i18n="developerCopyright"'),
+  "Developer name and copyright must remain separate");
+const accountCards=accountMarkup.slice(accountMarkup.indexOf('<div class="cards">'),accountMarkup.indexOf('</div><footer'));
+assert.equal((accountCards.match(/data-open=/g)||[]).length,5,"All five Account navigation cards must remain");
+assert(!/<span>[^<]+<\/span>\s*<strong/.test(accountCards),"Account navigation cards must not show decorative icons");
+assert(css.includes('padding:24px 5px 0')&&css.includes('#accountPage .developer-summary'),
+  "Professional footer must be visible near the bottom of the Account page");
+// Execute the real modifier-selection function against disjoint and range selections.
+const modifierFn=js.match(/function applyVerseSelection\(n,e\)\{[\s\S]*?\n\}/)?.[0];
+const clickFn=js.match(/function shouldSelectVerseFromClick\(e\)\{[\s\S]*?\n\}/)?.[0];
+assert(modifierFn&&clickFn,"Modifier selection helpers must be testable");
+const modifierResults=runInNewContext([
+  'const state={selection:new Set(),anchor:null,focusVerse:null};',
+  'const verseData=()=>[1,2,3,4,5,6,7,8].map(n=>({n}));',
+  'function verseRangeBetween(a,b,verses){const i=verses.indexOf(a),j=verses.indexOf(b);return verses.slice(Math.min(i,j),Math.max(i,j)+1)}',
+  modifierFn,clickFn,
+  'const e=(attrs={})=>({shiftKey:false,ctrlKey:false,metaKey:false,...attrs});',
+  'applyVerseSelection(2,e());',
+  'applyVerseSelection(5,e({ctrlKey:true}));',
+  'const additive=[...state.selection].sort((a,b)=>a-b).join(",");',
+  'applyVerseSelection(7,e({shiftKey:true}));',
+  'const ranged=[...state.selection].sort((a,b)=>a-b).join(",");',
+  'applyVerseSelection(4,e({metaKey:true}));',
+  'const command=[...state.selection].sort((a,b)=>a-b).join(",");',
+  'applyVerseSelection(5,e({ctrlKey:true}));',
+  'const toggle=[...state.selection].sort((a,b)=>a-b).join(",");',
+  'const row={closest:selector=>selector===".verse"?{}:null};',
+  'const number={closest:selector=>selector===".verse-number"||selector===".verse"?{}:null};',
+  'const bookmark={closest:selector=>selector===".verse-bookmark"||selector===".verse"?{}:null};',
+  'const plainText=shouldSelectVerseFromClick({target:row,...e()});',
+  'const shiftText=shouldSelectVerseFromClick({target:row,...e({shiftKey:true})});',
+  'const ctrlText=shouldSelectVerseFromClick({target:row,...e({ctrlKey:true})});',
+  'const cmdText=shouldSelectVerseFromClick({target:row,...e({metaKey:true})});',
+  'const numberClick=shouldSelectVerseFromClick({target:number,...e()});',
+  'const bookmarkClick=shouldSelectVerseFromClick({target:bookmark,...e({ctrlKey:true})});',
+  '({additive,ranged,command,toggle,plainText,shiftText,ctrlText,cmdText,numberClick,bookmarkClick})'
+].join("\n"),{},{timeout:1000});
+assert.equal(modifierResults.additive,"2,5","Ctrl-click should add nonconsecutive verses");
+assert.equal(modifierResults.ranged,"5,6,7","Shift-click should select a range from the latest anchor");
+assert.equal(modifierResults.command,"4,5,6,7","Command-click should add another verse");
+assert.equal(modifierResults.toggle,"4,6,7","Ctrl-click on an existing verse should deselect it");
+assert.equal(modifierResults.plainText,false,"Plain text clicks must allow native character selection");
+for(const name of ["shiftText","ctrlText","cmdText","numberClick"])assert.equal(modifierResults[name],true,name+" must select whole verse rows");
+assert.equal(modifierResults.bookmarkClick,false,"Saved-verse icon should not accidentally select a verse");
+console.log("Bible App checks passed: Shift/Ctrl/Command row selection, icon-free Account cards, single-line developer text, bookmark + highlight behavior, bilingual offline UI.");
 

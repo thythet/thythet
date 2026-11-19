@@ -454,38 +454,43 @@ body[data-appearance^="tahoe-"] .sidebar-resize:hover:after{background:var(--pri
 /* Keep the bookmark glyph legible on an opaque saved highlight. */
 #readerPage .verses .verse[data-highlight]:not([data-highlight=""]) .verse-bookmark{color:inherit}
 
-/* Account developer information — final page footer (no card/border). */
-#accountPage:not([hidden]){display:flex;flex-direction:column}
+/* Account: icon-free navigation cards and a centered, visible developer footer. */
+#accountPage:not([hidden]){display:flex;flex-direction:column;padding-bottom:22px}
+#accountPage .cards button{gap:4px;min-height:73px;justify-content:center}
+#accountPage .cards button strong{font-size:14px}
 #accountPage .account-developer-footer{
   margin-top:auto;
   flex:none;
-  padding:64px 12px 7px;
-  max-width:740px;
+  padding:24px 5px 0;
   width:100%;
+  max-width:1150px;
   align-self:center;
   text-align:center;
+  font-family:"Khmer Battambang",Inter,-apple-system,sans-serif;
   color:var(--muted);
-  background:transparent;
+  background:none;
   border:0;
   box-shadow:none;
 }
 #accountPage .account-developer-footer p{margin:0}
 #accountPage .developer-credit{
-  font-size:13px;
-  font-weight:650;
-  line-height:1.7;
   color:var(--text);
-}
-#accountPage .developer-created{font-size:12px;line-height:1.8}
-#accountPage .developer-purpose{
   font-size:12px;
-  line-height:1.9;
-  max-width:625px;
-  margin:8px auto 0;
-  overflow-wrap:anywhere;
+  font-weight:700;
+  line-height:1.65;
 }
-#accountPage .developer-copyright{font-size:11px;line-height:1.7;margin-top:12px}
+#accountPage .developer-summary{
+  font-size:11px;
+  line-height:1.8;
+  margin-top:4px;
+  overflow-wrap:normal;
+  text-wrap:pretty;
+}
+#accountPage .developer-copyright{font-size:11px;line-height:1.7;margin-top:6px}
+@media(min-width:1450px){
+  #accountPage .developer-summary{white-space:nowrap;font-size:10.5px;letter-spacing:-.05px}
+}
 @media(max-width:600px){
-  #accountPage .account-developer-footer{padding:35px 4px 5px}
-  #accountPage .developer-purpose{font-size:11px}
+  #accountPage .account-developer-footer{padding:20px 3px 0}
+  #accountPage .developer-summary{font-size:10.5px}
 }

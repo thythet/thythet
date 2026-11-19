@@ -116,3 +116,14 @@ The test script checks full-verse and native text-selection contracts, saved/uns
 - The copyright notice is **© 2026 THY THET. All rights reserved.** (and a Khmer equivalent).
 - All four lines and the footer's accessible label use existing English/Khmer interface translations. The same bundled markup/styles work in the Web and Tauri Windows/macOS apps offline. No sign-in or network service is needed.
 - Scope: only `bibleapp/` UI, translations, checks, and the Web cache revision `bibleapp-web-v0.1.7`; Bible JSON, user data, and existing apps are unchanged.
+
+
+## v0.1.8 — Modifier-key verse selection and compact Account footer
+
+- **Shift + click** anywhere on a verse row (including Scripture text) selects a continuous range from the last anchor verse; **Ctrl + click** on Windows or **Command + click** on macOS adds or removes individual verses, preserving nonconsecutive selections. These actions do not start native text-range selection. On macOS, use Command-click because Control-click may open the context menu.
+- Plain dragging across Scripture text still supports native word/character selection. Clicking or dragging from the blue verse number still selects whole verses; saved bookmark icons do not interfere.
+- The Account page's five navigation cards (Tools, Appearance, Settings, Bookmarks, Help) now show clean text without decorative glyph icons; the Google sign-in icon is preserved.
+- The developer credit remains centered near the bottom of Account. The creation date and application purpose share **one continuous paragraph** in both languages, with separate developer and copyright lines. Excess spacing has been reduced so the footer is visible with the Account cards.
+- All modifications remain within `bibleapp/` with the existing Bible JSON and local study storage unchanged. Offline Web cache bumped to `bibleapp-web-v0.1.8`; the Tauri Windows/macOS frontends share the same source.
+
+The automated UI checks now exercise Shift/Ctrl/Command selection state, normal text selection, the Account footer structure, and preservation of the existing study features.

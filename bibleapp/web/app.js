@@ -336,7 +336,9 @@ function renderReader(){
     row.append(number,text,saved);
     row.onclick=e=>{
       if(suppressVerseClick){suppressVerseClick=false;return}
-      if(e.target.closest(".verse-number"))selectVerse(v.n,e);
+      // Plain text clicks keep native word/character selection.
+      // Shift and Ctrl/Command clicks select full verses from anywhere in their text.
+      if(shouldSelectVerseFromClick(e))selectVerse(v.n,e);
     };
     row.oncontextmenu=e=>{
       e.preventDefault();
@@ -454,8 +456,14 @@ function initDragSelection(){
     if(e.button!==0||e.pointerType==="touch")return;
     if(e.target.closest(".verse-text")){
       contextualTextSelection="";
-      // Starting normal text selection must not leave old whole-verse feedback behind.
-      if(!e.shiftKey&&!e.ctrlKey&&!e.metaKey&&state.selection.size){
+      if(e.shiftKey||e.ctrlKey||e.metaKey){
+        // Prevent browsers extending the native text selection on modifier-click.
+        // The click handler below will update our whole-verse selection instead.
+        e.preventDefault();
+        return;
+      }
+      // Ordinary text dragging remains native and clears old whole-verse feedback.
+      if(state.selection.size){
         state.selection.clear();updateVerseSelectionDisplay();
       }
     }
@@ -469,7 +477,35 @@ function initDragSelection(){
   window.addEventListener("pointercancel",finishVerseDrag);
   window.addEventListener("blur",()=>finishVerseDrag({}));
 }
-function selectVerse(n,e){closeVerseMenu();window.getSelection()?.removeAllRanges();state.focusVerse=n;const list=verseData().map(v=>v.n);if(e.shiftKey&&state.anchor!=null){const a=list.indexOf(state.anchor),b=list.indexOf(n);if(a>=0&&b>=0){if(!(e.ctrlKey||e.metaKey))state.selection.clear();for(let i=Math.min(a,b);i<=Math.max(a,b);i++)state.selection.add(list[i])}}else if(e.ctrlKey||e.metaKey){if(state.selection.has(n))state.selection.delete(n);else state.selection.add(n);state.anchor=n}else{state.selection.clear();state.selection.add(n);state.anchor=n}for(const el of $("verses").children){const active=state.selection.has(Number(el.dataset.verse));el.classList.toggle("selected",active);el.setAttribute("aria-pressed",String(active)) }updateSelectionBar();syncQuickReference()}
+function shouldSelectVerseFromClick(e){
+  if(e.target.closest(".verse-bookmark"))return false;
+  if(e.target.closest(".verse-number"))return true;
+  return Boolean((e.shiftKey||e.ctrlKey||e.metaKey)&&e.target.closest(".verse"));
+}
+function applyVerseSelection(n,e){
+  const verses=verseData().map(v=>v.n);
+  const additive=Boolean(e.ctrlKey||e.metaKey);
+  if(e.shiftKey&&state.anchor!=null){
+    const range=verseRangeBetween(state.anchor,n,verses);
+    if(!additive)state.selection.clear();
+    for(const number of range)state.selection.add(number);
+  }else if(additive){
+    if(state.selection.has(n))state.selection.delete(n);
+    else state.selection.add(n);
+    state.anchor=n;
+  }else{
+    state.selection.clear();
+    state.selection.add(n);
+    state.anchor=n;
+  }
+  state.focusVerse=n;
+}
+function selectVerse(n,e){
+  closeVerseMenu();
+  window.getSelection()?.removeAllRanges();
+  applyVerseSelection(n,e);
+  updateVerseSelectionDisplay();
+}
 function updateSelectionBar(){
   const count=state.selection.size;
   const coarse=typeof matchMedia==="function"&&matchMedia("(pointer: coarse)").matches;
