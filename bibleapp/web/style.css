@@ -453,3 +453,39 @@ body[data-appearance^="tahoe-"] .sidebar-resize:hover:after{background:var(--pri
 
 /* Keep the bookmark glyph legible on an opaque saved highlight. */
 #readerPage .verses .verse[data-highlight]:not([data-highlight=""]) .verse-bookmark{color:inherit}
+
+/* Account developer information — final page footer (no card/border). */
+#accountPage:not([hidden]){display:flex;flex-direction:column}
+#accountPage .account-developer-footer{
+  margin-top:auto;
+  flex:none;
+  padding:64px 12px 7px;
+  max-width:740px;
+  width:100%;
+  align-self:center;
+  text-align:center;
+  color:var(--muted);
+  background:transparent;
+  border:0;
+  box-shadow:none;
+}
+#accountPage .account-developer-footer p{margin:0}
+#accountPage .developer-credit{
+  font-size:13px;
+  font-weight:650;
+  line-height:1.7;
+  color:var(--text);
+}
+#accountPage .developer-created{font-size:12px;line-height:1.8}
+#accountPage .developer-purpose{
+  font-size:12px;
+  line-height:1.9;
+  max-width:625px;
+  margin:8px auto 0;
+  overflow-wrap:anywhere;
+}
+#accountPage .developer-copyright{font-size:11px;line-height:1.7;margin-top:12px}
+@media(max-width:600px){
+  #accountPage .account-developer-footer{padding:35px 4px 5px}
+  #accountPage .developer-purpose{font-size:11px}
+}

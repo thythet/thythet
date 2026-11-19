@@ -76,7 +76,7 @@ for(const shade of ["blue","purple","pink","red","orange","yellow","green","gray
 }
 assert(!html.includes('id="verseActions"')&&/\.verse-context-menu\{position:fixed/.test(css),"Old formatting bar should be replaced by compact context menu");
 assert(/bibleapp\.study\.v1/.test(js)&&/bibleapp\.prefs\.v1/.test(js),"Persisted bookmarks/highlights/notes must remain in existing storage");
-assert(sw.includes("bibleapp-web-v0.1.6")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
+assert(sw.includes("bibleapp-web-v0.1.7")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
 assert(/#readerPage \.verses \.verse\.selected/.test(css)&&css.includes("background:#dcf3dc!important")&&css.includes("border:2px solid #4caf50!important"),"Selected verses must have a pale-green background and 2px green border");
 assert(css.includes('background:#dcf3dc!important')&&css.includes('border:2px solid #4caf50!important'),"Unhighlighted selections must retain pale green with 2px green border");
 for(const shade of ["blue","purple","pink","red","orange","yellow","green","gray"]){
@@ -264,5 +264,22 @@ assert.equal(textBehavior.exact,"ព្រះបន្ទូល","Exact text sel
 assert.equal(textBehavior.fallback,"FULL VERSE","No text selection should copy grouped whole verses");
 assert.equal(textBehavior.captured,"captured words","Right-click menu must retain the original text selection");
 assert.equal(textBehavior.outside,"FULL VERSE","Text selected outside Scripture should not override verse copying");
-console.log("Bible App checks passed: text selection, saved/unsaved bookmarks, immediate highlight colors, all 66 books, bilingual interface, offline cache and prior features.");
+// Account developer footer: accurate bilingual attribution, readable and truly last.
+const accountStart=html.indexOf('id="accountPage"'),accountEnd=html.indexOf('id="toolsPage"');
+const accountMarkup=html.slice(accountStart,accountEnd);
+const footerAt=accountMarkup.indexOf('class="account-developer-footer"');
+assert(footerAt>0,"Account page must contain the developer information footer");
+assert(footerAt>accountMarkup.indexOf('class="cards"'),"Developer footer should appear after Account cards");
+assert.equal((html.match(/class="account-developer-footer"/g)||[]).length,1,"Developer footer should appear once");
+for(const key of ["developerInformation","developerCredit","developerCreated","developerPurpose","developerCopyright"]){
+  assert(locales.en[key]&&locales.kh[key],"Developer footer must be translated: "+key);
+}
+assert.equal(locales.en.developerCredit,"Developed by: THY THET","English developer attribution must use THY THET");
+assert.equal(locales.kh.developerCredit,"អភិវឌ្ឍកម្មវិធីដោយ៖ ធី ថេត","Khmer developer attribution must use ធី ថេត");
+assert(locales.en.developerCreated.includes("November 20, 2026"),"English created date must be preserved");
+assert(locales.kh.developerCreated.includes("២០ ខែវិច្ឆិកា ឆ្នាំ២០២៦"),"Khmer created date must be preserved");
+assert(locales.en.developerCopyright.includes("© 2026")&&locales.kh.developerCopyright.includes("© ២០២៦"),"Both languages must contain copyright");
+assert(css.includes("#accountPage:not([hidden]){display:flex;flex-direction:column}"),"Account footer should be bottom-aligned without revealing hidden page");
+assert(css.includes("#accountPage .account-developer-footer")&&css.includes("margin-top:auto"),"Developer footer should occupy the page bottom");
+console.log("Bible App checks passed: bilingual developer footer, text selection, saved/unsaved bookmarks, immediate highlight colors, all 66 books, bilingual interface, offline cache and prior features.");
 

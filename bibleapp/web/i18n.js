@@ -174,7 +174,12 @@ window.BIBLE_LOCALES={
     "unsave": "Unsave",
     "verseSaved": "Verse saved",
     "verseUnsaved": "Verse removed from saved",
-    "selectedUnsaved": "Removed {n} saved verse(s)"
+    "selectedUnsaved": "Removed {n} saved verse(s)",
+    "developerInformation": "Developer information",
+    "developerCredit": "Developed by: THY THET",
+    "developerCreated": "Created on: November 20, 2026",
+    "developerPurpose": "This Bible application was developed to make reading and searching Scripture easier, as well as to help users create and prepare Bible presentation slides.",
+    "developerCopyright": "© 2026 THY THET. All rights reserved."
   },
   "kh": {
     "reader": "អានព្រះគម្ពីរ",
@@ -350,6 +355,11 @@ window.BIBLE_LOCALES={
     "unsave": "ដករក្សាទុក",
     "verseSaved": "បានរក្សាទុកខព្រះគម្ពីរ",
     "verseUnsaved": "បានដកខចេញពីការរក្សាទុក",
-    "selectedUnsaved": "បានដកខ {n} ពីការរក្សាទុក"
+    "selectedUnsaved": "បានដកខ {n} ពីការរក្សាទុក",
+    "developerInformation": "ព័ត៌មានអ្នកអភិវឌ្ឍកម្មវិធី",
+    "developerCredit": "អភិវឌ្ឍកម្មវិធីដោយ៖ ធី ថេត",
+    "developerCreated": "បង្កើតនៅថ្ងៃទី៖ ២០ ខែវិច្ឆិកា ឆ្នាំ២០២៦",
+    "developerPurpose": "កម្មវិធីនេះត្រូវបានបង្កើតឡើងក្នុងគោលបំណងជួយសម្រួលដល់ការអានព្រះបន្ទូល ការស្វែងរកព្រះបន្ទូល និងការរៀបចំស្លាយព្រះបន្ទូល។",
+    "developerCopyright": "© ២០២៦ ធី ថេត។ រក្សាសិទ្ធិគ្រប់យ៉ាង។"
   }
 };

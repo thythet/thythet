@@ -108,3 +108,11 @@ The prior Classic theme remains the default for current users. This update modif
 - **No Scripture or data schema changes:** all 66 Bible books, old saved highlights, notes, and preferences remain intact. The Web offline cache is bumped to `bibleapp-web-v0.1.6`. Windows/macOS share the same UI source and need new installers to reflect the changes.
 
 The test script checks full-verse and native text-selection contracts, saved/unsaved bookmark behavior, and the eight immediate solid highlight colors.
+
+## Account developer information (November 20, 2026)
+
+- A centered, unobtrusive developer information footer appears **below the Account cards at the bottom of the Account page**, without a new card or border.
+- It credits **THY THET / ធី ថេត**, records the creation date of **November 20, 2026 / ២០ ខែវិច្ឆិកា ឆ្នាំ២០២៦**, and states the purpose: make reading and searching Scripture and preparing Bible presentation slides easier.
+- The copyright notice is **© 2026 THY THET. All rights reserved.** (and a Khmer equivalent).
+- All four lines and the footer's accessible label use existing English/Khmer interface translations. The same bundled markup/styles work in the Web and Tauri Windows/macOS apps offline. No sign-in or network service is needed.
+- Scope: only `bibleapp/` UI, translations, checks, and the Web cache revision `bibleapp-web-v0.1.7`; Bible JSON, user data, and existing apps are unchanged.
