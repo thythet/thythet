@@ -63,21 +63,57 @@ jobs:
         run: |
           npm install --no-audit --no-fund
           npm run icons
-      - name: Build and upload Bible App installers
+      - name: Build Bible App desktop bundles
         uses: tauri-apps/tauri-action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           projectPath: bibleapp
-          tagName: bibleapp-v__VERSION__
-          releaseName: "Bible App v__VERSION__ (Windows + macOS beta)"
-          releaseBody: |
-            Initial Bible App foundation: offline Khmer Bible 1954 reader,
-            full local search, verse selection, local notes, highlights,
-            bookmarks, Quick Slideshow and an early Smart Bible preview.
-
-            Google sign-in, PowerSlidePro launching, PPTX/DOCX/PDF exports,
-            signing/notarization and production testing are NOT included yet.
-            Unsigned macOS beta; users may need to authorize launching it.
-          releaseDraft: false
+      - name: Save installers as workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: bibleapp-${{ matrix.platform }}
+          path: |
+            bibleapp/src-tauri/target/release/bundle/nsis/*.exe
+            bibleapp/src-tauri/target/release/bundle/msi/*.msi
+            bibleapp/src-tauri/target/release/bundle/dmg/*.dmg
+          if-no-files-found: error
+          retention-days: 30
+  publish-release:
+    needs: build-and-release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: bibleapp-*
+          merge-multiple: true
+          path: release-assets
+      - name: Check all three platform installers and create checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(find release-assets -maxdepth 1 -name '*.dmg' -type f | wc -l)" -ge 2
+          test "$(find release-assets -maxdepth 1 -name '*.exe' -type f | wc -l)" -ge 1
+          (cd release-assets && sha256sum *.dmg *.exe > SHA256SUMS.txt)
+          ls -lah release-assets
+      - name: Publish Bible App beta release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: bibleapp-v0.1.0
+          target_commitish: main
+          name: "Bible App v0.1.0 (Windows + macOS beta)"
           prerelease: true
+          fail_on_unmatched_files: true
+          body: |
+            Bible App v0.1.0: first offline Khmer 1954 Bible reader built
+            with Rust + Tauri 2. Includes 66 Bible books, search, verse
+            selection, colorful highlights, notes, bookmarks and
+            Quick Slideshow. Bible App Web is at https://thythet.com/bibleapp/.
+
+            Beta limitations: Google login, PowerSlidePro launch,
+            professional slide editing, and PPTX/DOCX/PDF export are
+            planned but NOT implemented. Mac installers are unsigned.
+          files: |
+            release-assets/*.exe
+            release-assets/*.dmg
+            release-assets/SHA256SUMS.txt
