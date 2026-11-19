@@ -44,6 +44,12 @@ jobs:
           test -s bibleapp/web/style.css
           test -s bibleapp/web/sw.js
           test -s bibleapp/src-tauri/icons/icon.png
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bibleapp-source
+          path: bibleapp/
+          if-no-files-found: error
+          retention-days: 7
   build-and-release:
     name: Build ${{ matrix.platform }}
     needs: validate-web
@@ -53,16 +59,10 @@ jobs:
         platform: [windows-latest, macos-15, macos-15-intel]
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
         with:
-          sparse-checkout: bibleapp
-          sparse-checkout-cone-mode: true
-        env:
-          # Suppress NTFS path validation for files outside the sparse checkout.
-          # An unrelated historical folder contains a Windows-incompatible path.
-          GIT_CONFIG_COUNT: '1'
-          GIT_CONFIG_KEY_0: core.protectNTFS
-          GIT_CONFIG_VALUE_0: 'false'
+          name: bibleapp-source
+          path: bibleapp
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
