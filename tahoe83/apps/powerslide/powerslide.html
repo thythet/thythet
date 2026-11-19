@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="km">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d1210">
+<title>Powerslide · Bible1954</title>
+<link rel="icon" href="assets/powerslide-icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Bayon&family=Content:wght@400;700&family=Dangrek&family=Freehand&family=Hanuman:wght@400;700&family=Kantumruy+Pro:wght@400;600;700&family=Khmer&family=Koulen&family=Metal&family=Moul&family=Moulpali&family=Noto+Sans+Khmer:wght@400;600;700&family=Noto+Serif+Khmer:wght@400;600;700&family=Odor+Mean+Chey&family=Preahvihear&family=Siemreap&family=Taprom&display=swap">
+<link rel="stylesheet" href="powerslide.css">
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <button id="backBible" class="iconBtn" title="Bible"><svg class="hi" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/></svg></button>
+    <div class="brand"><div class="brandMark brandMarkSvg"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25" /></svg></div><div class="brandText"><strong>Powerslide</strong><small>Sunday Presentation Studio</small></div></div>
+    <div class="projectTitleWrap"><input id="projectTitle" class="projectTitle" value="Powerslide" aria-label="Project title"><span id="saveState" class="saveState">Local</span></div>
+    <div class="topActions">
+      <button id="openLibrary" class="btn desktopOnly"><svg class="hi" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-19.5 0v4.5A2.25 2.25 0 0 0 4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25v-4.5m-19.5 0h19.5M6.75 6.75h3.75l1.5 1.5h5.25"/></svg><span>Projects</span></button><button id="projectInfoBtn" class="btn desktopOnly"><svg class="hi" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25 12 10.5m0 0 .75.75M12 10.5v6.75m9-5.25a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg><span>Info</span></button>
+      <button id="undoBtn" class="iconBtn" title="Undo"><svg class="hi" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h10.5a7.5 7.5 0 0 1 7.5 7.5"/></svg></button><button id="redoBtn" class="iconBtn" title="Redo"><svg class="hi" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m15 15 6-6m0 0-6-6m6 6H10.5A7.5 7.5 0 0 0 3 16.5"/></svg></button>
+      <div class="topDivider"></div>
+      <button id="presentBtn" class="btn primary"><svg class="hi" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z"/></svg><span>Present</span></button>
+      <button id="exportBtn" class="btn"><svg class="hi" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-4.5-4.5L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg><span>PPTX</span></button>
+    </div>
+  </header>
+
+  <main id="editorView" class="editor hidden">
+    <aside id="rail" class="rail">
+      <div class="paneHead"><span>SLIDES</span><button id="closeRail" class="iconBtn">×</button></div>
+      <div id="slideList" class="slideList"></div>
+      <button id="addSlideBtn" class="btn thumbAdd">+ New Slide</button>
+      <div id="railResizer" class="railResizer" title="Drag to resize slide thumbnails" aria-label="Resize slide thumbnails"></div>
+    </aside>
+
+    <section class="workspace">
+      <div class="toolrow">
+        <div class="toolGroup"><button id="mobileSlides" class="toolBtn"><svg class="hi" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5"/></svg><span>Slides</span></button><button id="smartBtn" class="toolBtn accent"><svg class="hi" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9.813 15.904-3.157 2.136.878-3.706-2.925-2.445 3.806-.307L9.813 0l1.398 3.582 3.806.307-2.925 2.445.878 3.706-3.157-2.136Zm7.81 3.235-1.915 1.295.533-2.246-1.774-1.483 2.31-.186.846-2.173.846 2.173 2.31.186-1.774 1.483.533 2.246-1.915-1.295Z"/></svg><span>Smart Generate</span></button></div>
+        <div class="toolGroup"><button id="addTextBtn" class="toolBtn"><svg class="hi" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg><span>Text</span></button><button id="addBibleBtn" class="toolBtn"><svg class="hi" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5A2.25 2.25 0 0 1 6.75 17.25H9A2.25 2.25 0 0 1 11.25 19.5V4.5A2.25 2.25 0 0 0 9 2.25H6.75A2.25 2.25 0 0 0 4.5 4.5v15Zm15 0a2.25 2.25 0 0 0-2.25-2.25H15A2.25 2.25 0 0 0 12.75 19.5V4.5A2.25 2.25 0 0 1 15 2.25h2.25a2.25 2.25 0 0 1 2.25 2.25v15Z"/></svg><span>Bible</span></button><button id="addImageBtn" class="toolBtn"><svg class="hi" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5A2.25 2.25 0 0 0 22.5 17.25V6.75A2.25 2.25 0 0 0 20.25 4.5H3.75A2.25 2.25 0 0 0 1.5 6.75v10.5A2.25 2.25 0 0 0 3.75 19.5Zm10.5-11.25h.008v.008h-.008V8.25Z"/></svg><span>Image</span></button><button id="addShapeBtn" class="toolBtn"><svg class="hi" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg><span>Shape</span></button></div>
+        <div class="toolGroup"><button id="designBtn" class="toolBtn">Design</button><button id="verseStyleBtn" class="toolBtn" title="Toggle verse-number style">¹ Verse: Normal</button><button id="gridBtn" class="toolBtn"><svg class="hi" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75h6v6h-6v-6Zm10.5 0h6v6h-6v-6Zm-10.5 10.5h6v6h-6v-6Zm10.5 0h6v6h-6v-6Z"/></svg><span>Grid</span></button><button id="duplicateSlideBtn" class="toolBtn"><svg class="hi" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75A1.125 1.125 0 0 1 3.75 20.625V10.875c0-.621.504-1.125 1.125-1.125H8.25m7.5 7.5h3.375c.621 0 1.125-.504 1.125-1.125V6.375c0-.621-.504-1.125-1.125-1.125H9.375c-.621 0-1.125.504-1.125 1.125V9.75m7.5 7.5H9.375A1.125 1.125 0 0 1 8.25 16.125V9.75"/></svg><span>Duplicate</span></button><button id="deleteSlideBtn" class="toolBtn"><svg class="hi" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673A2.25 2.25 0 0 1 15.916 21.75H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916"/></svg><span>Delete</span></button></div>
+        <div class="toolGroup"><button id="mobileProps" class="toolBtn">Properties ☷</button></div>
+      </div>
+      <div class="stageScroll"><div class="stageShell"><div id="slideCanvas" class="slideCanvas"><div class="safeArea"></div></div></div></div>
+    </section>
+
+    <aside id="inspector" class="inspector">
+      <div class="paneHead"><span>PROPERTIES</span><button id="closeInspector" class="iconBtn">×</button></div>
+      <div id="inspectorBody" class="inspectorBody"><div class="emptyInspector">ជ្រើសរើសធាតុនៅលើ slide ដើម្បីកែសម្រួល។</div></div>
+    </aside>
+  </main>
+</div>
+
+<section id="libraryView" class="library">
+  <div class="libTop"><div class="libBrand"><h1>Powerslide</h1><p>Sunday presentations · Bible1954 · Offline + Firebase</p></div><button id="libBackBible" class="btn">← Bible</button></div>
+  <div class="libBody">
+    <div class="libTools"><input id="projectSearch" class="libSearch" placeholder="ស្វែងរក project / Sunday / ចំណងជើង..."><button id="importProjectBtn" class="btn">Import</button><button id="newProjectBtn" class="btn primary">+ New Sunday</button></div>
+    <div id="projectGroups"></div>
+  </div>
+</section>
+
+<dialog id="newProjectDlg">
+  <div class="dlgHead"><strong>New Sunday Presentation</strong><button class="iconBtn" data-close="newProjectDlg">×</button></div>
+  <div class="dlgBody"><div class="newGrid">
+    <label class="field span2"><span>Project name</span><input id="newTitle" value="ព្រះបន្ទូលថ្ងៃអាទិត្យ"></label>
+    <label class="field"><span>Date</span><input id="newDate" type="date"></label>
+    <label class="field"><span>Service</span><input id="newService" placeholder="09:30"></label>
+    <label class="field"><span>Slide ratio</span><select id="newRatio"><option value="16:9">16:9 Widescreen</option><option value="4:3">4:3 Standard</option></select></label>
+    <label class="field"><span>Theme</span><select id="newTheme"><option value="sunday-dark">Sunday Dark</option><option value="church-green">Church Green</option><option value="clean-light">Clean Light</option><option value="minimal-black">Minimal Black</option></select></label>
+  </div></div>
+  <div class="dlgFoot"><button class="btn" data-close="newProjectDlg">Cancel</button><button id="createProjectBtn" class="btn primary">Create</button></div>
+</dialog>
+
+<dialog id="smartDlg">
+  <div class="dlgHead"><strong>✦ Smart Generate</strong><button class="iconBtn" data-close="smartDlg">×</button></div>
+  <div class="dlgBody"><textarea id="smartInput" class="smartInput" placeholder="ព្រះបន្ទូលម៉ោង9:30&#10;ចំណងជើង: ...&#10;2កូរិនថូស4:16-18&#10;អេភេសូរ3:16&#10;..."></textarea><div class="hint">Powerslide ស្គាល់លេខយោង Khmer/Arabic digits, ចំណងជើង, ព្រះបន្ទូលម៉ោង និងអត្ថបទធម្មតា។ វាទាញអត្ថបទដោយផ្ទាល់ពី Bible1954 static files។</div><div id="smartStatus" class="hint"></div></div>
+  <div class="dlgFoot"><button id="smartSample" class="btn">Sample</button><button id="smartRepair" class="btn">Repair Old Refs</button><button id="smartAppend" class="btn">Append</button><button id="smartReplace" class="btn primary">Generate & Replace</button></div>
+</dialog>
+
+<dialog id="bibleDlg">
+  <div class="dlgHead"><strong>Insert Bible Passage</strong><button class="iconBtn" data-close="bibleDlg">×</button></div>
+  <div class="dlgBody"><label class="field"><span>Reference</span><input id="bibleRefInput" placeholder="រ៉ូម 8:18 / ២ កូរិនថូស 4:16-18"></label><div id="biblePreview" class="hint">អត្ថបទនឹងមកពី Bible1954 ដែល bundled ក្នុង app។</div></div>
+  <div class="dlgFoot"><button class="btn" data-close="bibleDlg">Cancel</button><button id="insertBibleBtn" class="btn primary">Insert</button></div>
+</dialog>
+
+<dialog id="designDlg">
+  <div class="dlgHead"><strong>Presentation Design</strong><button class="iconBtn" data-close="designDlg">×</button></div>
+  <div class="dlgBody">
+    <div class="row2"><label class="field"><span>Theme</span><select id="designTheme"><option value="sunday-dark">Sunday Dark</option><option value="church-green">Church Green</option><option value="clean-light">Clean Light</option><option value="minimal-black">Minimal Black</option></select></label><label class="field"><span>Ratio</span><select id="designRatio"><option value="16:9">16:9</option><option value="4:3">4:3</option></select></label></div>
+    <div class="row2"><label class="field"><span>Title font</span><select id="designTitleFont"></select></label><label class="field"><span>Body/Bible font</span><select id="designBodyFont"></select></label></div>
+    <div class="designQuickActions"><button id="applyFontAllBtn" class="btn" type="button">Apply Body Font to ALL Slides</button><button id="designVerseStyleBtn" class="btn" type="button">Verse No: Normal</button></div>
+    <div class="row2"><label class="field"><span>Background</span><div class="colorField"><input id="designBg" type="color"><input id="designBgText"></div></label><label class="field"><span>Accent</span><div class="colorField"><input id="designAccent" type="color"><input id="designAccentText"></div></label></div>
+    <div class="propSection"><div class="propTitle">Khmer font preview</div><div id="designFontPreview" class="fontList"></div></div>
+    <div class="hint">Local fonts are loaded from <b>assets/fonts/fonts.json</b>. Drop a new .ttf/.otf/.woff/.woff2 into <b>assets/fonts/</b>, run <b>UpdateFonts.command</b>, then reload. SONY HEAD5 is supported; add your local font file and run UpdateFonts.command.</div>
+  </div>
+  <div class="dlgFoot"><button id="applyDesignBtn" class="btn primary">Apply to Project</button></div>
+</dialog>
+
+<dialog id="projectInfoDlg">
+  <div class="dlgHead"><strong>Project Settings</strong><button class="iconBtn" data-close="projectInfoDlg">×</button></div>
+  <div class="dlgBody"><div class="newGrid"><label class="field span2"><span>Title</span><input id="infoTitle"></label><label class="field"><span>Date</span><input id="infoDate" type="date"></label><label class="field"><span>Service</span><input id="infoService"></label></div></div>
+  <div class="dlgFoot"><button id="saveProjectInfo" class="btn primary">Save</button></div>
+</dialog>
+
+<input id="imageFile" type="file" accept="image/*" hidden>
+<input id="importProjectFile" type="file" accept="application/json,.json" hidden>
+
+
+<div id="accessGate" class="accessGate hidden"><div class="gateCard"><h2>សូមចូលគណនី</h2><p>Admin បានបិទ Anonymous Free Access។ សូមចូលដោយ Google ដើម្បីបន្តប្រើ Powerslide។</p><button id="gateLogin" class="btn primary">ចូលដោយ Google</button></div></div>
+<div id="presenter" class="presenter hidden"><div id="presentCanvas" class="presentCanvas"></div><div id="presentControls" class="presentControls" aria-label="Presentation text size"><button id="presentSmaller" type="button" title="Temporary smaller (-)">A−</button><span id="presentScaleLabel" class="presentScaleLabel">100%</span><button id="presentBigger" type="button" title="Temporary bigger (+)">A+</button><button id="presentReset" class="fitBtn" type="button" title="Back to exact editor size (0)">100%</button></div><div id="presentCounter" class="presentCounter"></div><div class="presentHint">← → / Space · −/+ temporary text · 0 exact editor size · B black · Esc</div><div id="presentBlack" class="presentBlack hidden"></div></div>
+<div id="toast" class="toast"></div>
+
+<script src="powerslide.js" defer></script>
+</body>
+</html>

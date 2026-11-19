@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "count": 866,
+  "file": "songs.json",
+  "sources": [
+    {
+      "name": "allsong2",
+      "originalCount": 488
+    },
+    {
+      "name": "allsong3",
+      "originalCount": 389
+    }
+  ]
+}
