@@ -24,6 +24,12 @@ jobs:
         with:
           sparse-checkout: bibleapp
           sparse-checkout-cone-mode: true
+        env:
+          # Suppress NTFS path validation for files outside the sparse checkout.
+          # An unrelated historical folder contains a Windows-incompatible path.
+          GIT_CONFIG_COUNT: '1'
+          GIT_CONFIG_KEY_0: core.protectNTFS
+          GIT_CONFIG_VALUE_0: 'false'
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
@@ -51,6 +57,12 @@ jobs:
         with:
           sparse-checkout: bibleapp
           sparse-checkout-cone-mode: true
+        env:
+          # Suppress NTFS path validation for files outside the sparse checkout.
+          # An unrelated historical folder contains a Windows-incompatible path.
+          GIT_CONFIG_COUNT: '1'
+          GIT_CONFIG_KEY_0: core.protectNTFS
+          GIT_CONFIG_VALUE_0: 'false'
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
