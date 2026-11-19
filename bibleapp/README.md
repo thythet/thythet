@@ -64,3 +64,14 @@ The Reader toolbar shows the **current Khmer book name**; no large decorative he
 The toolbar contains a compact EN/KH switch, borderless Search and Appearance buttons, and a text-size popover with instant 18–36 px updates, +/- adjustments, and persistent preferences. The account entry has no guest-status subtitle; its sidebar icon, account hero, and sign-in button use the user's exact four-color Google G SVG. Google sign-in is **not yet functional**; the control continues to show a clear planned-feature message.
 
 The refreshed web cache uses a network-first strategy for HTML/CSS/JavaScript while retaining local Scripture files offline. This release keeps the existing `bibleapp.study.v1` and `bibleapp.prefs.v1` storage keys and does not alter original Bible JSON.
+
+## v0.1.3 — quick reference and context formatting
+
+- Type a **Chapter** and **Verse** in the two small top-toolbar input fields, then press Enter or **Go**. Out-of-range chapters and missing verses are rejected; the destination verse is selected and scrolled into view. Clicking a verse synchronizes both fields, and chapter arrows, dropdown and horizontal chapter row remain linked.
+- Text size now uses a labeled **ទំហំអក្សរ** / **Text Size** control. Its smaller popover retains live 18–36 px resizing, +/- buttons and persistent preferences.
+- **Right-click any verse** to open a compact formatting menu with Copy, Share, Save, **Color**, Note and **Present (បញ្ចាំង)**. Right-clicking one of multiple selected verses preserves the selection. On touch devices, long-press a verse or select a verse and tap the compact actions button. Keyboard users may press Shift+F10 or the Menu key on a focused verse.
+- **Color choices are hidden until Color (ពណ៌) is clicked.** The menu then opens a dedicated palette of eight opaque highlights plus clear: blue, purple, pink, red, orange, yellow, green and gray. The existing local study-store keys and previously saved highlight names are preserved.
+- The bottom-left sidebar Tools shortcut is removed. Tools remains accessible from **Account → Tools**.
+- Reader and keyboard Help has been updated; offline web cache is versioned `bibleapp-web-v0.1.3`.
+
+This is a shared Web/Tauri UI update. No Firebase rules, native Rust source, Bible JSON, PowerSlidePro files or other Tahoe folders are changed.
