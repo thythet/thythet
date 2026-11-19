@@ -76,7 +76,7 @@ for(const shade of ["blue","purple","pink","red","orange","yellow","green","gray
 }
 assert(!html.includes('id="verseActions"')&&/\.verse-context-menu\{position:fixed/.test(css),"Old formatting bar should be replaced by compact context menu");
 assert(/bibleapp\.study\.v1/.test(js)&&/bibleapp\.prefs\.v1/.test(js),"Persisted bookmarks/highlights/notes must remain in existing storage");
-assert(sw.includes("bibleapp-web-v0.1.8")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
+assert(sw.includes("bibleapp-web-v0.1.9")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
 assert(/#readerPage \.verses \.verse\.selected/.test(css)&&css.includes("background:#dcf3dc!important")&&css.includes("border:2px solid #4caf50!important"),"Selected verses must have a pale-green background and 2px green border");
 assert(css.includes('background:#dcf3dc!important')&&css.includes('border:2px solid #4caf50!important'),"Unhighlighted selections must retain pale green with 2px green border");
 for(const shade of ["blue","purple","pink","red","orange","yellow","green","gray"]){
@@ -159,6 +159,8 @@ runInNewContext(i18n,context,{timeout:1000});
 const locales=context.window.BIBLE_LOCALES;
 assert(locales?.en&&locales?.kh,"English and Khmer dictionaries required");
 const translated=[...new Set([...html.matchAll(/data-i18n(?:-(?:placeholder|title|aria))?="([^"]+)"/g)].map(m=>m[1]))];
+assert.equal(locales.kh.appearance,"ពណ៌ផ្ទៃកម្មវិធី","Appearance title should use the exact requested Khmer label");
+assert(!Object.values(locales.kh).some(v=>typeof v==="string"&&v.includes("រូបរាង")),"Old Khmer Appearance wording must not remain");
 for(const label of translated)for(const lang of ["en","kh"])
   assert(typeof locales[lang][label]==="string"&&locales[lang][label].length>0,"Missing translation: "+lang+"/"+label);
 for(const required of ["chapters","languageToggle","textSize","decreaseText","increaseText","helpChapters","helpMultiDesc","verse","go","quickReference","share","color","present","invalidChapter","invalidVerse"])
