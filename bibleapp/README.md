@@ -98,3 +98,13 @@ This remains a shared Web + Windows/macOS Tauri UI update; installers are rebuil
 - The appearance styles, fonts and icons are bundled with the shared Web/Tauri frontend and require no external network service. Native Windows and macOS packaging is rebuilt separately by GitHub Actions. Offline web service worker cache: `bibleapp-web-v0.1.5`.
 
 The prior Classic theme remains the default for current users. This update modifies only files under `bibleapp/`.
+
+## v0.1.6 — Native Scripture text selection, bookmark indicators, and live color feedback
+
+- **Select just the characters or words you want:** drag in the verse text or double-click a word for native browser text selection; Ctrl/Cmd+C and right-click Copy use that exact text rather than a whole-verse citation. The right-click menu remembers the selected text while the menu is open.
+- **Select entire verses:** click the *blue verse number*, or click and drag from a blue verse number across other verses. Existing Shift-click, Ctrl/Command-click, multi-verse grouped Copy/Share, and Quick Slideshow remain available. Text dragging does not start whole-row selection. Touch long-press continues to open the formatting menu.
+- **Saved-verse indicators:** every saved verse shows a small accessible bookmark icon at the right of the row. Click it to unsave. The right-click Save action switches to **Unsave** when all selected verses are already bookmarked; saving and unsaving reuse the existing `bibleapp.study.v1.bookmarks` keys without migration.
+- **Immediate highlight colors:** when you choose a color in ពណ៌, a selected verse immediately displays that opaque saved color with its 2px green selection border. Selecting an uncolored verse still displays the requested pale green `#dcf3dc`. Deselecting restores the saved highlight without the selection border.
+- **No Scripture or data schema changes:** all 66 Bible books, old saved highlights, notes, and preferences remain intact. The Web offline cache is bumped to `bibleapp-web-v0.1.6`. Windows/macOS share the same UI source and need new installers to reflect the changes.
+
+The test script checks full-verse and native text-selection contracts, saved/unsaved bookmark behavior, and the eight immediate solid highlight colors.

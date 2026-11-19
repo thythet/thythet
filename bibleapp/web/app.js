@@ -115,6 +115,7 @@ function setLanguage(lang,save=true){
   if(state.books.length)setupSidebar();
   if(state.book&&state.page==="reader"){const top=$("verses").scrollTop;renderReader();$("verses").scrollTop=top;}
   if(state.page==="bookmarks")renderSaved();
+  else if(state.page==="reader")refreshBookmarkIndicators();
   if(state.page==="generator"&&state.slides.length)renderSlides();
   if(!$("verseContextMenu").hidden)positionVerseMenu(menuPosition.x,menuPosition.y);
   if(state.page==="search"&&state.searchReady){if($("verseSearch").value.trim())doSearch();else $("searchStatus").textContent=tr("indexedAll");}
@@ -325,10 +326,27 @@ function renderReader(){
     row.setAttribute("role","button");row.setAttribute("aria-pressed",String(state.selection.has(v.n)));
     const number=document.createElement("span");number.className="verse-number";number.textContent=kmNumber(v.n);
     const text=document.createElement("span");text.className="verse-text";text.textContent=v.text;
-    row.append(number,text);row.onclick=e=>{if(suppressVerseClick){suppressVerseClick=false;return}selectVerse(v.n,e)};
-    row.oncontextmenu=e=>{e.preventDefault();selectForContext(v.n);openVerseMenu(e.clientX||row.getBoundingClientRect().left,e.clientY||row.getBoundingClientRect().bottom)};
+    const saved=document.createElement("button");
+    saved.type="button";saved.className="verse-bookmark";saved.dataset.verse=v.n;
+    saved.title=tr("removeBookmark");saved.setAttribute("aria-label",tr("removeBookmark"));
+    saved.innerHTML='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M6 3.5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2V22l-6-4-6 4V3.5Z"/></svg>';
+    saved.hidden=!Boolean(state.study.bookmarks[key(v.n)]);
+    saved.addEventListener("pointerdown",e=>e.stopPropagation());
+    saved.addEventListener("click",e=>{e.stopPropagation();toggleVerseBookmark(v.n)});
+    row.append(number,text,saved);
+    row.onclick=e=>{
+      if(suppressVerseClick){suppressVerseClick=false;return}
+      if(e.target.closest(".verse-number"))selectVerse(v.n,e);
+    };
+    row.oncontextmenu=e=>{
+      e.preventDefault();
+      contextualTextSelection=readNativeTextSelection();
+      selectForContext(v.n);
+      openVerseMenu(e.clientX||row.getBoundingClientRect().left,e.clientY||row.getBoundingClientRect().bottom);
+    };
     installLongPress(row,v.n);
     row.onkeydown=e=>{
+      if(e.target!==row)return;
       if(e.key==="Enter"||e.key===" "){e.preventDefault();selectVerse(v.n,e)}
       else if(e.key==="ContextMenu"||(e.shiftKey&&e.key==="F10")){
         e.preventDefault();selectForContext(v.n);
@@ -338,9 +356,11 @@ function renderReader(){
     root.append(row);
   }
   updateSelectionBar();
+  syncContextBookmarkLabel();
 }
 
-// Desktop pointer-drag selects whole verse rows, in either direction.
+// Desktop pointer-drag from a BLUE VERSE NUMBER selects whole verse rows.
+// Dragging within Scripture text uses the browser-native character/word selection.
 // Touch retains long-press and scroll behavior; keyboard modifiers still work.
 function verseRangeBetween(start,end,numbers){
   const from=numbers.indexOf(start),to=numbers.indexOf(end);
@@ -391,8 +411,11 @@ function dragAutoScroll(){
 }
 function beginVerseDrag(e){
   if(state.page!=="reader"||e.button!==0||e.pointerType==="touch"||e.isPrimary===false)return;
+  if(!e.target.closest(".verse-number"))return;
   const row=e.target.closest(".verse");
   if(!row||!$("verses").contains(row))return;
+  // Verse-number dragging is custom; ordinary text dragging remains native.
+  if(window.getSelection()?.rangeCount)window.getSelection().removeAllRanges();
   const clicked=Number(row.dataset.verse);
   const base=e.ctrlKey||e.metaKey?new Set(state.selection):new Set();
   const start=e.shiftKey&&state.anchor!=null?state.anchor:clicked;
@@ -427,6 +450,16 @@ function finishVerseDrag(e){
 }
 function initDragSelection(){
   const root=$("verses");
+  root.addEventListener("pointerdown",e=>{
+    if(e.button!==0||e.pointerType==="touch")return;
+    if(e.target.closest(".verse-text")){
+      contextualTextSelection="";
+      // Starting normal text selection must not leave old whole-verse feedback behind.
+      if(!e.shiftKey&&!e.ctrlKey&&!e.metaKey&&state.selection.size){
+        state.selection.clear();updateVerseSelectionDisplay();
+      }
+    }
+  });
   root.addEventListener("pointerdown",beginVerseDrag);
   root.addEventListener("click",e=>{
     if(suppressVerseClick){suppressVerseClick=false;e.preventDefault();e.stopImmediatePropagation()}
@@ -436,7 +469,7 @@ function initDragSelection(){
   window.addEventListener("pointercancel",finishVerseDrag);
   window.addEventListener("blur",()=>finishVerseDrag({}));
 }
-function selectVerse(n,e){closeVerseMenu();state.focusVerse=n;const list=verseData().map(v=>v.n);if(e.shiftKey&&state.anchor!=null){const a=list.indexOf(state.anchor),b=list.indexOf(n);if(a>=0&&b>=0){if(!(e.ctrlKey||e.metaKey))state.selection.clear();for(let i=Math.min(a,b);i<=Math.max(a,b);i++)state.selection.add(list[i])}}else if(e.ctrlKey||e.metaKey){if(state.selection.has(n))state.selection.delete(n);else state.selection.add(n);state.anchor=n}else{state.selection.clear();state.selection.add(n);state.anchor=n}for(const el of $("verses").children){const active=state.selection.has(Number(el.dataset.verse));el.classList.toggle("selected",active);el.setAttribute("aria-pressed",String(active)) }updateSelectionBar();syncQuickReference()}
+function selectVerse(n,e){closeVerseMenu();window.getSelection()?.removeAllRanges();state.focusVerse=n;const list=verseData().map(v=>v.n);if(e.shiftKey&&state.anchor!=null){const a=list.indexOf(state.anchor),b=list.indexOf(n);if(a>=0&&b>=0){if(!(e.ctrlKey||e.metaKey))state.selection.clear();for(let i=Math.min(a,b);i<=Math.max(a,b);i++)state.selection.add(list[i])}}else if(e.ctrlKey||e.metaKey){if(state.selection.has(n))state.selection.delete(n);else state.selection.add(n);state.anchor=n}else{state.selection.clear();state.selection.add(n);state.anchor=n}for(const el of $("verses").children){const active=state.selection.has(Number(el.dataset.verse));el.classList.toggle("selected",active);el.setAttribute("aria-pressed",String(active)) }updateSelectionBar();syncQuickReference()}
 function updateSelectionBar(){
   const count=state.selection.size;
   const coarse=typeof matchMedia==="function"&&matchMedia("(pointer: coarse)").matches;
@@ -446,10 +479,57 @@ function updateSelectionBar(){
 
 const menuPosition={x:0,y:0};
 let suppressVerseClick=false;
+let contextualTextSelection="";
+function readNativeTextSelection(){
+  const selection=window.getSelection?.();
+  if(!selection||selection.isCollapsed||!selection.toString().trim())return "";
+  const insideVerseText=node=>{
+    const el=node?.nodeType===1?node:node?.parentElement;
+    const verseText=el?.closest?.(".verse-text");
+    return Boolean(verseText&&$("verses").contains(verseText));
+  };
+  if(!insideVerseText(selection.anchorNode)||!insideVerseText(selection.focusNode))return "";
+  return selection.toString();
+}
+function refreshBookmarkIndicators(){
+  for(const row of $("verses").querySelectorAll(".verse")){
+    const n=Number(row.dataset.verse);
+    const bookmark=row.querySelector(".verse-bookmark");
+    if(!bookmark)continue;
+    const isSaved=Boolean(state.study.bookmarks[key(n)]);
+    bookmark.hidden=!isSaved;
+    bookmark.title=tr("removeBookmark");
+    bookmark.setAttribute("aria-label",tr("removeBookmark"));
+    row.classList.toggle("bookmarked",isSaved);
+  }
+  syncContextBookmarkLabel();
+}
+function selectedAreBookmarked(){
+  const items=selectedData();
+  return items.length>0&&items.every(v=>Boolean(state.study.bookmarks[key(v.n)]));
+}
+function syncContextBookmarkLabel(){
+  const button=$("verseContextMenu").querySelector('[data-action="save"]');
+  const unsave=selectedAreBookmarked();
+  const label=tr(unsave?"unsave":"save");
+  button.querySelector("span").textContent=label;
+  button.title=label;
+  button.setAttribute("aria-label",label);
+}
+function toggleVerseBookmark(n){
+  const item=verseData().find(v=>v.n===n);
+  if(!item)return;
+  const id=key(n),wasSaved=Boolean(state.study.bookmarks[id]);
+  if(wasSaved)delete state.study.bookmarks[id];
+  else state.study.bookmarks[id]={book:state.bookId,ch:state.chapter,n,text:item.text};
+  persist();refreshBookmarkIndicators();
+  toast(tr(wasSaved?"verseUnsaved":"verseSaved"));
+}
 function closeVerseMenu(){
   $("verseContextMenu").hidden=true;
   $("verseContextMenu").dataset.menu="actions";
   $("versePalette").hidden=true;
+  contextualTextSelection="";
 }
 function positionVerseMenu(x,y){
   const menu=$("verseContextMenu");
@@ -466,6 +546,7 @@ function openVerseMenu(x,y){
   $("versePalette").hidden=true;
   const menu=$("verseContextMenu");
   menu.dataset.menu="actions";menu.hidden=false;
+  syncContextBookmarkLabel();
   positionVerseMenu(x,y);
 }
 function showVersePalette(){
@@ -488,7 +569,7 @@ function selectForContext(n){
     el.classList.toggle("selected",active);
     el.setAttribute("aria-pressed",String(active));
   }
-  updateSelectionBar();syncQuickReference();
+  updateSelectionBar();syncQuickReference();syncContextBookmarkLabel();
 }
 function installLongPress(row,n){
   let timer=null,startX=0,startY=0;
@@ -510,10 +591,10 @@ function installLongPress(row,n){
   row.addEventListener("pointercancel",cancel);
   row.addEventListener("pointerleave",cancel);
 }
-async function shareSelected(){
+async function shareSelected(contentOverride){
   const items=selectedData();
-  if(!items.length)return;
-  const content=formatVerseSelection(items);
+  const content=contentOverride||selectedText();
+  if(!content)return;
   if(typeof navigator.share==="function"){
     try{await navigator.share({title:bookMeta().nameKm,text:content});return}
     catch(err){if(err.name==="AbortError")return}
@@ -522,9 +603,11 @@ async function shareSelected(){
 }
 async function handleVerseAction(action){
   if(action==="color"){showVersePalette();return}
+  // Snapshot the native text range before clicking the menu collapses it.
+  const copied=selectedText();
   closeVerseMenu();
-  if(action==="copy")await copyText(selectedText());
-  else if(action==="share")await shareSelected();
+  if(action==="copy")await copyText(copied);
+  else if(action==="share")await shareSelected(copied);
   else if(action==="save")bookmarkSelected();
   else if(action==="note")startNote();
   else if(action==="present")startPresentation(selectedData().map(v=>({ref:reference(v),text:v.text})));
@@ -549,9 +632,21 @@ function formatVerseSelection(items){
   const header=bookMeta().nameKm+" "+state.chapter+":"+groupVerseNumbers(verses.map(v=>v.n));
   return [header,...verses.map(v=>v.n+" "+v.text)].join("\n");
 }
-function selectedText(){return formatVerseSelection(selectedData(true))}
+function selectedText(){
+  return contextualTextSelection||readNativeTextSelection()||formatVerseSelection(selectedData(true));
+}
 async function copyText(text){try{await navigator.clipboard.writeText(text);toast(tr("copySuccess"))}catch{const ta=document.createElement("textarea");ta.value=text;document.body.append(ta);ta.select();const ok=document.execCommand("copy");ta.remove();toast(tr(ok?"copySuccess":"copyFailed"))}}
-function bookmarkSelected(){for(const v of selectedData())state.study.bookmarks[key(v.n)]={book:state.bookId,ch:state.chapter,n:v.n,text:v.text};persist();toast(tr("selectedSaved",{n:state.selection.size}))}
+function bookmarkSelected(){
+  const items=selectedData();
+  if(!items.length){toast(tr("noSelected"));return}
+  const unsave=selectedAreBookmarked();
+  for(const v of items){
+    if(unsave)delete state.study.bookmarks[key(v.n)];
+    else state.study.bookmarks[key(v.n)]={book:state.bookId,ch:state.chapter,n:v.n,text:v.text};
+  }
+  persist();refreshBookmarkIndicators();
+  toast(unsave?tr("selectedUnsaved",{n:items.length}):tr("selectedSaved",{n:items.length}));
+}
 function highlightSelected(color){
   const top=$("verses").scrollTop;
   for(const v of selectedData()){

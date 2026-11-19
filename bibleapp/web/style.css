@@ -422,3 +422,34 @@ body[data-appearance^="tahoe-"] .sidebar-resize:hover:after{background:var(--pri
 @media(max-width:900px){.appearance-section{grid-template-columns:1fr;gap:12px}.appearance-gallery{grid-template-columns:repeat(3,minmax(0,1fr))}.appearance-panel{padding:16px}}
 @media(max-width:600px){.appearance-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}.glass-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}.appearance-choice-title{font-size:11px}.appearance-swatch{height:62px;padding:5px}.appearance-panel{padding:12px}.language-toggle{min-width:63px;gap:4px}.language-active-label{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.appearance-choice,.glass-choice,.language-toggle .switch-thumb{transition:none}}
+
+/* Bible App v0.1.6: native text selection, bookmarked verses, immediate solid highlight feedback. */
+#readerPage .verses .verse{user-select:text;-webkit-user-select:text;cursor:default;position:relative}
+#readerPage .verses .verse-text{user-select:text;-webkit-user-select:text;cursor:text;touch-action:auto;min-width:0;flex:1}
+#readerPage .verses .verse-text::selection{background:#7badfa;color:#101828}
+#readerPage .verses .verse-number{user-select:none;-webkit-user-select:none;cursor:crosshair;touch-action:none}
+.verse-bookmark{border:0;display:grid;place-items:center;flex:none;align-self:flex-start;width:29px;height:30px;min-width:29px;padding:4px;background:transparent;color:var(--primary);border-radius:7px;cursor:pointer;opacity:.82;margin-left:auto}
+.verse-bookmark svg{width:17px;height:19px;display:block;pointer-events:none}
+.verse-bookmark:hover,.verse-bookmark:focus-visible{background:var(--active);opacity:1;outline:1px solid var(--primary)}
+.verse-bookmark[hidden]{display:none!important}
+#readerPage .verses .verse.selected:not([data-highlight]),#readerPage .verses .verse.selected[data-highlight=""]{background:#dcf3dc!important;border:2px solid #4caf50!important;color:#202e23!important}
+#readerPage .verses .verse[data-highlight="blue"]:not([data-highlight=""]).selected{background:#2176e8!important;color:#fff!important;border:2px solid #4caf50!important;outline:none!important;box-shadow:none!important}
+#readerPage .verses .verse[data-highlight="blue"]:not([data-highlight=""]).selected .verse-number{color:inherit!important}
+#readerPage .verses .verse[data-highlight="purple"]:not([data-highlight=""]).selected{background:#963ba8!important;color:#fff!important;border:2px solid #4caf50!important;outline:none!important;box-shadow:none!important}
+#readerPage .verses .verse[data-highlight="purple"]:not([data-highlight=""]).selected .verse-number{color:inherit!important}
+#readerPage .verses .verse[data-highlight="pink"]:not([data-highlight=""]).selected{background:#f24d9a!important;color:#171b25!important;border:2px solid #4caf50!important;outline:none!important;box-shadow:none!important}
+#readerPage .verses .verse[data-highlight="pink"]:not([data-highlight=""]).selected .verse-number{color:inherit!important}
+#readerPage .verses .verse[data-highlight="red"]:not([data-highlight=""]).selected{background:#dc3442!important;color:#fff!important;border:2px solid #4caf50!important;outline:none!important;box-shadow:none!important}
+#readerPage .verses .verse[data-highlight="red"]:not([data-highlight=""]).selected .verse-number{color:inherit!important}
+#readerPage .verses .verse[data-highlight="orange"]:not([data-highlight=""]).selected{background:#f98b23!important;color:#1c232d!important;border:2px solid #4caf50!important;outline:none!important;box-shadow:none!important}
+#readerPage .verses .verse[data-highlight="orange"]:not([data-highlight=""]).selected .verse-number{color:inherit!important}
+#readerPage .verses .verse[data-highlight="yellow"]:not([data-highlight=""]).selected{background:#ffd344!important;color:#1b2532!important;border:2px solid #4caf50!important;outline:none!important;box-shadow:none!important}
+#readerPage .verses .verse[data-highlight="yellow"]:not([data-highlight=""]).selected .verse-number{color:inherit!important}
+#readerPage .verses .verse[data-highlight="green"]:not([data-highlight=""]).selected{background:#68bf56!important;color:#14281d!important;border:2px solid #4caf50!important;outline:none!important;box-shadow:none!important}
+#readerPage .verses .verse[data-highlight="green"]:not([data-highlight=""]).selected .verse-number{color:inherit!important}
+#readerPage .verses .verse[data-highlight="gray"]:not([data-highlight=""]).selected{background:#a2abb7!important;color:#162331!important;border:2px solid #4caf50!important;outline:none!important;box-shadow:none!important}
+#readerPage .verses .verse[data-highlight="gray"]:not([data-highlight=""]).selected .verse-number{color:inherit!important}
+@media(max-width:560px){.verse-bookmark{width:25px;min-width:25px;height:26px;padding:3px}.verse-bookmark svg{width:15px;height:18px}}
+
+/* Keep the bookmark glyph legible on an opaque saved highlight. */
+#readerPage .verses .verse[data-highlight]:not([data-highlight=""]) .verse-bookmark{color:inherit}

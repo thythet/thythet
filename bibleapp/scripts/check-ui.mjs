@@ -76,17 +76,47 @@ for(const shade of ["blue","purple","pink","red","orange","yellow","green","gray
 }
 assert(!html.includes('id="verseActions"')&&/\.verse-context-menu\{position:fixed/.test(css),"Old formatting bar should be replaced by compact context menu");
 assert(/bibleapp\.study\.v1/.test(js)&&/bibleapp\.prefs\.v1/.test(js),"Persisted bookmarks/highlights/notes must remain in existing storage");
-assert(sw.includes("bibleapp-web-v0.1.5")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
+assert(sw.includes("bibleapp-web-v0.1.6")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
 assert(/#readerPage \.verses \.verse\.selected/.test(css)&&css.includes("background:#dcf3dc!important")&&css.includes("border:2px solid #4caf50!important"),"Selected verses must have a pale-green background and 2px green border");
-assert(/#readerPage \.verses \.verse\[data-highlight\]:not\(\[data-highlight=""\]\)\.selected/.test(css),"Selected green border should override any stored highlight temporarily");
+assert(css.includes('background:#dcf3dc!important')&&css.includes('border:2px solid #4caf50!important'),"Unhighlighted selections must retain pale green with 2px green border");
+for(const shade of ["blue","purple","pink","red","orange","yellow","green","gray"]){
+  assert(css.includes('#readerPage .verses .verse[data-highlight="'+shade+'"]:not([data-highlight=""]).selected'),
+    "Selected "+shade+" highlight must show its chosen color immediately");
+}
+assert(css.includes('.selected .verse-number{color:inherit!important}'),
+  "Selected highlighted verse numbers must remain readable");
 assert(/root\.addEventListener\("pointerdown",beginVerseDrag\)/.test(js),"Mouse drag must start on verse rows");
 assert(/window\.addEventListener\("pointermove",moveVerseDrag/.test(js),"Mouse drag must track pointer movements");
 assert(/window\.addEventListener\("pointerup",finishVerseDrag\)/.test(js),"Mouse drag must complete on release");
 assert(/e\.pointerType==="touch"/.test(js),"Touch long-press and scroll must remain independent");
 assert(/suppressVerseClick=true/.test(js),"Drag release must prevent an unwanted single-verse click");
 assert(/function groupVerseNumbers\(numbers\)/.test(js)&&/function formatVerseSelection\(items\)/.test(js),"Compact grouped reference formatter missing");
-assert(/function selectedText\(\)\{return formatVerseSelection\(selectedData\(true\)\)\}/.test(js),"Copy must use compact reference formatter");
-assert(/const content=formatVerseSelection\(items\)/.test(js),"Share must also use grouped reference formatting");
+assert(/function selectedText\(\)/.test(js)&&/contextualTextSelection\|\|readNativeTextSelection\(\)\|\|formatVerseSelection\(selectedData\(true\)\)/.test(js),
+  "Copy must prefer selected characters then fall back to full verses");
+assert(/function readNativeTextSelection\(\)/.test(js)&&/\.closest\?\.\(".verse-text"\)/.test(js),
+  "Partial native selection must be limited to Scripture text");
+assert(/contextualTextSelection=readNativeTextSelection\(\)/.test(js),
+  "Right-click must snapshot character selection before clicking menu");
+assert(/const content=contentOverride\|\|selectedText\(\)/.test(js),"Share must preserve partial text selection too");
+assert(/if\(!e\.target\.closest\(".verse-number"\)\)return/.test(js),
+  "Whole-verse dragging must begin at the blue verse number only");
+assert(/e\.target\.closest\(".verse-text"\)/.test(js),"Text dragging must use native selection");
+assert(/if\(e\.target\.closest\(".verse-number"\)\)selectVerse\(v\.n,e\)/.test(js),
+  "Whole-verse click should start from number rather than the text");
+assert(css.includes('.verse-text{user-select:text;-webkit-user-select:text;cursor:text'),
+  "Verse text needs native user-select:text");
+assert(css.includes('.verse-number{user-select:none;-webkit-user-select:none;cursor:crosshair'),
+  "Verse number must remain the dedicated row-selection handle");
+assert(/className="verse-bookmark"/.test(js)&&/saved\.hidden=!Boolean\(state\.study\.bookmarks\[key\(v\.n\)\]\)/.test(js),
+  "Saved verses must display a visible bookmark icon");
+assert(/function toggleVerseBookmark\(n\)/.test(js)&&/delete state\.study\.bookmarks\[id\]/.test(js),
+  "Clicking the saved-verse bookmark must remove it");
+assert(/function selectedAreBookmarked\(\)/.test(js)&&/function bookmarkSelected\(\)/.test(js),
+  "Context menu must toggle Save and Unsave for verse selections");
+assert(/button\.querySelector\("span"\)\.textContent=label/.test(js)&&/unsave\?"unsave":"save"/.test(js),
+  "Right-click Save button must change to Unsave for saved verses");
+assert(css.includes('.verse-bookmark[hidden]{display:none!important}'),
+  "Unsaved verses must not show bookmark icons");
 
 assert(html.includes('data-open="appearance"')&&html.includes('id="appearancePage"'),"Account must open a dedicated Appearance gallery");
 assert(/appearance:"Appearance"/.test(js)&&/setPage\("appearance"\)/.test(js),"Appearance must be a navigable app page");
@@ -186,4 +216,53 @@ const results=runInNewContext([
   '({classicLight,classicDark,autoDark,autoLight,dark,navy,light,gray})'
 ].join("\n"),{},{timeout:1000});
 for(const [mode,passed]of Object.entries(results))assert.equal(passed,true,"Theme logic failed: "+mode);
-console.log("Bible App checks passed: Classic + Tahoe83 themes, offline Auto, Clear/Tinted glass, single-label language switch, copy and reverse-drag behavior, "+translated.length+" translated labels, 66 books and preserved saved data.");
+// Verify existing bookmarks are reused and that Save toggles to Unsave.
+const savedLogic=js.match(/function selectedAreBookmarked\(\)\{[\s\S]*?\n\}/)?.[0];
+const toggleLogic=js.match(/function bookmarkSelected\(\)\{[\s\S]*?\n\}/)?.[0];
+assert(savedLogic&&toggleLogic,"Bookmark behavior functions missing");
+const bookBehavior=runInNewContext([
+  'const state={study:{bookmarks:{}},bookId:"JHN",chapter:1};',
+  'const key=n=>"JHN:1:"+n;',
+  'const selectedData=()=>[{n:2,text:"Verse 2"},{n:3,text:"Verse 3"}];',
+  'const tr=(k,vars)=>k;',
+  'let refreshed=0;const persist=()=>{};const toast=()=>{};const refreshBookmarkIndicators=()=>{refreshed++};',
+  savedLogic,toggleLogic,
+  'bookmarkSelected();',
+  'const first=Object.keys(state.study.bookmarks).sort().join(",");',
+  'const stored=state.study.bookmarks["JHN:1:2"];',
+  'const afterSave=selectedAreBookmarked();',
+  'bookmarkSelected();',
+  '({first,stored,afterSave,remaining:Object.keys(state.study.bookmarks).length,afterUnsave:selectedAreBookmarked(),refreshed})'
+].join("\n"),{},{timeout:1000});
+assert.equal(bookBehavior.first,"JHN:1:2,JHN:1:3","Selected verses should save to existing storage keys");
+assert.equal(bookBehavior.stored.text,"Verse 2","Saved bookmarks must preserve verse text");
+assert.equal(bookBehavior.afterSave,true,"Both verses should show saved state");
+assert.equal(bookBehavior.remaining,0,"Second Save should unsave already saved verses");
+assert.equal(bookBehavior.afterUnsave,false,"Unsave should clear saved state");
+assert.equal(bookBehavior.refreshed,2,"Bookmark indicators must refresh for both actions");
+// Exercise exact text selection and ensure it cannot steal unrelated UI text.
+const nativeFn=js.match(/function readNativeTextSelection\(\)\{[\s\S]*?\n\}/)?.[0];
+const copyFn=js.match(/function selectedText\(\)\{[\s\S]*?\n\}/)?.[0];
+assert(nativeFn&&copyFn,"Character selection / copy functions must be testable");
+const textBehavior=runInNewContext([
+  'const verseTextElement={};',
+  'const paragraph={closest:selector=>selector===".verse-text"?verseTextElement:null};',
+  'let current={isCollapsed:false,anchorNode:{nodeType:3,parentElement:paragraph},focusNode:{nodeType:3,parentElement:paragraph},toString:()=>"ព្រះបន្ទូល"};',
+  'const window={getSelection:()=>current};',
+  'const $=()=>({contains:element=>element===verseTextElement});',
+  'let contextualTextSelection="";',
+  'const formatVerseSelection=()=>"FULL VERSE";',
+  'const selectedData=()=>[{n:1}];',
+  nativeFn,copyFn,
+  'const exact=selectedText();',
+  'current={...current,isCollapsed:true};const fallback=selectedText();',
+  'contextualTextSelection="captured words";const captured=selectedText();',
+  'contextualTextSelection="";current={...current,isCollapsed:false,anchorNode:{nodeType:3,parentElement:{closest:()=>null}}};const outside=selectedText();',
+  '({exact,fallback,captured,outside})'
+].join("\n"),{},{timeout:1000});
+assert.equal(textBehavior.exact,"ព្រះបន្ទូល","Exact text selection should copy only the highlighted characters");
+assert.equal(textBehavior.fallback,"FULL VERSE","No text selection should copy grouped whole verses");
+assert.equal(textBehavior.captured,"captured words","Right-click menu must retain the original text selection");
+assert.equal(textBehavior.outside,"FULL VERSE","Text selected outside Scripture should not override verse copying");
+console.log("Bible App checks passed: text selection, saved/unsaved bookmarks, immediate highlight colors, all 66 books, bilingual interface, offline cache and prior features.");
+

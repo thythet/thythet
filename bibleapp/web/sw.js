@@ -1,5 +1,5 @@
 /* Bible App offline cache: Scripture is cache-first; UI shell is network-first on reconnect. */
-const CACHE="bibleapp-web-v0.1.5";
+const CACHE="bibleapp-web-v0.1.6";
 const CORE=["./","./index.html","./style.css","./i18n.js","./app.js","./search-worker.js","./manifest.webmanifest","./data/manifest.json","./assets/icon-192.png","./assets/icon-512.png","./assets/fonts/khmer-os/KhmerOSbattambang.ttf","./assets/fonts/khmer-os/KhmerOSBattambang-Bold.ttf"];
 const SHELL_FILES=new Set(["index.html","app.js","i18n.js","style.css"]);
 self.addEventListener("install",e=>e.waitUntil((async()=>{
