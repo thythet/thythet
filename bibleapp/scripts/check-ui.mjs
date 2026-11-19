@@ -14,7 +14,7 @@ for(const needed of [
   "languageToggle","themeButton","themeMoon","themeSun","fontButton",
   "zoomPopover","zoomSlider","zoomMinus","zoomPlus","zoomValue",
   "readerPage","chapterHeading","chapterSelect","chapterStrip","prevChapter","nextChapter",
-  "verses","quickReference","quickChapter","quickVerse","quickGo",
+  "verses","quickReference","quickChapter","quickVerse",
   "verseContextMenu","versePalette","paletteBack","touchVerseActions","touchSelectionCount",
   "accountPage","googleLogin","helpPage","toolsPage","generatorPage","searchPage","settingsPage"
 ])assert(allIds.has(needed),"Missing UI control "+needed);
@@ -48,7 +48,12 @@ assert(/setZoomOpen\(\$\("zoomPopover"\)\.hidden\)/.test(js),"Text popover toggl
 assert(/\.toolbar-actions \.toolbar-icon\{background:transparent;border:0/.test(css),"Toolbar search and theme icons should be borderless");
 assert(!html.includes('id="sidebarTools"'),"Sidebar Tools shortcut must be removed; Account > Tools remains");
 assert(html.includes('data-open="tools"'),"Account must retain Tools");
-assert(/function goToQuickReference\(\)/.test(js)&&/\$\("quickGo"\)\.onclick=goToQuickReference/.test(js),"Chapter/verse Go must work");
+assert(/function goToQuickReference\(\)/.test(js),"Chapter/verse Enter navigation function missing");
+assert(!html.includes('id="quickGo"')&&!js.includes('$("quickGo")'),"Go button must be removed");
+assert(/\$\(id\)\.addEventListener\("keydown",e=>\{if\(e\.key==="Enter"\)/.test(js),"Both inputs must navigate on Enter");
+assert(html.includes('class="toolbar-book-nav"'),"Chapter and verse inputs must sit beside book name");
+assert(!html.includes('id="chapterMeta"')&&!js.includes('$("chapterMeta")'),"Chapter count subtitle must be removed");
+assert(!html.includes('class="zoom-labels"'),"Small and Large labels must be removed");
 assert(/\$\("quickChapter"\)\.value=String\(state\.chapter\)/.test(js)&&/\$\("quickVerse"\)\.value=String/.test(js),"Chapter/Verse inputs must follow selections");
 assert(/state\.focusVerse=n/.test(js),"Clicking a verse should update quick-navigation verse");
 assert(/focusVerse\(verse\)/.test(js),"Quick navigation must select and scroll to entered verse");
@@ -70,7 +75,17 @@ for(const shade of ["blue","purple","pink","red","orange","yellow","green","gray
 }
 assert(!html.includes('id="verseActions"')&&/\.verse-context-menu\{position:fixed/.test(css),"Old formatting bar should be replaced by compact context menu");
 assert(/bibleapp\.study\.v1/.test(js)&&/bibleapp\.prefs\.v1/.test(js),"Persisted bookmarks/highlights/notes must remain in existing storage");
-assert(sw.includes("bibleapp-web-v0.1.3")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
+assert(sw.includes("bibleapp-web-v0.1.4")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
+assert(/#readerPage \.verses \.verse\.selected/.test(css)&&css.includes("background:#dcf3dc!important")&&css.includes("border:2px solid #4caf50!important"),"Selected verses must have a pale-green background and 2px green border");
+assert(/#readerPage \.verses \.verse\[data-highlight\]:not\(\[data-highlight=""\]\)\.selected/.test(css),"Selected green border should override any stored highlight temporarily");
+assert(/root\.addEventListener\("pointerdown",beginVerseDrag\)/.test(js),"Mouse drag must start on verse rows");
+assert(/window\.addEventListener\("pointermove",moveVerseDrag/.test(js),"Mouse drag must track pointer movements");
+assert(/window\.addEventListener\("pointerup",finishVerseDrag\)/.test(js),"Mouse drag must complete on release");
+assert(/e\.pointerType==="touch"/.test(js),"Touch long-press and scroll must remain independent");
+assert(/suppressVerseClick=true/.test(js),"Drag release must prevent an unwanted single-verse click");
+assert(/function groupVerseNumbers\(numbers\)/.test(js)&&/function formatVerseSelection\(items\)/.test(js),"Compact grouped reference formatter missing");
+assert(/function selectedText\(\)\{return formatVerseSelection\(selectedData\(true\)\)\}/.test(js),"Copy must use compact reference formatter");
+assert(/const content=formatVerseSelection\(items\)/.test(js),"Share must also use grouped reference formatting");
 assert(sw.includes("SHELL_FILES"),"Online refresh should update the UI shell");
 const context={window:{}};
 runInNewContext(i18n,context,{timeout:1000});
@@ -85,4 +100,40 @@ const data=JSON.parse(file("data/manifest.json"));
 assert.equal(data.books.length,66,"All 66 books must remain bundled");
 assert.equal(data.books.filter(b=>b.testament==="OT").length,39,"Old Testament should have 39 books");
 assert.equal(data.books.filter(b=>b.testament==="NT").length,27,"New Testament should have 27 books");
-console.log("Bible App UI checks passed: fast chapter/verse, compact context menu, color palette gating, bilingual UI, "+translated.length+" labels, 66 books and preserved saved data.");
+// Exercise the real pure copying and drag range helpers.
+function extractFn(name,params){
+  const pattern=new RegExp("function "+name+"\\("+params+"\\)\\{[\\s\\S]*?\\n\\}");
+  const match=js.match(pattern);
+  assert(match,"Could not extract "+name+" for behavioral tests");
+  return match[0];
+}
+const groupFn=extractFn("groupVerseNumbers","numbers");
+const formatFn=extractFn("formatVerseSelection","items");
+const rangeFn=js.match(/function verseRangeBetween\(start,end,numbers\)\{[\s\S]*?\n\}/)?.[0];
+const dragFn=js.match(/function dragApply\(end\)\{[\s\S]*?\n\}/)?.[0];
+assert(rangeFn&&dragFn,"Drag logic functions must be testable");
+const behaviorSource=[
+  groupFn,formatFn,rangeFn,
+  'const state={chapter:1,selection:new Set(),focusVerse:null,anchor:null};',
+  'const bookMeta=()=>({nameKm:"ទំនុកដំកើង"});',
+  'let verseDrag={start:4,base:new Set([1]),verses:[1,2,3,4,5]};',
+  'let updates=0;',
+  'function updateVerseSelectionDisplay(){updates++}',
+  dragFn,
+  'const contiguous=formatVerseSelection([{n:4,text:"Four"},{n:2,text:"Two"},{n:1,text:"One"},{n:3,text:"Three"}]);',
+  'const gaps=formatVerseSelection([{n:4,text:"Four"},{n:1,text:"One"},{n:3,text:"Three"}]);',
+  'const single=formatVerseSelection([{n:8,text:"Eight"}]);',
+  'const reverse=verseRangeBetween(5,2,[1,2,3,4,5,6]);',
+  'dragApply(2);',
+  '({contiguous,gaps,single,reverse:reverse.join(","),drag:[...state.selection].sort((a,b)=>a-b).join(","),focus:state.focusVerse,anchor:state.anchor,updates})'
+].join("\n");
+const behavior=runInNewContext(behaviorSource,{},{timeout:1000});
+assert.equal(behavior.contiguous,"ទំនុកដំកើង 1:1-4\n1 One\n2 Two\n3 Three\n4 Four","Contiguous copy should cite once and preserve each verse");
+assert.equal(behavior.gaps,"ទំនុកដំកើង 1:1,3-4\n1 One\n3 Three\n4 Four","Disjoint selection should cite accurate verse groups");
+assert.equal(behavior.single,"ទំនុកដំកើង 1:8\n8 Eight","Single verse should cite once");
+assert.equal(behavior.reverse,"2,3,4,5","Reverse drag must select a continuous range");
+assert.equal(behavior.drag,"1,2,3,4","Ctrl/Cmd-additive reverse drag must preserve existing selections");
+assert.equal(behavior.anchor,4,"Drag should retain its starting anchor");
+assert.equal(behavior.focus,2,"Drag should sync its final focused verse");
+assert.equal(behavior.updates,1,"Drag should update the verse selection display");
+console.log("Bible App checks passed: 6 compact-reader changes, copy and reverse-drag behavior, "+translated.length+" translated labels, 66 books, preserved saved data.");

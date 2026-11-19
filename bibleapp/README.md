@@ -75,3 +75,15 @@ The refreshed web cache uses a network-first strategy for HTML/CSS/JavaScript wh
 - Reader and keyboard Help has been updated; offline web cache is versioned `bibleapp-web-v0.1.3`.
 
 This is a shared Web/Tauri UI update. No Firebase rules, native Rust source, Bible JSON, PowerSlidePro files or other Tahoe folders are changed.
+
+## v0.1.4 — Compact verse copying and drag selection
+
+- Copy and Share now use **one Scripture reference per selection**. A continuous range, for example `ទំនុកដំកើង 1:1-4`, is followed by the complete text of verses 1–4, each prefixed by its verse number. A nonconsecutive selection uses accurate notation such as `1:1,3-4`; the Bible book name is not repeated for each verse.
+- The Chapter:Verse inputs sit immediately beside the current book title without visible field labels or a Go button. Both inputs navigate when the user presses **Enter**; clicking a verse updates the Verse input.
+- The compact Text Size popup no longer includes Small/Large captions. Live resizing and stored font preferences are unchanged.
+- The extra chapter-count subtitle is removed beneath the reading title. The horizontal chapter row and dropdown remain synchronized.
+- Hold the left mouse button and **drag across verse rows** in either direction to select them as a group. Ctrl/Command + drag adds a range to the existing selection. Shift-click, Ctrl/Command-click, right-click formatting, keyboard navigation, and touch long-press remain available.
+- Selected verses now use the requested `#dcf3dc` pale-green background and **2px solid green border** (`#4caf50`). Saved solid highlight colors are preserved and reappear when a selected verse is deselected.
+- The offline web cache is now `bibleapp-web-v0.1.4`. Existing `bibleapp.study.v1` and `bibleapp.prefs.v1` storage keys are unchanged.
+
+This remains a shared Web + Windows/macOS Tauri UI update; installers are rebuilt separately by GitHub Actions.

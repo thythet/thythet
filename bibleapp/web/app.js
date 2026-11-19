@@ -257,7 +257,6 @@ function renderReader(){
   const b=bookMeta();if(!b)return;
   updatePageTitle();syncQuickReference();
   $("chapterHeading").textContent=b.nameKm+" "+kmNumber(state.chapter);
-  $("chapterMeta").textContent=tr("chapterOf",{current:state.chapter,total:b.chapterCount});
   const select=$("chapterSelect");select.replaceChildren();
   for(let n=1;n<=b.chapterCount;n++){
     const option=document.createElement("option");option.value=n;
@@ -288,6 +287,102 @@ function renderReader(){
   updateSelectionBar();
 }
 
+// Desktop pointer-drag selects whole verse rows, in either direction.
+// Touch retains long-press and scroll behavior; keyboard modifiers still work.
+function verseRangeBetween(start,end,numbers){
+  const from=numbers.indexOf(start),to=numbers.indexOf(end);
+  if(from<0||to<0)return [];
+  return numbers.slice(Math.min(from,to),Math.max(from,to)+1);
+}
+let verseDrag=null;
+function rowAtPointer(x,y){
+  const root=$("verses"),rect=root.getBoundingClientRect();
+  const px=Math.max(rect.left+5,Math.min(rect.right-5,x));
+  const py=Math.max(rect.top+5,Math.min(rect.bottom-5,y));
+  const hit=document.elementFromPoint(px,py)?.closest(".verse");
+  if(hit&&root.contains(hit))return Number(hit.dataset.verse);
+  const rows=[...root.querySelectorAll(".verse")];
+  if(!rows.length)return null;
+  if(y<=rect.top)return Number(rows[0].dataset.verse);
+  if(y>=rect.bottom)return Number(rows[rows.length-1].dataset.verse);
+  return null;
+}
+function updateVerseSelectionDisplay(){
+  for(const row of $("verses").children){
+    const active=state.selection.has(Number(row.dataset.verse));
+    row.classList.toggle("selected",active);
+    row.setAttribute("aria-pressed",String(active));
+  }
+  updateSelectionBar();syncQuickReference();
+}
+function dragApply(end){
+  const session=verseDrag;if(!session||end==null)return;
+  const inRange=verseRangeBetween(session.start,end,session.verses);
+  if(!inRange.length)return;
+  state.selection=new Set([...session.base,...inRange]);
+  state.focusVerse=end;state.anchor=session.start;
+  updateVerseSelectionDisplay();
+}
+function dragAutoScroll(){
+  const session=verseDrag;
+  if(!session||!session.dragging)return;
+  const scroller=$("verses"),bounds=scroller.getBoundingClientRect();
+  const before=scroller.scrollTop;
+  if(session.y<bounds.top+38)scroller.scrollTop-=17;
+  else if(session.y>bounds.bottom-38)scroller.scrollTop+=17;
+  const hit=rowAtPointer(session.x,session.y);
+  if(hit!==null&&(hit!==session.end||before!==scroller.scrollTop)){
+    session.end=hit;dragApply(hit);
+  }
+  session.frame=requestAnimationFrame(dragAutoScroll);
+}
+function beginVerseDrag(e){
+  if(state.page!=="reader"||e.button!==0||e.pointerType==="touch"||e.isPrimary===false)return;
+  const row=e.target.closest(".verse");
+  if(!row||!$("verses").contains(row))return;
+  const clicked=Number(row.dataset.verse);
+  const base=e.ctrlKey||e.metaKey?new Set(state.selection):new Set();
+  const start=e.shiftKey&&state.anchor!=null?state.anchor:clicked;
+  verseDrag={id:e.pointerId,start,end:clicked,base,verses:verseData().map(v=>v.n),
+    x:e.clientX,y:e.clientY,startX:e.clientX,startY:e.clientY,dragging:false,frame:null};
+}
+function moveVerseDrag(e){
+  const session=verseDrag;
+  if(!session||e.pointerId!==session.id)return;
+  session.x=e.clientX;session.y=e.clientY;
+  const end=rowAtPointer(e.clientX,e.clientY);
+  if(!session.dragging){
+    if(end===session.end&&Math.hypot(e.clientX-session.startX,e.clientY-session.startY)<7)return;
+    session.dragging=true;closeVerseMenu();
+    session.frame=requestAnimationFrame(dragAutoScroll);
+  }
+  if(e.cancelable)e.preventDefault();
+  if(end!==null&&end!==session.end){session.end=end;dragApply(end)}
+  else if(!session.selectionApplied){session.selectionApplied=true;dragApply(end??session.end)}
+}
+function finishVerseDrag(e){
+  const session=verseDrag;
+  if(!session||(e.pointerId!==undefined&&e.pointerId!==session.id))return;
+  verseDrag=null;
+  if(session.frame!==null)cancelAnimationFrame(session.frame);
+  if(session.dragging){
+    suppressVerseClick=true;
+    // Native click follows pointerup; consume it without affecting later clicks.
+    setTimeout(()=>{suppressVerseClick=false},250);
+    if(e.cancelable)e.preventDefault();
+  }
+}
+function initDragSelection(){
+  const root=$("verses");
+  root.addEventListener("pointerdown",beginVerseDrag);
+  root.addEventListener("click",e=>{
+    if(suppressVerseClick){suppressVerseClick=false;e.preventDefault();e.stopImmediatePropagation()}
+  },true);
+  window.addEventListener("pointermove",moveVerseDrag,{passive:false});
+  window.addEventListener("pointerup",finishVerseDrag);
+  window.addEventListener("pointercancel",finishVerseDrag);
+  window.addEventListener("blur",()=>finishVerseDrag({}));
+}
 function selectVerse(n,e){closeVerseMenu();state.focusVerse=n;const list=verseData().map(v=>v.n);if(e.shiftKey&&state.anchor!=null){const a=list.indexOf(state.anchor),b=list.indexOf(n);if(a>=0&&b>=0){if(!(e.ctrlKey||e.metaKey))state.selection.clear();for(let i=Math.min(a,b);i<=Math.max(a,b);i++)state.selection.add(list[i])}}else if(e.ctrlKey||e.metaKey){if(state.selection.has(n))state.selection.delete(n);else state.selection.add(n);state.anchor=n}else{state.selection.clear();state.selection.add(n);state.anchor=n}for(const el of $("verses").children){const active=state.selection.has(Number(el.dataset.verse));el.classList.toggle("selected",active);el.setAttribute("aria-pressed",String(active)) }updateSelectionBar();syncQuickReference()}
 function updateSelectionBar(){
   const count=state.selection.size;
@@ -365,7 +460,7 @@ function installLongPress(row,n){
 async function shareSelected(){
   const items=selectedData();
   if(!items.length)return;
-  const content=items.map(v=>reference(v)+" — "+v.text).join("\n");
+  const content=formatVerseSelection(items);
   if(typeof navigator.share==="function"){
     try{await navigator.share({title:bookMeta().nameKm,text:content});return}
     catch(err){if(err.name==="AbortError")return}
@@ -383,7 +478,25 @@ async function handleVerseAction(action){
 }
 function selectedData(fallbackAll=false){const list=verseData();return list.filter(v=>state.selection.has(v.n)||(fallbackAll&&!state.selection.size))}
 function reference(v){return bookMeta().nameKm+" "+state.chapter+":"+v.n}
-function selectedText(){return selectedData(true).map(v=>reference(v)+" — "+v.text).join("\n")}
+// Build a single citation for consecutive and nonconsecutive verses.
+function groupVerseNumbers(numbers){
+  const sorted=[...new Set(numbers.filter(n=>Number.isInteger(n)&&n>0))].sort((a,b)=>a-b);
+  if(!sorted.length)return "";
+  const groups=[];let start=sorted[0],end=start;
+  const flush=()=>groups.push(start===end?String(start):start+"-"+end);
+  for(let i=1;i<sorted.length;i++){
+    if(sorted[i]===end+1)end=sorted[i];
+    else{flush();start=sorted[i];end=start}
+  }
+  flush();return groups.join(",");
+}
+function formatVerseSelection(items){
+  if(!items.length)return "";
+  const verses=[...items].sort((a,b)=>a.n-b.n);
+  const header=bookMeta().nameKm+" "+state.chapter+":"+groupVerseNumbers(verses.map(v=>v.n));
+  return [header,...verses.map(v=>v.n+" "+v.text)].join("\n");
+}
+function selectedText(){return formatVerseSelection(selectedData(true))}
 async function copyText(text){try{await navigator.clipboard.writeText(text);toast(tr("copySuccess"))}catch{const ta=document.createElement("textarea");ta.value=text;document.body.append(ta);ta.select();const ok=document.execCommand("copy");ta.remove();toast(tr(ok?"copySuccess":"copyFailed"))}}
 function bookmarkSelected(){for(const v of selectedData())state.study.bookmarks[key(v.n)]={book:state.bookId,ch:state.chapter,n:v.n,text:v.text};persist();toast(tr("selectedSaved",{n:state.selection.size}))}
 function highlightSelected(color){
@@ -410,6 +523,7 @@ function resolveRef(input){const cleaned=normalize(input).replace(/[៖]/g,":").
 async function generateSlides(){try{const ref=resolveRef($("generatorInput").value);const data=await loadBook(ref.id);const verses=data.chapters[String(ref.chapter)]?.verses||{};const slides=[];for(let n=ref.start;n<=ref.end;n++){if(typeof verses[String(n)]!=="string")throw Error(tr("verseMissing",{n}));slides.push({ref:ref.name+" "+ref.chapter+":"+n,text:verses[String(n)]})}state.slides=slides;state.slide=0;renderSlides();toast(tr("slideCount",{n:slides.length}))}catch(err){$("generatorOutput").textContent=String(err.message||err)}}
 function renderSlides(){const root=$("generatorOutput");root.replaceChildren();if(!state.slides.length)return;const item=state.slides[state.slide],slide=document.createElement("div");slide.style.cssText="background:#152842;color:white;min-height:270px;padding:32px;border-radius:16px;margin:15px 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;text-align:center";const ref=document.createElement("strong");ref.style.cssText="font-size:18px;color:#c5dcfa";ref.textContent=item.ref;const text=document.createElement("div");text.style.cssText="font-family:'Khmer Battambang',sans-serif;font-size:28px;line-height:1.9";text.textContent=item.text;slide.append(ref,text);const nav=document.createElement("div");nav.className="inline";const prev=document.createElement("button");prev.textContent=tr("previous");const middle=document.createElement("span");middle.textContent=tr("slideProgress",{n:state.slide+1,total:state.slides.length});const next=document.createElement("button");next.textContent=tr("next");prev.onclick=()=>{state.slide=(state.slide+state.slides.length-1)%state.slides.length;renderSlides()};next.onclick=()=>{state.slide=(state.slide+1)%state.slides.length;renderSlides()};const present=document.createElement("button");present.textContent=tr("present");present.className="primary";present.onclick=()=>startPresentation(state.slides);nav.append(prev,middle,next,present);root.append(slide,nav)}
 function initializeEvents(){
+initDragSelection();
 $("accountButton").onclick=()=>setPage("account");$("backButton").onclick=()=>setPage("reader");$("searchButton").onclick=()=>setPage("search");
 $("bookSearch").oninput=()=>setupSidebar();$("oldTab").onclick=()=>changeTestament("old");$("newTab").onclick=()=>changeTestament("new");
 $("booksList").addEventListener("scroll",updateVisibleTestament,{passive:true});
@@ -418,7 +532,6 @@ $("prevChapter").onclick=()=>goToChapter(state.chapter-1);
 $("nextChapter").onclick=()=>goToChapter(state.chapter+1);
 $("chapterSelect").onchange=()=>goToChapter(Number($("chapterSelect").value));
 
-$("quickGo").onclick=goToQuickReference;
 for(const id of ["quickChapter","quickVerse"]){
   $(id).addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();goToQuickReference()}});
 }

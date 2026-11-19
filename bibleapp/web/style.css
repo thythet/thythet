@@ -204,3 +204,36 @@ body.dark .quick-go{color:#102035}
 .verse[data-highlight]:not([data-highlight=""]).selected{border-color:#245aff!important;outline:2px solid #bcd6ff;outline-offset:-3px;box-shadow:inset 0 0 0 1px #fff9}
 @media(max-width:1050px){.toolbar{flex-wrap:wrap}.toolbar h1{min-width:110px}.quick-reference{order:4;margin-left:48px;margin-right:auto}.toolbar-actions{margin-left:auto}}
 @media(max-width:560px){.toolbar{gap:5px}.quick-reference{margin-left:0;order:4}.quick-field input{width:48px;height:29px;font-size:12px}.quick-go{height:29px;font-size:11px}.toolbar-actions .text-size-trigger{font-size:10px;padding:4px!important}.quick-colon{font-size:15px;line-height:29px}.verse-context-menu{width:241px}.verse-menu-action{padding:7px 1px}.verse-menu-action span{font-size:10px}}
+
+
+/* Bible App v0.1.4 — compact toolbar and selected verse feedback. */
+.toolbar-book-nav{display:flex;align-items:center;gap:10px;min-width:0;flex:1 1 auto}
+.toolbar-book-nav h1{flex:0 1 auto;min-width:0;max-width:clamp(100px,24vw,330px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.toolbar-book-nav .quick-reference{display:flex;align-items:center;order:0;margin:0;gap:4px;flex:none}
+.toolbar .quick-field-input{width:48px;height:32px;padding:3px 5px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--text);font-size:14px;text-align:center;font-variant-numeric:tabular-nums;appearance:textfield;-moz-appearance:textfield}
+.toolbar .quick-field-input::-webkit-outer-spin-button,.toolbar .quick-field-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.toolbar-book-nav .quick-colon{align-self:center;line-height:1;opacity:.7;padding:0}
+.toolbar-actions{margin-left:auto}
+#readerPage .chapter-heading{margin-bottom:8px}
+#readerPage .verses .verse{border-width:2px;touch-action:pan-y}
+#readerPage .verses .verse.selected,
+#readerPage .verses .verse[data-highlight].selected,
+#readerPage .verses .verse[data-highlight]:not([data-highlight=""]).selected{
+  background:#dcf3dc!important;
+  border:2px solid #4caf50!important;
+  color:#202e23!important;
+  outline:none!important;
+  box-shadow:none!important;
+}
+#readerPage .verses .verse.selected .verse-number{color:#22783f!important}
+@media(max-width:1050px){
+  .toolbar-book-nav{order:0;flex:1 1 auto;gap:7px}
+  .toolbar-book-nav .quick-reference{order:0!important;margin:0!important}
+  .toolbar-actions{order:1}
+}
+@media(max-width:560px){
+  .toolbar-book-nav{flex:1 1 auto;gap:4px}
+  .toolbar-book-nav h1{max-width:145px;font-size:12px;min-width:0}
+  .toolbar .quick-field-input{width:39px;height:28px;font-size:12px;padding:2px}
+  .toolbar-book-nav .quick-colon{font-size:13px}
+}
