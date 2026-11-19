@@ -5,7 +5,6 @@ on:
     branches: [main]
     paths:
       - "bibleapp/**"
-      - ".github/workflows/release-bibleapp.yml"
   workflow_dispatch:
 
 permissions:
@@ -97,17 +96,25 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          pattern: bibleapp-*
-          merge-multiple: true
-          path: release-assets
-      - name: Check all three platform installers and create checksums
+          pattern: bibleapp-[mw]*
+          merge-multiple: false
+          path: bundled-installers
+      - name: Validate Windows and both Mac installers, and generate checksums
         shell: bash
         run: |
           set -euo pipefail
-          test "$(find release-assets -maxdepth 1 -name '*.dmg' -type f | wc -l)" -ge 2
-          test "$(find release-assets -maxdepth 1 -name '*.exe' -type f | wc -l)" -ge 1
-          (cd release-assets && sha256sum *.dmg *.exe > SHA256SUMS.txt)
-          ls -lah release-assets
+          find bundled-installers -type f -print | sort
+          test -s 'bundled-installers/bibleapp-windows-latest/nsis/Bible App_0.1.0_x64-setup.exe'
+          test -s 'bundled-installers/bibleapp-windows-latest/msi/Bible App_0.1.0_x64_en-US.msi'
+          test -s 'bundled-installers/bibleapp-macos-15/dmg/Bible App_0.1.0_aarch64.dmg'
+          test -s 'bundled-installers/bibleapp-macos-15-intel/dmg/Bible App_0.1.0_x64.dmg'
+          mkdir -p release-assets
+          cp 'bundled-installers/bibleapp-windows-latest/nsis/Bible App_0.1.0_x64-setup.exe' release-assets/BibleApp-0.1.0-win-x64.exe
+          cp 'bundled-installers/bibleapp-windows-latest/msi/Bible App_0.1.0_x64_en-US.msi' release-assets/BibleApp-0.1.0-win-x64.msi
+          cp 'bundled-installers/bibleapp-macos-15/dmg/Bible App_0.1.0_aarch64.dmg' release-assets/BibleApp-0.1.0-mac-arm64.dmg
+          cp 'bundled-installers/bibleapp-macos-15-intel/dmg/Bible App_0.1.0_x64.dmg' release-assets/BibleApp-0.1.0-mac-x64.dmg
+          (cd release-assets && sha256sum *.exe *.msi *.dmg > SHA256SUMS.txt)
+          ls -lh release-assets/
       - name: Publish Bible App beta release
         uses: softprops/action-gh-release@v2
         with:
@@ -117,15 +124,17 @@ jobs:
           prerelease: true
           fail_on_unmatched_files: true
           body: |
-            Bible App v0.1.0: first offline Khmer 1954 Bible reader built
-            with Rust + Tauri 2. Includes 66 Bible books, search, verse
-            selection, colorful highlights, notes, bookmarks and
-            Quick Slideshow. Bible App Web is at https://thythet.com/bibleapp/.
+            Bible App v0.1.0: offline Khmer Bible 1954 reader built with
+            Rust + Tauri 2 for Windows and macOS. All 66 Bible books,
+            search, verse selection, colorful highlights, notes,
+            bookmarks, Quick Slideshow, resizable book sidebar and EN/KH UI.
+            Web edition: https://thythet.com/bibleapp/.
 
-            Beta limitations: Google login, PowerSlidePro launch,
-            professional slide editing, and PPTX/DOCX/PDF export are
-            planned but NOT implemented. Mac installers are unsigned.
+            Beta limitations: Google sign-in, PowerSlidePro launch,
+            professional slide editing and PPTX/DOCX/PDF exports are not
+            implemented yet. Desktop installations are unsigned.
           files: |
             release-assets/*.exe
+            release-assets/*.msi
             release-assets/*.dmg
             release-assets/SHA256SUMS.txt

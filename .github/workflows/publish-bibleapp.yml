@@ -1,0 +1,66 @@
+name: Publish Bible App v0.1.0 from verified installers
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/publish-bibleapp.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publish:
+    name: Release completed Bible App installers
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download completed Windows and Mac builds
+        uses: actions/download-artifact@v4
+        with:
+          run-id: 44562303152
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pattern: bibleapp-[mw]*
+          merge-multiple: false
+          path: bundled-installers
+      - name: Inspect, validate and stage all installers
+        shell: bash
+        run: |
+          set -euo pipefail
+          find bundled-installers -type f -print | sort
+          test -s 'bundled-installers/bibleapp-windows-latest/nsis/Bible App_0.1.0_x64-setup.exe'
+          test -s 'bundled-installers/bibleapp-windows-latest/msi/Bible App_0.1.0_x64_en-US.msi'
+          test -s 'bundled-installers/bibleapp-macos-15/dmg/Bible App_0.1.0_aarch64.dmg'
+          test -s 'bundled-installers/bibleapp-macos-15-intel/dmg/Bible App_0.1.0_x64.dmg'
+          mkdir -p release-assets
+          cp 'bundled-installers/bibleapp-windows-latest/nsis/Bible App_0.1.0_x64-setup.exe' release-assets/BibleApp-0.1.0-win-x64.exe
+          cp 'bundled-installers/bibleapp-windows-latest/msi/Bible App_0.1.0_x64_en-US.msi' release-assets/BibleApp-0.1.0-win-x64.msi
+          cp 'bundled-installers/bibleapp-macos-15/dmg/Bible App_0.1.0_aarch64.dmg' release-assets/BibleApp-0.1.0-mac-arm64.dmg
+          cp 'bundled-installers/bibleapp-macos-15-intel/dmg/Bible App_0.1.0_x64.dmg' release-assets/BibleApp-0.1.0-mac-x64.dmg
+          (cd release-assets && sha256sum *.exe *.msi *.dmg > SHA256SUMS.txt)
+          ls -lh release-assets/
+      - name: Publish GitHub prerelease
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: bibleapp-v0.1.0
+          target_commitish: beb7bcd3276a579b743d7c5208af68f38831e5f3
+          name: "Bible App v0.1.0 (Windows + macOS beta)"
+          prerelease: true
+          fail_on_unmatched_files: true
+          body: |
+            Bible App v0.1.0 beta, built from commit beb7bcd3.
+            Includes Khmer Bible 1954 (66 books), responsive Tahoe-style
+            reading interface, resizable book sidebar, EN/KH UI switch,
+            full offline Bible search, notes, bookmarks, colored highlights,
+            multi-verse selection and Quick Slideshow.
+            Web version: https://thythet.com/bibleapp/web/
+
+            Not yet implemented: Google login, PowerSlidePro integration,
+            editable PowerPoint / DeckCraft, DOCX and PDF export.
+            Desktop installers are not code-signed or notarized.
+          files: |
+            release-assets/*.exe
+            release-assets/*.msi
+            release-assets/*.dmg
+            release-assets/SHA256SUMS.txt
