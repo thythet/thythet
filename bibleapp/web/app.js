@@ -3,7 +3,7 @@
 "use strict";
 const $ = (id) => document.getElementById(id);
 const BOOK_EN = "Genesis|Exodus|Leviticus|Numbers|Deuteronomy|Joshua|Judges|Ruth|1 Samuel|2 Samuel|1 Kings|2 Kings|1 Chronicles|2 Chronicles|Ezra|Nehemiah|Esther|Job|Psalms|Proverbs|Ecclesiastes|Song of Solomon|Isaiah|Jeremiah|Lamentations|Ezekiel|Daniel|Hosea|Joel|Amos|Obadiah|Jonah|Micah|Nahum|Habakkuk|Zephaniah|Haggai|Zechariah|Malachi|Matthew|Mark|Luke|John|Acts|Romans|1 Corinthians|2 Corinthians|Galatians|Ephesians|Philippians|Colossians|1 Thessalonians|2 Thessalonians|1 Timothy|2 Timothy|Titus|Philemon|Hebrews|James|1 Peter|2 Peter|1 John|2 John|3 John|Jude|Revelation".split("|");
-const pageTitles = {reader:"Bible Reader",account:"Account",tools:"Tools",search:"Bible Search",generator:"បង្កើតស្លាយ",settings:"Settings",bookmarks:"Bookmarks",export:"Export Center",help:"Help"};
+const pageTitles = {reader:"Bible Reader",account:"Account",tools:"Tools",search:"Bible Search",generator:"បង្កើតស្លាយ",settings:"Settings",bookmarks:"Bookmarks",export:"Export Center",help:"Help",appearance:"Appearance"};
 const tr=(k,vars={})=>{
   const table=window.BIBLE_LOCALES?.[state.prefs.lang==="en"?"en":"kh"]||{};
   const template=table[k]||window.BIBLE_LOCALES?.en?.[k]||k;
@@ -11,7 +11,7 @@ const tr=(k,vars={})=>{
 };
 const STORE="bibleapp.study.v1",PREFS="bibleapp.prefs.v1";
 const getStored=(k,def)=>{try{return JSON.parse(localStorage.getItem(k))||def}catch{return def}};
-const state={manifest:null,books:[],book:null,bookId:"JHN",chapter:1,testament:"new",page:"reader",selection:new Set(),anchor:null,focusVerse:1,study:getStored(STORE,{bookmarks:{},highlights:{},notes:{}}),prefs:{dark:false,fontSize:23,lang:"kh",sidebarWidth:266,...getStored(PREFS,{})},lastByTestament:{old:null,new:null},slides:[],slide:0,presentItems:[],presentIndex:0,searchWorker:null,searchReady:false};
+const state={manifest:null,books:[],book:null,bookId:"JHN",chapter:1,testament:"new",page:"reader",selection:new Set(),anchor:null,focusVerse:1,study:getStored(STORE,{bookmarks:{},highlights:{},notes:{}}),prefs:{dark:false,appearance:"classic",glass:"clear",fontSize:23,lang:"kh",sidebarWidth:266,...getStored(PREFS,{})},lastByTestament:{old:null,new:null},slides:[],slide:0,presentItems:[],presentIndex:0,searchWorker:null,searchReady:false};
 const persist=()=>{try{localStorage.setItem(STORE,JSON.stringify(state.study))}catch{toast(tr("storageFull"))}};
 const persistPrefs=()=>{try{localStorage.setItem(PREFS,JSON.stringify(state.prefs))}catch{}};
 const key=(n,book=state.bookId,ch=state.chapter)=>book+":"+ch+":"+n;
@@ -22,15 +22,67 @@ const enFor=(b)=>BOOK_EN[b.order-1]||b.id;
 const show=(id,val)=>{$(id).hidden=!val};
 let toastTimer=null;
 function toast(message){$("toast").textContent=message;show("toast",true);clearTimeout(toastTimer);toastTimer=setTimeout(()=>show("toast",false),3300)}
+const APPEARANCE_CHOICES=["classic","auto","light","dark","gray","navy"];
+const GLASS_CHOICES=["clear","tinted"];
+const prefersSystemDark=()=>typeof window.matchMedia==="function"&&window.matchMedia("(prefers-color-scheme: dark)").matches;
+function isDarkAppearance(){
+  const theme=state.prefs.appearance;
+  if(theme==="classic")return !!state.prefs.dark;
+  if(theme==="auto")return prefersSystemDark();
+  return theme==="dark"||theme==="navy";
+}
+function syncAppearanceGallery(){
+  for(const el of document.querySelectorAll("[data-theme-choice]")){
+    const active=el.dataset.themeChoice===state.prefs.appearance;
+    el.classList.toggle("selected",active);
+    el.setAttribute("aria-pressed",String(active));
+  }
+  for(const el of document.querySelectorAll("[data-glass-choice]")){
+    const active=el.dataset.glassChoice===state.prefs.glass;
+    el.classList.toggle("selected",active);
+    el.setAttribute("aria-pressed",String(active));
+  }
+  const classic=state.prefs.appearance==="classic";
+  $("glassGallery").classList.toggle("glass-inactive",classic);
+  $("glassGallery").setAttribute("aria-disabled",String(classic));
+  for(const el of $("glassGallery").querySelectorAll("button"))el.disabled=classic;
+}
 function updateTheme(){
-  document.body.classList.toggle("dark",!!state.prefs.dark);
+  if(!APPEARANCE_CHOICES.includes(state.prefs.appearance))state.prefs.appearance="classic";
+  if(!GLASS_CHOICES.includes(state.prefs.glass))state.prefs.glass="clear";
+  const dark=isDarkAppearance();
+  document.body.classList.toggle("dark",dark);
+  document.body.dataset.appearance=state.prefs.appearance==="classic"?"classic":"tahoe-"+state.prefs.appearance;
+  document.body.dataset.glass=state.prefs.glass;
+  document.documentElement.style.colorScheme=dark?"dark":"light";
   document.documentElement.style.setProperty("--verse-size",state.prefs.fontSize+"px");
-  show("themeMoon",!state.prefs.dark);show("themeSun",!!state.prefs.dark);
+  show("themeMoon",!dark);show("themeSun",dark);
   $("settingFont").value=state.prefs.fontSize;
   $("zoomSlider").value=state.prefs.fontSize;
   $("zoomValue").textContent=state.prefs.fontSize+"px";
   $("zoomMinus").disabled=state.prefs.fontSize<=18;
   $("zoomPlus").disabled=state.prefs.fontSize>=36;
+  syncAppearanceGallery();
+}
+function chooseAppearance(theme){
+  if(!APPEARANCE_CHOICES.includes(theme))return;
+  state.prefs.appearance=theme;persistPrefs();updateTheme();
+}
+function chooseGlass(mode){
+  if(!GLASS_CHOICES.includes(mode)||state.prefs.appearance==="classic")return;
+  state.prefs.glass=mode;persistPrefs();updateTheme();
+}
+function toggleDarkMode(){
+  if(state.prefs.appearance==="classic")state.prefs.dark=!state.prefs.dark;
+  else state.prefs.appearance=isDarkAppearance()?"light":"dark";
+  persistPrefs();updateTheme();
+}
+function listenSystemAppearance(){
+  if(typeof window.matchMedia!=="function")return;
+  const mql=window.matchMedia("(prefers-color-scheme: dark)");
+  const changed=()=>{if(state.prefs.appearance==="auto")updateTheme()};
+  if(typeof mql.addEventListener==="function")mql.addEventListener("change",changed);
+  else if(typeof mql.addListener==="function")mql.addListener(changed);
 }
 function setFontSize(value){
   const size=Math.max(18,Math.min(36,Number(value)||23));
@@ -55,6 +107,7 @@ function setLanguage(lang,save=true){
   for(const el of document.querySelectorAll("[data-i18n-aria]"))el.setAttribute("aria-label",tr(el.dataset.i18nAria));
   $("languageToggle").classList.toggle("is-kh",state.prefs.lang==="kh");
   $("languageToggle").setAttribute("aria-checked",String(state.prefs.lang==="kh"));
+  $("languageActiveLabel").textContent=state.prefs.lang.toUpperCase();
   $("sidebarResize").setAttribute("aria-label",tr("resizeSidebar"));
   $("sidebarResize").title=tr("resizeSidebar");
   updatePageTitle();
@@ -560,7 +613,10 @@ window.addEventListener("resize",closeVerseMenu);
 $("verses").addEventListener("scroll",closeVerseMenu,{passive:true});
 $("presentPrev").onclick=()=>movePresentation(-1);$("presentNext").onclick=()=>movePresentation(1);$("presentExit").onclick=endPresentation;
 $("noteCancel").onclick=()=>show("noteDialog",false);$("noteSave").onclick=saveNote;
-$("themeButton").onclick=$("settingTheme").onclick=()=>{state.prefs.dark=!state.prefs.dark;persistPrefs();updateTheme()};
+$("themeButton").onclick=toggleDarkMode;
+$("settingTheme").onclick=()=>setPage("appearance");
+document.querySelectorAll("[data-theme-choice]").forEach(button=>button.onclick=()=>chooseAppearance(button.dataset.themeChoice));
+document.querySelectorAll("[data-glass-choice]").forEach(button=>button.onclick=()=>chooseGlass(button.dataset.glassChoice));
 $("fontButton").onclick=()=>setZoomOpen($("zoomPopover").hidden);
 $("zoomSlider").oninput=e=>setFontSize(e.target.value);
 $("zoomMinus").onclick=()=>setFontSize(state.prefs.fontSize-1);
@@ -585,6 +641,6 @@ document.addEventListener("keydown",e=>{
     else if(e.key==="ArrowLeft"||e.key==="ArrowUp"){movePresentation(-1);e.preventDefault()}
   }else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="f"){e.preventDefault();setPage("search")}
 })}
-async function start(){updateTheme();initSidebarResizer();initializeEvents();setLanguage(state.prefs.lang,false);try{const res=await fetch("./data/manifest.json");if(!res.ok)throw Error("Bible manifest unavailable");const manifest=await res.json();if(!Array.isArray(manifest.books)||manifest.books.length!==66)throw Error("Expected 66 Bible books");state.manifest=manifest;state.books=manifest.books;const last=getStored("bibleapp.lastplace",{id:"JHN",ch:1});await openBook(state.books.some(b=>b.id===last.id)?last.id:"JHN",last.ch||1);setPage("reader");if("serviceWorker"in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("./sw.js",{scope:"./"}).catch(()=>{});}catch(err){$("verses").textContent=tr("dataLoadError",{message:String(err.message||err)});toast(tr("dataUnavailable"))}}
+async function start(){updateTheme();listenSystemAppearance();initSidebarResizer();initializeEvents();setLanguage(state.prefs.lang,false);try{const res=await fetch("./data/manifest.json");if(!res.ok)throw Error("Bible manifest unavailable");const manifest=await res.json();if(!Array.isArray(manifest.books)||manifest.books.length!==66)throw Error("Expected 66 Bible books");state.manifest=manifest;state.books=manifest.books;const last=getStored("bibleapp.lastplace",{id:"JHN",ch:1});await openBook(state.books.some(b=>b.id===last.id)?last.id:"JHN",last.ch||1);setPage("reader");if("serviceWorker"in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("./sw.js",{scope:"./"}).catch(()=>{});}catch(err){$("verses").textContent=tr("dataLoadError",{message:String(err.message||err)});toast(tr("dataUnavailable"))}}
 start();
 })();

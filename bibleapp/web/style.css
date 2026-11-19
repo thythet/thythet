@@ -237,3 +237,188 @@ body.dark .quick-go{color:#102035}
   .toolbar .quick-field-input{width:39px;height:28px;font-size:12px;padding:2px}
   .toolbar-book-nav .quick-colon{font-size:13px}
 }
+
+
+/* Bible App v0.1.5 — Tahoe83-inspired appearance gallery and offline glass skins.
+   Classic intentionally keeps the prior Bible App colors. No remote assets. */
+.language-toggle{gap:7px;padding:4px 7px;min-width:74px;justify-content:center}
+.language-active-label{font-size:12px;font-weight:700;line-height:1;color:var(--text);min-width:18px;text-align:left}
+.language-toggle .switch-track{flex:none}
+.language-toggle:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+
+/* Tahoe83 color families, adapted from its Admin Dashboard instead of
+   importing its independent desktop shell or any external fonts. */
+body[data-appearance^="tahoe-"]{
+  --glass-panel-rgb:255,255,255;
+  --glass-side-rgb:224,246,253;
+  --glass-panel-opacity:.69;
+  --glass-side-opacity:.73;
+  --glass-blur:18px;
+  --panel:rgba(var(--glass-panel-rgb),var(--glass-panel-opacity));
+  --side:rgba(var(--glass-side-rgb),var(--glass-side-opacity));
+  --bg:rgba(237,246,253,.49);
+  --text:#18191c;--muted:#707277;--border:rgba(25,27,31,.12);
+  --primary:#1874e8;--active:rgba(22,115,221,.12);
+  --book-alt:rgba(95,145,184,.11);
+  --book-hover:rgba(70,146,223,.18);
+  --shadow:0 8px 26px rgba(20,45,72,.10);
+  --tahoe-wallpaper:radial-gradient(900px 570px at 95% 8%,rgba(184,222,248,.88),transparent 63%),
+    radial-gradient(780px 590px at 3% 93%,rgba(166,198,225,.62),transparent 62%),
+    linear-gradient(138deg,#d8f1fa,#f5f9fd 53%,#a9d0ec);
+}
+body[data-appearance="tahoe-light"]{
+  --glass-panel-rgb:250,253,255;
+  --glass-side-rgb:221,238,249;
+  --tahoe-wallpaper:radial-gradient(900px 580px at 95% 10%,rgba(178,217,251,.9),transparent 64%),
+    linear-gradient(135deg,#dceffb,#f8fbfe 49%,#c3e3f6);
+}
+body[data-appearance="tahoe-gray"]{
+  --glass-panel-rgb:239,241,244;
+  --glass-side-rgb:220,223,226;
+  --bg:rgba(239,240,242,.48);
+  --text:#232427;--muted:#70747a;--border:rgba(25,27,31,.14);
+  --book-alt:rgba(110,117,125,.12);--book-hover:rgba(108,123,144,.19);
+  --tahoe-wallpaper:radial-gradient(900px 620px at 94% 5%,rgba(255,255,255,.75),transparent 57%),
+    radial-gradient(770px 590px at 5% 93%,rgba(143,150,159,.35),transparent 63%),
+    linear-gradient(135deg,#9ca2aa,#e8eaed 50%,#a1a6ad);
+}
+body[data-appearance="tahoe-dark"],
+body[data-appearance="tahoe-auto"].dark{
+  --glass-panel-rgb:37,38,43;
+  --glass-side-rgb:31,32,37;
+  --bg:rgba(25,26,31,.37);
+  --text:#f5f5f7;--muted:#a1a1a6;--border:rgba(255,255,255,.15);
+  --primary:#87b7ff;--active:rgba(120,147,194,.19);
+  --book-alt:rgba(255,255,255,.06);--book-hover:rgba(255,255,255,.11);
+  --shadow:0 12px 34px rgba(0,0,0,.29);
+  --tahoe-wallpaper:radial-gradient(900px 620px at 94% 5%,rgba(50,78,120,.39),transparent 60%),
+    radial-gradient(760px 580px at 4% 91%,rgba(44,44,52,.58),transparent 62%),
+    linear-gradient(135deg,#0b0b0d,#1c1c1e 48%,#101216);
+}
+body[data-appearance="tahoe-navy"]{
+  --glass-panel-rgb:14,36,77;
+  --glass-side-rgb:10,34,82;
+  --bg:rgba(1,21,61,.29);
+  --text:#f7f9ff;--muted:#a5b5d3;--border:rgba(208,216,233,.19);
+  --primary:#89bbff;--active:rgba(81,123,193,.25);
+  --book-alt:rgba(118,154,220,.09);--book-hover:rgba(128,148,190,.2);
+  --shadow:0 12px 40px rgba(0,7,24,.42);
+  --tahoe-wallpaper:radial-gradient(950px 650px at 96% 5%,rgba(67,93,147,.52),transparent 59%),
+    radial-gradient(800px 590px at 3% 91%,rgba(43,71,125,.45),transparent 63%),
+    linear-gradient(135deg,#000e28,#01153d 50%,#0a2252);
+}
+body[data-appearance^="tahoe-"][data-glass="tinted"]{
+  --glass-panel-opacity:.91;
+  --glass-side-opacity:.89;
+  --glass-blur:10px;
+}
+body[data-appearance^="tahoe-"] .shell{
+  background:var(--tahoe-wallpaper);
+}
+body[data-appearance^="tahoe-"] .sidebar{
+  background:var(--side);
+  border-right:1px solid var(--border);
+  box-shadow:inset -1px 0 rgba(255,255,255,.12);
+  backdrop-filter:blur(var(--glass-blur)) saturate(145%);
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(145%);
+}
+body[data-appearance^="tahoe-"] .toolbar{
+  background:var(--panel);
+  border-bottom-color:var(--border);
+  backdrop-filter:blur(var(--glass-blur)) saturate(145%);
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(145%);
+}
+body[data-appearance^="tahoe-"] .panel,
+body[data-appearance^="tahoe-"] .page-hero,
+body[data-appearance^="tahoe-"] .verses,
+body[data-appearance^="tahoe-"] .account-row,
+body[data-appearance^="tahoe-"] .cards button,
+body[data-appearance^="tahoe-"] .zoom-popover,
+body[data-appearance^="tahoe-"] .verse-context-menu{
+  background:var(--panel);
+  border-color:var(--border);
+  box-shadow:var(--shadow);
+  backdrop-filter:blur(12px) saturate(135%);
+  -webkit-backdrop-filter:blur(12px) saturate(135%);
+}
+body[data-appearance^="tahoe-"] .sidebar,
+body[data-appearance^="tahoe-"] .panel,
+body[data-appearance^="tahoe-"] .page-hero,
+body[data-appearance^="tahoe-"] .verses{border-radius:19px}
+body[data-appearance^="tahoe-"] .sidebar{border-radius:19px 0 0 19px}
+body[data-appearance^="tahoe-"] .main{background:transparent}
+body[data-appearance^="tahoe-"] .book-search,
+body[data-appearance^="tahoe-"] .testament-tabs button,
+body[data-appearance^="tahoe-"] .quick-field-input,
+body[data-appearance^="tahoe-"] .chapter-pill,
+body[data-appearance^="tahoe-"] .language-toggle,
+body[data-appearance^="tahoe-"] .appearance-choice,
+body[data-appearance^="tahoe-"] .glass-choice{
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+}
+body[data-appearance^="tahoe-"] .book-item.active{
+  background:#1974e8!important;color:#fff!important;
+}
+body[data-appearance^="tahoe-"].dark .verse:not(.selected):hover{background:rgba(255,255,255,.09)}
+body[data-appearance^="tahoe-"] .chapter-pill.active{background:#1974e8;color:#fff}
+body[data-appearance^="tahoe-"].dark .quick-go{color:#112035}
+body[data-appearance^="tahoe-"] .sidebar-resize:hover:after{background:var(--primary)}
+@supports not ((backdrop-filter:blur(4px)) or (-webkit-backdrop-filter:blur(4px))){
+  body[data-appearance^="tahoe-"]{--glass-panel-opacity:.95;--glass-side-opacity:.94}
+}
+
+/* Account → Appearance, modeled on Tahoe83 Admin's appearance cards. */
+.appearance-page{max-width:1280px}
+.appearance-heading{margin-bottom:18px}
+.appearance-heading h2{margin:0 0 4px;font-size:22px}
+.appearance-heading p{margin:0;color:var(--muted);font-size:13px}
+.appearance-panel{padding:24px}
+.appearance-section{display:grid;grid-template-columns:minmax(145px,210px) minmax(0,1fr);gap:20px;align-items:center;padding:5px 0 23px}
+.appearance-section+.appearance-section{border-top:1px solid var(--border);padding:23px 0}
+.appearance-section-intro h3{font-size:17px;margin:0 0 6px}
+.appearance-section-intro p{font-size:12px;margin:0;line-height:1.6;color:var(--muted)}
+.appearance-gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.appearance-choice,
+.glass-choice{position:relative;display:flex;flex-direction:column;gap:7px;align-items:center;min-width:0;border:2px solid transparent;background:rgba(var(--glass-panel-rgb,255,255,255),.24);border-radius:16px;padding:10px 8px 8px;transition:border-color .17s ease,background .17s ease,transform .17s ease;color:var(--text)}
+.appearance-choice:hover,.glass-choice:hover:not(:disabled){background:var(--active);transform:translateY(-1px)}
+.appearance-choice.selected,.glass-choice.selected{border-color:#1475ef;box-shadow:0 0 0 2px rgba(20,117,239,.13)}
+.appearance-choice-title,.glass-choice>span:nth-child(2){font-size:12px;font-weight:700;text-align:center;line-height:1.35}
+.appearance-check{position:absolute;right:7px;top:7px;display:none;place-items:center;height:17px;width:17px;border-radius:50%;font-size:10px;background:#1475ef;color:#fff}
+.appearance-choice.selected .appearance-check,.glass-choice.selected .appearance-check{display:grid}
+.appearance-swatch{display:grid;grid-template-columns:32% minmax(0,1fr);gap:5px;padding:7px;width:100%;height:75px;border-radius:12px;background:linear-gradient(135deg,#dceffb,#acd8f3);overflow:hidden}
+.swatch-sidebar{border-radius:7px;background:rgba(255,255,255,.58)}
+.swatch-main{display:flex;flex-direction:column;gap:5px;min-width:0;border-radius:7px;background:rgba(255,255,255,.7);padding:7px 6px}
+.swatch-main span:first-child{width:70%;height:9px;background:#1475ef;border-radius:8px}
+.swatch-main span:last-child{width:85%;height:18px;background:rgba(255,255,255,.63);border-radius:6px}
+.swatch-classic{background:#e9eef5}
+.swatch-classic .swatch-sidebar{background:#d4deeb}
+.swatch-classic .swatch-main{background:#fff}
+.swatch-auto{background:linear-gradient(137deg,#e0f1fc 0 48%,#1c1c1e 52% 100%)}
+.swatch-auto .swatch-sidebar{background:linear-gradient(135deg,#e5f6fd 45%,#46464a 55%)}
+.swatch-auto .swatch-main{background:linear-gradient(135deg,#fff 45%,#36383c 55%)}
+.swatch-light{background:linear-gradient(135deg,#d9f0fb,#83bde8)}
+.swatch-dark{background:#111319}
+.swatch-dark .swatch-sidebar{background:#3a3b40}.swatch-dark .swatch-main{background:#27292e}
+.swatch-dark .swatch-main span:last-child{background:#41454a}
+.swatch-gray{background:linear-gradient(135deg,#e2e4e7,#a0a5ab)}
+.swatch-gray .swatch-sidebar{background:#c4c7cb}.swatch-gray .swatch-main{background:#ebedf0}
+.swatch-navy{background:linear-gradient(135deg,#01153d,#435d93)}
+.swatch-navy .swatch-sidebar{background:#0a2252}.swatch-navy .swatch-main{background:#183368}
+.swatch-navy .swatch-main span:last-child{background:#345184}
+.glass-gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.glass-choice{padding:12px 12px 9px}
+.glass-swatch{display:grid;grid-template-columns:34% minmax(0,1fr);gap:6px;height:72px;width:100%;max-width:168px;border-radius:13px;padding:7px;background:linear-gradient(130deg,#d7ecf5,#8abbe2)}
+.glass-swatch>span{border-radius:8px;background:rgba(255,255,255,.62)}
+.glass-swatch>span:last-child{display:flex;align-items:flex-start;padding:9px;background:rgba(255,255,255,.55)}
+.glass-swatch i{height:10px;width:75%;border-radius:5px;background:#1475ef}
+.glass-swatch-tinted{background:linear-gradient(125deg,#f2e9cd,#9cc7e6)}
+.glass-swatch-tinted>span{background:rgba(245,248,247,.86)}
+.glass-swatch-tinted>span:last-child{background:rgba(245,248,247,.94)}
+.glass-gallery.glass-inactive{opacity:.48}
+.glass-choice:disabled{cursor:not-allowed}
+.appearance-offline-note{margin:8px 0 0}
+@media(min-width:1260px){.appearance-gallery{grid-template-columns:repeat(6,minmax(0,1fr))}}
+@media(max-width:900px){.appearance-section{grid-template-columns:1fr;gap:12px}.appearance-gallery{grid-template-columns:repeat(3,minmax(0,1fr))}.appearance-panel{padding:16px}}
+@media(max-width:600px){.appearance-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}.glass-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}.appearance-choice-title{font-size:11px}.appearance-swatch{height:62px;padding:5px}.appearance-panel{padding:12px}.language-toggle{min-width:63px;gap:4px}.language-active-label{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.appearance-choice,.glass-choice,.language-toggle .switch-thumb{transition:none}}

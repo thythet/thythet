@@ -87,3 +87,14 @@ This is a shared Web/Tauri UI update. No Firebase rules, native Rust source, Bib
 - The offline web cache is now `bibleapp-web-v0.1.4`. Existing `bibleapp.study.v1` and `bibleapp.prefs.v1` storage keys are unchanged.
 
 This remains a shared Web + Windows/macOS Tauri UI update; installers are rebuilt separately by GitHub Actions.
+
+## v0.1.5 — Tahoe83 appearance gallery and language switch
+
+- **Account → Appearance** now offers six selectable appearance choices: **Classic** (the existing Bible App light/dark style, retained as default), Tahoe83 **Auto**, **Light**, **Dark**, **Gray**, and **Navy**. The preview swatches and color palette are adapted from `tahoe83/index.html` without importing the Tahoe desktop shell or modifying Tahoe83.
+- The second row, **Liquid Glass**, offers **Clear** and **Tinted** for Tahoe83 themes. Clear uses more translucent local CSS panels; Tinted is more opaque. Glass controls are disabled for Classic, whose original visual styles remain unchanged.
+- The current appearance, glass choice, and language are persisted in the existing `bibleapp.prefs.v1` local preference object. Existing saved notes, bookmarks and highlights (`bibleapp.study.v1`) are untouched.
+- Auto follows the operating system light/dark preference via `prefers-color-scheme`; the existing moon/sun toolbar button switches Classic's dark flag or switches between Tahoe83 Light and Dark for quick access.
+- The EN/KH toolbar control now shows **one sliding dot plus a single label**: ON = **KH**, OFF = **EN**, with no duplicate language labels. UI strings switch immediately; the Khmer 1954 Scripture stays in Khmer.
+- The appearance styles, fonts and icons are bundled with the shared Web/Tauri frontend and require no external network service. Native Windows and macOS packaging is rebuilt separately by GitHub Actions. Offline web service worker cache: `bibleapp-web-v0.1.5`.
+
+The prior Classic theme remains the default for current users. This update modifies only files under `bibleapp/`.

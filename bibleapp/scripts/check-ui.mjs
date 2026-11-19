@@ -16,7 +16,8 @@ for(const needed of [
   "readerPage","chapterHeading","chapterSelect","chapterStrip","prevChapter","nextChapter",
   "verses","quickReference","quickChapter","quickVerse",
   "verseContextMenu","versePalette","paletteBack","touchVerseActions","touchSelectionCount",
-  "accountPage","googleLogin","helpPage","toolsPage","generatorPage","searchPage","settingsPage"
+  "accountPage","googleLogin","helpPage","toolsPage","generatorPage","searchPage","settingsPage",
+  "appearancePage","appearanceGallery","glassGallery","languageActiveLabel","settingTheme"
 ])assert(allIds.has(needed),"Missing UI control "+needed);
 for(const match of js.matchAll(/\$\("([a-zA-Z0-9_-]+)"\)/g)){
   assert(allIds.has(match[1]),"JavaScript references nonexistent HTML ID "+match[1]);
@@ -75,7 +76,7 @@ for(const shade of ["blue","purple","pink","red","orange","yellow","green","gray
 }
 assert(!html.includes('id="verseActions"')&&/\.verse-context-menu\{position:fixed/.test(css),"Old formatting bar should be replaced by compact context menu");
 assert(/bibleapp\.study\.v1/.test(js)&&/bibleapp\.prefs\.v1/.test(js),"Persisted bookmarks/highlights/notes must remain in existing storage");
-assert(sw.includes("bibleapp-web-v0.1.4")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
+assert(sw.includes("bibleapp-web-v0.1.5")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
 assert(/#readerPage \.verses \.verse\.selected/.test(css)&&css.includes("background:#dcf3dc!important")&&css.includes("border:2px solid #4caf50!important"),"Selected verses must have a pale-green background and 2px green border");
 assert(/#readerPage \.verses \.verse\[data-highlight\]:not\(\[data-highlight=""\]\)\.selected/.test(css),"Selected green border should override any stored highlight temporarily");
 assert(/root\.addEventListener\("pointerdown",beginVerseDrag\)/.test(js),"Mouse drag must start on verse rows");
@@ -86,6 +87,36 @@ assert(/suppressVerseClick=true/.test(js),"Drag release must prevent an unwanted
 assert(/function groupVerseNumbers\(numbers\)/.test(js)&&/function formatVerseSelection\(items\)/.test(js),"Compact grouped reference formatter missing");
 assert(/function selectedText\(\)\{return formatVerseSelection\(selectedData\(true\)\)\}/.test(js),"Copy must use compact reference formatter");
 assert(/const content=formatVerseSelection\(items\)/.test(js),"Share must also use grouped reference formatting");
+
+assert(html.includes('data-open="appearance"')&&html.includes('id="appearancePage"'),"Account must open a dedicated Appearance gallery");
+assert(/appearance:"Appearance"/.test(js)&&/setPage\("appearance"\)/.test(js),"Appearance must be a navigable app page");
+assert(html.includes('id="settingTheme"')&&/\$\("settingTheme"\)\.onclick=\(\)=>setPage\("appearance"\)/.test(js),"Settings Appearance must open theme gallery");
+assert(html.includes('data-appearance="classic"'),"Default HTML appearance must be Classic");
+for(const value of ["classic","auto","light","dark","gray","navy"]){
+  assert(html.includes('data-theme-choice="'+value+'"'),"Appearance gallery missing "+value);
+  assert(js.includes('"'+value+'"'),"Theme selection missing value "+value);
+}
+assert.equal((html.match(/data-theme-choice=/g)||[]).length,6,"Exactly six appearance choices required");
+assert.equal((html.match(/data-glass-choice=/g)||[]).length,2,"Clear and Tinted glass required");
+for(const value of ["clear","tinted"])assert(html.includes('data-glass-choice="'+value+'"'),"Missing glass mode "+value);
+assert(css.includes('body[data-appearance="tahoe-gray"]')&&css.includes('body[data-appearance="tahoe-navy"]'),"Tahoe83 Gray/Navy colors missing");
+assert(css.includes('body[data-appearance="tahoe-light"]')&&css.includes('body[data-appearance="tahoe-dark"]'),"Tahoe83 Light/Dark colors missing");
+assert(css.includes('body[data-appearance="tahoe-auto"].dark'),"Auto theme must have a dark variant");
+assert(css.includes('[data-glass="tinted"]')&&css.includes('--glass-panel-opacity:.91'),"Tinted glass requires its own opacity");
+assert(/backdrop-filter:blur\(var\(--glass-blur\)\)/.test(css),"Tahoe translucent panels require locally bundled CSS blur");
+assert(/appearance:"classic",glass:"clear"/.test(js)&&/PREFS="bibleapp.prefs.v1"/.test(js),"Classic must be default and retain prior local preferences");
+assert(/state\.prefs\.appearance==="classic"\?/.test(js),"Classic appearance mode must be preserved");
+assert(/const prefersSystemDark=\(\)=>/.test(js)&&/prefers-color-scheme: dark/.test(js),"Auto must follow the system theme offline");
+assert(/addEventListener\("change",changed\)/.test(js),"Auto must respond to system light/dark changes");
+assert(/document\.body\.dataset\.appearance=/.test(js)&&/document\.body\.dataset\.glass=/.test(js),"Themes must update the actual document");
+assert(/syncAppearanceGallery\(\)/.test(js)&&/aria-pressed/.test(js),"Theme choices must visibly reflect selection");
+assert(/for\(const el of \$\("glassGallery"\)\.querySelectorAll\("button"\)\)el\.disabled=classic/.test(js),"Glass choices should be inactive for Classic");
+assert(html.includes('id="languageActiveLabel"')&&/state\.prefs\.lang\.toUpperCase\(\)/.test(js),"Switch must show only the current EN or KH label");
+assert(!html.includes('language-tag-en')&&!html.includes('language-tag-kh'),"Remove the redundant simultaneous EN/KH labels");
+assert(/classList\.toggle\("is-kh",state\.prefs\.lang==="kh"\)/.test(js),"Switch thumb must reflect Khmer ON / English OFF");
+assert(html.includes('role="switch"')&&html.includes('aria-checked="true"'),"Language toggle must remain accessible");
+assert(!/https?:\/\//.test(css.slice(css.indexOf('/* Bible App v0.1.5'))),"Themes must work without CDN dependencies");
+
 assert(sw.includes("SHELL_FILES"),"Online refresh should update the UI shell");
 const context={window:{}};
 runInNewContext(i18n,context,{timeout:1000});
@@ -136,4 +167,23 @@ assert.equal(behavior.drag,"1,2,3,4","Ctrl/Cmd-additive reverse drag must preser
 assert.equal(behavior.anchor,4,"Drag should retain its starting anchor");
 assert.equal(behavior.focus,2,"Drag should sync its final focused verse");
 assert.equal(behavior.updates,1,"Drag should update the verse selection display");
-console.log("Bible App checks passed: 6 compact-reader changes, copy and reverse-drag behavior, "+translated.length+" translated labels, 66 books, preserved saved data.");
+
+const appearanceLogic=js.match(/function isDarkAppearance\(\)\{[\s\S]*?\n\}/)?.[0];
+assert(appearanceLogic,"Theme logic must be testable");
+const results=runInNewContext([
+  'const state={prefs:{appearance:"classic",dark:false}};',
+  'let systemDark=false;',
+  'const prefersSystemDark=()=>systemDark;',
+  appearanceLogic,
+  'const classicLight=!isDarkAppearance();',
+  'state.prefs.dark=true;const classicDark=isDarkAppearance();',
+  'state.prefs.appearance="auto";systemDark=true;const autoDark=isDarkAppearance();',
+  'systemDark=false;const autoLight=!isDarkAppearance();',
+  'state.prefs.appearance="dark";const dark=isDarkAppearance();',
+  'state.prefs.appearance="navy";const navy=isDarkAppearance();',
+  'state.prefs.appearance="light";const light=!isDarkAppearance();',
+  'state.prefs.appearance="gray";const gray=!isDarkAppearance();',
+  '({classicLight,classicDark,autoDark,autoLight,dark,navy,light,gray})'
+].join("\n"),{},{timeout:1000});
+for(const [mode,passed]of Object.entries(results))assert.equal(passed,true,"Theme logic failed: "+mode);
+console.log("Bible App checks passed: Classic + Tahoe83 themes, offline Auto, Clear/Tinted glass, single-label language switch, copy and reverse-drag behavior, "+translated.length+" translated labels, 66 books and preserved saved data.");
