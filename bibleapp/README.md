@@ -127,3 +127,7 @@ The test script checks full-verse and native text-selection contracts, saved/uns
 - All modifications remain within `bibleapp/` with the existing Bible JSON and local study storage unchanged. Offline Web cache bumped to `bibleapp-web-v0.1.8`; the Tauri Windows/macOS frontends share the same source.
 
 The automated UI checks now exercise Shift/Ctrl/Command selection state, normal text selection, the Account footer structure, and preservation of the existing study features.
+
+## Tools page icon-free layout
+
+The Tools page header and five navigation cards (Create Slides, Bible Search, Export Center, Study Library, Help) now display titles and descriptions without decorative icons. The PowerSlidePro button, card navigation, all other pages, and saved Bible data are preserved. Offline cache revision: `bibleapp-web-v0.1.10`.

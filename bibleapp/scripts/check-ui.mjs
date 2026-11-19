@@ -76,7 +76,7 @@ for(const shade of ["blue","purple","pink","red","orange","yellow","green","gray
 }
 assert(!html.includes('id="verseActions"')&&/\.verse-context-menu\{position:fixed/.test(css),"Old formatting bar should be replaced by compact context menu");
 assert(/bibleapp\.study\.v1/.test(js)&&/bibleapp\.prefs\.v1/.test(js),"Persisted bookmarks/highlights/notes must remain in existing storage");
-assert(sw.includes("bibleapp-web-v0.1.9")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
+assert(sw.includes("bibleapp-web-v0.1.10")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
 assert(/#readerPage \.verses \.verse\.selected/.test(css)&&css.includes("background:#dcf3dc!important")&&css.includes("border:2px solid #4caf50!important"),"Selected verses must have a pale-green background and 2px green border");
 assert(css.includes('background:#dcf3dc!important')&&css.includes('border:2px solid #4caf50!important'),"Unhighlighted selections must retain pale green with 2px green border");
 for(const shade of ["blue","purple","pink","red","orange","yellow","green","gray"]){
@@ -295,6 +295,13 @@ assert(!accountMarkup.includes('class="developer-created"')&&!accountMarkup.incl
   "Developer date and purpose must not render in separate paragraphs");
 assert(accountMarkup.includes('data-i18n="developerCredit"')&&accountMarkup.includes('data-i18n="developerCopyright"'),
   "Developer name and copyright must remain separate");
+const toolsMarkup=html.slice(html.indexOf('id="toolsPage"'),html.indexOf('id="helpPage"'));
+const toolsCards=toolsMarkup.slice(toolsMarkup.indexOf('<div class="cards">'),toolsMarkup.indexOf('</div><div class="panel">'));
+assert.equal((toolsCards.match(/data-open=/g)||[]).length,5,"All five Tools navigation cards must remain");
+assert(!toolsCards.includes("<span>"),"Tools navigation cards must have no decorative icons");
+assert(!toolsMarkup.includes('class="hero-icon"'),"Tools page heading must have no decorative icon");
+assert(toolsMarkup.includes('id="openPowerSlide"'),"PowerSlidePro action must remain intact");
+assert(css.includes('#toolsPage .cards button{gap:6px'),"Tools cards should have compact icon-free spacing");
 const accountCards=accountMarkup.slice(accountMarkup.indexOf('<div class="cards">'),accountMarkup.indexOf('</div><footer'));
 assert.equal((accountCards.match(/data-open=/g)||[]).length,5,"All five Account navigation cards must remain");
 assert(!/<span>[^<]+<\/span>\s*<strong/.test(accountCards),"Account navigation cards must not show decorative icons");

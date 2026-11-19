@@ -494,3 +494,8 @@ body[data-appearance^="tahoe-"] .sidebar-resize:hover:after{background:var(--pri
   #accountPage .account-developer-footer{padding:20px 3px 0}
   #accountPage .developer-summary{font-size:10.5px}
 }
+
+/* Tools: icon-free heading and navigation cards; keep content compact. */
+#toolsPage .page-hero h2{margin-top:0}
+#toolsPage .cards button{gap:6px;min-height:86px;justify-content:center}
+#toolsPage .cards button strong{font-size:15px}
