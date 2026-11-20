@@ -98,7 +98,9 @@ for(const shade of ["blue","purple","pink","red","orange","yellow","green","gray
 }
 assert(!html.includes('id="verseActions"')&&/\.verse-context-menu\{position:fixed/.test(css),"Old formatting bar should be replaced by compact context menu");
 assert(/bibleapp\.study\.v1/.test(js)&&/bibleapp\.prefs\.v1/.test(js),"Persisted bookmarks/highlights/notes must remain in existing storage");
-assert(sw.includes("bibleapp-web-v0.2.4")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
+assert(css.includes('#booksList #section-new > .book-heading{')&&css.includes('background:#bf3039;')&&css.includes('color:#fff;'),"New Testament section heading should have readable red background");
+assert(!css.includes('#booksList #section-old > .book-heading{'),"Old Testament heading should retain existing appearance");
+assert(sw.includes("bibleapp-web-v0.2.5")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
 assert(/#readerPage \.verses \.verse\.selected/.test(css)&&css.includes("background:#dcf3dc!important")&&css.includes("border:2px solid #4caf50!important"),"Selected verses must have a pale-green background and 2px green border");
 assert(css.includes('background:#dcf3dc!important')&&css.includes('border:2px solid #4caf50!important'),"Unhighlighted selections must retain pale green with 2px green border");
 for(const shade of ["blue","purple","pink","red","orange","yellow","green","gray"]){

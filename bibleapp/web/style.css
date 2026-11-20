@@ -605,3 +605,13 @@ body[data-appearance^="tahoe-"] .sidebar-resize:hover:after{background:var(--pri
   #readerPage .chapter-select-wrap #chapterSelect{height:30px;min-width:65px;padding:3px 31px 3px 8px}
   #readerPage .chapter-select-wrap .chapter-select-chevron{right:11px;width:13px;height:13px}
 }
+/* Highlight only the New Testament section divider, not its book rows. */
+#booksList #section-new > .book-heading{
+  background:#bf3039;
+  color:#fff;
+  border-radius:8px;
+  padding:7px 10px;
+  font-weight:700;
+  margin:2px 0 5px;
+  line-height:1.6;
+}
