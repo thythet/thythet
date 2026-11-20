@@ -105,6 +105,7 @@ function setLanguage(lang,save=true){
   for(const el of document.querySelectorAll("[data-i18n-placeholder]"))el.placeholder=tr(el.dataset.i18nPlaceholder);
   for(const el of document.querySelectorAll("[data-i18n-title]"))el.title=tr(el.dataset.i18nTitle);
   for(const el of document.querySelectorAll("[data-i18n-aria]"))el.setAttribute("aria-label",tr(el.dataset.i18nAria));
+  for(const el of document.querySelectorAll("[data-i18n-alt]"))el.alt=tr(el.dataset.i18nAlt);
   $("languageToggle").classList.toggle("is-kh",state.prefs.lang==="kh");
   $("languageToggle").setAttribute("aria-checked",String(state.prefs.lang==="kh"));
   $("languageActiveLabel").textContent=state.prefs.lang.toUpperCase();
@@ -944,6 +945,19 @@ function renderUsersList(){
   }
 }
 
+let donateReturnFocus=null;
+function openDonation(){
+ donateReturnFocus=document.activeElement;
+ $("donateDialog").hidden=false;
+ $("donateClose").focus();
+}
+function closeDonation(){
+ if($("donateDialog").hidden)return;
+ $("donateDialog").hidden=true;
+ const target=donateReturnFocus?.isConnected?donateReturnFocus:$("donateButton");
+ donateReturnFocus=null;
+ target.focus();
+}
 function initializeEvents(){
 initDragSelection();
 for(const [photoId,fallbackId] of [
@@ -968,6 +982,9 @@ for(const [photoId,fallbackId] of [
   });
 }
 $("accountButton").onclick=()=>setPage("account");$("backButton").onclick=()=>setPage("reader");$("searchButton").onclick=()=>setPage("search");
+$("donateButton").onclick=openDonation;
+$("donateClose").onclick=closeDonation;
+$("donateDialog").addEventListener("click",e=>{if(e.target===$("donateDialog"))closeDonation()});
 $("bookSearch").oninput=()=>setupSidebar();$("oldTab").onclick=()=>changeTestament("old");$("newTab").onclick=()=>changeTestament("new");
 $("booksList").addEventListener("scroll",updateVisibleTestament,{passive:true});
 $("languageToggle").onclick=()=>setLanguage(state.prefs.lang==="kh"?"en":"kh");
@@ -1046,6 +1063,10 @@ $("backupButton").onclick=()=>saveFile(JSON.stringify({version:1,createdAt:new D
 $("exportTxt").onclick=()=>saveFile(verseData().map(v=>reference(v)+" — "+v.text).join("\n"),state.bookId+"-"+state.chapter+".txt");
 $("exportJson").onclick=()=>saveFile(JSON.stringify({book:state.bookId,chapter:state.chapter,verses:verseData()},null,2),state.bookId+"-"+state.chapter+".json","application/json");
 document.addEventListener("keydown",e=>{
+  if(!$("donateDialog").hidden){
+    if(e.key==="Escape"){closeDonation();e.preventDefault();return}
+    if(e.key==="Tab"){e.preventDefault();$("donateClose").focus();return}
+  }
   if(e.key==="Escape"&&!$("verseContextMenu").hidden){closeVerseMenu();e.preventDefault();return}
   if(e.key==="Escape"&&!$("zoomPopover").hidden){setZoomOpen(false);$("fontButton").focus();e.preventDefault();return}
   if(!$("presentation").hidden){

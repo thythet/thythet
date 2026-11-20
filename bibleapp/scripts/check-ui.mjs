@@ -120,7 +120,7 @@ for(const expected of [
 assert(css.includes('border:2px solid #4caf50!important'),"Keep the selected verse green 2px border");
 assert(css.includes('.chapter-pill.active{background:#1974e8;border-color:#1974e8;color:#fff}'),"Keep active chapter blue");
 assert(css.includes('.chapter-controls select{min-width:100px}'),"Keep chapter selector sizing");
-assert(sw.includes("bibleapp-web-v0.2.7")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
+assert(sw.includes("bibleapp-web-v0.2.8")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
 assert(/#readerPage \.verses \.verse\.selected/.test(css)&&css.includes("background:#dcf3dc!important")&&css.includes("border:2px solid #4caf50!important"),"Selected verses must have a pale-green background and 2px green border");
 assert(css.includes('background:#dcf3dc!important')&&css.includes('border:2px solid #4caf50!important'),"Unhighlighted selections must retain pale green with 2px green border");
 for(const shade of ["blue","purple","pink","red","orange","yellow","green","gray"]){
@@ -346,6 +346,20 @@ assert(!toolsCards.includes("<span>"),"Tools navigation cards must have no decor
 assert(!toolsMarkup.includes('class="hero-icon"'),"Tools page heading must have no decorative icon");
 assert(toolsMarkup.includes('id="openPowerSlide"'),"PowerSlidePro action must remain intact");
 assert(css.includes('#toolsPage .cards button{gap:6px'),"Tools cards should have compact icon-free spacing");
+// Donation button must use the checked-in public QR, preserve translations,
+// and remain optional (no Auth or Firebase flow).
+for(const id of ["donateButton","donateDialog","donateClose","donateQrImage","donateTitle","donateDescription"]){
+  assert(allIds.has(id),"Missing donation element: "+id);
+}
+assert(accountMarkup.includes('class="developer-credit-row"')&&accountMarkup.includes('data-i18n="donateToMe"'),"Donation pill should sit beside developer name");
+assert(html.includes('src="./assets/aba_mobile_1795149283438.png"')&&sw.includes("./assets/aba_mobile_1795149283438.png"),"Public ABA QR must be bundled into offline shell");
+for(const key of ["donateToMe","donateDescription","donateQrAlt","closeDonation"]){
+  assert(locales.en[key]&&locales.kh[key],"Missing donation translation "+key);
+}
+assert(locales.kh.donateToMe==="ឧបត្ថម្ភដល់ខ្ញុំ","Khmer donation label changed");
+assert(js.includes('function openDonation()')&&js.includes('function closeDonation()'),"Donation open/close behaviors missing");
+assert(js.includes('if(e.key==="Escape"){closeDonation()')&&js.includes('if(e.key==="Tab"){e.preventDefault();$("donateClose").focus();return}'),"Donation popup keyboard behavior missing");
+assert(css.includes('.donate-modal-card')&&css.includes('.developer-credit-row'),"Donation popup styles missing");
 const accountCards=accountMarkup.slice(accountMarkup.indexOf('<div class="cards">'),accountMarkup.indexOf('</div><footer'));
 assert.equal((accountCards.match(/data-open=/g)||[]).length,5,"All five Account navigation cards must remain");
 assert(!/<span>[^<]+<\/span>\s*<strong/.test(accountCards),"Account navigation cards must not show decorative icons");
