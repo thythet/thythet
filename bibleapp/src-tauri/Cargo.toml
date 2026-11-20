@@ -1,6 +1,6 @@
 [package]
 name = "bibleapp"
-version = "0.1.0"
+version = "0.1.1"
 description = "Khmer Bible 1954 offline-first desktop reader"
 authors = ["Thet"]
 edition = "2021"

@@ -751,3 +751,19 @@ body[data-appearance^="tahoe-"] .sidebar-resize:hover:after{background:var(--pri
 #softwarePublicButton{margin:10px 0 2px;display:inline-flex;align-items:center;justify-content:center}
 #softwarePublicButton[hidden],#softwareButton[hidden]{display:none!important}
 #softwareOptions .hint{width:100%;margin:3px 0 8px;line-height:1.7}
+/* Mac first-launch assistance inside the software download dialog. */
+.software-mac-help{margin-top:14px;border:2px solid var(--border);border-radius:12px;overflow:hidden;background:var(--panel)}
+.software-mac-help>summary{cursor:pointer;list-style-position:inside;padding:11px 12px;font-size:13px;font-weight:700;line-height:1.6}
+.software-mac-help>summary:focus-visible,.software-mac-advanced>summary:focus-visible{outline:2px solid var(--primary);outline-offset:-3px}
+.software-mac-help-content{padding:0 13px 13px;font-size:12px;line-height:1.75;color:var(--text)}
+.software-mac-help-content>p{margin:4px 0 10px}
+.software-mac-help-content ol{margin:4px 0 12px;padding-inline-start:22px}
+.software-mac-help-content li{margin:5px 0}
+.software-mac-advanced{border-top:1px solid var(--border);padding-top:9px}
+.software-mac-advanced>summary{cursor:pointer;font-weight:600;line-height:1.6}
+.software-mac-warning{color:var(--muted);margin:8px 0}
+.software-mac-command{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:10px 0 8px}
+.software-mac-command code{display:block;flex:1 1 230px;min-width:0;overflow-wrap:anywhere;user-select:all;-webkit-user-select:all;border:1px solid var(--border);border-radius:9px;padding:9px 10px;font-size:11px;line-height:1.6;background:var(--bg)}
+.software-modal-card #softwareMacCopy{flex:0 0 auto;border:2px solid var(--border);border-radius:9px;background:var(--panel);color:var(--text);padding:9px 12px;font:inherit;font-size:12px;cursor:pointer}
+.software-modal-card #softwareMacCopy:hover{background:var(--active)}
+.software-modal-card #softwareMacCopy:focus-visible{outline:2px solid var(--primary);outline-offset:2px}

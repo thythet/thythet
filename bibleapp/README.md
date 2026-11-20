@@ -166,3 +166,9 @@ Until the private Firebase download backend is deployed, signed-in Google accoun
 The developer has approved making Bible App desktop installers public. Account → Get Software is accessible with or without Google Login. The popup looks up the public `bibleapp-v0.1.0` GitHub Release, validates installer asset names, and links directly to published EXE, MSI and DMG files. While the release is absent, it displays clearly labeled temporary GitHub Actions ZIP artifacts, which may require GitHub sign-in and expire.
 
 The release workflow attempts publishing with `BIBLEAPP_RELEASE_TOKEN`, or the built-in `GITHUB_TOKEN` when permitted. If GitHub returns HTTP 403, configure GitHub repository Settings → Actions → General → Workflow permissions for read/write access, or supply an authorized fine-grained release token. Do not publish Firebase security rules or service-account credentials. The optional private download-service source remains unused and is not required for public releases. Cloud-study account approvals remain unchanged.
+
+### Bible App v0.1.1 — updated desktop icon
+
+The uploaded `web/assets/icon-512.png` is the canonical new icon. `src-tauri/icons/icon.png` reuses that exact Git blob; the Tauri release workflow regenerates the Windows `.ico` and macOS `.icns` from the new source before packaging. The product version is updated to `0.1.1` and published independently of `v0.1.0`. Web PWA icons are preserved as uploaded. Get Software offers the new version when published and can still show the existing public v0.1.0 release while it builds.
+
+The public Get Software popup also includes optional macOS first-launch instructions (System Settings → Privacy & Security → Open Anyway), plus a clearly warned advanced quarantine-removal command. The macOS DMG remains unsigned and unnotarized; this help is not a substitute for Apple Developer ID signing and notarization.

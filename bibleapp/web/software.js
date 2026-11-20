@@ -8,16 +8,17 @@ const tr=(key,vars={})=>{
   const val=window.BIBLE_LOCALES?.[lang]?.[key]||window.BIBLE_LOCALES?.en?.[key]||key;
   return val.replace(/\{([a-z]+)\}/gi,(_,k)=>String(vars[k]??""));
 };
-const RELEASE_TAG="bibleapp-v0.1.0";
+const RELEASE_TAG="bibleapp-v0.1.1";
+const PREVIOUS_RELEASE_TAG="bibleapp-v0.1.0";
 const REPO="thythet/thythet";
 const RELEASE_API="https://api.github.com/repos/"+REPO+"/releases/tags/"+RELEASE_TAG;
 const RELEASE_PAGE="https://github.com/"+REPO+"/releases";
 const RELEASE_PATH="/"+REPO+"/releases/download/"+RELEASE_TAG+"/";
 const PUBLIC_FILES=Object.freeze([
- {name:"BibleApp-0.1.0-win-x64.exe",platform:"Windows 64-bit",format:"EXE"},
- {name:"BibleApp-0.1.0-win-x64.msi",platform:"Windows 64-bit",format:"MSI"},
- {name:"BibleApp-0.1.0-mac-arm64.dmg",platform:"macOS Apple Silicon",format:"DMG"},
- {name:"BibleApp-0.1.0-mac-x64.dmg",platform:"macOS Intel",format:"DMG"}
+ {name:"BibleApp-0.1.1-win-x64.exe",platform:"Windows 64-bit",format:"EXE"},
+ {name:"BibleApp-0.1.1-win-x64.msi",platform:"Windows 64-bit",format:"MSI"},
+ {name:"BibleApp-0.1.1-mac-arm64.dmg",platform:"macOS Apple Silicon",format:"DMG"},
+ {name:"BibleApp-0.1.1-mac-x64.dmg",platform:"macOS Intel",format:"DMG"}
 ]);
 // Temporary fallback: Actions artifacts are not public direct downloads,
 // may require a GitHub login, and expire. Do not mislabel them as releases.
@@ -65,25 +66,34 @@ async function open(){
   const list=$("softwareOptions");list.hidden=true;list.replaceChildren();
   $("softwareMessage").textContent=tr("softwareReleaseChecking");
   try{
-    const response=await fetch(RELEASE_API,{cache:"no-store",headers:{Accept:"application/vnd.github+json"}});
+    let activeTag=RELEASE_TAG;
+    let response=await fetch(RELEASE_API,{cache:"no-store",headers:{Accept:"application/vnd.github+json"}});
+    if(!response.ok){
+      // Keep the already released 0.1.0 installers working during the 0.1.1 build.
+      response=await fetch("https://api.github.com/repos/"+REPO+"/releases/tags/"+PREVIOUS_RELEASE_TAG,{cache:"no-store",headers:{Accept:"application/vnd.github+json"}});
+      activeTag=PREVIOUS_RELEASE_TAG;
+    }
     if(!response.ok)throw Error("release-pending");
     const release=await response.json();
     if($("softwareDialog").hidden||id!==sequence)return;
     const assets=Array.isArray(release.assets)?release.assets:[];
+    const activePath=activeTag===RELEASE_TAG?RELEASE_PATH:"/"+REPO+"/releases/download/"+PREVIOUS_RELEASE_TAG+"/";
+    const version=activeTag===RELEASE_TAG?"0.1.1":"0.1.0";
     const verified=PUBLIC_FILES.map(file=>{
-      const asset=assets.find(a=>a.name===file.name&&a.size>0);
+      const filename=file.name.replace("0.1.1",version);
+      const asset=assets.find(a=>a.name===filename&&a.size>0);
       if(!asset)return null;
       const link=new URL(asset.browser_download_url);
-      if(link.protocol!=="https:"||link.hostname!=="github.com"||!link.pathname.startsWith(RELEASE_PATH))return null;
+      if(link.protocol!=="https:"||link.hostname!=="github.com"||!link.pathname.startsWith(activePath))return null;
       return {file,url:link.href};
     }).filter(Boolean);
     if(!verified.length)throw Error("release-empty");
     list.replaceChildren();
     for(const {file,url} of verified){
-      list.append(makeLink(file.platform+" · "+file.format+" · v0.1.0",url));
+      list.append(makeLink(file.platform+" · "+file.format+" · v"+version,url));
     }
     list.hidden=false;
-    $("softwareMessage").textContent=tr("softwarePublicReady");
+    $("softwareMessage").textContent=tr(activeTag===RELEASE_TAG?"softwarePublicReady":"softwareOlderRelease");
   }catch{
     if(!$("softwareDialog").hidden&&id===sequence)renderFallback();
   }
@@ -99,6 +109,17 @@ function close(){
 $("softwareButton").onclick=()=>void open();
 $("softwarePublicButton").onclick=()=>void open();
 $("softwareClose").onclick=close;
+$("softwareMacCopy").onclick=async()=>{
+  const command=$("softwareMacCommand").textContent.trim();
+  const status=$("softwareMacCopyStatus");
+  try{
+    await navigator.clipboard.writeText(command);
+    status.textContent=tr("macHelpCopied");
+  }catch{
+    status.textContent=tr("macHelpCopyFailed");
+  }
+  status.hidden=false;
+};
 $("softwareDialog").addEventListener("click",e=>{if(e.target===$("softwareDialog"))close()});
 document.addEventListener("keydown",e=>{
   if($("softwareDialog").hidden)return;
