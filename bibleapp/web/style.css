@@ -183,14 +183,18 @@ body.dark .quick-go{color:#102035}
 .verse-menu-action svg{height:22px;width:22px;flex:none}
 .verse-menu-action span{font-family:"Khmer Battambang",sans-serif;font-size:11px;white-space:nowrap}
 .verse-context-menu[data-menu=palette] .verse-menu-grid{display:none}
+.verse-context-menu[data-menu=palette]{border-width:2px}
 .verse-palette-head{display:flex;align-items:center;gap:7px;padding:3px 4px 8px}
 .verse-palette-head strong{font-family:"Khmer Battambang",sans-serif;font-weight:600;font-size:13px}
-.palette-back{background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:7px;width:27px;height:26px;font-size:21px;line-height:1}
+.palette-back{display:grid;place-items:center;flex:0 0 27px;background:var(--bg);color:var(--text);border:2px solid var(--border);border-radius:7px;width:27px;height:27px;padding:0;line-height:0}
 .palette-choices{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;place-items:center;padding:3px}
-.palette-choice{width:37px;height:37px;display:grid;place-items:center;border:1px solid transparent;background:transparent;border-radius:50%;padding:3px}
+.palette-choice{width:38px;height:38px;display:grid;place-items:center;border:2px solid transparent;background:transparent;border-radius:50%;padding:2px;line-height:0}
 .palette-choice:hover,.palette-choice:focus-visible{border-color:var(--primary)}
-.palette-choice span{width:28px;height:28px;background:var(--swatch);border-radius:50%;display:grid;place-items:center;border:1px solid #0002}
-.palette-choice.palette-clear span{border:1px solid var(--border);background:var(--bg);font-size:21px;color:var(--muted)}
+.palette-choice span{width:28px;height:28px;background:var(--swatch);border-radius:50%;display:grid;place-items:center;border:2px solid #0002}
+.palette-choice.palette-clear span{border:2px solid var(--border);background:var(--bg);color:var(--muted)}
+.palette-back svg,.palette-choice.palette-clear span svg{display:block;pointer-events:none}
+.palette-back svg{width:16px;height:16px}
+.palette-choice.palette-clear span svg{width:15px;height:15px}
 .touch-verse-actions{position:sticky;bottom:6px;align-self:flex-end;flex:none;border-radius:30px;background:var(--primary);color:#fff;border:0;padding:8px 13px;font-family:"Khmer Battambang",sans-serif;font-size:12px;box-shadow:0 5px 17px #0003;margin-top:6px}
 .verse[data-highlight=blue],.verse[data-highlight=blue].selected{background:#2176e8!important;color:#fff!important}
 .verse[data-highlight=purple],.verse[data-highlight=purple].selected{background:#963ba8!important;color:#fff!important}

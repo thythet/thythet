@@ -92,6 +92,17 @@ assert(html.includes('data-action="present"')&&/startPresentation\(selectedData\
 assert(html.includes('data-action="color"')&&html.includes('id="versePalette" class="verse-palette" hidden'),"Palette must start hidden");
 assert(/if\(action==="color"\)\{showVersePalette\(\);return\}/.test(js),"Palette must open only after Color is clicked");
 assert(/\.verse-context-menu\[data-menu=palette\] \.verse-menu-grid\{display:none\}/.test(css),"Palette should replace actions to stay compact");
+// Color Palette regression checks: SVG artwork must be geometrically centered,
+// 2px rings must not shift the swatches, and delegated color actions must survive.
+assert(/id="paletteBack"[^>]+><svg\b/.test(html),"Palette Back icon must be an SVG");
+assert(/data-color="remove"[^>]*><span[^>]*><svg\b/.test(html),"Remove Color icon must be an SVG");
+assert(css.includes('.verse-context-menu[data-menu=palette]{border-width:2px}'),"Palette popup must have a 2px themed border");
+assert(css.includes('.palette-back{display:grid;place-items:center;')&&css.includes('border:2px solid var(--border);border-radius:7px;'),"Palette Back button must center its SVG inside a 2px border");
+assert(css.includes('.palette-choice{width:38px;height:38px;display:grid;place-items:center;border:2px solid transparent;'),"Palette swatches must have a fixed centered 2px hover ring");
+assert(css.includes('.palette-choice span{width:28px;height:28px;')&&css.includes('border:2px solid #0002'),"Palette swatches must retain 2px inner borders");
+assert(css.includes('.palette-choice.palette-clear span{border:2px solid var(--border);')&&css.includes('.palette-choice.palette-clear span svg{width:15px;height:15px}'),"Remove Color button must center its SVG inside a 2px border");
+assert((html.match(/data-color="(blue|purple|pink|red|orange|yellow|green|gray|remove)"/g)||[]).length===9,"All eight highlight choices and Remove Color must remain");
+
 assert(/data-color="remove"/.test(html)&&/data-color="red"/.test(html)&&/data-color="gray"/.test(html),"Palette must have solid color choices and clear");
 for(const shade of ["blue","purple","pink","red","orange","yellow","green","gray"]){
   assert(css.includes('.verse[data-highlight='+shade+']'),"Missing solid "+shade+" verse highlight");
@@ -120,7 +131,7 @@ for(const expected of [
 assert(css.includes('border:2px solid #4caf50!important'),"Keep the selected verse green 2px border");
 assert(css.includes('.chapter-pill.active{background:#1974e8;border-color:#1974e8;color:#fff}'),"Keep active chapter blue");
 assert(css.includes('.chapter-controls select{min-width:100px}'),"Keep chapter selector sizing");
-assert(sw.includes("bibleapp-web-v0.2.9")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
+assert(sw.includes("bibleapp-web-v0.3.0")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
 assert(/#readerPage \.verses \.verse\.selected/.test(css)&&css.includes("background:#dcf3dc!important")&&css.includes("border:2px solid #4caf50!important"),"Selected verses must have a pale-green background and 2px green border");
 assert(css.includes('background:#dcf3dc!important')&&css.includes('border:2px solid #4caf50!important'),"Unhighlighted selections must retain pale green with 2px green border");
 for(const shade of ["blue","purple","pink","red","orange","yellow","green","gray"]){
