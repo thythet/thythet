@@ -81,6 +81,7 @@ export async function createCloudClient(config,callback){
   // restored. The observer will continue handling later sign-in/sign-out events.
   await auth.authStateReady();
   return {
+    async getIdToken(){if(!auth.currentUser)throw Error("auth-required");return auth.currentUser.getIdToken()},
     async signIn(){
       if(isDesktopWebview())throw Error("desktop-google-oauth-required");
       return authSdk.signInWithPopup(auth,provider);

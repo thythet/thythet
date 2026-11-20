@@ -131,7 +131,7 @@ for(const expected of [
 assert(css.includes('border:2px solid #4caf50!important'),"Keep the selected verse green 2px border");
 assert(css.includes('.chapter-pill.active{background:#1974e8;border-color:#1974e8;color:#fff}'),"Keep active chapter blue");
 assert(css.includes('.chapter-controls select{min-width:100px}'),"Keep chapter selector sizing");
-assert(sw.includes("bibleapp-web-v0.3.2")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
+assert(sw.includes("bibleapp-web-v0.3.3")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
 assert(/#readerPage \.verses \.verse\.selected/.test(css)&&css.includes("background:#dcf3dc!important")&&css.includes("border:2px solid #4caf50!important"),"Selected verses must have a pale-green background and 2px green border");
 assert(css.includes('background:#dcf3dc!important')&&css.includes('border:2px solid #4caf50!important'),"Unhighlighted selections must retain pale green with 2px green border");
 for(const shade of ["blue","purple","pink","red","orange","yellow","green","gray"]){
@@ -400,6 +400,8 @@ assert(js.includes('!state.verseSelectMode&&!e.target.closest(".verse-number")')
 assert(js.includes('copyText(formatVerseSelection(selectedData(true)))'),"Copy must produce entire selected verses");
 assert(css.includes('#verses[data-select-mode="true"] .verse-text{user-select:none'),"Normal native selection must be disabled only during selection mode");
 for(const key of ["selectVerses","endSelection","selectVerseNumber","versesSelected"])assert(locales.en[key]&&locales.kh[key],"Missing translated verse-selection text: "+key);
+for(const id of ["softwareButton","softwareDialog","softwareClose","softwareRequestButton","softwareOptions","softwareRequestsRefresh","softwareRequestsList","softwareRequestsMessage"])assert(allIds.has(id),"Secure software control missing: "+id);
+assert(html.includes('src="./software.js"')&&sw.includes("./software.js"),"Software UI module must load and cache");
 const accountCards=accountMarkup.slice(accountMarkup.indexOf('<div class="cards">'),accountMarkup.indexOf('</div><footer'));
 assert.equal((accountCards.match(/data-open=/g)||[]).length,5,"All five Account navigation cards must remain");
 assert(!/<span>[^<]+<\/span>\s*<strong/.test(accountCards),"Account navigation cards must not show decorative icons");

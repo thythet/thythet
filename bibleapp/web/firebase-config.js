@@ -10,3 +10,4 @@ window.BIBLEAPP_FIREBASE_CONFIG={
   appId:"1:121348781562:web:47c1b433368fd1209ee043",
   measurementId:"G-HWVWTZ1DRG"
 };
+window.BIBLEAPP_SOFTWARE_SERVICE_URL=""; // Configure after deploying secure Cloud Function.

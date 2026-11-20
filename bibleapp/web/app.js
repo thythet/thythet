@@ -803,6 +803,9 @@ let cloudClient=null,cloudLoading=false,cloudError=null,cloudUser=null;
 let cloudAccess={role:"guest",status:"signed-out"};
 let cloudMessageKey="firebaseNotConfigured";
 let adminUsers=[];
+// Read-only browser bridge for the optional software UI. Never treat this as
+// authorization: the private backend verifies tokens and DB access itself.
+window.BIBLEAPP_ACCOUNT_STATE=()=>({user:cloudUser,access:cloudAccess,client:cloudClient});
 const cloudConfig=()=>window.BIBLEAPP_FIREBASE_CONFIG||{};
 const hasCloudConfig=()=>["apiKey","authDomain","databaseURL","projectId","appId"].every(k=>
   typeof cloudConfig()[k]==="string"&&cloudConfig()[k].trim()&&!/YOUR_|REPLACE_|PLACEHOLDER/i.test(cloudConfig()[k])

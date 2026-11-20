@@ -32,7 +32,7 @@ assert(auth.includes('import(FIREBASE_SDK+"firebase-database.js")'),"Cloud datab
 assert(auth.includes('desktop-google-oauth-required'),"Desktop OAuth must not be falsely advertised");
 assert(app.includes('confirm(tr("confirmUploadCloud"))')&&app.includes('confirm(tr("confirmRestoreCloud"))'),"Cloud write/restore require confirmation");
 assert(app.includes('bibleapp.study.v1')&&app.includes('bibleapp.prefs.v1'),"Local study storage keys must remain");
-assert(sw.includes("bibleapp-web-v0.3.2")&&sw.includes("./firebase-config.js")&&sw.includes("./cloud-auth.js"),"Offline shell must include the cloud modules");
+assert(sw.includes("bibleapp-web-v0.3.3")&&sw.includes("./firebase-config.js")&&sw.includes("./cloud-auth.js"),"Offline shell must include the cloud modules");
 // Require a complete Firebase client config when enabled; a blank template remains valid for offline-only use.
 const testConfigContext={window:{}};
 runInNewContext(config,testConfigContext);
@@ -48,6 +48,8 @@ if(filled.length){
 assert(!/private_key|BEGIN PRIVATE KEY|serviceAccountKey/.test([app,auth,config].join("\n")),"Private service-account credentials must never appear in client assets");
 // Static client checks intentionally cannot prove private server-side RTDB rules.
 // Validate the deployed rules separately via Firebase Console and Emulator Suite.
+assert(auth.includes('async getIdToken(){'),"Private download request needs signed-in Firebase token");
+assert(config.includes('BIBLEAPP_SOFTWARE_SERVICE_URL=""'),"Software endpoint should default to unconfigured");
 const fn=(name)=>auth.match(new RegExp("export function "+name+"\\([\\s\\S]*?\\n\\}"))?.[0].replace("export ","");
 const validFn=fn("validFirebaseConfig"),accessFn=fn("effectiveAccess");
 assert(validFn&&accessFn,"Pure config/access check functions should be extractable");
