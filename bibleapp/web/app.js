@@ -725,8 +725,52 @@ function cloudRoleText(){
   const status={pending:"pendingStatus",blocked:"blockedStatus",active:"activeStatus"}[cloudAccess.status]||"pendingStatus";
   return tr(key)+" · "+tr(status);
 }
+function renderAccountAvatar(photoId,fallbackId,logoHostId,name,photoURL,signedIn){
+  const photo=$(photoId),fallback=$(fallbackId);
+  const logo=$(logoHostId).querySelector(".google-logo");
+  logo.hidden=signedIn;
+  if(!signedIn){
+    photo.hidden=true;
+    photo.removeAttribute("src");
+    photo.dataset.failedUrl="";
+    fallback.hidden=true;
+    return;
+  }
+  fallback.textContent=Array.from(name.trim())[0]?.toLocaleUpperCase()||"?";
+  fallback.hidden=false;
+  let safeUrl="";
+  try{
+    const parsed=new URL(String(photoURL||""));
+    if(parsed.protocol==="https:")safeUrl=parsed.href;
+  }catch{}
+  if(!safeUrl||photo.dataset.failedUrl===safeUrl){
+    photo.hidden=true;
+    if(!safeUrl)photo.removeAttribute("src");
+    return;
+  }
+  if(photo.getAttribute("src")!==safeUrl){
+    photo.hidden=true;
+    photo.dataset.failedUrl="";
+    photo.src=safeUrl;
+  }
+  if(photo.complete&&photo.naturalWidth>0){
+    photo.hidden=false;
+    fallback.hidden=true;
+  }
+}
+function renderAccountIdentity(){
+  const signedIn=!!cloudUser;
+  const name=(typeof cloudUser?.displayName==="string"&&cloudUser.displayName.trim())||
+    (typeof cloudUser?.email==="string"&&cloudUser.email.split("@")[0])||tr("account");
+  $("sidebarAccountName").textContent=signedIn?name:tr("account");
+  $("accountHeroName").textContent=signedIn?name:tr("myAccount");
+  const photoURL=cloudUser?.photoURL||"";
+  renderAccountAvatar("sidebarAvatarPhoto","sidebarAvatarFallback","accountButton",name,photoURL,signedIn);
+  renderAccountAvatar("accountHeroPhoto","accountHeroFallback","accountPage",name,photoURL,signedIn);
+}
 function renderCloudState(){
   if(!$("authProfile"))return;
+  renderAccountIdentity();
   const signedIn=!!cloudUser,enabled=signedIn&&cloudAccess.status==="active",admin=isCloudAdmin();
   $("googleLogin").hidden=signedIn;
   $("authProfile").hidden=!signedIn;
@@ -838,6 +882,26 @@ function renderUsersList(){
 
 function initializeEvents(){
 initDragSelection();
+for(const [photoId,fallbackId] of [
+  ["sidebarAvatarPhoto","sidebarAvatarFallback"],
+  ["accountHeroPhoto","accountHeroFallback"]
+]){
+  const photo=$(photoId),fallback=$(fallbackId);
+  photo.addEventListener("load",()=>{
+    if(!cloudUser||!photo.getAttribute("src"))return;
+    const currentPhoto=cloudUser.photoURL||"";
+    try{
+      if(new URL(currentPhoto).href!==photo.getAttribute("src"))return;
+    }catch{return}
+    photo.hidden=false;
+    fallback.hidden=true;
+  });
+  photo.addEventListener("error",()=>{
+    photo.dataset.failedUrl=photo.getAttribute("src")||"";
+    photo.hidden=true;
+    fallback.hidden=!cloudUser;
+  });
+}
 $("accountButton").onclick=()=>setPage("account");$("backButton").onclick=()=>setPage("reader");$("searchButton").onclick=()=>setPage("search");
 $("bookSearch").oninput=()=>setupSidebar();$("oldTab").onclick=()=>changeTestament("old");$("newTab").onclick=()=>changeTestament("new");
 $("booksList").addEventListener("scroll",updateVisibleTestament,{passive:true});
