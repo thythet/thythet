@@ -570,3 +570,38 @@ body[data-appearance^="tahoe-"] .sidebar-resize:hover:after{background:var(--pri
 .account-google[data-avatar-mode="google"] .account-avatar-photo,
 .account-google[data-avatar-mode="google"] .account-avatar-fallback{display:none!important}
 #accountHeroName{overflow-wrap:anywhere}
+
+/* Search heading: title and description only, no oversized search symbol. */
+#searchPage .search-page-heading h2{margin-top:0}
+
+/* Chapter controls: geometric SVG arrows, centered independent of UI font. */
+#readerPage .chapter-controls{display:flex;align-items:center;gap:9px;flex-wrap:nowrap}
+#readerPage .chapter-controls #prevChapter,
+#readerPage .chapter-controls #nextChapter{
+  display:grid;place-items:center;width:36px;height:36px;min-width:36px;
+  padding:0;line-height:0;flex:none;
+}
+#readerPage .chapter-controls #prevChapter svg,
+#readerPage .chapter-controls #nextChapter svg{display:block;width:16px;height:16px;pointer-events:none}
+#readerPage .chapter-select-wrap{
+  position:relative;display:flex;align-items:center;min-width:0;flex:none;
+}
+#readerPage .chapter-select-wrap #chapterSelect{
+  appearance:none;-webkit-appearance:none;
+  height:36px;min-width:100px;
+  padding:5px 36px 5px 12px;
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:9px;color:var(--text);font:inherit;
+  cursor:pointer;
+}
+#readerPage .chapter-select-wrap .chapter-select-chevron{
+  position:absolute;right:13px;top:50%;transform:translateY(-50%);
+  width:15px;height:15px;pointer-events:none;color:var(--muted);
+}
+@media(max-width:560px){
+  #readerPage .chapter-controls{gap:6px}
+  #readerPage .chapter-controls #prevChapter,
+  #readerPage .chapter-controls #nextChapter{width:30px;height:30px;min-width:30px}
+  #readerPage .chapter-select-wrap #chapterSelect{height:30px;min-width:65px;padding:3px 31px 3px 8px}
+  #readerPage .chapter-select-wrap .chapter-select-chevron{right:11px;width:13px;height:13px}
+}

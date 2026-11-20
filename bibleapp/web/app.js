@@ -118,7 +118,7 @@ function setLanguage(lang,save=true){
   else if(state.page==="reader")refreshBookmarkIndicators();
   if(state.page==="generator"&&state.slides.length)renderSlides();
   if(!$("verseContextMenu").hidden)positionVerseMenu(menuPosition.x,menuPosition.y);
-  if(state.page==="search"&&state.searchReady){if($("verseSearch").value.trim())doSearch();else $("searchStatus").textContent=tr("indexedAll");}
+  if(state.page==="search"&&state.searchReady){if($("verseSearch").value.trim())doSearch();else setSearchStatus("");}
   renderCloudState();
   if(save)persistPrefs();
 }
@@ -701,9 +701,70 @@ function movePresentation(offset){if(!state.presentItems.length)return;state.pre
 function endPresentation(){show("presentation",false);if(document.fullscreenElement)document.exitFullscreen().catch(()=>{})}
 function saveFile(content,name,type){const blob=new Blob([content],{type:type||"text/plain;charset=utf-8"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2500)}
 function renderSaved(){const root=$("bookmarksList");root.replaceChildren();const entries=Object.entries(state.study.bookmarks);if(!entries.length){root.textContent=tr("noSaved");return}for(const [id,v] of entries){const button=document.createElement("button");button.type="button";const title=document.createElement("strong"),text=document.createElement("small");const meta=state.books.find(b=>b.id===v.book);title.textContent=(meta?.nameKm||v.book)+" "+v.ch+":"+v.n;text.textContent=v.text;button.append(title,text);button.onclick=async()=>{await openBook(v.book,v.ch);state.selection=new Set([v.n]);state.anchor=v.n;state.focusVerse=v.n;renderReader()};root.append(button)}}
-function initWorker(){if(state.searchWorker)return;try{const worker=new Worker("./search-worker.js");state.searchWorker=worker;worker.onmessage=(e)=>{const d=e.data;if(d.type==="progress"){$("searchStatus").textContent=tr("indexed",{done:d.done});return}if(d.type==="ready"){state.searchReady=true;$("searchStatus").textContent=tr("indexedAll");if($("verseSearch").value.trim())doSearch();return}if(d.type==="results"){renderResults(d);return}if(d.type==="error")$("searchStatus").textContent=tr("searchError",{message:d.message})};worker.onerror=()=>{$("searchStatus").textContent=tr("searchWorkerUnavailable")};worker.postMessage({type:"init",books:state.books})}catch(err){$("searchStatus").textContent=String(err.message||err)}}
-function doSearch(){const query=$("verseSearch").value.trim();if(!query){$("searchResults").replaceChildren();return}if(!state.searchReady){$("searchStatus").textContent=tr("indexing");return}state.searchWorker.postMessage({type:"search",query})}
-function renderResults(d){$("searchStatus").textContent=tr("searchMatches",{n:d.total,detail:tr(d.total>80?"first80":"allDisplayed")});const root=$("searchResults");root.replaceChildren();for(const hit of d.items){const row=document.createElement("button");row.type="button";const title=document.createElement("strong"),excerpt=document.createElement("small");title.textContent=hit.name+" "+hit.chapter+":"+hit.verse;excerpt.textContent=hit.text;row.append(title,excerpt);row.onclick=async()=>{await openBook(hit.id,hit.chapter);state.selection=new Set([hit.verse]);state.anchor=hit.verse;state.focusVerse=hit.verse;renderReader()};root.append(row)}}
+// Hide the completed-index notice when Search is idle. Keep progress,
+// errors and result totals visible so the search remains understandable.
+function setSearchStatus(message){
+  const el=$("searchStatus");
+  el.textContent=message;
+  el.hidden=!message;
+}
+function initWorker(){
+  if(state.searchWorker)return;
+  try{
+    const worker=new Worker("./search-worker.js");
+    state.searchWorker=worker;
+    worker.onmessage=(event)=>{
+      const d=event.data;
+      if(d.type==="progress"){
+        setSearchStatus(tr("indexed",{done:d.done}));
+        return;
+      }
+      if(d.type==="ready"){
+        state.searchReady=true;
+        setSearchStatus("");
+        if($("verseSearch").value.trim())doSearch();
+        return;
+      }
+      if(d.type==="results"){renderResults(d);return}
+      if(d.type==="error")setSearchStatus(tr("searchError",{message:d.message}));
+    };
+    worker.onerror=()=>setSearchStatus(tr("searchWorkerUnavailable"));
+    worker.postMessage({type:"init",books:state.books});
+  }catch(error){setSearchStatus(String(error.message||error))}
+}
+function doSearch(){
+  const query=$("verseSearch").value.trim();
+  if(!query){
+    $("searchResults").replaceChildren();
+    if(state.searchReady)setSearchStatus("");
+    return;
+  }
+  if(!state.searchReady){
+    setSearchStatus(tr("indexing"));
+    return;
+  }
+  state.searchWorker.postMessage({type:"search",query});
+}
+function renderResults(d){
+  setSearchStatus(tr("searchMatches",{n:d.total,detail:tr(d.total>80?"first80":"allDisplayed")}));
+  const root=$("searchResults");
+  root.replaceChildren();
+  for(const hit of d.items){
+    const row=document.createElement("button");row.type="button";
+    const title=document.createElement("strong"),excerpt=document.createElement("small");
+    title.textContent=hit.name+" "+hit.chapter+":"+hit.verse;
+    excerpt.textContent=hit.text;
+    row.append(title,excerpt);
+    row.onclick=async()=>{
+      await openBook(hit.id,hit.chapter);
+      state.selection=new Set([hit.verse]);
+      state.anchor=hit.verse;
+      state.focusVerse=hit.verse;
+      renderReader();
+    };
+    root.append(row);
+  }
+}
 function resolveRef(input){const cleaned=normalize(input).replace(/[៖]/g,":").replace(/[–—]/g,"-").replace(/\s+/g," ");const m=cleaned.match(/^(.+?)\s*(\d+)\s*:\s*(\d+)(?:\s*-\s*(\d+))?\s*$/);if(!m)throw Error(tr("invalidRef"));const name=m[1].trim();const matches=state.books.filter(b=>normalize(b.nameKm)===name||normalize(enFor(b))===name||b.id.toLowerCase()===name);if(matches.length!==1)throw Error(tr("unknownBook"));const chapter=Number(m[2]),start=Number(m[3]),end=m[4]?Number(m[4]):start;if(chapter<1||chapter>matches[0].chapterCount||start<1||end<start||end-start>150)throw Error(tr("invalidRange"));return {id:matches[0].id,chapter,start,end,name:matches[0].nameKm}}
 async function generateSlides(){try{const ref=resolveRef($("generatorInput").value);const data=await loadBook(ref.id);const verses=data.chapters[String(ref.chapter)]?.verses||{};const slides=[];for(let n=ref.start;n<=ref.end;n++){if(typeof verses[String(n)]!=="string")throw Error(tr("verseMissing",{n}));slides.push({ref:ref.name+" "+ref.chapter+":"+n,text:verses[String(n)]})}state.slides=slides;state.slide=0;renderSlides();toast(tr("slideCount",{n:slides.length}))}catch(err){$("generatorOutput").textContent=String(err.message||err)}}
 function renderSlides(){const root=$("generatorOutput");root.replaceChildren();if(!state.slides.length)return;const item=state.slides[state.slide],slide=document.createElement("div");slide.style.cssText="background:#152842;color:white;min-height:270px;padding:32px;border-radius:16px;margin:15px 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;text-align:center";const ref=document.createElement("strong");ref.style.cssText="font-size:18px;color:#c5dcfa";ref.textContent=item.ref;const text=document.createElement("div");text.style.cssText="font-family:'Khmer Battambang',sans-serif;font-size:28px;line-height:1.9";text.textContent=item.text;slide.append(ref,text);const nav=document.createElement("div");nav.className="inline";const prev=document.createElement("button");prev.textContent=tr("previous");const middle=document.createElement("span");middle.textContent=tr("slideProgress",{n:state.slide+1,total:state.slides.length});const next=document.createElement("button");next.textContent=tr("next");prev.onclick=()=>{state.slide=(state.slide+state.slides.length-1)%state.slides.length;renderSlides()};next.onclick=()=>{state.slide=(state.slide+1)%state.slides.length;renderSlides()};const present=document.createElement("button");present.textContent=tr("present");present.className="primary";present.onclick=()=>startPresentation(state.slides);nav.append(prev,middle,next,present);root.append(slide,nav)}

@@ -36,6 +36,15 @@ assert(/button\.onclick=\(\)=>goToChapter\(n\)/.test(js),"Chapter buttons must n
 assert(/select\.value=String\(state\.chapter\)/.test(js),"Chapter dropdown must follow active chapter");
 assert(/goToChapter\(state\.chapter[+-]1\)/.test(js),"Previous/Next must use synchronized chapter navigation");
 assert(/goToChapter\(Number\(\$\("chapterSelect"\)\.value\)\)/.test(js),"Dropdown must use synchronized chapter navigation");
+assert(html.includes('class="chapter-select-wrap"')&&html.includes('class="chapter-select-chevron"'),"Chapter dropdown must use an inset chevron");
+assert(/id="prevChapter"[^>]*><svg/.test(html)&&/id="nextChapter"[^>]*><svg/.test(html),"Chapter arrows must use aligned SVG artwork");
+assert(css.includes('#readerPage .chapter-controls #prevChapter')&&css.includes('display:grid;place-items:center;width:36px;height:36px'),"Chapter arrow buttons must be centered");
+assert(css.includes('position:absolute;right:13px')&&css.includes('padding:5px 36px 5px 12px'),"Chapter dropdown arrow should be inset from its border");
+assert(!html.includes('<div class="hero-icon">⌕</div>'),"Large Search header icon must be removed");
+assert(html.includes('class="page-hero search-page-heading"'),"Search heading must remain centered");
+assert(js.includes('setSearchStatus("");')&&!js.includes('tr("indexedAll")'),"Ready search notice must not be displayed");
+assert(js.includes('setSearchStatus(tr("searchMatches"')&&js.includes('setSearchStatus(tr("searchWorkerUnavailable"))'),"Search result and error feedback must remain");
+
 assert(/scrollLeft/.test(js)&&/\.chapter-pill\.active/.test(css),"Chapter strip must scroll to active chapter");
 assert(html.includes('id="helpPage"')&&html.includes('data-i18n="helpMultiDesc"'),"Verse selection instructions must be in Help");
 assert(/for\(const testament of \["old","new"\]\)/.test(js),"Both Testaments must always be rendered together");
@@ -89,7 +98,7 @@ for(const shade of ["blue","purple","pink","red","orange","yellow","green","gray
 }
 assert(!html.includes('id="verseActions"')&&/\.verse-context-menu\{position:fixed/.test(css),"Old formatting bar should be replaced by compact context menu");
 assert(/bibleapp\.study\.v1/.test(js)&&/bibleapp\.prefs\.v1/.test(js),"Persisted bookmarks/highlights/notes must remain in existing storage");
-assert(sw.includes("bibleapp-web-v0.2.3")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
+assert(sw.includes("bibleapp-web-v0.2.4")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
 assert(/#readerPage \.verses \.verse\.selected/.test(css)&&css.includes("background:#dcf3dc!important")&&css.includes("border:2px solid #4caf50!important"),"Selected verses must have a pale-green background and 2px green border");
 assert(css.includes('background:#dcf3dc!important')&&css.includes('border:2px solid #4caf50!important'),"Unhighlighted selections must retain pale green with 2px green border");
 for(const shade of ["blue","purple","pink","red","orange","yellow","green","gray"]){
