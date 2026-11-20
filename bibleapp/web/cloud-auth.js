@@ -28,9 +28,16 @@ export async function createCloudClient(config,callback){
   const db=dbSdk.getDatabase(app);
   const provider=new authSdk.GoogleAuthProvider();
   provider.setCustomParameters({prompt:"select_account"});
-  // The SDK may be loaded on platforms where durable storage is unavailable.
+  // Persist Google sessions across refreshes. Never silently fall back to
+  // in-memory auth: it makes a successful sign-in disappear on reload.
+  // Try localStorage and then IndexedDB when the first mechanism is unavailable.
   try{await authSdk.setPersistence(auth,authSdk.browserLocalPersistence)}
-  catch{await authSdk.setPersistence(auth,authSdk.inMemoryPersistence)}
+  catch(localError){
+    try{await authSdk.setPersistence(auth,authSdk.indexedDBLocalPersistence)}
+    catch{
+      throw Error("Persistent Firebase sign-in storage is unavailable. Allow this site's browser storage or turn off private browsing, then sign in again.");
+    }
+  }
   let user=null,access={role:"guest",status:"signed-out"},owner=false,unsubAccess=null,sequence=0;
   const notify=(error)=>callback({user,access,error:error?String(error.message||error):null});
   authSdk.onAuthStateChanged(auth,async incoming=>{
@@ -70,6 +77,9 @@ export async function createCloudClient(config,callback){
       },error=>notify(error));
     }catch(error){if(seq===sequence)notify(error)}
   });
+  // Do not report Firebase as ready until any saved Google session has been
+  // restored. The observer will continue handling later sign-in/sign-out events.
+  await auth.authStateReady();
   return {
     async signIn(){
       if(isDesktopWebview())throw Error("desktop-google-oauth-required");

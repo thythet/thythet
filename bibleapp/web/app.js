@@ -738,6 +738,7 @@ function renderCloudState(){
   $("authRole").textContent=cloudRoleText();
   $("authRole").dataset.status=cloudAccess.status||"signed-out";
   $("authHelp").textContent=cloudError?String(cloudError).slice(0,300):
+    cloudLoading&&!signedIn?tr("firebaseLoading"):
     tr(!hasCloudConfig()?"firebaseNotConfigured":!signedIn?
       "firebaseReady":cloudAccess.status==="pending"?"awaitingApproval":
       cloudAccess.status==="blocked"?"accountBlocked":"accountConnected");
@@ -924,6 +925,6 @@ document.addEventListener("keydown",e=>{
     else if(e.key==="ArrowLeft"||e.key==="ArrowUp"){movePresentation(-1);e.preventDefault()}
   }else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="f"){e.preventDefault();setPage("search")}
 })}
-async function start(){updateTheme();listenSystemAppearance();initSidebarResizer();initializeEvents();setLanguage(state.prefs.lang,false);void initCloud();try{const res=await fetch("./data/manifest.json");if(!res.ok)throw Error("Bible manifest unavailable");const manifest=await res.json();if(!Array.isArray(manifest.books)||manifest.books.length!==66)throw Error("Expected 66 Bible books");state.manifest=manifest;state.books=manifest.books;const last=getStored("bibleapp.lastplace",{id:"JHN",ch:1});await openBook(state.books.some(b=>b.id===last.id)?last.id:"JHN",last.ch||1);setPage("reader");if("serviceWorker"in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("./sw.js",{scope:"./"}).catch(()=>{});}catch(err){$("verses").textContent=tr("dataLoadError",{message:String(err.message||err)});toast(tr("dataUnavailable"))}}
+async function start(){updateTheme();listenSystemAppearance();initSidebarResizer();initializeEvents();setLanguage(state.prefs.lang,false);void initCloud();try{const res=await fetch("./data/manifest.json");if(!res.ok)throw Error("Bible manifest unavailable");const manifest=await res.json();if(!Array.isArray(manifest.books)||manifest.books.length!==66)throw Error("Expected 66 Bible books");state.manifest=manifest;state.books=manifest.books;const last=getStored("bibleapp.lastplace",{id:"JHN",ch:1});await openBook(state.books.some(b=>b.id===last.id)?last.id:"JHN",last.ch||1);setPage("reader");if("serviceWorker"in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("./sw.js",{scope:"./",updateViaCache:"none"}).catch(()=>{});}catch(err){$("verses").textContent=tr("dataLoadError",{message:String(err.message||err)});toast(tr("dataUnavailable"))}}
 start();
 })();

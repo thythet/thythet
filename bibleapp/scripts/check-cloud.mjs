@@ -19,12 +19,16 @@ assert(app.includes('void initCloud()')&&app.includes('cloudClient.signIn()'),"S
 assert(app.includes('isCloudAdmin()')&&app.includes('cloudClient.updateAccess('),"Client needs admin-only controls");
 assert(auth.includes('signInWithPopup')&&auth.includes('firebase-auth.js'),"Google popup should use Firebase Authentication");
 assert(auth.includes('onAuthStateChanged')&&auth.includes('bibleapp/access/'),"Access must follow authenticated UID");
+assert(auth.includes('await auth.authStateReady()'),"Cloud client must restore saved sessions before reporting ready");
+assert(auth.includes('indexedDBLocalPersistence')&&!auth.includes('inMemoryPersistence'),"Never silently use temporary memory-only sign-in");
+assert(app.includes('cloudLoading&&!signedIn?tr("firebaseLoading")'),"Account screen must show loading while restoring login");
+assert(app.includes('updateViaCache:"none"'),"Service worker update checks must not reuse stale cache");
 assert(auth.includes('getIdTokenResult()')&&auth.includes('bibleappOwner'),"Owner claim must come from authenticated ID token");
 assert(auth.includes('import(FIREBASE_SDK+"firebase-database.js")'),"Cloud database module missing");
 assert(auth.includes('desktop-google-oauth-required'),"Desktop OAuth must not be falsely advertised");
 assert(app.includes('confirm(tr("confirmUploadCloud"))')&&app.includes('confirm(tr("confirmRestoreCloud"))'),"Cloud write/restore require confirmation");
 assert(app.includes('bibleapp.study.v1')&&app.includes('bibleapp.prefs.v1'),"Local study storage keys must remain");
-assert(sw.includes("bibleapp-web-v0.2.0")&&sw.includes("./firebase-config.js")&&sw.includes("./cloud-auth.js"),"Offline shell must include the cloud modules");
+assert(sw.includes("bibleapp-web-v0.2.1")&&sw.includes("./firebase-config.js")&&sw.includes("./cloud-auth.js"),"Offline shell must include the cloud modules");
 // Require a complete Firebase client config when enabled; a blank template remains valid for offline-only use.
 const testConfigContext={window:{}};
 runInNewContext(config,testConfigContext);
