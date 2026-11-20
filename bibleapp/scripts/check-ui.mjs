@@ -100,7 +100,9 @@ assert(!html.includes('id="verseActions"')&&/\.verse-context-menu\{position:fixe
 assert(/bibleapp\.study\.v1/.test(js)&&/bibleapp\.prefs\.v1/.test(js),"Persisted bookmarks/highlights/notes must remain in existing storage");
 assert(css.includes('#booksList #section-new > .book-heading{')&&css.includes('background:#bf3039;')&&css.includes('color:#fff;'),"New Testament section heading should have readable red background");
 assert(!css.includes('#booksList #section-old > .book-heading{'),"Old Testament heading should retain existing appearance");
-assert(sw.includes("bibleapp-web-v0.2.5")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
+assert(css.includes("gap:11px;padding:8px;border-radius:30px;text-align:left"),"Account and sidebar-tool controls must use 8px padding and 30px radius");
+assert(css.includes(".account-row{padding:8px;gap:5px}"),"Mobile Account padding must match desktop");
+assert(sw.includes("bibleapp-web-v0.2.6")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
 assert(/#readerPage \.verses \.verse\.selected/.test(css)&&css.includes("background:#dcf3dc!important")&&css.includes("border:2px solid #4caf50!important"),"Selected verses must have a pale-green background and 2px green border");
 assert(css.includes('background:#dcf3dc!important')&&css.includes('border:2px solid #4caf50!important'),"Unhighlighted selections must retain pale green with 2px green border");
 for(const shade of ["blue","purple","pink","red","orange","yellow","green","gray"]){
