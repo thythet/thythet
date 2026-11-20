@@ -25,7 +25,18 @@ assert(auth.includes('desktop-google-oauth-required'),"Desktop OAuth must not be
 assert(app.includes('confirm(tr("confirmUploadCloud"))')&&app.includes('confirm(tr("confirmRestoreCloud"))'),"Cloud write/restore require confirmation");
 assert(app.includes('bibleapp.study.v1')&&app.includes('bibleapp.prefs.v1'),"Local study storage keys must remain");
 assert(sw.includes("bibleapp-web-v0.2.0")&&sw.includes("./firebase-config.js")&&sw.includes("./cloud-auth.js"),"Offline shell must include the cloud modules");
-for(const p of ["apiKey","authDomain","databaseURL","projectId","appId"])assert(config.includes(p+':""'),"Firebase config template should not ship with real credentials: "+p);
+// Require a complete Firebase client config when enabled; a blank template remains valid for offline-only use.
+const testConfigContext={window:{}};
+runInNewContext(config,testConfigContext);
+const publicConfig=testConfigContext.window.BIBLEAPP_FIREBASE_CONFIG;
+const keys=['apiKey','authDomain','databaseURL','projectId','appId'];
+assert(publicConfig&&keys.every(k=>typeof publicConfig[k]==='string'),'Missing required Firebase config fields');
+const filled=keys.filter(k=>publicConfig[k].trim());
+assert(filled.length===0||filled.length===keys.length,'Firebase config must be complete or blank');
+if(filled.length){
+  assert(publicConfig.databaseURL.startsWith('https://'),'Firebase database URL must be HTTPS');
+  assert(publicConfig.authDomain.endsWith('.firebaseapp.com'),'Unexpected Firebase auth domain');
+}
 assert(!/private_key|BEGIN PRIVATE KEY|serviceAccountKey/.test([app,auth,config].join("\n")),"Private service-account credentials must never appear in client assets");
 const roleRules=rules.rules.bibleapp.access;
 assert(roleRules[".read"].includes("bibleappOwner"),"Owner must be server-verified in admin read rule");

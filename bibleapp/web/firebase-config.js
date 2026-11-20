@@ -1,12 +1,12 @@
-/* PUBLIC Firebase Web App configuration. This is NOT an Admin SDK key.
-   Project values are from the Bible App Firebase setup shared by the project owner.
-   appId is still required: Firebase Console → Project settings → Your apps → Holybible.
-   Until appId is provided, the app remains offline-first with cloud actions disabled.
-   Never place service-account private keys here. */
+/* Public Firebase Web App configuration for Holybible.
+   Never place service-account private keys in browser JavaScript. */
 window.BIBLEAPP_FIREBASE_CONFIG={
   apiKey:"AIzaSyAenG1h6eqOvINp-3UAmm2xFm0TwnCjdN4",
   authDomain:"bibleapp-software.firebaseapp.com",
   databaseURL:"https://bibleapp-software-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId:"bibleapp-software",
-  appId:""
+  storageBucket:"bibleapp-software.firebasestorage.app",
+  messagingSenderId:"121348781562",
+  appId:"1:121348781562:web:47c1b433368fd1209ee043",
+  measurementId:"G-HWVWTZ1DRG"
 };
