@@ -153,8 +153,10 @@ assert(/function readNativeTextSelection\(\)/.test(js)&&/\.closest\?\.\(".verse-
 assert(/contextualTextSelection=readNativeTextSelection\(\)/.test(js),
   "Right-click must snapshot character selection before clicking menu");
 assert(/const content=contentOverride\|\|selectedText\(\)/.test(js),"Share must preserve partial text selection too");
-assert(/if\(!e\.target\.closest\(".verse-number"\)\)return/.test(js),
-  "Whole-verse dragging must begin at the blue verse number only");
+assert(/if\(!state\.verseSelectMode&&!e\.target\.closest\(".verse-number"\)\)return/.test(js),
+  "Verse-number drag remains the default; explicit selection mode must allow dragging from verse text");
+assert(/if\(e\.target\.closest\(".verse-text"\)&&!state\.verseSelectMode\)/.test(js),
+  "Outside selection mode, Scripture text dragging must use native text selection");
 assert(/e\.target\.closest\(".verse-text"\)/.test(js),"Text dragging must use native selection");
 assert(/function shouldSelectVerseFromClick\(e\)/.test(js)&&/if\(shouldSelectVerseFromClick\(e\)\)selectVerse\(v\.n,e\)/.test(js),
   "Whole-verse click should honor modifier keys anywhere on the row");
