@@ -532,3 +532,11 @@ body[data-appearance^="tahoe-"] .sidebar-resize:hover:after{background:var(--pri
   .user-admin-actions{justify-content:flex-start}
   .admin-toolbar{flex-wrap:wrap}
 }
+/* Center icon artwork geometrically in the existing account, back and sidebar search controls.
+   SVG paths remove platform-specific font baseline offsets (including Khmer UI fallbacks). */
+.account-row .chevron{display:grid;place-items:center;flex:0 0 24px;width:24px;height:24px;line-height:0}
+.account-row .chevron svg{display:block;width:17px;height:17px}
+.toolbar #backButton{display:grid;place-items:center;padding:0;line-height:0;flex:none}
+.toolbar #backButton svg{display:block;width:18px;height:18px}
+.sidebar .book-search .book-search-icon{display:grid;place-items:center;flex:0 0 18px;width:18px;height:18px;line-height:0;color:var(--muted)}
+.sidebar .book-search .book-search-icon svg{display:block;width:18px;height:18px}
