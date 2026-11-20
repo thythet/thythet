@@ -11,7 +11,7 @@ const tr=(k,vars={})=>{
 };
 const STORE="bibleapp.study.v1",PREFS="bibleapp.prefs.v1";
 const getStored=(k,def)=>{try{return JSON.parse(localStorage.getItem(k))||def}catch{return def}};
-const state={manifest:null,books:[],book:null,bookId:"JHN",chapter:1,testament:"new",page:"reader",selection:new Set(),anchor:null,focusVerse:1,study:getStored(STORE,{bookmarks:{},highlights:{},notes:{}}),prefs:{dark:false,appearance:"classic",glass:"clear",fontSize:23,lang:"kh",sidebarWidth:266,...getStored(PREFS,{})},lastByTestament:{old:null,new:null},slides:[],slide:0,presentItems:[],presentIndex:0,searchWorker:null,searchReady:false};
+const state={manifest:null,books:[],book:null,bookId:"JHN",chapter:1,testament:"new",page:"reader",selection:new Set(),anchor:null,focusVerse:1,study:getStored(STORE,{bookmarks:{},highlights:{},notes:{}}),prefs:{dark:false,appearance:"classic",glass:"clear",fontSize:23,lang:"kh",sidebarWidth:266,...getStored(PREFS,{})},lastByTestament:{old:null,new:null},slides:[],slide:0,presentItems:[],presentIndex:0,searchWorker:null,searchReady:false,verseSelectMode:false};
 const persist=()=>{try{localStorage.setItem(STORE,JSON.stringify(state.study))}catch{toast(tr("storageFull"))}};
 const persistPrefs=()=>{try{localStorage.setItem(PREFS,JSON.stringify(state.prefs))}catch{}};
 const key=(n,book=state.bookId,ch=state.chapter)=>book+":"+ch+":"+n;
@@ -326,6 +326,10 @@ function renderReader(){
     const row=document.createElement("div");row.className="verse"+(state.selection.has(v.n)?" selected":"");
     row.tabIndex=0;row.dataset.verse=v.n;row.dataset.highlight=state.study.highlights[key(v.n)]||"";
     row.setAttribute("role","button");row.setAttribute("aria-pressed",String(state.selection.has(v.n)));
+    const check=document.createElement("input");check.type="checkbox";check.className="verse-check";check.hidden=!state.verseSelectMode;
+    check.checked=state.selection.has(v.n);check.setAttribute("aria-label",tr("selectVerseNumber",{n:v.n}));
+    check.onclick=e=>e.stopPropagation();
+    check.onchange=()=>{applyVerseSelection(v.n,{ctrlKey:true});updateVerseSelectionDisplay()};
     const number=document.createElement("span");number.className="verse-number";number.textContent=kmNumber(v.n);
     const text=document.createElement("span");text.className="verse-text";text.textContent=v.text;
     const saved=document.createElement("button");
@@ -335,9 +339,10 @@ function renderReader(){
     saved.hidden=!Boolean(state.study.bookmarks[key(v.n)]);
     saved.addEventListener("pointerdown",e=>e.stopPropagation());
     saved.addEventListener("click",e=>{e.stopPropagation();toggleVerseBookmark(v.n)});
-    row.append(number,text,saved);
+    row.append(check,number,text,saved);
     row.onclick=e=>{
       if(suppressVerseClick){suppressVerseClick=false;return}
+      if(state.verseSelectMode){selectVerse(v.n,{ctrlKey:!e.shiftKey,shiftKey:e.shiftKey});return}
       // Plain text clicks keep native word/character selection.
       // Shift and Ctrl/Command clicks select full verses from anywhere in their text.
       if(shouldSelectVerseFromClick(e))selectVerse(v.n,e);
@@ -359,6 +364,7 @@ function renderReader(){
     };
     root.append(row);
   }
+  root.dataset.selectMode=String(state.verseSelectMode);
   updateSelectionBar();
   syncContextBookmarkLabel();
 }
@@ -389,7 +395,10 @@ function updateVerseSelectionDisplay(){
     const active=state.selection.has(Number(row.dataset.verse));
     row.classList.toggle("selected",active);
     row.setAttribute("aria-pressed",String(active));
+    const checkbox=row.querySelector(".verse-check");
+    if(checkbox){checkbox.hidden=!state.verseSelectMode;checkbox.checked=active}
   }
+  $("verses").dataset.selectMode=String(state.verseSelectMode);
   updateSelectionBar();syncQuickReference();
 }
 function dragApply(end){
@@ -415,7 +424,8 @@ function dragAutoScroll(){
 }
 function beginVerseDrag(e){
   if(state.page!=="reader"||e.button!==0||e.pointerType==="touch"||e.isPrimary===false)return;
-  if(!e.target.closest(".verse-number"))return;
+  if(!state.verseSelectMode&&!e.target.closest(".verse-number"))return;
+  if(e.target.closest(".verse-bookmark,.verse-check"))return;
   const row=e.target.closest(".verse");
   if(!row||!$("verses").contains(row))return;
   // Verse-number dragging is custom; ordinary text dragging remains native.
@@ -456,7 +466,7 @@ function initDragSelection(){
   const root=$("verses");
   root.addEventListener("pointerdown",e=>{
     if(e.button!==0||e.pointerType==="touch")return;
-    if(e.target.closest(".verse-text")){
+    if(e.target.closest(".verse-text")&&!state.verseSelectMode){
       contextualTextSelection="";
       if(e.shiftKey||e.ctrlKey||e.metaKey){
         // Prevent browsers extending the native text selection on modifier-click.
@@ -480,7 +490,7 @@ function initDragSelection(){
   window.addEventListener("blur",()=>finishVerseDrag({}));
 }
 function shouldSelectVerseFromClick(e){
-  if(e.target.closest(".verse-bookmark"))return false;
+  if(e.target.closest(".verse-bookmark,.verse-check"))return false;
   if(e.target.closest(".verse-number"))return true;
   return Boolean((e.shiftKey||e.ctrlKey||e.metaKey)&&e.target.closest(".verse"));
 }
@@ -511,8 +521,21 @@ function selectVerse(n,e){
 function updateSelectionBar(){
   const count=state.selection.size;
   const coarse=typeof matchMedia==="function"&&matchMedia("(pointer: coarse)").matches;
-  show("touchVerseActions",count>0&&coarse);
+  show("touchVerseActions",count>0&&coarse&&!state.verseSelectMode);
+  show("verseSelectionBar",state.verseSelectMode&&state.page==="reader");
+  $("verseSelectionCount").textContent=tr("versesSelected",{n:count});
+  $("verseSelectionCopy").disabled=$("verseSelectionColor").disabled=$("verseSelectionSave").disabled=count===0;
+  $("verseModeToggle").setAttribute("aria-pressed",String(state.verseSelectMode));
+  $("verseModeToggle").classList.toggle("active",state.verseSelectMode);
+  $("verseModeToggle").textContent=tr(state.verseSelectMode?"endSelection":"selectVerses");
   $("touchSelectionCount").textContent=count>0?"("+count+")":"";
+}
+function setVerseSelectionMode(value){
+  state.verseSelectMode=Boolean(value);
+  contextualTextSelection="";
+  window.getSelection()?.removeAllRanges();
+  if(!value){state.selection.clear();state.anchor=null}
+  updateVerseSelectionDisplay();
 }
 
 const menuPosition={x:0,y:0};
@@ -613,13 +636,17 @@ function installLongPress(row,n){
   let timer=null,startX=0,startY=0;
   const cancel=()=>{if(timer!==null){clearTimeout(timer);timer=null}};
   row.addEventListener("pointerdown",e=>{
-    if(e.pointerType!=="touch")return;
+    if(e.pointerType!=="touch"||state.verseSelectMode||e.target.closest(".verse-check,.verse-bookmark"))return;
     cancel();startX=e.clientX;startY=e.clientY;
     timer=setTimeout(()=>{
       timer=null;
       suppressVerseClick=true;
       setTimeout(()=>{suppressVerseClick=false},800);
-      selectForContext(n);openVerseMenu(startX,startY);
+      state.verseSelectMode=true;
+      contextualTextSelection="";
+      window.getSelection()?.removeAllRanges();
+      selectForContext(n);
+      updateVerseSelectionDisplay();
     },540);
   });
   row.addEventListener("pointermove",e=>{
@@ -1034,6 +1061,16 @@ $("touchVerseActions").onclick=()=>{
   const bounds=$("touchVerseActions").getBoundingClientRect();
   openVerseMenu(bounds.left,bounds.top-280);
 };
+$("verseModeToggle").onclick=()=>setVerseSelectionMode(!state.verseSelectMode);
+$("verseSelectionDone").onclick=()=>setVerseSelectionMode(false);
+$("verseSelectionCopy").onclick=()=>void copyText(formatVerseSelection(selectedData(true)));
+$("verseSelectionSave").onclick=bookmarkSelected;
+$("verseSelectionColor").onclick=()=>{
+  if(!state.selection.size)return;
+  const rect=$("verseSelectionBar").getBoundingClientRect();
+  openVerseMenu(rect.left,rect.top-220);
+  showVersePalette();
+};
 $("verseContextMenu").addEventListener("click",e=>{
   const action=e.target.closest("[data-action]");
   if(action){handleVerseAction(action.dataset.action);return}
@@ -1125,6 +1162,9 @@ document.addEventListener("keydown",e=>{
     else if(e.key==="ArrowRight"||e.key==="ArrowDown"){movePresentation(1);e.preventDefault()}
     else if(e.key==="ArrowLeft"||e.key==="ArrowUp"){movePresentation(-1);e.preventDefault()}
   }else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="f"){e.preventDefault();setPage("search")}
+  else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="c"&&state.page==="reader"&&state.selection.size&&!readNativeTextSelection()&&!e.target?.closest?.("input,textarea,[contenteditable]")){
+    e.preventDefault();void copyText(formatVerseSelection(selectedData(true)));
+  }else if(e.key==="Escape"&&state.verseSelectMode){setVerseSelectionMode(false);e.preventDefault()}
 })}
 async function start(){updateTheme();listenSystemAppearance();initSidebarResizer();initializeEvents();setLanguage(state.prefs.lang,false);void initCloud();try{const res=await fetch("./data/manifest.json");if(!res.ok)throw Error("Bible manifest unavailable");const manifest=await res.json();if(!Array.isArray(manifest.books)||manifest.books.length!==66)throw Error("Expected 66 Bible books");state.manifest=manifest;state.books=manifest.books;const last=getStored("bibleapp.lastplace",{id:"JHN",ch:1});await openBook(state.books.some(b=>b.id===last.id)?last.id:"JHN",last.ch||1);setPage("reader");if("serviceWorker"in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("./sw.js",{scope:"./",updateViaCache:"none"}).catch(()=>{});}catch(err){$("verses").textContent=tr("dataLoadError",{message:String(err.message||err)});toast(tr("dataUnavailable"))}}
 start();
