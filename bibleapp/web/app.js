@@ -490,7 +490,7 @@ function initDragSelection(){
   window.addEventListener("blur",()=>finishVerseDrag({}));
 }
 function shouldSelectVerseFromClick(e){
-  if(e.target.closest(".verse-bookmark,.verse-check"))return false;
+  if(e.target.closest(".verse-bookmark")||e.target.closest(".verse-check"))return false;
   if(e.target.closest(".verse-number"))return true;
   return Boolean((e.shiftKey||e.ctrlKey||e.metaKey)&&e.target.closest(".verse"));
 }

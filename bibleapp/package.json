@@ -7,7 +7,7 @@
     "icons": "tauri icon src-tauri/icons/icon.png",
     "dev": "npm run icons && tauri dev",
     "build": "npm run icons && tauri build",
-    "check": "node --check web/i18n.js && node --check web/app.js && node --check web/search-worker.js && node scripts/check-ui.mjs && node scripts/check-cloud.mjs"
+    "check": "node --check web/i18n.js && node --check web/app.js && node --check web/search-worker.js && node --check web/software.js && node --check download-service/index.mjs && node scripts/check-ui.mjs && node scripts/check-cloud.mjs"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.0.0"
