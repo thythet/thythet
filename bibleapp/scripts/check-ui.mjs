@@ -102,7 +102,25 @@ assert(css.includes('#booksList #section-new > .book-heading{')&&css.includes('b
 assert(!css.includes('#booksList #section-old > .book-heading{'),"Old Testament heading should retain existing appearance");
 assert(css.includes("gap:11px;padding:8px;border-radius:30px;text-align:left"),"Account and sidebar-tool controls must use 8px padding and 30px radius");
 assert(css.includes(".account-row{padding:8px;gap:5px}"),"Mobile Account padding must match desktop");
-assert(sw.includes("bibleapp-web-v0.2.6")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
+// Border refinement regression checks: keep independent verse selection
+// highlighting, chapter navigation, and the responsive design intact.
+for(const expected of [
+  ".chapter-pill{display:grid;place-items:center;min-width:33px;height:31px;padding:0 10px;flex:none;background:var(--panel);border:2px solid var(--border);",
+  ".circle{width:36px;height:36px;border:2px solid var(--border);",
+  ".verses{background:var(--panel);border:none;",
+  ".toolbar .quick-field-input{width:48px;height:32px;padding:3px 5px;border:2px solid var(--border);",
+  ".book-search{background:var(--panel);border:2px solid var(--border);",
+  ".testament-tabs button{padding:10px 3px;background:var(--panel);border:2px solid var(--border);",
+  "background:var(--panel);border:2px solid var(--border);\n  border-radius:9px;color:var(--text);font:inherit;",
+  ".chapter-controls button{border:2px solid var(--border)}",
+  ".panel{border:2px solid var(--border);",
+  ".page-hero{border:2px solid var(--border)}",
+  ".cards button{background:var(--panel);border:2px solid var(--border);"
+])assert(css.includes(expected),"Missing requested border style: "+expected);
+assert(css.includes('border:2px solid #4caf50!important'),"Keep the selected verse green 2px border");
+assert(css.includes('.chapter-pill.active{background:#1974e8;border-color:#1974e8;color:#fff}'),"Keep active chapter blue");
+assert(css.includes('.chapter-controls select{min-width:100px}'),"Keep chapter selector sizing");
+assert(sw.includes("bibleapp-web-v0.2.7")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
 assert(/#readerPage \.verses \.verse\.selected/.test(css)&&css.includes("background:#dcf3dc!important")&&css.includes("border:2px solid #4caf50!important"),"Selected verses must have a pale-green background and 2px green border");
 assert(css.includes('background:#dcf3dc!important')&&css.includes('border:2px solid #4caf50!important'),"Unhighlighted selections must retain pale green with 2px green border");
 for(const shade of ["blue","purple","pink","red","orange","yellow","green","gray"]){
