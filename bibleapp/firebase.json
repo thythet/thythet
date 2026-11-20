@@ -1,0 +1,3 @@
+{
+  "functions": {"source": "download-service", "runtime": "nodejs22"}
+}
