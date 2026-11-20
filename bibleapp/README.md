@@ -145,10 +145,10 @@ Bible App includes configurable Firebase Web Authentication and Realtime Databas
 - All users start Pending and are approved by an active Owner or Admin.
 - Account → Manage users offers search, approval/blocking, and Member/Editor roles. Only Owner can grant Admin. Owner privileges are granted securely from a trusted Admin SDK computer, never from the browser.
 - Manual cloud backup Upload / Download / Restore. Both overwriting your cloud copy and restoring onto a device require confirmation.
-- Deny-by-default sample Realtime Database security rules, including protected access roles and private study data.
+- Firebase Realtime Database security rules are maintained outside this public repository and must be published and tested privately in Firebase Console.
 - Trusted owner scripts to bootstrap the first Owner and to disable, enable, or delete a Firebase Authentication account.
 - Local Scripture and all 66 books remain available offline without a Google account. Existing study storage keys are unchanged.
 
-See firebase/SETUP.md for real Firebase configuration, domain authorization, manually publishing database rules, owner provisioning and production caveats. Public web configuration lives in web/firebase-config.js (never put a service-account private key there). Review firebase/database.rules.example.json and publish manually; no live rules are changed by the source commit. Admin SDK scripts are in admin/.
+See firebase/SETUP.md for Firebase configuration, domain authorization, privately managing database rules, owner provisioning and production caveats. Public client configuration lives in web/firebase-config.js (never put a service-account private key there). No live rules are changed by source commits. Admin SDK scripts are in admin/.
 
 **Not production-ready until live tested:** Actual Firebase credentials/config are not supplied, OAuth in Tauri desktop needs a secure system-browser PKCE integration, automatic cross-device conflict-safe sync and user self-service deletion are incomplete, and complete security-emulator / real-device acceptance tests, privacy policies and signed installers still need to be completed.

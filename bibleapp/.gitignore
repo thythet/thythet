@@ -14,3 +14,7 @@ dist/
 *firebase-adminsdk*.json
 *.p12
 *.pem
+
+# Keep Firebase security rules private; publish them only through Firebase Console.
+firebase/*rules*
+firebase/**/*rules*

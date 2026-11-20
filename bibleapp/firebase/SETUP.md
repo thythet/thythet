@@ -1,6 +1,6 @@
 # Bible App — Firebase setup and security
 
-This repository contains an account-system implementation template for **web Google sign-in**, owner/admin moderation, a Realtime Database rules example and manual cloud backups. There is no active Firebase project configuration in the repository. Offline Bible reading remains available without login.
+This repository contains an account-system implementation for **web Google sign-in**, owner/admin moderation and manual cloud backups. The public Firebase Web App configuration is in `web/firebase-config.js`; offline Bible reading remains available without login. **Realtime Database security rules are deliberately not stored in this public repository.**
 
 ## 1. Configure Firebase
 
@@ -9,7 +9,7 @@ This repository contains an account-system implementation template for **web Goo
 3. Under **Authentication → Settings → Authorized domains**, add thythet.com and every trusted deployment hostname. Allow localhost only for local development if necessary.
 4. Create a **Realtime Database**, and copy its HTTPS URL (including region).
 5. Register a Firebase **Web App**, then fill the five public Web App fields in bibleapp/web/firebase-config.js: apiKey, authDomain, databaseURL, projectId and appId. These identify the public client app and are not Admin SDK secrets.
-6. Review bibleapp/firebase/database.rules.example.json, then paste/publish the security rules manually in Realtime Database → Rules. Committing a rules example does **not** deploy or change any live Firebase rules.
+6. Maintain Firebase Realtime Database security rules privately and publish them manually in Firebase Console → Realtime Database → Rules. Before publishing, verify access controls and test the rules in the Firebase Emulator Suite. **Do not commit, upload, or paste rules files to this public repository or distribute them in desktop bundles.**
 7. Deploy the website, visit https://thythet.com/bibleapp/web/, and select Account → Continue with Google.
 
 If the browser returns auth/unauthorized-domain, check authorized domains and authDomain. The Firebase JavaScript SDK is pinned to 13.4.0 from www.gstatic.com and needs internet for login.
@@ -38,7 +38,7 @@ The script verifies the Google provider, then assigns the signed-in UID the secu
 - In Account → Manage users, find the account, choose a Member/Editor role and Pending/Active/Blocked status and save.
 - **Only Owner** may grant the Admin role. Only the private bootstrap script can grant Owner.
 - Users cannot change their own access record. Admin users cannot modify other admin/owner accounts. Owner records are read-only in browser.
-- Database rules enforce access server-side. Own cloud study data can only be read/written by the active account itself. Administrators can see account profiles/access, not private study notes.
+- Properly deployed database rules must enforce access server-side: each active account should access only its own cloud study data, while administrators manage access metadata without reading private study notes. The rules are managed outside this public repository and must be verified in Firebase Console.
 - Blocking removes cloud-data permission but **does not** disable Firebase Authentication or stop access to public, locally bundled Bible text. To disable/delete Auth accounts, use a trusted Admin SDK backend or separately deployed Cloud Functions.
 
 ## 4. Cloud backup safeguards
@@ -60,7 +60,7 @@ The following work is required before declaring public production readiness:
 - Implement secure native desktop OAuth and real-device tests on Windows and macOS.
 - Add privacy notice, retention/deletion policy, monitoring, abuse controls, backups, accessible error states, and code-signed/notarized installers.
 
-This is a **secure production-oriented foundation**, not a completed, deployed Firebase service. No secrets or live security rules are changed by these repository files.
+This is a **production-oriented foundation**, not a guarantee that live Firebase rules or authentication are secure. No live security rules are changed by these repository files.
 
 
 ## Trusted Owner CLI for permanent account actions
