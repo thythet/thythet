@@ -8,7 +8,6 @@ const tr=(key,vars={})=>{
  const value=window.BIBLE_LOCALES?.[lang]?.[key]||window.BIBLE_LOCALES?.en?.[key]||key;
  return value.replace(/\{([a-z]+)\}/gi,(_,k)=>String(vars[k]??""));
 };
-const isAdmin=()=>{const s=account();return !!s.user&&s.access?.status==="active"&&["owner","admin"].includes(s.access.role)};
 const endpoint=()=>String(window.BIBLEAPP_SOFTWARE_SERVICE_URL||"").trim();
 async function api(action,payload){
  const s=account();
@@ -28,9 +27,9 @@ async function api(action,payload){
 }
 let returnFocus=null;
 function sync(){
- const s=account(),eligible=!!s.user&&s.access?.status!=="blocked";
- $("softwareButton").hidden=!eligible;
- $("softwareButton").textContent=tr(s.access?.status==="active"?"getSoftware":"requestSoftware");
+ const signedIn=!!account().user;
+ $("softwareButton").hidden=!signedIn;
+ $("softwareButton").textContent=tr("getSoftware");
 }
 function close(){
  $("softwareDialog").hidden=true;
@@ -39,20 +38,12 @@ function close(){
 }
 async function open(){
  const s=account();
- if(!s.user||s.access?.status==="blocked")return;
+ if(!s.user)return;
  returnFocus=document.activeElement;$("softwareDialog").hidden=false;
  $("softwareClose").focus();$("softwareOptions").replaceChildren();
  $("softwareOptions").hidden=true;
- const pending=s.access?.status!=="active";
- $("softwareRequestButton").hidden=!pending;
- $("softwareRequestButton").disabled=!endpoint();
  $("softwareMessage").textContent=tr("softwareLoading");
  try{
-  if(pending){
-    const status=await api("myRequest");
-    if(!$("softwareDialog").hidden)$("softwareMessage").textContent=tr(status.requested?"softwareAlreadyRequested":"softwareAwaitingRequest");
-    return;
-  }
   const result=await api("files");
   if($("softwareDialog").hidden)return;
   if(!result.ready||!result.files?.length){$("softwareMessage").textContent=tr("softwareNoFiles");return}
@@ -75,48 +66,9 @@ async function open(){
   $("softwareOptions").hidden=false;
  }catch(error){if(!$("softwareDialog").hidden)$("softwareMessage").textContent=String(error.message||error)}
 }
-async function request(){
- if(account().access?.status!=="pending")return;
- const button=$("softwareRequestButton");button.disabled=true;
- try{
-  await api("request",{});
-  $("softwareMessage").textContent=tr("softwareRequestSubmitted");
-  button.hidden=true;
- }catch(error){$("softwareMessage").textContent=String(error.message||error)}
- finally{button.disabled=false}
-}
-async function refreshRequests(){
- if(!isAdmin())return;
- const status=$("softwareRequestsMessage"),list=$("softwareRequestsList");
- list.replaceChildren();status.textContent=tr("softwareLoading");
- try{
-  const response=await api("requests");
-  if(!isAdmin())return;
-  const rows=Array.isArray(response.requests)?response.requests:[];
-  status.textContent=tr(rows.length?"softwareRequestsCount":"softwareNoRequests",{n:rows.length});
-  for(const item of rows){
-    const row=document.createElement("div");row.className="software-admin-row";
-    const identity=document.createElement("span");identity.textContent=[item.displayName||item.uid,item.email,item.status].filter(Boolean).join(" · ");
-    row.append(identity);
-    if(item.status==="pending"){
-      for(const [action,key] of [["approve","softwareApprove"],["reject","softwareReject"]]){
-        const button=document.createElement("button");button.type="button";button.textContent=tr(key);
-        button.onclick=async()=>{
-          button.disabled=true;
-          try{await api(action,{uid:String(item.uid)});await refreshRequests()}
-          catch(error){status.textContent=String(error.message||error);button.disabled=false}
-        };row.append(button);
-      }
-    }
-    list.append(row);
-  }
- }catch(error){status.textContent=String(error.message||error)}
-}
 $("softwareButton").onclick=()=>void open();
 $("softwareClose").onclick=close;
-$("softwareRequestButton").onclick=()=>void request();
 $("softwareDialog").onclick=e=>{if(e.target===$("softwareDialog"))close()};
-$("softwareRequestsRefresh").onclick=()=>void refreshRequests();
 document.addEventListener("keydown",e=>{
  if($("softwareDialog").hidden)return;
  if(e.key==="Escape"){e.preventDefault();close();return}
@@ -128,7 +80,7 @@ document.addEventListener("keydown",e=>{
  }
 });
 new MutationObserver(sync).observe($("authRole"),{childList:true,attributes:true});
-new MutationObserver(()=>{if(!$("usersPage").hidden)void refreshRequests()}).observe($("usersPage"),{attributes:true,attributeFilter:["hidden"]});
+new MutationObserver(sync).observe($("authProfile"),{attributes:true,attributeFilter:["hidden"]});
 new MutationObserver(sync).observe(document.documentElement,{attributes:true,attributeFilter:["lang"]});
 sync();
 })();

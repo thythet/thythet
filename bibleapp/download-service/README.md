@@ -1,17 +1,17 @@
-# Bible App approval-controlled installer service
+# Bible App — software downloads for signed-in users
 
-This folder contains *backend source only*, with no Firebase rules, secrets, credentials or installer binaries. The existing offline Bible remains public.
+The public Bible App allows **all Google-signed-in users** (Pending, Active, or Blocked cloud status) to view the desktop installer list and download available files. No Admin approval or Realtime Database access role is required for software downloads. Private cloud-study access approval remains separate.
 
-This service is **not deployed** merely by committing these files. Deploy it with Cloud Functions for Firebase (2nd gen) in the `bibleapp-software` project after confirming permissions and billing prerequisites.
+This Cloud Functions backend is **not deployed** by committing source code. Until you deploy it and upload verified installers, the web popup displays a setup message, not working download links.
 
-- Set runtime environment variable `FIREBASE_DATABASE_URL` to the real HTTPS RTDB URL.
-- Set `BIBLEAPP_PRIVATE_BUCKET` to a **private** GCS bucket, not a public website directory.
-- Upload verified installers to `software/bibleapp/0.1.0/` in that bucket using the exact filenames in `index.mjs`.
-- Configure an appropriately scoped runtime service account with Firebase Auth user read, RTDB read/write of required records, GCS object read, and signing permission for V4 signed URLs (for example IAM Service Account Token Creator on itself). No service account key file should be deployed.
-- From `bibleapp/`, install Firebase CLI and run `firebase deploy --only functions:softwareDownload --project bibleapp-software` after configuring the runtime environment and permissions.
-- Set the public `BIBLEAPP_SOFTWARE_SERVICE_URL` to the deployed HTTPS function URL in `web/firebase-config.js`. This is an endpoint URL, not a secret.
-- Privately review the LIVE Firebase RTDB rules in Firebase Console. `bibleapp/softwareRequests` must be **server only**; clients must not be able to read/write it. Keep all rules outside public GitHub.
+1. Configure Cloud Functions for Firebase 2nd gen in project `bibleapp-software`, region `asia-southeast1`, and meet any billing requirements.
+2. Set `BIBLEAPP_PRIVATE_BUCKET` in the function runtime environment to a **private** Google Cloud Storage bucket, with public access disabled. No RTDB rules need to be changed for this function.
+3. Upload verified Windows EXE/MSI and macOS Apple Silicon/Intel DMG files under `software/bibleapp/0.1.0/` with the exact filenames listed in `index.mjs`.
+4. Grant the function runtime service account appropriate Firebase Auth and GCS read/signing permissions, including V4 signed URL signing ability. Never commit or share service-account private keys.
+5. Deploy with Firebase CLI from `bibleapp/`: `firebase deploy --only functions:softwareDownload --project bibleapp-software`.
+6. Set `window.BIBLEAPP_SOFTWARE_SERVICE_URL` in `web/firebase-config.js` to the deployed function's HTTPS endpoint URL; then redeploy GitHub Pages.
+7. Test signed-out, Pending, Active, Blocked, and revoked/disabled Firebase Auth identities, invalid file IDs, missing installers, and 120-second link expiration.
 
-Every request includes a Firebase ID token. The server validates it and checks `bibleapp/access/<uid>` before approving requests or issuing time-limited signed URLs (120 seconds). Admins or an Owner can approve and reject requests; approved Members receive links only to explicitly whitelisted installers. Never upload these installers to GitHub Pages or a public GitHub Release if access must be controlled.
+Every request carries a Firebase ID token. The backend verifies it (including token revocation), then returns only approved-file IDs and time-limited signed URLs. Do not upload the protected installers to a public GitHub Release or GitHub Pages if Google sign-in is required.
 
-Test pending, approved, blocked and revoked users, cross-account approval attempts and expired links before inviting real users. Native desktop Google sign-in still requires separate system-browser OAuth, so this entitlement flow works on the Web until that feature is implemented.
+**Never commit Firebase database rules or private keys to GitHub.** This download change does not alter live Firebase rules, user accounts, or the existing offline Bible reader. Native desktop Google Login still requires separate OAuth development.

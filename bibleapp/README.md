@@ -152,3 +152,7 @@ Bible App includes configurable Firebase Web Authentication and Realtime Databas
 See firebase/SETUP.md for Firebase configuration, domain authorization, privately managing database rules, owner provisioning and production caveats. Public client configuration lives in web/firebase-config.js (never put a service-account private key there). No live rules are changed by source commits. Admin SDK scripts are in admin/.
 
 **Not production-ready until live tested:** Actual Firebase credentials/config are not supplied, OAuth in Tauri desktop needs a secure system-browser PKCE integration, automatic cross-device conflict-safe sync and user self-service deletion are incomplete, and complete security-emulator / real-device acceptance tests, privacy policies and signed installers still need to be completed.
+
+## Software downloads — Google sign-in only
+
+All Google-signed-in users (including Pending and Blocked cloud-study accounts) may open **Get Software** without Admin approval. The download endpoint verifies Firebase ID tokens server-side. This is separate from cloud-study approval, which remains Active-only. Private installer storage and the Cloud Function are **not yet deployed**, so actual downloads remain unavailable until setup. See `download-service/README.md`. Firebase rules remain private and unchanged.
