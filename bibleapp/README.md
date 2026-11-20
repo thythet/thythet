@@ -156,3 +156,7 @@ See firebase/SETUP.md for Firebase configuration, domain authorization, privatel
 ## Software downloads — Google sign-in only
 
 All Google-signed-in users (including Pending and Blocked cloud-study accounts) may open **Get Software** without Admin approval. The download endpoint verifies Firebase ID tokens server-side. This is separate from cloud-study approval, which remains Active-only. Private installer storage and the Cloud Function are **not yet deployed**, so actual downloads remain unavailable until setup. See `download-service/README.md`. Firebase rules remain private and unchanged.
+
+### Temporary GitHub installer downloads (November 20, 2026)
+
+Until the private Firebase download backend is deployed, signed-in Google accounts see a temporary GitHub Actions ZIP download list in the Account → Get Software popup. These are verified installers from successful build `44714193559`. Available packages: Windows EXE/MSI, macOS Apple Silicon DMG, macOS Intel DMG, and a combined archive with SHA256 checksums. **These are not Google-only private downloads.** They can require a separate GitHub sign-in, and the artifact URLs remain accessible outside the Bible App to GitHub users. GitHub Actions artifacts expire after approximately 30 days (around December 20, 2026). For permanent Google-only access, deploy the authenticated private download backend and configure its endpoint. Live Firebase rules and accounts remain unchanged.

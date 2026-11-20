@@ -743,3 +743,7 @@ body[data-appearance^="tahoe-"] .sidebar-resize:hover:after{background:var(--pri
 .software-file-row button,.software-admin-row button,.software-admin-head button{border:2px solid var(--border);border-radius:9px;background:var(--panel);color:var(--text);padding:7px 10px;font:inherit;font-size:12px;cursor:pointer}
 .software-admin-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .software-admin-head h3{margin:0}
+/* Temporary GitHub ZIP link styled consistently with private download buttons. */
+.software-file-row .software-download-link{display:inline-flex;align-items:center;justify-content:center;border:2px solid var(--border);border-radius:9px;background:var(--panel);color:var(--text);padding:7px 10px;font:inherit;font-size:12px;white-space:nowrap;text-decoration:none;cursor:pointer}
+.software-file-row .software-download-link:hover{background:var(--active)}
+.software-file-row .software-download-link:focus-visible{outline:2px solid var(--primary);outline-offset:2px}

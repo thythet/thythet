@@ -25,6 +25,34 @@ async function api(action,payload){
  if(!result.ok)throw Error(String(data.error||tr("softwareServiceError")));
  return data;
 }
+
+/* Temporary verified GitHub Actions ZIPs from a completed build.
+   GitHub account sign-in may be required, and these links are NOT authorized
+   by Firebase. Artifacts expire around December 20, 2026. Use the private
+   backend instead once it is deployed. */
+const temporaryPackages=Object.freeze([
+ {platform:"Windows 64-bit",format:"EXE + MSI",artifact:"14619451633"},
+ {platform:"macOS Apple Silicon",format:"DMG",artifact:"14619327041"},
+ {platform:"macOS Intel",format:"DMG",artifact:"14619427337"},
+ {platform:"Windows + macOS",format:"All files + checksums",artifact:"14619841267"}
+]);
+function showTemporaryDownloads(){
+ const list=$("softwareOptions");list.replaceChildren();
+ $("softwareMessage").textContent=tr("softwareGithubFallback");
+ for(const file of temporaryPackages){
+  const row=document.createElement("div");row.className="software-file-row";
+  const label=document.createElement("span");
+  label.textContent=file.platform+" · "+file.format;
+  const link=document.createElement("a");
+  link.className="software-download-link";
+  link.href="https://github.com/thythet/thythet/actions/runs/44714193559/artifacts/"+file.artifact;
+  link.target="_blank";link.rel="noopener noreferrer";
+  link.textContent=tr("softwareDownloadZip");
+  link.setAttribute("aria-label",label.textContent+" — "+tr("softwareDownloadZip"));
+  row.append(label,link);list.append(row);
+ }
+ list.hidden=false;
+}
 let returnFocus=null;
 function sync(){
  const signedIn=!!account().user;
@@ -42,6 +70,7 @@ async function open(){
  returnFocus=document.activeElement;$("softwareDialog").hidden=false;
  $("softwareClose").focus();$("softwareOptions").replaceChildren();
  $("softwareOptions").hidden=true;
+ if(!endpoint()){showTemporaryDownloads();return}
  $("softwareMessage").textContent=tr("softwareLoading");
  try{
   const result=await api("files");

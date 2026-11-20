@@ -131,7 +131,7 @@ for(const expected of [
 assert(css.includes('border:2px solid #4caf50!important'),"Keep the selected verse green 2px border");
 assert(css.includes('.chapter-pill.active{background:#1974e8;border-color:#1974e8;color:#fff}'),"Keep active chapter blue");
 assert(css.includes('.chapter-controls select{min-width:100px}'),"Keep chapter selector sizing");
-assert(sw.includes("bibleapp-web-v0.3.4")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
+assert(sw.includes("bibleapp-web-v0.3.5")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
 assert(/#readerPage \.verses \.verse\.selected/.test(css)&&css.includes("background:#dcf3dc!important")&&css.includes("border:2px solid #4caf50!important"),"Selected verses must have a pale-green background and 2px green border");
 assert(css.includes('background:#dcf3dc!important')&&css.includes('border:2px solid #4caf50!important'),"Unhighlighted selections must retain pale green with 2px green border");
 for(const shade of ["blue","purple","pink","red","orange","yellow","green","gray"]){
@@ -403,6 +403,13 @@ for(const key of ["selectVerses","endSelection","selectVerseNumber","versesSelec
 for(const id of ["softwareButton","softwareDialog","softwareClose","softwareOptions","softwareMessage"])assert(allIds.has(id),"Signed-in download UI missing: "+id);
 for(const id of ["softwareRequestButton","softwareRequestsRefresh","softwareRequestsList","softwareRequestsMessage"])assert(!allIds.has(id),"Admin download approval controls must be removed: "+id);
 assert(html.includes('src="./software.js"')&&sw.includes("./software.js"),"Software UI module must load and cache");
+// Temporary GitHub artifacts are an explicit fallback, not private Firebase
+// authorization. They must never replace the token-verified backend.
+const softwareJs=file("software.js");
+assert(softwareJs.includes('function showTemporaryDownloads()')&&softwareJs.includes('if(!endpoint()){showTemporaryDownloads();return}'),"Unconfigured endpoint must show temporary verified installers");
+for(const id of ["14619451633","14619327041","14619427337","14619841267"])assert(softwareJs.includes(id),"Missing verified installer artifact "+id);
+assert(softwareJs.includes('link.target="_blank";link.rel="noopener noreferrer"')&&softwareJs.includes('if(!s.user)return;'),"Temporary links must be safe and only shown after Google login");
+assert(css.includes('.software-download-link')&&locales.en.softwareGithubFallback&&locales.kh.softwareGithubFallback,"Fallback warning must be styled and bilingual");
 const accountCards=accountMarkup.slice(accountMarkup.indexOf('<div class="cards">'),accountMarkup.indexOf('</div><footer'));
 assert.equal((accountCards.match(/data-open=/g)||[]).length,5,"All five Account navigation cards must remain");
 assert(!/<span>[^<]+<\/span>\s*<strong/.test(accountCards),"Account navigation cards must not show decorative icons");
