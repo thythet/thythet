@@ -94,7 +94,9 @@ jobs:
     permissions:
       contents: write
     env:
-      BIBLEAPP_RELEASE_TOKEN: ${{ secrets.BIBLEAPP_RELEASE_TOKEN }}
+      # Prefer a repository release token; otherwise attempt GitHub's built-in
+      # token (requires repository Actions > General > Workflow permissions: write).
+      BIBLEAPP_RELEASE_TOKEN: ${{ secrets.BIBLEAPP_RELEASE_TOKEN || github.token }}
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -124,16 +126,7 @@ jobs:
           path: release-assets/*
           if-no-files-found: error
           retention-days: 30
-      - name: Explain release publishing authorization
-        if: ${{ env.BIBLEAPP_RELEASE_TOKEN == '' }}
-        shell: bash
-        run: |
-          echo '### Installer packages verified and available as an artifact' >> "$GITHUB_STEP_SUMMARY"
-          echo 'All Windows and macOS packages and SHA256SUMS.txt are available in bibleapp-v0.1.0-release-assets.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'A public GitHub Release was not created because the workflow GITHUB_TOKEN receives HTTP 403.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'To enable publishing: add an authorized repository secret named BIBLEAPP_RELEASE_TOKEN with Contents read/write access, then rerun this publishing workflow.' >> "$GITHUB_STEP_SUMMARY"
       - name: Publish Bible App beta release
-        if: ${{ env.BIBLEAPP_RELEASE_TOKEN != '' }}
         uses: softprops/action-gh-release@v2
         with:
           token: ${{ env.BIBLEAPP_RELEASE_TOKEN }}

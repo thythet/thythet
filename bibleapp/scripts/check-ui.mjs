@@ -131,7 +131,7 @@ for(const expected of [
 assert(css.includes('border:2px solid #4caf50!important'),"Keep the selected verse green 2px border");
 assert(css.includes('.chapter-pill.active{background:#1974e8;border-color:#1974e8;color:#fff}'),"Keep active chapter blue");
 assert(css.includes('.chapter-controls select{min-width:100px}'),"Keep chapter selector sizing");
-assert(sw.includes("bibleapp-web-v0.3.5")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
+assert(sw.includes("bibleapp-web-v0.3.6")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
 assert(/#readerPage \.verses \.verse\.selected/.test(css)&&css.includes("background:#dcf3dc!important")&&css.includes("border:2px solid #4caf50!important"),"Selected verses must have a pale-green background and 2px green border");
 assert(css.includes('background:#dcf3dc!important')&&css.includes('border:2px solid #4caf50!important'),"Unhighlighted selections must retain pale green with 2px green border");
 for(const shade of ["blue","purple","pink","red","orange","yellow","green","gray"]){
@@ -406,10 +406,17 @@ assert(html.includes('src="./software.js"')&&sw.includes("./software.js"),"Softw
 // Temporary GitHub artifacts are an explicit fallback, not private Firebase
 // authorization. They must never replace the token-verified backend.
 const softwareJs=file("software.js");
-assert(softwareJs.includes('function showTemporaryDownloads()')&&softwareJs.includes('if(!endpoint()){showTemporaryDownloads();return}'),"Unconfigured endpoint must show temporary verified installers");
+assert(softwareJs.includes('function renderFallback()')&&softwareJs.includes('RELEASE_PATH="/"+REPO+"/releases/download/"+RELEASE_TAG+"/"'),"Public release links need validated asset paths");
 for(const id of ["14619451633","14619327041","14619427337","14619841267"])assert(softwareJs.includes(id),"Missing verified installer artifact "+id);
-assert(softwareJs.includes('link.target="_blank";link.rel="noopener noreferrer"')&&softwareJs.includes('if(!s.user)return;'),"Temporary links must be safe and only shown after Google login");
-assert(css.includes('.software-download-link')&&locales.en.softwareGithubFallback&&locales.kh.softwareGithubFallback,"Fallback warning must be styled and bilingual");
+assert(softwareJs.includes('link.target="_blank";link.rel="noopener noreferrer"')&&softwareJs.includes('$("softwarePublicButton").onclick=()=>void open();'),"Public links must be safe and usable by signed-out visitors");
+assert(css.includes('.software-download-link')&&locales.en.softwareReleasePending&&locales.kh.softwareReleasePending,"Public download fallback must be styled and bilingual");
+assert(allIds.has("softwarePublicButton"),"Signed-out visitors must have a public Get Software button");
+assert(html.includes('id="softwarePublicButton"')&&html.includes('data-i18n="getSoftware"'),"Public download button must be bilingual");
+assert(softwareJs.includes('RELEASE_API="https://api.github.com/repos/"'),"Public releases should be fetched from GitHub API");
+assert(softwareJs.includes('const loggedIn=!!window.BIBLEAPP_ACCOUNT_STATE?.()?.user;')&&softwareJs.includes('$("softwarePublicButton").hidden=loggedIn;'),"Public downloads must remain visible when signed out");
+assert(softwareJs.includes('function renderFallback()')&&softwareJs.includes('softwareReleasePending'),"Missing release should show clearly labeled temporary ZIPs");
+assert(!softwareJs.includes('s.client.getIdToken()')&&!softwareJs.includes('BIBLEAPP_SOFTWARE_SERVICE_URL'),"Public downloads must not require Firebase");
+for(const key of ["softwarePublicReady","softwareReleasePending","softwareReleaseChecking","softwarePublicFallback"])assert(locales.en[key]&&locales.kh[key],"Public software UI translation missing: "+key);
 const accountCards=accountMarkup.slice(accountMarkup.indexOf('<div class="cards">'),accountMarkup.indexOf('</div><footer'));
 assert.equal((accountCards.match(/data-open=/g)||[]).length,5,"All five Account navigation cards must remain");
 assert(!/<span>[^<]+<\/span>\s*<strong/.test(accountCards),"Account navigation cards must not show decorative icons");

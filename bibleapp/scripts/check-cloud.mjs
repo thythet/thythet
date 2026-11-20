@@ -32,7 +32,7 @@ assert(auth.includes('import(FIREBASE_SDK+"firebase-database.js")'),"Cloud datab
 assert(auth.includes('desktop-google-oauth-required'),"Desktop OAuth must not be falsely advertised");
 assert(app.includes('confirm(tr("confirmUploadCloud"))')&&app.includes('confirm(tr("confirmRestoreCloud"))'),"Cloud write/restore require confirmation");
 assert(app.includes('bibleapp.study.v1')&&app.includes('bibleapp.prefs.v1'),"Local study storage keys must remain");
-assert(sw.includes("bibleapp-web-v0.3.5")&&sw.includes("./firebase-config.js")&&sw.includes("./cloud-auth.js"),"Offline shell must include the cloud modules");
+assert(sw.includes("bibleapp-web-v0.3.6")&&sw.includes("./firebase-config.js")&&sw.includes("./cloud-auth.js"),"Offline shell must include the cloud modules");
 // Require a complete Firebase client config when enabled; a blank template remains valid for offline-only use.
 const testConfigContext={window:{}};
 runInNewContext(config,testConfigContext);

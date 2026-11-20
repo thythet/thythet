@@ -747,3 +747,7 @@ body[data-appearance^="tahoe-"] .sidebar-resize:hover:after{background:var(--pri
 .software-file-row .software-download-link{display:inline-flex;align-items:center;justify-content:center;border:2px solid var(--border);border-radius:9px;background:var(--panel);color:var(--text);padding:7px 10px;font:inherit;font-size:12px;white-space:nowrap;text-decoration:none;cursor:pointer}
 .software-file-row .software-download-link:hover{background:var(--active)}
 .software-file-row .software-download-link:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+/* Public downloads are discoverable even when Google Login is signed out. */
+#softwarePublicButton{margin:10px 0 2px;display:inline-flex;align-items:center;justify-content:center}
+#softwarePublicButton[hidden],#softwareButton[hidden]{display:none!important}
+#softwareOptions .hint{width:100%;margin:3px 0 8px;line-height:1.7}
