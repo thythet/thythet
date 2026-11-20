@@ -958,6 +958,41 @@ function closeDonation(){
  donateReturnFocus=null;
  target.focus();
 }
+let logoutReturnFocus=null;
+let logoutBusy=false;
+function openLogoutDialog(){
+  if(logoutBusy||!cloudClient||!cloudUser)return;
+  logoutReturnFocus=document.activeElement;
+  $("logoutDialog").hidden=false;
+  $("logoutCancel").focus();
+}
+function closeLogoutDialog(){
+  if(logoutBusy||$("logoutDialog").hidden)return;
+  $("logoutDialog").hidden=true;
+  const target=logoutReturnFocus?.isConnected?logoutReturnFocus:$("authLogout");
+  logoutReturnFocus=null;
+  target.focus();
+}
+async function confirmLogout(){
+  if(logoutBusy||$("logoutDialog").hidden)return;
+  if(!cloudClient){closeLogoutDialog();return}
+  logoutBusy=true;
+  $("logoutCancel").disabled=true;
+  $("logoutConfirm").disabled=true;
+  try{
+    await cloudClient.signOut();
+    $("logoutDialog").hidden=true;
+    logoutReturnFocus=null;
+    toast(tr("signedOut"));
+    $("accountButton").focus();
+  }catch(error){
+    toast(tr("cloudError")+": "+String(error.message||error));
+  }finally{
+    logoutBusy=false;
+    $("logoutCancel").disabled=false;
+    $("logoutConfirm").disabled=false;
+  }
+}
 function initializeEvents(){
 initDragSelection();
 for(const [photoId,fallbackId] of [
@@ -1033,7 +1068,10 @@ $("fontButton").addEventListener("keydown",e=>{if(e.key==="ArrowDown"){e.prevent
 $("settingFont").oninput=e=>setFontSize(e.target.value);
 document.querySelectorAll("[data-open]").forEach(el=>el.onclick=()=>setPage(el.dataset.open));
 $("googleLogin").onclick=()=>void googleSignIn();
-$("authLogout").onclick=()=>void (async()=>{try{await cloudClient?.signOut();toast(tr("signedOut"))}catch(error){toast(tr("cloudError")+": "+String(error.message||error))}})();
+$("authLogout").onclick=openLogoutDialog;
+$("logoutCancel").onclick=closeLogoutDialog;
+$("logoutConfirm").onclick=()=>void confirmLogout();
+$("logoutDialog").addEventListener("click",e=>{if(e.target===$("logoutDialog"))closeLogoutDialog()});
 $("adminLaunch").onclick=()=>setPage("users");
 $("usersRefresh").onclick=()=>void refreshUsers();
 $("usersSearch").oninput=renderUsersList;
@@ -1063,6 +1101,19 @@ $("backupButton").onclick=()=>saveFile(JSON.stringify({version:1,createdAt:new D
 $("exportTxt").onclick=()=>saveFile(verseData().map(v=>reference(v)+" — "+v.text).join("\n"),state.bookId+"-"+state.chapter+".txt");
 $("exportJson").onclick=()=>saveFile(JSON.stringify({book:state.bookId,chapter:state.chapter,verses:verseData()},null,2),state.bookId+"-"+state.chapter+".json","application/json");
 document.addEventListener("keydown",e=>{
+  if(!$("logoutDialog").hidden){
+    if(e.key==="Escape"){e.preventDefault();closeLogoutDialog();return}
+    if(e.key==="Tab"){
+      const first=$("logoutCancel"),last=$("logoutConfirm");
+      if(logoutBusy){e.preventDefault();return}
+      if(e.shiftKey&&(document.activeElement===first||![first,last].includes(document.activeElement))){
+        e.preventDefault();last.focus();return;
+      }
+      if(!e.shiftKey&&(document.activeElement===last||![first,last].includes(document.activeElement))){
+        e.preventDefault();first.focus();return;
+      }
+    }
+  }
   if(!$("donateDialog").hidden){
     if(e.key==="Escape"){closeDonation();e.preventDefault();return}
     if(e.key==="Tab"){e.preventDefault();$("donateClose").focus();return}

@@ -120,7 +120,7 @@ for(const expected of [
 assert(css.includes('border:2px solid #4caf50!important'),"Keep the selected verse green 2px border");
 assert(css.includes('.chapter-pill.active{background:#1974e8;border-color:#1974e8;color:#fff}'),"Keep active chapter blue");
 assert(css.includes('.chapter-controls select{min-width:100px}'),"Keep chapter selector sizing");
-assert(sw.includes("bibleapp-web-v0.2.8")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
+assert(sw.includes("bibleapp-web-v0.2.9")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
 assert(/#readerPage \.verses \.verse\.selected/.test(css)&&css.includes("background:#dcf3dc!important")&&css.includes("border:2px solid #4caf50!important"),"Selected verses must have a pale-green background and 2px green border");
 assert(css.includes('background:#dcf3dc!important')&&css.includes('border:2px solid #4caf50!important'),"Unhighlighted selections must retain pale green with 2px green border");
 for(const shade of ["blue","purple","pink","red","orange","yellow","green","gray"]){
@@ -360,6 +360,22 @@ assert(locales.kh.donateToMe==="ឧបត្ថម្ភដល់ខ្ញុំ
 assert(js.includes('function openDonation()')&&js.includes('function closeDonation()'),"Donation open/close behaviors missing");
 assert(js.includes('if(e.key==="Escape"){closeDonation()')&&js.includes('if(e.key==="Tab"){e.preventDefault();$("donateClose").focus();return}'),"Donation popup keyboard behavior missing");
 assert(css.includes('.donate-modal-card')&&css.includes('.developer-credit-row'),"Donation popup styles missing");
+// Logout is confirmed with an in-app dialog; Firebase sign-out must not
+// run on the first click and other Account controls retain their styles.
+for(const id of ["logoutDialog","logoutTitle","logoutMessage","logoutCancel","logoutConfirm"]){
+  assert(allIds.has(id),"Logout dialog element missing: "+id);
+}
+assert(html.includes('class="modal-card signout-modal-card" role="dialog" aria-modal="true"'),"Logout confirmation must be a modal dialog");
+assert(html.includes('data-i18n="confirmSignOutTitle"')&&html.includes('data-i18n="confirmSignOutMessage"'),"Logout copy must use translation keys");
+for(const key of ["confirmSignOutTitle","confirmSignOutMessage"]){
+  assert(locales.en[key]&&locales.kh[key],"Logout translation missing: "+key);
+}
+assert(css.includes('#accountPage #authLogout{')&&css.includes('border:2px solid #dc3545;'),"Logout alone must have a red two-pixel border");
+assert(css.includes('.signout-modal-card{')&&css.includes('border:2px solid var(--border);'),"Logout modal must have a 2px border");
+assert(css.includes('.signout-modal-actions button{')&&css.includes('.signout-modal-actions #logoutConfirm{'),"Logout modal buttons must have consistent borders");
+assert(js.includes('$("authLogout").onclick=openLogoutDialog;')&&js.includes('$("logoutConfirm").onclick=()=>void confirmLogout();'),"Logout button must ask confirmation before calling Firebase");
+assert(js.includes('await cloudClient.signOut()')&&js.includes('function confirmLogout()'),"Firebase sign-out must remain behind the confirmed action");
+assert(js.includes('if(e.key==="Escape"){e.preventDefault();closeLogoutDialog();return}')&&js.includes('if(e.target===$("logoutDialog"))closeLogoutDialog()'),"Logout modal must dismiss with Escape and backdrop");
 const accountCards=accountMarkup.slice(accountMarkup.indexOf('<div class="cards">'),accountMarkup.indexOf('</div><footer'));
 assert.equal((accountCards.match(/data-open=/g)||[]).length,5,"All five Account navigation cards must remain");
 assert(!/<span>[^<]+<\/span>\s*<strong/.test(accountCards),"Account navigation cards must not show decorative icons");
