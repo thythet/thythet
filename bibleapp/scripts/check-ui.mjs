@@ -50,6 +50,9 @@ assert.equal((html.match(/class="google-logo"/g)||[]).length,3,"The exact Google
 for(const id of ["sidebarAvatarPhoto","sidebarAvatarFallback","sidebarAccountName","accountHeroPhoto","accountHeroFallback","accountHeroName"])assert(allIds.has(id),"Account identity UI is missing: "+id);
 assert(js.includes('renderAccountIdentity();')&&js.includes('cloudUser?.photoURL')&&js.includes('cloudUser?.displayName'),"Signed-in identity must come from Firebase auth");
 assert(js.includes('photo.addEventListener("error"')&&js.includes('photo.addEventListener("load"'),"Profile images must handle loading and fallback");
+assert(js.includes('setAccountAvatarMode(photo,"photo")')&&js.includes('setAccountAvatarMode(photo,"initials")')&&js.includes('setAccountAvatarMode(photo,"google")'),"Google photo, initials and signed-out icon must be mutually exclusive");
+assert(css.includes('position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover'),"Google photo must fill its avatar without stacking");
+assert(css.includes('[data-avatar-mode="photo"] .google-logo'),"Signed-in photo must hide default Google G");
 assert(css.includes(".account-row .account-copy strong{display:block")&&css.includes(".account-google .account-avatar-photo"),"Account identity layout must accommodate profile images");
 assert(html.includes('viewBox="0 0 24 24"')&&html.includes('M22.56 12.25c0-.78-.07-1.53-.2-2.25'),"Exact supplied Google SVG was not used");
 assert(/updatePageTitle\(\)/.test(js)&&/state\.page==="reader"&&state\.book\?bookMeta\(\)\?\.nameKm/.test(js),"Toolbar should show the current Khmer book name");
@@ -86,7 +89,7 @@ for(const shade of ["blue","purple","pink","red","orange","yellow","green","gray
 }
 assert(!html.includes('id="verseActions"')&&/\.verse-context-menu\{position:fixed/.test(css),"Old formatting bar should be replaced by compact context menu");
 assert(/bibleapp\.study\.v1/.test(js)&&/bibleapp\.prefs\.v1/.test(js),"Persisted bookmarks/highlights/notes must remain in existing storage");
-assert(sw.includes("bibleapp-web-v0.2.2")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
+assert(sw.includes("bibleapp-web-v0.2.3")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
 assert(/#readerPage \.verses \.verse\.selected/.test(css)&&css.includes("background:#dcf3dc!important")&&css.includes("border:2px solid #4caf50!important"),"Selected verses must have a pale-green background and 2px green border");
 assert(css.includes('background:#dcf3dc!important')&&css.includes('border:2px solid #4caf50!important'),"Unhighlighted selections must retain pale green with 2px green border");
 for(const shade of ["blue","purple","pink","red","orange","yellow","green","gray"]){

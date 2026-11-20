@@ -725,38 +725,41 @@ function cloudRoleText(){
   const status={pending:"pendingStatus",blocked:"blockedStatus",active:"activeStatus"}[cloudAccess.status]||"pendingStatus";
   return tr(key)+" · "+tr(status);
 }
+// Avatar artwork is a single layer: Google G while signed out, then
+// either a complete profile photo or initials. Never stack these vertically.
+function setAccountAvatarMode(photo,mode){
+  const avatar=photo.parentElement;
+  avatar.dataset.avatarMode=mode;
+  avatar.querySelector(".google-logo").hidden=mode!=="google";
+  photo.hidden=mode!=="photo";
+  avatar.querySelector(".account-avatar-fallback").hidden=mode!=="initials";
+}
 function renderAccountAvatar(photoId,fallbackId,logoHostId,name,photoURL,signedIn){
   const photo=$(photoId),fallback=$(fallbackId);
-  const logo=$(logoHostId).querySelector(".google-logo");
-  logo.hidden=signedIn;
   if(!signedIn){
-    photo.hidden=true;
     photo.removeAttribute("src");
     photo.dataset.failedUrl="";
-    fallback.hidden=true;
+    setAccountAvatarMode(photo,"google");
     return;
   }
   fallback.textContent=Array.from(name.trim())[0]?.toLocaleUpperCase()||"?";
-  fallback.hidden=false;
   let safeUrl="";
   try{
     const parsed=new URL(String(photoURL||""));
     if(parsed.protocol==="https:")safeUrl=parsed.href;
   }catch{}
   if(!safeUrl||photo.dataset.failedUrl===safeUrl){
-    photo.hidden=true;
     if(!safeUrl)photo.removeAttribute("src");
+    setAccountAvatarMode(photo,"initials");
     return;
   }
   if(photo.getAttribute("src")!==safeUrl){
-    photo.hidden=true;
+    setAccountAvatarMode(photo,"initials");
     photo.dataset.failedUrl="";
     photo.src=safeUrl;
+    return;
   }
-  if(photo.complete&&photo.naturalWidth>0){
-    photo.hidden=false;
-    fallback.hidden=true;
-  }
+  setAccountAvatarMode(photo,photo.complete&&photo.naturalWidth>0?"photo":"initials");
 }
 function renderAccountIdentity(){
   const signedIn=!!cloudUser;
@@ -889,17 +892,18 @@ for(const [photoId,fallbackId] of [
   const photo=$(photoId),fallback=$(fallbackId);
   photo.addEventListener("load",()=>{
     if(!cloudUser||!photo.getAttribute("src"))return;
-    const currentPhoto=cloudUser.photoURL||"";
     try{
-      if(new URL(currentPhoto).href!==photo.getAttribute("src"))return;
+      if(new URL(cloudUser.photoURL||"").href!==photo.getAttribute("src"))return;
     }catch{return}
-    photo.hidden=false;
-    fallback.hidden=true;
+    setAccountAvatarMode(photo,"photo");
   });
   photo.addEventListener("error",()=>{
+    if(!cloudUser||!photo.getAttribute("src"))return;
+    try{
+      if(new URL(cloudUser.photoURL||"").href!==photo.getAttribute("src"))return;
+    }catch{return}
     photo.dataset.failedUrl=photo.getAttribute("src")||"";
-    photo.hidden=true;
-    fallback.hidden=!cloudUser;
+    setAccountAvatarMode(photo,"initials");
   });
 }
 $("accountButton").onclick=()=>setPage("account");$("backButton").onclick=()=>setPage("reader");$("searchButton").onclick=()=>setPage("search");
