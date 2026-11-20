@@ -520,12 +520,17 @@ body[data-appearance^="tahoe-"] .sidebar-resize:hover:after{background:var(--pri
 }
 .donate-modal-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
 .donate-modal-head h2{margin:0;font-size:16px;line-height:1.6}
-.donate-close{
- display:grid;place-items:center;flex:none;width:33px;height:33px;
- padding:0;border:1px solid var(--border);border-radius:10px;
+/* Higher specificity than .modal-card button prevents inherited 9px/12px padding. */
+.donate-modal-card #donateClose{
+ display:grid;place-items:center;flex:0 0 36px;
+ box-sizing:border-box;width:36px;height:36px;min-width:36px;
+ margin:0;padding:0;line-height:0;
+ border:2px solid var(--border);border-radius:12px;
  background:var(--panel);color:var(--text);cursor:pointer;
 }
-.donate-close svg{display:block}
+.donate-modal-card #donateClose svg{
+ display:block;width:18px;height:18px;margin:0;pointer-events:none;
+}
 .donate-modal-card #donateDescription{
  margin:8px 0 10px;color:var(--muted);font-size:12px;line-height:1.7;
 }

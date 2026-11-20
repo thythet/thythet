@@ -131,7 +131,7 @@ for(const expected of [
 assert(css.includes('border:2px solid #4caf50!important'),"Keep the selected verse green 2px border");
 assert(css.includes('.chapter-pill.active{background:#1974e8;border-color:#1974e8;color:#fff}'),"Keep active chapter blue");
 assert(css.includes('.chapter-controls select{min-width:100px}'),"Keep chapter selector sizing");
-assert(sw.includes("bibleapp-web-v0.3.0")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
+assert(sw.includes("bibleapp-web-v0.3.1")&&sw.includes("./i18n.js"),"Web offline cache revision missing");
 assert(/#readerPage \.verses \.verse\.selected/.test(css)&&css.includes("background:#dcf3dc!important")&&css.includes("border:2px solid #4caf50!important"),"Selected verses must have a pale-green background and 2px green border");
 assert(css.includes('background:#dcf3dc!important')&&css.includes('border:2px solid #4caf50!important'),"Unhighlighted selections must retain pale green with 2px green border");
 for(const shade of ["blue","purple","pink","red","orange","yellow","green","gray"]){
@@ -387,6 +387,9 @@ assert(css.includes('.signout-modal-actions button{')&&css.includes('.signout-mo
 assert(js.includes('$("authLogout").onclick=openLogoutDialog;')&&js.includes('$("logoutConfirm").onclick=()=>void confirmLogout();'),"Logout button must ask confirmation before calling Firebase");
 assert(js.includes('await cloudClient.signOut()')&&js.includes('function confirmLogout()'),"Firebase sign-out must remain behind the confirmed action");
 assert(js.includes('if(e.key==="Escape"){e.preventDefault();closeLogoutDialog();return}')&&js.includes('if(e.target===$("logoutDialog"))closeLogoutDialog()'),"Logout modal must dismiss with Escape and backdrop");
+assert(css.includes('.donate-modal-card #donateClose{')&&css.includes('box-sizing:border-box;width:36px;height:36px;min-width:36px;'),"Donation close button should retain equal width and height");
+assert(css.includes('margin:0;padding:0;line-height:0;')&&css.includes('border:2px solid var(--border);border-radius:12px;'),"Donation close button must override generic modal padding");
+assert(css.includes('.donate-modal-card #donateClose svg{')&&css.includes('display:block;width:18px;height:18px;margin:0;pointer-events:none;'),"Donation close SVG should be geometrically centered");
 const accountCards=accountMarkup.slice(accountMarkup.indexOf('<div class="cards">'),accountMarkup.indexOf('</div><footer'));
 assert.equal((accountCards.match(/data-open=/g)||[]).length,5,"All five Account navigation cards must remain");
 assert(!/<span>[^<]+<\/span>\s*<strong/.test(accountCards),"Account navigation cards must not show decorative icons");
