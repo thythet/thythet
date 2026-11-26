@@ -2,7 +2,12 @@
 (()=>{
 "use strict";
 const $=s=>document.querySelector(s), origin=location.origin;
-let showing=false, audience=null, latest=null, loadingTimeout=null;
+let showing=false, audience=null, latest=null, loadingTimeout=null, screenDetails=null, placedScreen=null;
+const desktop=window.PowerSlideDesktop;
+const prefKey='pspro-audience-display-v1';
+const webPref=()=>{try{return localStorage.getItem(prefKey)||'auto'}catch{return 'auto'}};
+const screenKey=s=>String(s.label||'Display')+'|'+(s.isPrimary?'primary':'extended')+'|'+s.left+','+s.top;
+function saveWebPref(v){try{localStorage.setItem(prefKey,v)}catch{}}
 const frame=()=>$("#deckCraftFrame")?.contentWindow;
 const deliver=m=>frame()?.postMessage(m,origin);
 const visible=()=>!!(audience&&!audience.closed);
@@ -18,7 +23,9 @@ function launcher(){
   "#pspro-audience-hint{display:none;position:absolute;z-index:21474831;top:88px;right:14px;",
   "background:#202226;border:1px solid #515862;color:#fff;padding:10px 12px;border-radius:9px;",
   "font:12px/1.5 system-ui;max-width:310px;box-shadow:0 5px 26px #0005}",
-  "#pspro-audience-hint a{color:#ffb88f;text-decoration:underline}"
+  "#pspro-audience-hint a{color:#ffb88f;text-decoration:underline}",
+  "#pspro-display-settings{display:none;position:absolute;top:48px;right:195px;z-index:21474830;border:1px solid #515862;border-radius:8px;background:#343943;color:white;padding:8px 10px;font:600 12px system-ui;cursor:pointer}",
+  "#pspro-audience-hint select{max-width:100%;margin:6px 0;background:#343943;color:white;padding:6px;border-radius:5px}"
  ].join("");
  document.head.append(style);
  btn=document.createElement("button");
@@ -32,11 +39,13 @@ function launcher(){
  const hint=document.createElement("div");hint.id="pspro-audience-hint";
  const mountHint=$("#deckCraftWindow")||document.body;
  mountHint.append(hint);
+ const settings=document.createElement('button');settings.id='pspro-display-settings';settings.type='button';settings.textContent='Display ⚙';settings.title='Presentation display preferences';settings.onclick=displaySettings;mountHint.append(settings);
  return btn;
 }
 function refreshButton(){
  const btn=launcher();
  btn.style.display=showing?"block":"none";
+ const settings=$("#pspro-display-settings");if(settings)settings.style.display=showing?"block":"none";
  btn.textContent=visible()?"▣ Audience Screen Open":"▣ Open Audience Screen";
 }
 function explain(message,offerLink=false){
@@ -47,7 +56,7 @@ function explain(message,offerLink=false){
  if(offerLink){
   hint.append(document.createElement("br"));
   const anchor=document.createElement("a");
-  anchor.href=new URL("assets/powerslidepro-audience.html?v=79initial",location.href).href;
+  anchor.href=new URL("assets/powerslidepro-audience.html?v=83windowed1",location.href).href;
   anchor.target="_blank";anchor.rel="opener";
   anchor.textContent="Open audience in a new tab";
   hint.append(anchor);
@@ -60,22 +69,49 @@ function sendState(){
   audience.postMessage({type:"pspro-audience-state",index:latest.index,blank:latest.blank},origin);
  }
 }
-async function placeOnExternalScreen(w){
- // API is optional and permission-gated. No assumptions about user's monitor count.
+async function getWebScreens(request=false){
+ if(typeof window.getScreenDetails!=='function')return null;
+ if(screenDetails)return screenDetails;
  try{
-  if(typeof window.getScreenDetails!=="function")return;
-  const info=await window.getScreenDetails();
-  const secondary=info.screens?.find(s=>!s.isPrimary)||info.currentScreen;
-  if(secondary&&w&&!w.closed){
-   w.moveTo(secondary.availLeft??secondary.left,secondary.availTop??secondary.top);
-   w.resizeTo(secondary.availWidth??secondary.width,secondary.availHeight??secondary.height);
-  }
- }catch(_){/* manual move is always supported */}
+  if(!request){const p=await navigator.permissions.query({name:'window-management'});if(p.state!=='granted')return null;}
+  screenDetails=await window.getScreenDetails();
+  screenDetails.addEventListener('screenschange',()=>{
+   if(placedScreen&&!screenDetails.screens.some(s=>screenKey(s)===placedScreen))placeOnExternalScreen(audience,true);
+  });
+  return screenDetails;
+ }catch{return null;}
+}
+async function placeOnExternalScreen(w,recover=false){
+ if(desktop?.displayOptions||!w||w.closed)return;
+ const info=await getWebScreens(false);if(!info||w.closed)return;
+ const list=info.screens||[],primary=list.find(s=>s.isPrimary)||info.currentScreen;
+ const chosen=recover?primary:list.find(s=>screenKey(s)===webPref())||list.find(s=>!s.isPrimary)||primary;
+ if(!chosen)return;
+ try{
+  const width=Math.min(1280,chosen.availWidth??chosen.width),height=Math.min(720,chosen.availHeight??chosen.height);
+  w.moveTo((chosen.availLeft??chosen.left)+Math.round(((chosen.availWidth??chosen.width)-width)/2),(chosen.availTop??chosen.top)+Math.round(((chosen.availHeight??chosen.height)-height)/2));
+  w.resizeTo(width,height);placedScreen=screenKey(chosen);
+ }catch{}
+}
+async function displaySettings(){
+ launcher();const hint=$("#pspro-audience-hint");hint.replaceChildren();hint.style.display='block';
+ const title=document.createElement('strong');title.textContent='Presentation · Audience Display';hint.append(title,document.createElement('br'));
+ let options,selected;
+ if(desktop?.displayOptions){try{const prefs=await desktop.displayOptions();options=prefs?.displays;selected=prefs?.selected}catch{}}
+ else{const info=await getWebScreens(true);options=info?.screens.map(s=>({id:screenKey(s),label:s.label||'Display',primary:s.isPrimary}));selected=webPref();}
+ if(!options){hint.append('Automatic placement is unavailable. You can move the audience window manually.');return;}
+ const select=document.createElement('select');select.setAttribute('aria-label','Audience display');
+ select.add(new Option('Automatic — extended display','auto'));
+ for(const d of options)select.add(new Option(d.label+(d.primary?' (Primary)':' (Extended)'),d.id));
+ select.value=options.some(d=>d.id===selected)?selected:'auto';
+ select.onchange=async()=>{if(desktop?.selectDisplay){if(!await desktop.selectDisplay(select.value))return;}else{saveWebPref(select.value);await placeOnExternalScreen(audience);}clearHint();};
+ hint.append(select,document.createElement('br'));
+ const close=document.createElement('button');close.type='button';close.textContent='Done';close.onclick=()=>{clearHint();if(!desktop?.displayOptions)void placeOnExternalScreen(audience);};hint.append(close);
 }
 function openAudience(){
  if(visible()){audience.focus();return}
  // Direct button click: do not delay window.open, or popup blockers will reject it.
- const url=new URL("assets/powerslidepro-audience.html?v=79initial",location.href);
+ const url=new URL("assets/powerslidepro-audience.html?v=83windowed1",location.href);
  try{
   audience=window.open(url.href,"powerslidepro-audience",
    "popup,width=1280,height=720,resizable=yes,scrollbars=yes");
@@ -87,8 +123,8 @@ function openAudience(){
   return;
  }
  clearHint();refreshButton();audience.focus();
- // Do not request screen-management permission automatically. The audience
- // window exposes a user-initiated Move to Second Screen action instead.
+ // Automatic placement uses existing permission; Display settings can grant it.
+ void placeOnExternalScreen(audience);
  if(loadingTimeout)clearTimeout(loadingTimeout);
  loadingTimeout=setTimeout(()=>{
   if(showing&&visible())explain("Audience window is taking longer than expected to initialize. Check its loading message, then retry if necessary.");
@@ -105,6 +141,7 @@ window.addEventListener("powerslidepro-present",event=>{
   if(loadingTimeout)clearTimeout(loadingTimeout);
  }
  refreshButton();
+ if(showing&&!visible())openAudience();
 });
 window.addEventListener("message",e=>{
  if(e.origin!==origin)return;
@@ -133,7 +170,7 @@ window.addEventListener("message",e=>{
  if(d.type==="pspro-audience-ready"&&e.source!==audience){
   try{
    const page=new URL(e.source.location.href);
-   if(page.origin===origin&&page.pathname.endsWith("/tahoe83/assets/powerslidepro-audience.html")){
+   if(page.origin===origin&&page.pathname===new URL("assets/powerslidepro-audience.html",location.href).pathname){
     audience=e.source;refreshButton();clearHint();
    }
   }catch(_){}
