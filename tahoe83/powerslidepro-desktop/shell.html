@@ -58,6 +58,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#24262a;color:#fff;fon
 </section>
 <div id="toast" role="status" aria-live="polite"></div>
 <script src="assets/js/powerslidepro-present-v1.js"></script>
+<script src="assets/js/powerslidepro-live-v1.js"></script>
 <script>
 (()=>{
 'use strict';
@@ -68,21 +69,21 @@ iframe.src='apps/deckcraft-web/index.html?blank&desktop=1'+(host?.platform==='da
 let savingAs=false,toastTimer;
 
 let fontCatalogDue=false;
-async function sendInstalledFontCatalog(){
+async function sendInstalledFontCatalog(target=iframe.contentWindow){
  if(!host?.listPCFonts)return;
  try{
    const families=await host.listPCFonts();
-   send('tahoe-font-catalog',{families:Array.isArray(families)?families:[]});
+   send('tahoe-font-catalog',{families:Array.isArray(families)?families:[]},target);
  }catch(error){console.warn('Font catalog unavailable',error);}
 }
-async function loadPCFont(family){
+async function loadPCFont(family,target=iframe.contentWindow){
  if(!host?.readPCFont||typeof family!=='string'||family.length>160)return;
  try{
    const result=await host.readPCFont(family);
    if(!result?.bytes||!result.name)return;
    const text=atob(result.bytes),bytes=new Uint8Array(text.length);
    for(let i=0;i<text.length;i++)bytes[i]=text.charCodeAt(i);
-   iframe.contentWindow?.postMessage({type:'tahoe-font-data',source:'desktop',name:result.name,bytes},
+   target?.postMessage({type:'tahoe-font-data',source:'desktop',name:result.name,bytes},
      origin,[bytes.buffer]);
  }catch(error){console.warn('Font cannot be loaded:',family,error);}
 }
@@ -183,15 +184,19 @@ function toast(text){
  el.classList.add('visible');clearTimeout(toastTimer);
  toastTimer=setTimeout(()=>el.classList.remove('visible'),3600);
 }
-function send(type,other){
- iframe.contentWindow?.postMessage(Object.assign({type},other||{}),origin);
+function send(type,other,target=iframe.contentWindow){
+ target?.postMessage(Object.assign({type},other||{}),origin);
 }
 function safeName(name){
  return (String(name||'Presentation').replace(/[\\/:*?"<>|]/g,'_').trim().slice(0,90)||'Presentation')+'.deckcraft';
 }
 window.addEventListener('message',async e=>{
- if(e.origin!==origin||e.source!==iframe.contentWindow)return;
+ if(e.origin!==origin)return;
+ const isLive=e.source===document.getElementById('pspro-live-frame')?.contentWindow;
+ if(e.source!==iframe.contentWindow&&!isLive)return;
  const data=e.data||{};
+ // Only the explicit font and paste services are available to the live copy.
+ if(isLive&&!['tahoe-generator-paste-request','tahoe-font-ready','tahoe-font-need','tahoe-font-rescan'].includes(data.type))return;
  if(data.type==='tahoe-generator-paste-request'){
    const id=data.id;
    const request=data.request;
@@ -200,15 +205,15 @@ window.addEventListener('message',async e=>{
      let value='';
      try{value=String(await host?.readPasteText?.()||'').slice(0,500000);}
      catch(error){toast('Clipboard read failed: '+String(error));}
-     send('tahoe-generator-paste-result',{id,request,text:value});
+     send('tahoe-generator-paste-result',{id,request,text:value},e.source);
    }
    return;
  }else if(data.type==='tahoe-font-ready'){
-   void sendInstalledFontCatalog();
+   void sendInstalledFontCatalog(e.source);
     if(host?.platform==='darwin'||host?.platform==='win32'){
       void host?.getUIFont?.().then(family=>{
-        send('tahoe-ui-font-restore',{family:typeof family==='string'?family:'Default'});
-      }).catch(()=>send('tahoe-ui-font-restore',{family:'Default'}));
+        send('tahoe-ui-font-restore',{family:typeof family==='string'?family:'Default'},e.source);
+      }).catch(()=>send('tahoe-ui-font-restore',{family:'Default'},e.source));
     }
     return;
   }else if(data.type==='tahoe-ui-font-preference'){
@@ -221,16 +226,16 @@ window.addEventListener('message',async e=>{
     }
     return;
  }else if(data.type==='tahoe-font-need'){
-   void loadPCFont(data.family);
+   void loadPCFont(data.family,e.source);
    return;
  }else if(data.type==='tahoe-font-rescan'){
-   void sendInstalledFontCatalog();
+   void sendInstalledFontCatalog(e.source);
    return;
  }else if(data.type==='tahoe-deckcraft-present'){
    window.dispatchEvent(new CustomEvent('powerslidepro-present',{detail:{active:!!data.active}}));
  }else if(data.type==='tahoe-app-command'){
    if(data.app==='deckcraft'){
-     if(data.command==='live-edit')toast('Live Edit is currently available in Tahoe online.');
+     if(data.command==='live-edit')window.TahoePowerSlideLive?.open();
      else host?.windowAction(data.command);
    }
  }else if(data.type==='tahoe-deckcraft-cloud'){
