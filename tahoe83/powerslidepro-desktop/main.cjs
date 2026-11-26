@@ -1,5 +1,5 @@
 'use strict';
-const { app, BrowserWindow, dialog, ipcMain, session, Menu, shell, clipboard } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain, session, Menu, shell, clipboard, screen } = require('electron');
 const { createDesktopUpdater, GITHUB_RELEASES } = require('./updater.cjs');
 const fs = require('node:fs');
 const http = require('node:http');
@@ -30,6 +30,24 @@ let origin;
 let mainWindow;
 let editorSession;
 let desktopUpdater;
+let audienceWindow;
+let audienceDisplayId;
+const displayPrefsPath=()=>path.join(app.getPath('userData'),'presentation-display.json');
+function getDisplayPreference(){try{return String(JSON.parse(fs.readFileSync(displayPrefsPath(),'utf8')).display||'auto')}catch{return 'auto'}}
+function setDisplayPreference(value){fs.writeFileSync(displayPrefsPath(),JSON.stringify({display:value}));}
+function placeAudience(recover=false){
+  const win=audienceWindow;if(!win||win.isDestroyed())return;
+  const primary=screen.getPrimaryDisplay(),all=screen.getAllDisplays(),pref=getDisplayPreference();
+  const chosen=all.find(d=>String(d.id)===pref)||all.find(d=>d.id!==primary.id)||primary;
+  const target=recover?(all.find(d=>d.id===audienceDisplayId)||primary):chosen;
+  audienceDisplayId=target.id;
+  const area=target.workArea;
+  if(win.isFullScreen())win.setFullScreen(false);
+  if(win.isMaximized())win.unmaximize();
+  const width=Math.min(1280,area.width),height=Math.min(720,area.height);
+  win.setBounds({x:area.x+Math.round((area.width-width)/2),y:area.y+Math.round((area.height-height)/2),width,height});
+}
+
 const savedPaths = new Map();
 const openQueue = [];
 const awaitingOpen = new Map();
@@ -196,7 +214,14 @@ function createMainWindow() {
   });
   mainWindow.once('ready-to-show', () => { if (mainWindow) mainWindow.show(); });
   mainWindow.loadURL(origin + '/tahoe80/index.html');
-  mainWindow.on('closed', () => { mainWindow = null; });
+  mainWindow.on('closed', () => { if(audienceWindow&&!audienceWindow.isDestroyed())audienceWindow.close(); mainWindow = null; });
+  mainWindow.webContents.on('did-create-window',(child,details)=>{
+    if(details.url.split('?')[0]!==origin+'/tahoe80/assets/powerslidepro-audience.html')return;
+    audienceWindow=child;
+    placeAudience();
+    child.on('closed',()=>{if(audienceWindow===child){audienceWindow=null;audienceDisplayId=undefined;}});
+    child.webContents.on('will-navigate',(event,url)=>{if(url.split('?')[0]!==origin+'/tahoe80/assets/powerslidepro-audience.html')event.preventDefault();});
+  });
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     if (url.split('?')[0] === origin + '/tahoe80/assets/powerslidepro-audience.html') {
       return {
@@ -351,6 +376,18 @@ if (ownsInstance) app.whenReady().then(async () => {
     void shell.openExternal(GITHUB_RELEASES);
     return true;
   });
+  ipcMain.handle('pspro:display-options',event=>{
+    if(!mainWindow||event.sender!==mainWindow.webContents)return null;
+    const primary=screen.getPrimaryDisplay();
+    return {selected:getDisplayPreference(),displays:screen.getAllDisplays().map((d,i)=>({id:String(d.id),label:d.label||'Display '+(i+1),primary:d.id===primary.id}))};
+  });
+  ipcMain.handle('pspro:display-select',(event,value)=>{
+    if(!mainWindow||event.sender!==mainWindow.webContents)return false;
+    if(value!=='auto'&&!screen.getAllDisplays().some(d=>String(d.id)===value))return false;
+    try{setDisplayPreference(value);placeAudience();return true;}catch{return false;}
+  });
+  screen.on('display-removed',(_event,display)=>{if(display.id===audienceDisplayId)placeAudience(true);});
+  screen.on('display-metrics-changed',(_event,display,metrics)=>{if(display.id===audienceDisplayId&&metrics.includes('workArea')&&audienceWindow&&!audienceWindow.isDestroyed()&&!audienceWindow.isFullScreen())placeAudience(true);});
   installMenu();
   createMainWindow();
   desktopUpdater.start();
