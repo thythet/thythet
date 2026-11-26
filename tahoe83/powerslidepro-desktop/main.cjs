@@ -16,6 +16,7 @@ const DATA_DIR = app.isPackaged
   : path.join(__dirname, 'payload');
 const ALLOWED = ['tahoe80/index.html', 'tahoe80/apps/deckcraft-web/',
   'tahoe80/assets/fonts/', 'tahoe80/assets/js/powerslidepro-present-v1.js',
+  'tahoe80/assets/js/powerslidepro-live-v1.js',
   'tahoe80/assets/powerslidepro-audience.html',
   'tahoe80/assets/powerslidepro-logo.png', 'tahoe80/data/books/'];
 const MIME = {
