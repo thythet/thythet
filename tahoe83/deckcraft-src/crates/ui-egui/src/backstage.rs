@@ -628,6 +628,28 @@ fn presentation_rows(app: &SlideApp, ctx: &egui::Context, query: &str, source: u
             }
         }
     }
+    #[cfg(target_arch = "wasm32")]
+    if source != 1 {
+        let raw=ctx.data(|d| d.get_temp::<String>(egui::Id::new("tahoe-desktop-recent-files"))).unwrap_or_default();
+        let data:Value=serde_json::from_str(&raw).unwrap_or(Value::Null);
+        if let Some(files)=data.get("files").and_then(Value::as_array) {
+            for f in files {
+                let name=f.get("name").and_then(Value::as_str).unwrap_or("");
+                let id=f.get("id").and_then(Value::as_str).unwrap_or("");
+                if name.is_empty() || !id.chars().all(|c|c.is_ascii_digit()) || id.is_empty() {continue;}
+                if !q.is_empty() && !name.to_lowercase().contains(&q) {continue;}
+                let available=f.get("available").and_then(Value::as_bool).unwrap_or(false);
+                rows.push(PresentationRow {
+                    id:format!("desktop-recent:{}",id),name:name.into(),
+                    detail:if available {"On this computer".into()}else{"File not found".into()},
+                    source:"This device", format:"DECKCRAFT".into(),
+                    when:"Recently opened".into(),
+                    stamp:f.get("openedAtMs").and_then(Value::as_u64).unwrap_or(0),
+                    local:false,
+                });
+            }
+        }
+    }
     #[cfg(not(target_arch = "wasm32"))]
     let _ = ctx;
     if source != 1 {
@@ -657,7 +679,7 @@ fn recent_list(app: &mut SlideApp, ui: &mut Ui, bs: &mut Backstage, limit: usize
         ui.ctx().data_mut(|d| d.insert_temp(egui::Id::new("tahoe-deckcraft-cloud-refresh"), true));
     }
     let all = presentation_rows(app, ui.ctx(), &bs.query, 0);
-    let n_cloud = all.iter().filter(|entry| !entry.local).count();
+    let n_cloud = all.iter().filter(|entry| !entry.local && !entry.id.starts_with("desktop-recent:")).count();
     let n_local = all.len() - n_cloud;
     ui.horizontal(|ui| {
         for (source, text) in [(0, format!("Recent ({})", all.len())),
@@ -677,7 +699,7 @@ fn recent_list(app: &mut SlideApp, ui: &mut Ui, bs: &mut Backstage, limit: usize
     });
     ui.add_space(7.0);
     let list: Vec<PresentationRow> = all.into_iter().filter(|e| match bs.recent_source {
-        1 => !e.local, 2 => e.local, _ => true,
+        1 => !e.local && !e.id.starts_with("desktop-recent:"), 2 => e.local || e.id.starts_with("desktop-recent:"), _ => true,
     }).take(limit).collect();
     if list.is_empty() {
         ui.add_space(14.0);
@@ -739,6 +761,25 @@ fn recent_list(app: &mut SlideApp, ui: &mut Ui, bs: &mut Backstage, limit: usize
                         pos2(rect.left() + width * 0.73, rect.center().y),
                         Align2::LEFT_CENTER, e.source, theme::font(12.0), t.text_dim);
                 }
+                let mut reveal_clicked=false;
+                if e.id.starts_with("desktop-recent:") {
+                    let reveal=ui.allocate_rect(Rect::from_min_max(
+                        pos2(rect.right()-37.0,rect.top()+9.0),
+                        pos2(rect.right()-5.0,rect.bottom()-9.0)),Sense::click());
+                    reveal.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button,true,"Open File Location"));
+                    if reveal.hovered() {
+                        ui.painter().rect_filled(reveal.rect,CornerRadius::same(6),t.selected);
+                    }
+                    icons::paint(ui.painter(),Rect::from_center_size(reveal.rect.center(),vec2(17.0,17.0)),
+                        Icon::OpenFolder,t.accent,false);
+                    reveal_clicked=reveal.on_hover_text("Open File Location in Finder / File Explorer").clicked();
+                    if reveal_clicked {
+                        if let Some(id)=e.id.strip_prefix("desktop-recent:") {
+                            ui.ctx().data_mut(|d| d.insert_temp(
+                                egui::Id::new("tahoe-deckcraft-cloud-file-action"),format!("desktopReveal:{}",id)));
+                        }
+                    }
+                }
                 if e.local {
                     let dismiss = ui.allocate_rect(Rect::from_min_max(
                         pos2(rect.right() - 35.0, rect.top() + 10.0),
@@ -753,12 +794,15 @@ fn recent_list(app: &mut SlideApp, ui: &mut Ui, bs: &mut Backstage, limit: usize
                         app.forget_recent(&e.id);
                     }
                 }
-                if click.on_hover_text(if e.local { e.id.clone() } else { format!("Open {} from Cloudinary", e.name) }).clicked() {
+                if click.on_hover_text(if e.local { e.id.clone() } else { format!("Open {}", e.name) }).clicked() && !reveal_clicked {
                     if e.local {
                         app.open_path_in_background(&e.id);
                     } else {
+                        let action=if let Some(id)=e.id.strip_prefix("desktop-recent:") {
+                            format!("desktopOpen:{}",id)
+                        } else {format!("open:{}", e.id)};
                         ui.ctx().data_mut(|d| d.insert_temp(
-                            egui::Id::new("tahoe-deckcraft-cloud-file-action"), format!("open:{}", e.id)));
+                            egui::Id::new("tahoe-deckcraft-cloud-file-action"), action));
                     }
                 }
             }
