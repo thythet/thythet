@@ -2126,6 +2126,10 @@ fn web_presenter_panel(
                     if presenter_button(ui, "White", show.blank == Some(Color32::WHITE)).clicked() {
                         toggle_blank(show, Color32::WHITE);
                     }
+                    #[cfg(target_arch = "wasm32")]
+                    if presenter_button(ui, "+ Smart Generate", false).clicked() {
+                        ctx.data_mut(|d| d.insert_temp(egui::Id::new("tahoe-present-smart"), true));
+                    }
                 });
                 ui.add_space(4.0);
                 let gap = 16.0;
