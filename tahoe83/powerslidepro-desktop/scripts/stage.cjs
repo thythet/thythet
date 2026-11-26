@@ -17,6 +17,7 @@ fs.rmSync(output, { recursive: true, force: true });
   'assets/js/powerslidepro-present-v1.js',
   'assets/js/powerslidepro-live-v1.js',
   'assets/powerslidepro-audience.html',
+  'assets/powerslidepro-presenter.html',
   'assets/powerslidepro-logo.png',
   'data/books'
 ].forEach(copy);
