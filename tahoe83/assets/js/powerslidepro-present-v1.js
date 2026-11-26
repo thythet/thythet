@@ -35,7 +35,7 @@ function launcher(){
  btn.title="Open slide show on another monitor. Keep Presenter View in this window.";
  const mount=$("#deckCraftWindow");
  if(mount)mount.appendChild(btn);else document.body.appendChild(btn);
- btn.addEventListener("click",openAudience);
+ btn.addEventListener("click",()=>openAudience(false));
  const hint=document.createElement("div");hint.id="pspro-audience-hint";
  const mountHint=$("#deckCraftWindow")||document.body;
  mountHint.append(hint);
@@ -56,7 +56,7 @@ function explain(message,offerLink=false){
  if(offerLink){
   hint.append(document.createElement("br"));
   const anchor=document.createElement("a");
-  anchor.href=new URL("assets/powerslidepro-audience.html?v=83windowed1",location.href).href;
+  anchor.href=new URL("assets/powerslidepro-audience.html?v=83windowed2",location.href).href;
   anchor.target="_blank";anchor.rel="opener";
   anchor.textContent="Open audience in a new tab";
   hint.append(anchor);
@@ -108,10 +108,10 @@ async function displaySettings(){
  hint.append(select,document.createElement('br'));
  const close=document.createElement('button');close.type='button';close.textContent='Done';close.onclick=()=>{clearHint();if(!desktop?.displayOptions)void placeOnExternalScreen(audience);};hint.append(close);
 }
-function openAudience(){
- if(visible()){audience.focus();return}
+function openAudience(automatic=false){
+ if(visible()){if(!automatic)audience.focus();return}
  // Direct button click: do not delay window.open, or popup blockers will reject it.
- const url=new URL("assets/powerslidepro-audience.html?v=83windowed1",location.href);
+ const url=new URL("assets/powerslidepro-audience.html?v=83windowed2",location.href);
  try{
   audience=window.open(url.href,"powerslidepro-audience",
    "popup,width=1280,height=720,resizable=yes,scrollbars=yes");
@@ -122,7 +122,7 @@ function openAudience(){
   explain("Your browser blocked the audience window. Allow popups for this site, or open it in a new tab.",true);
   return;
  }
- clearHint();refreshButton();audience.focus();
+ clearHint();refreshButton();if(!automatic)audience.focus();
  // Automatic placement uses existing permission; Display settings can grant it.
  void placeOnExternalScreen(audience);
  if(loadingTimeout)clearTimeout(loadingTimeout);
@@ -141,7 +141,7 @@ window.addEventListener("powerslidepro-present",event=>{
   if(loadingTimeout)clearTimeout(loadingTimeout);
  }
  refreshButton();
- if(showing&&!visible())openAudience();
+ if(showing&&!visible())openAudience(true);
 });
 window.addEventListener("message",e=>{
  if(e.origin!==origin)return;
@@ -185,6 +185,8 @@ window.addEventListener("message",e=>{
   if(!showing)return;
   deliver({type:"tahoe-deckcraft-presenter-control",
     index:String(d.index||0),blank:d.end?"end":(d.blank||"")});
+ }else if(d.type==="pspro-audience-move"){
+  if(desktop?.selectDisplay)void desktop.selectDisplay("auto");
  }else if(d.type==="pspro-audience-loaded"){
   if(loadingTimeout)clearTimeout(loadingTimeout);
   clearHint();
