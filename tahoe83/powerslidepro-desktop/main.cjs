@@ -19,6 +19,7 @@ const ALLOWED = ['tahoe80/index.html', 'tahoe80/apps/deckcraft-web/',
   'tahoe80/assets/fonts/', 'tahoe80/assets/js/powerslidepro-present-v1.js',
   'tahoe80/assets/js/powerslidepro-live-v1.js',
   'tahoe80/assets/powerslidepro-audience.html',
+  'tahoe80/assets/powerslidepro-presenter.html',
   'tahoe80/assets/powerslidepro-logo.png', 'tahoe80/data/books/'];
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
@@ -33,6 +34,7 @@ let mainWindow;
 let editorSession;
 let desktopUpdater;
 let audienceWindow;
+let presenterWindow;
 let audienceDisplayId;
 const displayPrefsPath=()=>path.join(app.getPath('userData'),'presentation-display.json');
 function getDisplayPreference(){try{return String(JSON.parse(fs.readFileSync(displayPrefsPath(),'utf8')).display||'auto')}catch{return 'auto'}}
@@ -282,9 +284,19 @@ function createMainWindow() {
   });
   mainWindow.once('ready-to-show', () => { if (mainWindow) mainWindow.show(); });
   mainWindow.loadURL(origin + '/tahoe80/index.html');
-  mainWindow.on('closed', () => { if(audienceWindow&&!audienceWindow.isDestroyed())audienceWindow.close(); mainWindow = null; });
+  mainWindow.on('closed', () => { if(audienceWindow&&!audienceWindow.isDestroyed())audienceWindow.close(); if(presenterWindow&&!presenterWindow.isDestroyed())presenterWindow.close(); mainWindow = null; });
   mainWindow.webContents.on('did-create-window',(child,details)=>{
-    if(details.url.split('?')[0]!==origin+'/tahoe80/assets/powerslidepro-audience.html')return;
+    const page=details.url.split('?')[0];
+    if(page===origin+'/tahoe80/assets/powerslidepro-presenter.html'){
+      presenterWindow=child;
+      const area=screen.getPrimaryDisplay().workArea;
+      const width=Math.min(1240,area.width),height=Math.min(820,area.height);
+      child.setBounds({x:area.x+Math.round((area.width-width)/2),y:area.y+Math.round((area.height-height)/2),width,height});
+      child.webContents.on('will-navigate',(event,url)=>{if(url.split('?')[0]!==page)event.preventDefault();});
+      child.on('closed',()=>{if(presenterWindow===child)presenterWindow=null;});
+      child.show();return;
+    }
+    if(page!==origin+'/tahoe80/assets/powerslidepro-audience.html')return;
     audienceWindow=child;
     placeAudience();
     child.showInactive();
@@ -292,12 +304,14 @@ function createMainWindow() {
     child.webContents.on('will-navigate',(event,url)=>{if(url.split('?')[0]!==origin+'/tahoe80/assets/powerslidepro-audience.html')event.preventDefault();});
   });
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    if (url.split('?')[0] === origin + '/tahoe80/assets/powerslidepro-audience.html') {
+    const page=url.split('?')[0];
+    const isPresenter=page===origin+'/tahoe80/assets/powerslidepro-presenter.html';
+    if (isPresenter || page === origin + '/tahoe80/assets/powerslidepro-audience.html') {
       return {
         action: 'allow',
         overrideBrowserWindowOptions: {
-          title: 'PowerSlidePro — Audience',
-          width: 1280, height: 720, backgroundColor: '#000', show: false,
+          title: isPresenter?'PowerSlidePro — Presenter View':'PowerSlidePro — Audience',
+          width: isPresenter?1240:1280, height: isPresenter?820:720, backgroundColor: '#000', show: false,
           webPreferences: {
             sandbox: true, contextIsolation: true, nodeIntegration: false,
             partition: 'persist:pspro-editor',
