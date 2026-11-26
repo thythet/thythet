@@ -1,5 +1,6 @@
 'use strict';
-const { app, BrowserWindow, dialog, ipcMain, session, Menu, shell, clipboard, screen } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain, session, Menu, shell, clipboard, nativeImage, screen } = require('electron');
+const { exportFilters, formatFromPath, suggestedExportName, isImageFormat, isAllSlidesFormat } = require('./export-formats.cjs');
 const { createDesktopUpdater, GITHUB_RELEASES } = require('./updater.cjs');
 const fs = require('node:fs');
 const http = require('node:http');
@@ -52,8 +53,56 @@ function placeAudience(recover=false){
 }
 
 const savedPaths = new Map();
+// Recent local projects (paths only; never store presentation contents).
+const RECENT_LIMIT = 20;
+function recentListFile() { return path.join(app.getPath('userData'), 'recent-presentations.json'); }
+function loadRecentFiles() {
+  try {
+    const data = JSON.parse(fs.readFileSync(recentListFile(), 'utf8'));
+    return Array.isArray(data) ? data.filter(x => typeof x?.path === 'string' && path.isAbsolute(x.path) && path.extname(x.path).toLowerCase() === '.deckcraft').slice(0, RECENT_LIMIT) : [];
+  } catch { return []; }
+}
+let recentFiles = [];
+function rememberRecentFile(filename) {
+  if (!filename || path.extname(filename).toLowerCase() !== '.deckcraft') return;
+  const resolved = path.resolve(filename);
+  recentFiles = [{path: resolved, name:path.basename(resolved), openedAt:new Date().toISOString()}, ...recentFiles.filter(x => x.path !== resolved)].slice(0, RECENT_LIMIT);
+  try { fs.writeFileSync(recentListFile(), JSON.stringify(recentFiles, null, 2), {mode:0o600}); } catch {}
+  installMenu();
+  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('pspro:recent-updated');
+}
+function recentPublicList() {
+  return recentFiles.map((x,i)=>{
+    const openedAtMs=Date.parse(x.openedAt);
+    return {id:String(i),name:x.name,openedAt:x.openedAt,
+      openedAtMs:Number.isFinite(openedAtMs)?openedAtMs:0,available:fs.existsSync(x.path)};
+  });
+}
+function queueRecentByIndex(index) {
+  if (!/^[0-9]{1,2}$/.test(String(index))) return false;
+  const item=recentFiles[Number(index)];
+  return !!item && fs.existsSync(item.path) && queueDeckcraftFile(item.path);
+}
+function revealRecentByIndex(index) {
+  if (!/^[0-9]{1,2}$/.test(String(index))) return false;
+  const item=recentFiles[Number(index)];
+  if (!item) return false;
+  try {
+    if (!fs.statSync(item.path).isFile()) return false;
+    shell.showItemInFolder(item.path); // Finder on macOS, File Explorer on Windows
+    return true;
+  } catch { return false; }
+}
+function recentMenuItems() {
+  const existing = recentFiles.filter(x => { try { return fs.statSync(x.path).isFile(); } catch { return false; } });
+  return existing.length ? existing.map(x => ({label:x.name, sublabel:x.path, click:()=>queueDeckcraftFile(x.path)})) : [{label:'No recent presentations',enabled:false}];
+}
+
 const openQueue = [];
 const awaitingOpen = new Map();
+const pendingExports = new Map();
+let exportSequence = 0;
+const MAX_EXPORT_BYTES = 180 * 1024 * 1024;
 const MAX_OPEN_BYTES = 40 * 1024 * 1024;
 let openSequence = 0;
 // Only the native launcher and the user-selected Open dialog may enqueue paths.
@@ -121,10 +170,26 @@ function publishUpdateStatus(state) {
     mainWindow.webContents.send('pspro:update-state', state);
   }
 }
+function requestSaveAs(format = '') {
+  if (!mainWindow || mainWindow.isDestroyed() || mainWindow.webContents.isDestroyed()) return;
+  mainWindow.webContents.send('pspro:save-as-request', format);
+}
 function installMenu() {
   const menu = [
     { label: 'File', submenu: [
       { label: 'Open Presentation…', accelerator: 'CmdOrCtrl+O', click: openFromFileMenu },
+      { label: 'Open Recent', submenu: recentMenuItems() },
+      { label: 'Save As…', accelerator: 'CmdOrCtrl+Shift+S', click: () => requestSaveAs() },
+      { label: 'Export', submenu: [
+        {label:'PowerPoint (.pptx)…',click:()=>requestSaveAs('pptx')},
+        {label:'PDF Document (.pdf)…',click:()=>requestSaveAs('pdf')},
+        {type:'separator'},
+        {label:'Current Slide as PNG…',click:()=>requestSaveAs('png')},
+        {label:'Current Slide as JPEG…',click:()=>requestSaveAs('jpg')},
+        {type:'separator'},
+        {label:'All Slides as PNG Images…',click:()=>requestSaveAs('png-all')},
+        {label:'All Slides as JPEG Images…',click:()=>requestSaveAs('jpg-all')}
+      ] },
       { type: 'separator' },
       { role: 'quit', label: 'Exit PowerSlidePro' }
     ] },
@@ -271,6 +336,74 @@ if (ownsInstance) app.whenReady().then(async () => {
   editorSession.on('will-download', (_event, item) => {
     item.setSaveDialogOptions({ title: 'Save PowerSlidePro file', defaultPath: item.getFilename() });
   });
+  // Save As: the main process owns the destination path. The renderer only sees
+  // a one-time request ID and format, never the destination directory.
+  ipcMain.handle('pspro:export-prepare', async (event, payload) => {
+    if (!mainWindow || event.sender !== mainWindow.webContents) return { error: 'Invalid window' };
+    const uid = String(payload?.uid || '');
+    if (!/^[0-9]{1,20}$/.test(uid)) return { error: 'Invalid presentation' };
+    const preferred = typeof payload?.preferred === 'string' ? payload.preferred : '';
+    const options = {
+      title: 'Save As — PowerSlidePro',
+      defaultPath: suggestedExportName(payload?.name, preferred),
+      filters: exportFilters
+    };
+    const result = await dialog.showSaveDialog(mainWindow, options);
+    if (result.canceled || !result.filePath) return { cancelled: true };
+    const format = formatFromPath(result.filePath);
+    if (!format) return { error: 'Choose .deckcraft, .pptx, .pdf, .png, or .jpg' };
+    const requested = preferred === 'png-all' || preferred === 'jpg-all';
+    const actual = requested && format === preferred.split('-')[0] ? preferred : format;
+    const id = String(++exportSequence);
+    pendingExports.set(id, { path: result.filePath, format: actual, uid, nextIndex: 0 });
+    if (pendingExports.size > 20) pendingExports.delete(pendingExports.keys().next().value);
+    return { requestId: id, format: actual, uid };
+  });
+  ipcMain.handle('pspro:export-write', async (event, payload) => {
+    if (!mainWindow || event.sender !== mainWindow.webContents) return { error: 'Invalid window' };
+    const id = String(payload?.requestId || '');
+    const rec = pendingExports.get(id);
+    if (!rec) return { error: 'Save As request expired' };
+    if (payload?.uid !== rec.uid) return { error: 'Presentation changed during export' };
+    const data = payload?.data;
+    if (typeof data !== 'string' || data.length > MAX_EXPORT_BYTES * 1.34 || !/^[A-Za-z0-9+/=\\r\\n]+$/.test(data))
+      return { error: 'Invalid export data' };
+    const bytes = Buffer.from(data, 'base64');
+    if (!bytes.length || bytes.length > MAX_EXPORT_BYTES) return { error: 'Export is empty or too large' };
+    const baseFormat = rec.format.replace('-all', '');
+    let output = bytes;
+    if (isImageFormat(rec.format)) {
+      if (bytes.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a')
+        return { error: 'Invalid rendered image data' };
+      if (baseFormat === 'jpg') {
+        const img = nativeImage.createFromBuffer(bytes);
+        if (img.isEmpty()) return { error: 'Could not convert slide to JPEG' };
+        output = img.toJPEG(92);
+      }
+    } else if (baseFormat === 'pdf') {
+      if (bytes.subarray(0, 5).toString('ascii') !== '%PDF-') return { error: 'Invalid PDF bytes' };
+    } else if (baseFormat === 'pptx' || baseFormat === 'deckcraft') {
+      if (bytes.subarray(0, 2).toString('ascii') !== 'PK') return { error: 'Invalid presentation archive' };
+    }
+    let target = rec.path;
+    if (isAllSlidesFormat(rec.format)) {
+      const index = Number(payload.index);
+      if (!Number.isSafeInteger(index) || index !== rec.nextIndex || index >= 500)
+        return { error: 'Unexpected image slide sequence' };
+      const ext = path.extname(target);
+      const stem = path.basename(target, ext);
+      target = path.join(path.dirname(target), stem + '-' + String(index + 1).padStart(3, '0') + ext);
+      rec.nextIndex++;
+    } else pendingExports.delete(id);
+    try {
+      await fs.promises.writeFile(target, output, {flag: 'w'});
+      return { saved: true, count: rec.nextIndex, file: path.basename(target) };
+    } catch (error) { pendingExports.delete(id); return { error: String(error) }; }
+  });
+  ipcMain.handle('pspro:export-finish', (event, requestId) => {
+    if (!mainWindow || event.sender !== mainWindow.webContents) return false;
+    return pendingExports.delete(String(requestId || ''));
+  });
   // Load a user-associated file through the existing PowerSlidePro editor.
   // The renderer never supplies a filesystem path; it only asks for a queued file.
   // Clipboard reads are requested only when the user presses Paste inside a
@@ -296,6 +429,18 @@ if (ownsInstance) app.whenReady().then(async () => {
     if (!['darwin','win32'].includes(process.platform) || !mainWindow || event.sender!==mainWindow.webContents) return false;
     return uiFontPrefs.set(name);
   });
+  ipcMain.handle('pspro:recent-list', event => {
+    if (!mainWindow || event.sender!==mainWindow.webContents) return [];
+    return recentPublicList();
+  });
+  ipcMain.handle('pspro:recent-open', (event,id) => {
+    if (!mainWindow || event.sender!==mainWindow.webContents) return false;
+    return queueRecentByIndex(id);
+  });
+  ipcMain.handle('pspro:recent-reveal', (event,id) => {
+    if (!mainWindow || event.sender!==mainWindow.webContents) return false;
+    return revealRecentByIndex(id);
+  });
   ipcMain.handle('pspro:next-open-file', async (event) => {
     if (!mainWindow || event.sender !== mainWindow.webContents) return { error: 'Invalid window' };
     if (!openQueue.length) return null;
@@ -317,6 +462,7 @@ if (ownsInstance) app.whenReady().then(async () => {
     const uid = typeof payload?.uid === 'string' ? payload.uid : '';
     if (!/^[0-9]{1,20}$/.test(uid) || !awaitingOpen.has(id)) return;
     savedPaths.set(uid, awaitingOpen.get(id));
+    rememberRecentFile(awaitingOpen.get(id));
     awaitingOpen.delete(id);
   });
   ipcMain.handle('pspro:save', async (event, payload) => {
@@ -341,6 +487,7 @@ if (ownsInstance) app.whenReady().then(async () => {
       if (!bytes.length) throw new Error('Empty presentation');
       await fs.promises.writeFile(target, bytes);
       if (uid) savedPaths.set(uid, target);
+      rememberRecentFile(target);
       return { saved: true, path: target };
     } catch (error) { return { error: String(error) }; }
   });
@@ -380,6 +527,7 @@ if (ownsInstance) app.whenReady().then(async () => {
     void shell.openExternal(GITHUB_RELEASES);
     return true;
   });
+  recentFiles = loadRecentFiles();
   ipcMain.handle('pspro:display-options',event=>{
     if(!mainWindow||event.sender!==mainWindow.webContents)return null;
     const primary=screen.getPrimaryDisplay();
