@@ -47,6 +47,9 @@ thread_local! {
     static LIVE_SAVE_PENDING: RefCell<bool> = const { RefCell::new(false) };
     static LIVE_FLUSH_PENDING: RefCell<bool> = const { RefCell::new(false) };
     static LIVE_FORCE_PENDING: RefCell<bool> = const { RefCell::new(false) };
+    static DETACH_PENDING: RefCell<Vec<String>> = const { RefCell::new(Vec::new()) };
+    static REMOTE_SMART_PENDING: RefCell<Vec<String>> = const { RefCell::new(Vec::new()) };
+    static REMOTE_SMART_RESULT: RefCell<Option<String>> = const { RefCell::new(None) };
 }
 
 /// Receive only same-origin messages from Tahoe's parent app window.
@@ -120,6 +123,18 @@ fn install_cloud_open_receiver() {
                     }
                     _ => {}
                 }
+            }
+            "tahoe-deckcraft-detach" => {
+                let action = val("action");
+                if matches!(action.as_str(), "detach" | "end") { DETACH_PENDING.with(|q| q.borrow_mut().push(action)); }
+            }
+            "tahoe-deckcraft-smart-request" => {
+                let data = val("data");
+                if !data.is_empty() && data.len() <= 500_000 { REMOTE_SMART_PENDING.with(|q| q.borrow_mut().push(data)); }
+            }
+            "tahoe-deckcraft-smart-result" => {
+                let data = val("data");
+                if data.len() <= 4000 { REMOTE_SMART_RESULT.with(|q| *q.borrow_mut() = Some(data)); }
             }
             "tahoe-deckcraft-audience-export" => {
                 AUDIENCE_EXPORT_PENDING.with(|p| *p.borrow_mut() = true);
@@ -365,6 +380,7 @@ pub fn start() {
                     app.ui.presenter_view = !q.contains("audience=1");
                     let mut smart = SmartGenerator::default();
                     smart.font_family = if db.has_family(BIBLE_DEFAULT_FONT) { BIBLE_DEFAULT_FONT.to_owned() } else { default_khmer_family.clone() };
+                    smart.remote_add = q.contains("presenter=1");
                     let mut bible = BibleGenerator::default();
                     let song = SongGenerator::default();
                     let song_tools = SongTools::default();
@@ -373,6 +389,11 @@ pub fn start() {
                         last_interface_font: "Default".into(),
                         cloud_seen_docs: std::collections::HashSet::new(),
                         audience_mode: q.contains("audience=1"),
+                        presenter_popup: q.contains("presenter=1"),
+                        detached_uid: None,
+                        detached_revision: None,
+                        detached_send_due: 0.0,
+                        remote_smart: SmartGenerator::default(),
                         audience_ready_sent: false,
                         last_show_state: String::new(),
                         live_mode: q.contains("liveeditor=1"),
@@ -416,6 +437,11 @@ struct WebShell {
     last_interface_font: String,
     cloud_seen_docs: std::collections::HashSet<u64>,
     audience_mode: bool,
+    presenter_popup: bool,
+    detached_uid: Option<u64>,
+    detached_revision: Option<u64>,
+    detached_send_due: f64,
+    remote_smart: SmartGenerator,
     audience_ready_sent: bool,
     last_show_state: String,
     live_mode: bool,
@@ -468,13 +494,63 @@ impl eframe::App for WebShell {
                 }
             });
         }
-        if self.audience_mode && !self.audience_ready_sent {
+        if (self.audience_mode || self.presenter_popup) && !self.audience_ready_sent {
             post_parent_presentation("ready", "", 0, "");
             self.audience_ready_sent = true;
         }
         if self.live_mode && !self.live_ready_sent {
             post_parent_live("ready", "", "", 0);
             self.live_ready_sent = true;
+        }
+        DETACH_PENDING.with(|q| {
+            for action in std::mem::take(&mut *q.borrow_mut()) {
+                if self.audience_mode || self.presenter_popup || self.live_mode { continue; }
+                if action == "detach" && self.app.show.is_some() && self.detached_uid.is_none() {
+                    if let Some(d) = self.app.session.active() {
+                        self.detached_uid = Some(d.uid);
+                        self.detached_revision = Some(d.revision);
+                        self.detached_send_due = 0.0;
+                        self.app.show = None;
+                        self.last_show_state = "off".into();
+                        post_parent_presentation("detached", "", 0, "");
+                    }
+                } else if action == "end" {
+                    self.detached_uid = None;
+                    self.detached_revision = None;
+                    self.detached_send_due = 0.0;
+                    self.remote_smart = SmartGenerator::default();
+                    self.app.show = None;
+                }
+            }
+        });
+        if self.detached_uid.is_some() && self.app.session.active().map(|d| d.uid) != self.detached_uid {
+            self.detached_uid = None;
+            self.detached_revision = None;
+            self.detached_send_due = 0.0;
+            self.remote_smart = SmartGenerator::default();
+            post_parent_presentation("end", "", 0, "");
+        }
+        REMOTE_SMART_PENDING.with(|q| {
+            for data in std::mem::take(&mut *q.borrow_mut()) {
+                if self.detached_uid.is_none() || self.remote_smart.running {
+                    post_parent_live("smart-result", "Presentation unavailable or Add Bible is already running.", "", 0);
+                    continue;
+                }
+                if let Ok(v) = serde_json::from_str::<serde_json::Value>(&data) {
+                    self.remote_smart.input = v.get("input").and_then(|v| v.as_str()).unwrap_or("").to_owned();
+                    self.remote_smart.font_family = v.get("font").and_then(|v| v.as_str()).unwrap_or(BIBLE_DEFAULT_FONT).chars().take(160).collect();
+                    self.remote_smart.number_style = match v.get("number").and_then(|v| v.as_str()) { Some("English") => VerseNumberStyle::English, Some("Bible source") => VerseNumberStyle::Source, _ => VerseNumberStyle::Khmer };
+                    self.remote_smart.request(ctx, &self.app, false, true);
+                    if !self.remote_smart.running { post_parent_live("smart-result", &self.remote_smart.status, "", 0); }
+                }
+            }
+        });
+        if self.remote_smart.running {
+            self.remote_smart.poll(ctx, &mut self.app);
+            if !self.remote_smart.running { post_parent_live("smart-result", &self.remote_smart.status, "", 0); }
+        }
+        if self.presenter_popup {
+            REMOTE_SMART_RESULT.with(|q| { if let Some(status) = q.borrow_mut().take() { self.smart.status = status; self.smart.running = false; } });
         }
         LIVE_LOAD_PENDING.with(|q| {
             for (name, data, index) in std::mem::take(&mut *q.borrow_mut()) {
@@ -495,7 +571,7 @@ impl eframe::App for WebShell {
         });
         LIVE_UPDATE_PENDING.with(|q| {
             for (name, data, _) in std::mem::take(&mut *q.borrow_mut()) {
-                if self.live_mode || self.app.session.active().is_none() { continue; }
+                if self.live_mode || self.presenter_popup || self.detached_uid.is_some() || self.app.session.active().is_none() { continue; }
                 let result = deckcraft_engine::cmd::base64_decode(&data)
                     .ok_or_else(|| "Invalid live-editor document encoding".to_owned())
                     .and_then(|bytes| deckcraft_engine::cmd::file::open_presentation(&name, &bytes)
@@ -561,7 +637,7 @@ impl eframe::App for WebShell {
         });
         AUDIENCE_LOAD_PENDING.with(|q| {
             for (name, data, index) in std::mem::take(&mut *q.borrow_mut()) {
-                if self.audience_mode && self.app.show.is_some() {
+                if (self.audience_mode || self.presenter_popup) && self.app.show.is_some() {
                     // Live slide changes must NOT end or restart the audience show:
                     // replace its in-memory model and invalidate only render caches.
                     let updated = deckcraft_engine::cmd::base64_decode(&data)
@@ -587,7 +663,7 @@ impl eframe::App for WebShell {
                     }
                 } else {
                     self.app.show = None;
-                    self.app.ui.presenter_view = false;
+                    self.app.ui.presenter_view = self.presenter_popup;
                     match self.app.run("file.openBytes", json!({"name":name,"data":data})) {
                         Ok(_) => {
                             let from = self.app.session.active().map(|d| index.min(d.doc.slides.len().saturating_sub(1))).unwrap_or(0);
@@ -783,8 +859,30 @@ impl eframe::App for WebShell {
                 post_parent_cloud_v93(kind, file_id, "", 0, None);
             }
         }
+        // Only the original editor owns the document. The detached Presenter and
+        // audience receive copies, never write their copy over an editing session.
+        if let Some(uid) = self.detached_uid {
+            if self.app.show.is_some() { self.app.show = None; post_parent_presentation("focus", "", 0, ""); }
+            let revision = self.app.session.active().filter(|d| d.uid == uid).map(|d| d.revision);
+            let now = js_sys::Date::now();
+            if revision != self.detached_revision {
+                self.detached_revision = revision;
+                self.detached_send_due = now + 450.0;
+            }
+            if self.detached_send_due > 0.0 && now >= self.detached_send_due {
+                self.detached_send_due = 0.0;
+                if let Some(d) = self.app.session.active().filter(|d| d.uid == uid) {
+                    let name = format!("{}.deckcraft", d.title());
+                    let index = d.selection.slide;
+                    match self.app.run("file.saveBytes", json!({"format":"deckcraft"})) {
+                        Ok(v) => if let Some(data) = v.get("data").and_then(serde_json::Value::as_str) { post_parent_presentation("data", data, index, &name); },
+                        Err(e) => post_parent_presentation("error", &e.to_string(), index, ""),
+                    }
+                }
+            }
+        }
         self.sync_present_mode();
-        self.sync_present_state();
+        if self.detached_uid.is_none() { self.sync_present_state(); }
         if let Some((phase, x, y)) = ui.ctx().data_mut(|d|
             d.remove_temp::<(String, f32, f32)>(egui::Id::new("tahoe-title-drag-message"))) {
             post_parent_title_drag(&phase, x, y);
@@ -792,7 +890,7 @@ impl eframe::App for WebShell {
         if ui.ctx().data_mut(|d| d.remove_temp::<bool>(
             egui::Id::new("tahoe-deckcraft-live-edit"))).unwrap_or(false) {
             if !self.live_mode && !self.audience_mode && self.app.show.is_some() {
-                post_parent_window("live-edit");
+                if self.presenter_popup { post_parent_presentation("focus-editor", "", 0, ""); } else { post_parent_window("live-edit"); }
             }
         }
         if self.live_mode && self.live_loaded {
@@ -809,6 +907,7 @@ impl eframe::App for WebShell {
                 self.send_live_edit("change");
             }
         }
+        self.smart.live_guard = self.app.show.is_some() || self.detached_uid.is_some();
         if !self.live_mode && !self.audience_mode && self.app.show.is_some() {
             if ui.ctx().data_mut(|d| d.remove_temp::<bool>(egui::Id::new("tahoe-present-smart"))).unwrap_or(false) {
                 if !self.smart.running {
@@ -890,7 +989,7 @@ impl WebShell {
     }
 
     fn sync_present_mode(&mut self) {
-        let active = self.app.show.is_some();
+        let active = self.app.show.is_some() || self.detached_uid.is_some();
         if active == self.presenting {
             return;
         }
@@ -2150,6 +2249,8 @@ struct SmartGenerator {
     running: bool,
     font_family: String,
     number_style: VerseNumberStyle,
+    remote_add: bool,
+    live_guard: bool,
     pending: Rc<RefCell<Option<Result<(bool, bool, u64, String, String, VerseNumberStyle, Vec<SmartSlide>), String>>>>,
 }
 
@@ -2162,6 +2263,8 @@ impl Default for SmartGenerator {
             running: false,
             font_family: BIBLE_DEFAULT_FONT.into(),
             number_style: VerseNumberStyle::Khmer,
+            remote_add: false,
+            live_guard: false,
             pending: Rc::new(RefCell::new(None)),
         }
     }
@@ -2258,7 +2361,7 @@ impl SmartGenerator {
                         self.status = "Expanded recognized book abbreviations and normalized Bible references.".into();
                     }
                     ui.add_enabled_ui(!self.running, |ui| {
-                        ui.add_enabled_ui(app.show.is_none(), |ui| {
+                        ui.add_enabled_ui(!self.live_guard && !self.remote_add, |ui| {
                             if ui.button("Append").clicked() { self.request(ctx, app, false, false); }
                             if ui.button("Generate & Replace").clicked() { self.request(ctx, app, true, false); }
                         });
@@ -2293,6 +2396,14 @@ impl SmartGenerator {
     fn request(&mut self, ctx: &egui::Context, app: &SlideApp, replace: bool, add_only: bool) {
         if self.input.trim().is_empty() {
             self.status = "Paste Bible references or text first.".into();
+            return;
+        }
+        if self.remote_add {
+            if !add_only { return; }
+            let payload = json!({"input":self.input, "font":self.font_family, "number":self.number_style.label()});
+            self.running = true;
+            self.status = "Preparing Bible slides in the main editor…".into();
+            post_parent_live("smart-add", &payload.to_string(), "", 0);
             return;
         }
         let Some(uid) = app.session.active().map(|d| d.uid) else { self.status = "Open a presentation first.".into(); return; };
