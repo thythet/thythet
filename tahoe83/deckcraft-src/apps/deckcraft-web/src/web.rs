@@ -508,8 +508,8 @@ impl eframe::App for WebShell {
                 if action == "detach" && self.app.show.is_some() && self.detached_uid.is_none() {
                     if let Some(d) = self.app.session.active() {
                         self.detached_uid = Some(d.uid);
-                        self.detached_revision = Some(d.revision);
-                        self.detached_send_due = 0.0;
+                        self.detached_revision = None;
+                        self.detached_send_due = js_sys::Date::now() + 200.0;
                         self.app.show = None;
                         self.last_show_state = "off".into();
                         post_parent_presentation("detached", "", 0, "");
@@ -2435,6 +2435,9 @@ impl SmartGenerator {
             Ok((replace, add_only, uid, source, font, number_style, slides)) => {
                 if !app.session.active().is_some_and(|d| d.uid == uid) {
                     self.status = "Presentation changed; no slides were added.".into(); return;
+                }
+                if replace && (self.live_guard || app.show.is_some()) {
+                    self.status = "End the presentation before replacing slides.".into(); return;
                 }
                 let selected = app.session.active().map(|d| d.selection.slide).unwrap_or(0);
                 let result = if add_only {
