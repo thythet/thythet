@@ -261,7 +261,7 @@ window.addEventListener('message',async e=>{
    void sendInstalledFontCatalog(e.source);
    return;
  }else if(data.type==='tahoe-deckcraft-present'){
-   window.dispatchEvent(new CustomEvent('powerslidepro-present',{detail:{active:!!data.active}}));
+   window.dispatchEvent(new CustomEvent('powerslidepro-present',{detail:{active:!!data.active,detachedSupported:!!data.detachedSupported}}));
  }else if(data.type==='tahoe-app-command'){
    if(data.app==='deckcraft'){
      if(data.command==='live-edit')window.TahoePowerSlideLive?.open();
