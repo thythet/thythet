@@ -33,8 +33,10 @@ thread_local! {
     static DESKTOP_UI_FONT_CATALOG_REFRESH: RefCell<bool> = const { RefCell::new(false) };
     static CLOUD_OPEN_PENDING: RefCell<Vec<(String, String, String)>> = const { RefCell::new(Vec::new()) };
     static CLOUD_LIST_PENDING: RefCell<Vec<String>> = const { RefCell::new(Vec::new()) };
+    static DESKTOP_RECENT_PENDING: RefCell<Vec<String>> = const { RefCell::new(Vec::new()) };
     static CLOUD_NAME_PENDING: RefCell<Vec<(u64, String, bool)>> = const { RefCell::new(Vec::new()) };
     static CLOUD_EXPORT_PENDING: RefCell<Vec<(u64, String, String)>> = const { RefCell::new(Vec::new()) };
+    static DESKTOP_SAVE_AS_PENDING: RefCell<bool> = const { RefCell::new(false) };
     // Same-origin Tahoe presenter <-> independent audience browser window.
     static AUDIENCE_LOAD_PENDING: RefCell<Vec<(String, String, usize)>> = const { RefCell::new(Vec::new()) };
     static AUDIENCE_REMOTE_PENDING: RefCell<Vec<(usize, String)>> = const { RefCell::new(Vec::new()) };
@@ -67,6 +69,10 @@ fn install_cloud_open_receiver() {
                 if ext != "deckcraft" && ext != "pptx" { return; }
                 CLOUD_OPEN_PENDING.with(|q| q.borrow_mut().push((name, data, id)));
             }
+            "tahoe-desktop-recent-list" => {
+                let data=val("data");
+                if data.len() <= 100_000 { DESKTOP_RECENT_PENDING.with(|q| q.borrow_mut().push(data)); }
+            }
             "tahoe-deckcraft-cloud-list" => {
                 let data = val("data");
                 if data.len() <= 2_000_000 {
@@ -81,11 +87,14 @@ fn install_cloud_open_receiver() {
                     }
                 }
             }
+            "tahoe-deckcraft-save-as" => {
+                DESKTOP_SAVE_AS_PENDING.with(|p| *p.borrow_mut() = true);
+            }
             "tahoe-deckcraft-cloud-export" => {
                 if let Ok(uid) = val("uid").parse::<u64>() {
                     let name = val("name");
                     let format = val("format");
-                    if matches!(format.as_str(), "pptx" | "deckcraft") && !name.trim().is_empty() && name.chars().count() <= 140 {
+                    if matches!(format.as_str(), "pptx" | "deckcraft" | "pdf" | "png" | "jpg" | "png-all" | "jpg-all") && !name.trim().is_empty() && name.chars().count() <= 140 {
                         CLOUD_EXPORT_PENDING.with(|q| q.borrow_mut().push((uid, name, format)));
                     }
                 }
@@ -346,11 +355,8 @@ pub fn start() {
                             log::warn!("Source slide hide: {e}");
                         }
                     }
-                    // The initial sample deck is freshly generated (never a saved file).
-                    // Normal file.new calls apply the same default in SlideApp::run.
-                    if !q.contains("blank") {
-                        app.set_new_presentation_khmer_font();
-                    }
+                    // Preserve Tahoe83’s new-presentation default across web and desktop.
+                    if !q.contains("blank") { app.set_new_presentation_khmer_font(); }
                     if q.contains("show") {
                         app.start_show(0, false);
                     }
@@ -622,6 +628,11 @@ impl eframe::App for WebShell {
                 }
             }
         });
+        DESKTOP_RECENT_PENDING.with(|q| {
+            if let Some(data)=std::mem::take(&mut *q.borrow_mut()).pop() {
+                ctx.data_mut(|d| d.insert_temp(egui::Id::new("tahoe-desktop-recent-files"),data));
+            }
+        });
         CLOUD_LIST_PENDING.with(|q| {
             if let Some(data) = std::mem::take(&mut *q.borrow_mut()).pop() {
                 ctx.data_mut(|d| d.insert_temp(egui::Id::new("tahoe-deckcraft-cloud-files"), data));
@@ -655,7 +666,46 @@ impl eframe::App for WebShell {
         });
         CLOUD_EXPORT_PENDING.with(|queue| {
             for (uid, name, format) in std::mem::take(&mut *queue.borrow_mut()) {
-                if !self.app.session.active().is_some_and(|d| d.uid == uid) { continue; }
+                let Some(active) = self.app.session.active() else { continue };
+                if active.uid != uid { continue; }
+                // PPTX/PDF use the genuine engine encoder. Images use the actual
+                // slide renderer. The native shell converts PNG bytes to JPEG.
+                if matches!(format.as_str(), "png" | "jpg" | "png-all" | "jpg-all") {
+                    let all = format.ends_with("-all");
+                    let count = active.doc.slides.len();
+                    if all && count > 500 {
+                        post_parent_cloud_v93("saveError", "Too many slides (limit: 500)", &format, uid, None);
+                        continue;
+                    }
+                    let indices: Vec<usize> = if all { (0..count).collect() }
+                        else { vec![active.selection.slide] };
+                    let mut failed = false;
+                    for index in indices {
+                        match self.app.run("file.render", json!({"slide":index,"scale":2.0})) {
+                            Ok(v) => {
+                                if let Some(png) = v.get("png").and_then(serde_json::Value::as_str) {
+                                    let action = if all { "saveImageData" } else { "saveData" };
+                                    let part_name = if all { index.to_string() } else { name.clone() };
+                                    post_parent_cloud_v93(action, &part_name, &format, uid, Some(png));
+                                } else {
+                                    failed = true;
+                                    post_parent_cloud_v93("saveError", "Slide render returned no image", &format, uid, None);
+                                    break;
+                                }
+                            }
+                            Err(e) => {
+                                failed = true;
+                                self.app.set_status(format!("Image export failed: {e}"));
+                                post_parent_cloud_v93("saveError", &e.to_string(), &format, uid, None);
+                                break;
+                            }
+                        }
+                    }
+                    if all && !failed {
+                        post_parent_cloud_v93("saveImagesDone", &name, &format, uid, None);
+                    }
+                    continue;
+                }
                 match self.app.run("file.saveBytes", json!({"format":format})) {
                     Ok(v) => if let Some(data) = v.get("data").and_then(serde_json::Value::as_str) {
                         post_parent_cloud_v93("saveData", &name, &format, uid, Some(data));
@@ -699,6 +749,13 @@ impl eframe::App for WebShell {
 
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         self.app.ui(ui);
+        DESKTOP_SAVE_AS_PENDING.with(|p| {
+            if std::mem::replace(&mut *p.borrow_mut(), false) {
+                if let Some(d) = self.app.session.active() {
+                    post_parent_cloud_v93("saveAsIntent", &d.title(), "deckcraft", d.uid, None);
+                }
+            }
+        });
         if let Some(save_as) = self.app.web_save_request.take() {
             if self.live_mode {
                 self.send_live_edit("save");
@@ -751,6 +808,17 @@ impl eframe::App for WebShell {
                 self.live_send_due = 0.0;
                 self.send_live_edit("change");
             }
+        }
+        if !self.live_mode && !self.audience_mode && self.app.show.is_some() {
+            if ui.ctx().data_mut(|d| d.remove_temp::<bool>(egui::Id::new("tahoe-present-smart"))).unwrap_or(false) {
+                if !self.smart.running {
+                    self.smart.input.clear();
+                    set_native_smart_input("");
+                    self.smart.status.clear();
+                }
+                self.smart.open = true;
+            }
+            self.smart.ui(ui.ctx(), &mut self.app);
         }
         if self.app.show.is_none() {
             let take = |key: egui::Id| ui.ctx().data_mut(|d| {
@@ -2082,7 +2150,7 @@ struct SmartGenerator {
     running: bool,
     font_family: String,
     number_style: VerseNumberStyle,
-    pending: Rc<RefCell<Option<Result<(bool, Vec<SmartSlide>), String>>>>,
+    pending: Rc<RefCell<Option<Result<(bool, bool, u64, String, String, VerseNumberStyle, Vec<SmartSlide>), String>>>>,
 }
 
 impl Default for SmartGenerator {
@@ -2101,9 +2169,9 @@ impl Default for SmartGenerator {
 
 impl SmartGenerator {
     fn ui(&mut self, ctx: &egui::Context, app: &mut SlideApp) {
-        self.poll(app);
+        self.poll(ctx, app);
         let first_slide = app.session.active().is_some_and(|d| d.selection.slide == 0);
-        if first_slide {
+        if first_slide && app.show.is_none() && !self.open && !self.running {
             self.restore_from_first_slide(app);
         }
         if !self.open {
@@ -2115,8 +2183,9 @@ impl SmartGenerator {
         egui::Window::new("✦ Smart Generate")
             .id(egui::Id::new("deckcraft_smart_generator"))
             .open(&mut open)
-            .default_width(520.0)
+            .default_width(620.0)
             .min_width(420.0)
+            .order(egui::Order::Tooltip)
             .movable(true)
             .resizable(true)
             .collapsible(false)
@@ -2134,7 +2203,7 @@ impl SmartGenerator {
                 ui.spacing_mut().interact_size.y = 27.0;
                 ui.visuals_mut().override_text_color = Some(egui::Color32::from_rgb(44, 48, 55));
                 ui.strong("Slide 0 · Bible program input");
-                ui.small("Paste the whole program here. Slide 0 is the permanent hidden Smart Generate source; generated slides start at 1.");
+                ui.small(if app.show.is_some() { "Enter new Bible references. Add Bible appends slides without interrupting the show." } else { "Paste the whole program here, or enter only new references for Add Bible. Slide 0 is the hidden Smart Generate source." });
                 ui.add_space(6.0);
                 // Native browser textarea: Chrome/Safari shape Khmer combining marks,
                 // line wrapping and cursor clusters correctly; egui's glyph-by-glyph
@@ -2173,7 +2242,7 @@ impl SmartGenerator {
                     ui.label(&self.status);
                 }
                 ui.separator();
-                ui.horizontal(|ui| {
+                ui.horizontal_wrapped(|ui| {
                     if ui.button("Paste").on_hover_text("Paste from the clipboard into Smart Generate").clicked() {
                         paste_generator_input("tahoe-smart-khmer-input");
                     }
@@ -2189,11 +2258,12 @@ impl SmartGenerator {
                         self.status = "Expanded recognized book abbreviations and normalized Bible references.".into();
                     }
                     ui.add_enabled_ui(!self.running, |ui| {
-                        if ui.button("Append").clicked() {
-                            self.request(ctx, false);
-                        }
-                        if ui.button("Generate & Replace").clicked() {
-                            self.request(ctx, true);
+                        ui.add_enabled_ui(app.show.is_none(), |ui| {
+                            if ui.button("Append").clicked() { self.request(ctx, app, false, false); }
+                            if ui.button("Generate & Replace").clicked() { self.request(ctx, app, true, false); }
+                        });
+                        if ui.button("+ Add Bible").on_hover_text("Append only new Bible slides; preserve existing slides and the hidden source.").clicked() {
+                            self.request(ctx, app, false, true);
                         }
                     });
                 });
@@ -2220,36 +2290,66 @@ impl SmartGenerator {
         }
     }
 
-    fn request(&mut self, ctx: &egui::Context, replace: bool) {
+    fn request(&mut self, ctx: &egui::Context, app: &SlideApp, replace: bool, add_only: bool) {
         if self.input.trim().is_empty() {
             self.status = "Paste Bible references or text first.".into();
             return;
         }
+        let Some(uid) = app.session.active().map(|d| d.uid) else { self.status = "Open a presentation first.".into(); return; };
         let text = self.input.clone();
+        let font = self.font_family.clone();
+        let number_style = self.number_style;
         let pending = self.pending.clone();
         let ctx = ctx.clone();
         self.running = true;
         self.status = "Preparing slides…".into();
         wasm_bindgen_futures::spawn_local(async move {
-            let result = build_smart_slides(&text).await.map(|slides| (replace, slides));
+            let result = build_smart_slides(&text).await.and_then(|slides| {
+                if add_only && slides.iter().any(|s| !matches!(s, SmartSlide::Bible { .. })) {
+                    return Err("Add Bible accepts Bible references only. Remove unrecognized lines or use Repair Refs.".into());
+                }
+                Ok((replace, add_only, uid, text, font, number_style, slides))
+            });
             *pending.borrow_mut() = Some(result);
             ctx.request_repaint();
         });
     }
 
-    fn poll(&mut self, app: &mut SlideApp) {
+    fn poll(&mut self, ctx: &egui::Context, app: &mut SlideApp) {
         let pending = self.pending.borrow_mut().take();
         let Some(result) = pending else { return };
         self.running = false;
         match result {
-            Ok((replace, slides)) => match apply_smart_slides(app, &slides, replace, &self.input, &self.font_family, self.number_style) {
+            Ok((replace, add_only, uid, source, font, number_style, slides)) => {
+                if !app.session.active().is_some_and(|d| d.uid == uid) {
+                    self.status = "Presentation changed; no slides were added.".into(); return;
+                }
+                let selected = app.session.active().map(|d| d.selection.slide).unwrap_or(0);
+                let result = if add_only {
+                    app.grouped_undo("Add Bible", |app| apply_smart_slides(app, &slides, false, true, &source, &font, number_style))
+                } else { apply_smart_slides(app, &slides, replace, false, &source, &font, number_style) };
+                match result {
                 Ok(n) => {
-                    self.status = format!("Generated {n} slide{}. Slide 0 remains the hidden Smart Generate input.", if n == 1 { "" } else { "s" });
+                    if add_only {
+                        let _ = app.run("slide.go", json!({"index":selected}));
+                        if let Some(doc) = app.session.active().map(|d| d.doc.clone()) {
+                            let now = ctx.input(|i| i.time);
+                            if let Some(show) = app.show.as_mut() { show.invalidate_live_edit(&doc, now); }
+                        }
+                        if let Some(index) = app.show.as_ref().map(|s| s.state.slide) {
+                            let name = app.session.active().map(|d| format!("{}.deckcraft", d.title())).unwrap_or_else(|| "Presentation.deckcraft".into());
+                            if let Ok(v) = app.run("file.saveBytes", json!({"format":"deckcraft"})) {
+                                if let Some(data) = v.get("data").and_then(serde_json::Value::as_str) { post_parent_presentation("data", data, index, &name); }
+                            }
+                        }
+                        self.status = format!("Added {n} Bible slide(s). Existing slides and formatting preserved.");
+                    } else { self.status = format!("Generated {n} slide{}. Slide 0 remains the hidden Smart Generate input.", if n == 1 { "" } else { "s" }); }
                     app.notify(self.status.clone());
                 }
                 Err(e) => {
                     self.status = e.clone();
                     app.notify(e);
+                }
                 }
             },
             Err(e) => {
@@ -2665,7 +2765,7 @@ fn split_text_for_slides(text: &str, limit: usize) -> Vec<String> {
     out
 }
 
-fn apply_smart_slides(app: &mut SlideApp, slides: &[SmartSlide], replace: bool, source: &str, font: &str, number_style: VerseNumberStyle) -> Result<usize, String> {
+fn apply_smart_slides(app: &mut SlideApp, slides: &[SmartSlide], replace: bool, add_only: bool, source: &str, font: &str, number_style: VerseNumberStyle) -> Result<usize, String> {
     let len = app.session.active().map(|d| d.doc.slides.len()).unwrap_or(0);
     if len == 0 {
         app.run("file.new", json!({}))?;
@@ -2677,9 +2777,11 @@ fn apply_smart_slides(app: &mut SlideApp, slides: &[SmartSlide], replace: bool, 
         }
     }
     app.run("slide.go", json!({"index": if replace { 0 } else { app.session.active().map(|d| d.doc.slides.len().saturating_sub(1)).unwrap_or(0) }}))?;
-    app.run("slide.rename", json!({"index": 0, "name": "✦ Smart Generate Input"}))?;
-    app.run("slide.notes", json!({"index": 0, "text": source}))?;
-    app.run("slide.hide", json!({"index": 0, "hidden": true}))?;
+    if !add_only {
+        app.run("slide.rename", json!({"index": 0, "name": "✦ Smart Generate Input"}))?;
+        app.run("slide.notes", json!({"index": 0, "text": source}))?;
+        app.run("slide.hide", json!({"index": 0, "hidden": true}))?;
+    }
 
     let mut made = 0usize;
     for slide in slides {
