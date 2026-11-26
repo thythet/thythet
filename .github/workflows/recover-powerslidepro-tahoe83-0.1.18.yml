@@ -1,0 +1,174 @@
+name: Recover PowerSlidePro Tahoe83 v0.1.18
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/recover-powerslidepro-tahoe83-0.1.18.yml'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: powerslidepro-tahoe83-v018
+  cancel-in-progress: false
+
+env:
+  SOURCE_RUN: '45795230472'
+  SOURCE_SHA: 'ad904e8831b4328807500dc0fa1e2215bae87e8d'
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          sparse-checkout: tahoe83/powerslidepro-desktop/build
+      - name: Confirm source matches previously successful renderer and macOS build
+        run: |
+          set -euo pipefail
+          git fetch origin "$SOURCE_SHA" --depth=1
+          changes="$(git diff --name-only "$SOURCE_SHA" HEAD -- tahoe83/)"
+          test "$changes" = 'tahoe83/powerslidepro-desktop/build/installer.nsh'
+          test -s 'tahoe83/powerslidepro-desktop/build/installer.nsh'
+      - uses: actions/download-artifact@v4
+        with:
+          name: powerslidepro-018-desktop-source
+          run-id: ${{ env.SOURCE_RUN }}
+          github-token: ${{ github.token }}
+          path: powerslidepro-desktop
+      - name: Restore missing NSIS include without changing staged application
+        run: |
+          set -euo pipefail
+          mkdir -p powerslidepro-desktop/build
+          cp 'tahoe83/powerslidepro-desktop/build/installer.nsh' powerslidepro-desktop/build/installer.nsh
+          test -s powerslidepro-desktop/build/deckcraft-orange-2026.ico
+          test -s powerslidepro-desktop/build/installer.nsh
+          node -e "const p=require('./powerslidepro-desktop/package.json');if(p.version!=='0.1.18'||p.build.nsis.include!=='build/installer.nsh')process.exit(1)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: powerslidepro-018-windows-repaired-source
+          path: powerslidepro-desktop/
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 2
+
+  windows:
+    needs: prepare
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: powerslidepro-018-windows-repaired-source
+          path: powerslidepro-desktop
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify NSIS include and install dependencies
+        working-directory: powerslidepro-desktop
+        run: |
+          if (-not (Test-Path "build/installer.nsh")) { throw "Missing installer.nsh" }
+          node --check main.cjs
+          node --check preload.cjs
+          npm install --no-audit --no-fund
+      - name: Build Windows installer
+        working-directory: powerslidepro-desktop
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+          WIN_CSC_LINK: ${{ secrets.POWERSLIDEPRO_WIN_CSC_LINK }}
+          WIN_CSC_KEY_PASSWORD: ${{ secrets.POWERSLIDEPRO_WIN_CSC_KEY_PASSWORD }}
+        run: npm run dist:win
+      - name: Verify installer and updater metadata
+        working-directory: powerslidepro-desktop
+        run: |
+          if (-not (Test-Path "dist/PowerSlidePro-0.1.18-win-x64.exe")) { throw "Missing Windows installer" }
+          if (-not (Test-Path "dist/latest.yml")) { throw "Missing updater metadata" }
+          $body = Get-Content -Raw dist/latest.yml
+          if ($body -notmatch 'version: 0\.1\.18' -or $body -notmatch 'sha512:') { throw "Invalid updater metadata" }
+          $sig=Get-AuthenticodeSignature dist/PowerSlidePro-0.1.18-win-x64.exe
+          Write-Host "Authenticode status: $($sig.Status)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: powerslidepro-018-recovered-win
+          path: |
+            powerslidepro-desktop/dist/*.exe
+            powerslidepro-desktop/dist/latest.yml
+            powerslidepro-desktop/dist/*.blockmap
+          if-no-files-found: error
+          retention-days: 30
+
+  publish:
+    needs: windows
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          sparse-checkout: tahoe83
+      - uses: actions/download-artifact@v4
+        with:
+          name: powerslidepro-018-web
+          run-id: ${{ env.SOURCE_RUN }}
+          github-token: ${{ github.token }}
+          path: /tmp/powerslidepro-web
+      - uses: actions/download-artifact@v4
+        with:
+          name: powerslidepro-018-mac
+          run-id: ${{ env.SOURCE_RUN }}
+          github-token: ${{ github.token }}
+          path: release-assets
+      - uses: actions/download-artifact@v4
+        with:
+          name: powerslidepro-018-recovered-win
+          path: release-assets
+      - name: Verify all installers and generate checksums
+        run: |
+          set -euo pipefail
+          for f in PowerSlidePro-0.1.18-win-x64.exe PowerSlidePro-0.1.18-mac-arm64.dmg PowerSlidePro-0.1.18-mac-x64.dmg latest.yml; do test -s "release-assets/$f"; done
+          grep -q 'version: 0.1.18' release-assets/latest.yml
+          grep -q 'sha512:' release-assets/latest.yml
+          (cd release-assets && sha256sum *.exe *.dmg latest.yml > SHA256SUMS.txt)
+      - name: Publish already validated compiled renderer
+        id: web
+        env:
+          FIX_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          git fetch origin "$FIX_SHA" --depth=1
+          git diff --quiet "$FIX_SHA" HEAD -- tahoe83/
+          test -s /tmp/powerslidepro-web/index.html
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -rf tahoe83/apps/deckcraft-web
+          cp -a /tmp/powerslidepro-web tahoe83/apps/deckcraft-web
+          git add -A tahoe83/apps/deckcraft-web
+          git add -f tahoe83/apps/deckcraft-web
+          if ! git diff --cached --quiet; then
+            git commit -m "Build PowerSlidePro v0.1.18 renderer for Tahoe83"
+            git push origin HEAD:main
+          fi
+          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: powerslidepro-desktop-v0.1.18
+          target_commitish: ${{ steps.web.outputs.commit }}
+          name: PowerSlidePro Desktop v0.1.18 (Windows + macOS beta)
+          prerelease: true
+          fail_on_unmatched_files: true
+          body: |
+            Tahoe83 presentation update: independent Main Editor and Presenter View, direct windowed Audience Screen, live synchronization, automatic extended-display placement and remembered preferences, and Smart Generate with non-destructive Add Bible.
+            Includes v0.1.17 Recent Files, local export, document icons and Khmer font support.
+            Windows x64 and both macOS installers. Browser monitor permissions apply; physical multi-monitor hardware testing is still recommended.
+          files: |
+            release-assets/*.exe
+            release-assets/*.dmg
+            release-assets/latest.yml
+            release-assets/*.blockmap
+            release-assets/SHA256SUMS.txt
