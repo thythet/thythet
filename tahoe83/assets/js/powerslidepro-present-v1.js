@@ -1,8 +1,8 @@
-/* PowerSlidePro v1 dual-screen bridge — isolated to Tahoe80. No Firebase changes. */
+/* Tahoe83: one authoritative editor, independent presenter and audience windows. */
 (()=>{
 "use strict";
 const $=s=>document.querySelector(s), origin=location.origin;
-let showing=false, audience=null, latest=null, loadingTimeout=null, screenDetails=null, placedScreen=null;
+let showing=false, audience=null, presenter=null, detached=false, detaching=false, latest=null, loadingTimeout=null, screenDetails=null, placedScreen=null;
 const desktop=window.PowerSlideDesktop;
 const prefKey='pspro-audience-display-v1';
 const webPref=()=>{try{return localStorage.getItem(prefKey)||'auto'}catch{return 'auto'}};
@@ -11,6 +11,10 @@ function saveWebPref(v){try{localStorage.setItem(prefKey,v)}catch{}}
 const frame=()=>$("#deckCraftFrame")?.contentWindow;
 const deliver=m=>frame()?.postMessage(m,origin);
 const visible=()=>!!(audience&&!audience.closed);
+const presenterVisible=()=>!!(presenter&&!presenter.closed);
+const toPresenter=m=>{if(presenterVisible())presenter.postMessage(m,origin);};
+const toAudience=m=>{if(visible())audience.postMessage(m,origin);};
+const stateMessage=()=>({type:'pspro-audience-state',index:latest?.index||'0',blank:latest?.blank||''});
 function launcher(){
  let btn=$("#pspro-audience-launch");
  if(btn)return btn;
@@ -25,7 +29,8 @@ function launcher(){
   "font:12px/1.5 system-ui;max-width:310px;box-shadow:0 5px 26px #0005}",
   "#pspro-audience-hint a{color:#ffb88f;text-decoration:underline}",
   "#pspro-display-settings{display:none;position:absolute;top:48px;right:195px;z-index:21474830;border:1px solid #515862;border-radius:8px;background:#343943;color:white;padding:8px 10px;font:600 12px system-ui;cursor:pointer}",
-  "#pspro-audience-hint select{max-width:100%;margin:6px 0;background:#343943;color:white;padding:6px;border-radius:5px}"
+  "#pspro-audience-hint select{max-width:100%;margin:6px 0;background:#343943;color:white;padding:6px;border-radius:5px}",
+  "#pspro-presenter-launch{display:none;position:absolute;top:48px;right:281px;z-index:21474830;border:1px solid #515862;border-radius:8px;background:#343943;color:white;padding:8px 10px;font:600 12px system-ui;cursor:pointer}"
  ].join("");
  document.head.append(style);
  btn=document.createElement("button");
@@ -40,6 +45,7 @@ function launcher(){
  const mountHint=$("#deckCraftWindow")||document.body;
  mountHint.append(hint);
  const settings=document.createElement('button');settings.id='pspro-display-settings';settings.type='button';settings.textContent='Display ⚙';settings.title='Presentation display preferences';settings.onclick=displaySettings;mountHint.append(settings);
+ const p=document.createElement('button');p.id='pspro-presenter-launch';p.type='button';p.textContent='Presenter View';p.onclick=()=>openPresenter(false);mountHint.append(p);
  return btn;
 }
 function refreshButton(){
@@ -47,6 +53,7 @@ function refreshButton(){
  btn.style.display=showing?"block":"none";
  const settings=$("#pspro-display-settings");if(settings)settings.style.display=showing?"block":"none";
  btn.textContent=visible()?"▣ Audience Screen Open":"▣ Open Audience Screen";
+ const p=$("#pspro-presenter-launch");if(p){p.style.display=showing?"block":"none";p.textContent=presenterVisible()?"Presenter Open":"Open Presenter";}
 }
 function explain(message,offerLink=false){
  launcher();
@@ -56,7 +63,7 @@ function explain(message,offerLink=false){
  if(offerLink){
   hint.append(document.createElement("br"));
   const anchor=document.createElement("a");
-  anchor.href=new URL("assets/powerslidepro-audience.html?v=83windowed2",location.href).href;
+  anchor.href=new URL("assets/powerslidepro-audience.html?v=83detach1",location.href).href;
   anchor.target="_blank";anchor.rel="opener";
   anchor.textContent="Open audience in a new tab";
   hint.append(anchor);
@@ -64,10 +71,21 @@ function explain(message,offerLink=false){
  hint.style.display="block";
 }
 function clearHint(){const h=$("#pspro-audience-hint");if(h)h.style.display="none";}
-function sendState(){
- if(visible()&&latest){
-  audience.postMessage({type:"pspro-audience-state",index:latest.index,blank:latest.blank},origin);
- }
+function sendState(){if(latest)toAudience(stateMessage());}
+function closeShow(){
+ toAudience({type:'pspro-audience-end'});toPresenter({type:'pspro-audience-end'});
+ audience=null;presenter=null;detached=false;detaching=false;latest=null;
+ if(loadingTimeout)clearTimeout(loadingTimeout);clearHint();
+}
+function openPresenter(automatic=false){
+ if(!showing)return;
+ if(presenterVisible()){if(!automatic)presenter.focus();return;}
+ const url=new URL('assets/powerslidepro-presenter.html?v=83detach1',location.href);
+ try{presenter=window.open(url.href,'powerslidepro-presenter','popup,width=1240,height=820,resizable=yes,scrollbars=yes');}catch{presenter=null;}
+ refreshButton();
+ if(!presenter){explain('Presenter window was blocked. Use Open Presenter after allowing popups.');return;}
+ if(!automatic)presenter.focus();
+ if(!desktop?.displayOptions)void getWebScreens(false).then(info=>{if(!info||!presenterVisible())return;const p=info.screens.find(s=>s.isPrimary)||info.currentScreen;if(p){try{presenter.moveTo(p.availLeft??p.left,p.availTop??p.top);}catch{}}});
 }
 async function getWebScreens(request=false){
  if(typeof window.getScreenDetails!=='function')return null;
@@ -111,7 +129,7 @@ async function displaySettings(){
 function openAudience(automatic=false){
  if(visible()){if(!automatic)audience.focus();return}
  // Direct button click: do not delay window.open, or popup blockers will reject it.
- const url=new URL("assets/powerslidepro-audience.html?v=83windowed2",location.href);
+ const url=new URL("assets/powerslidepro-audience.html?v=83detach1",location.href);
  try{
   audience=window.open(url.href,"powerslidepro-audience",
    "popup,width=1280,height=720,resizable=yes,scrollbars=yes");
@@ -132,16 +150,9 @@ function openAudience(automatic=false){
 }
 window.addEventListener("powerslidepro-present",event=>{
  showing=!!event.detail?.active;
- if(!showing&&visible()){
-  audience.postMessage({type:"pspro-audience-end"},origin);
-  audience=null;
- }
- if(!showing){
-  latest=null;clearHint();
-  if(loadingTimeout)clearTimeout(loadingTimeout);
- }
+ if(!showing)closeShow();
  refreshButton();
- if(showing&&!visible())openAudience(true);
+ if(showing){if(!presenterVisible())openPresenter(true);if(!visible())openAudience(true);}
 });
 window.addEventListener("message",e=>{
  if(e.origin!==origin)return;
@@ -150,18 +161,45 @@ window.addEventListener("message",e=>{
   if(e.source!==frame())return;
   switch(d.action){
    case "state":
-    latest={index:d.index||"0",blank:d.blank||""};
-    sendState();break;
-   case "data":
-    if(visible())audience.postMessage({type:"pspro-audience-data",name:d.name,
-     data:d.data,index:d.index},origin);
-    break;
+    if(!detached){latest={index:d.index||"0",blank:d.blank||""};sendState();if(!detaching)toPresenter(stateMessage());}break;
+   case "detached":
+    detached=true;detaching=false;if(latest)toPresenter(stateMessage());refreshButton();break;
+   case "focus":
+    if(presenterVisible())presenter.focus();break;
+   case "data": {
+    const message={type:"pspro-audience-data",name:d.name,data:d.data,index:latest?.index||d.index};
+    toPresenter(message);toAudience(message);break;
+   }
    case "error":
     if(visible())audience.postMessage({type:"pspro-audience-error",message:d.data},origin);
     break;
    case "end":
-    if(visible())audience.postMessage({type:"pspro-audience-end"},origin);
-    audience=null;refreshButton();break;
+    showing=false;closeShow();refreshButton();break;
+  }
+  return;
+ }
+ if(d.type==="tahoe-deckcraft-live-editor"&&e.source===frame()&&d.action==="smart-result"){
+  toPresenter({type:"pspro-presenter-smart-result",data:d.data});return;
+ }
+ if(presenterVisible()&&e.source===presenter){
+  if(!showing)return;
+  if(d.type==="pspro-presenter-ready")deliver({type:"tahoe-deckcraft-audience-export"});
+  else if(d.type==="pspro-presenter-loaded"){
+   if(!detached&&!detaching){detaching=true;deliver({type:"tahoe-deckcraft-detach",action:"detach"});}
+   if(latest)toPresenter(stateMessage());
+  }else if(d.type==="pspro-presenter-control"){
+   if(d.end||d.blank==="end"){deliver({type:"tahoe-deckcraft-detach",action:"end"});return;}
+   if(detached){latest={index:String(d.index||0),blank:d.blank||""};sendState();}
+  }else if(d.type==="pspro-presenter-smart-add"){
+   if(detached&&typeof d.data==="string"&&d.data.length<=500000)deliver({type:"tahoe-deckcraft-smart-request",data:d.data});
+   else toPresenter({type:"pspro-presenter-smart-result",data:"Wait until the Presenter View connects to the main editor."});
+  }else if(d.type==="pspro-presenter-service"){
+   const reply=message=>toPresenter({type:"pspro-presenter-service-result",message});
+   window.TahoePowerSlidePresenterServices?.(d.message,reply);
+  }else if(d.type==="pspro-presenter-focus-editor"){window.focus();}
+  else if(d.type==="pspro-presenter-display-settings"){window.focus();void displaySettings();}
+  else if(d.type==="pspro-presenter-closed"){
+   presenter=null;if(detached||detaching)deliver({type:"tahoe-deckcraft-detach",action:"end"});refreshButton();
   }
   return;
  }
@@ -183,8 +221,9 @@ window.addEventListener("message",e=>{
   deliver({type:"tahoe-deckcraft-audience-export"});
  }else if(d.type==="pspro-audience-control"){
   if(!showing)return;
-  deliver({type:"tahoe-deckcraft-presenter-control",
-    index:String(d.index||0),blank:d.end?"end":(d.blank||"")});
+  if(d.end||d.blank==="end"){deliver({type:"tahoe-deckcraft-detach",action:"end"});return;}
+  if(detached){toPresenter({type:"pspro-audience-state",index:String(d.index||0),blank:d.blank||""});}
+  else deliver({type:"tahoe-deckcraft-presenter-control",index:String(d.index||0),blank:d.blank||""});
  }else if(d.type==="pspro-audience-move"){
   if(desktop?.selectDisplay)void desktop.selectDisplay("auto");
  }else if(d.type==="pspro-audience-loaded"){
@@ -198,4 +237,5 @@ window.addEventListener("message",e=>{
   refreshButton();
  }
 });
+window.addEventListener("beforeunload",closeShow);
 })();
