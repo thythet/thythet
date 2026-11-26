@@ -15,6 +15,7 @@ fs.rmSync(output, { recursive: true, force: true });
   'apps/deckcraft-web',
   'assets/fonts',
   'assets/js/powerslidepro-present-v1.js',
+  'assets/js/powerslidepro-live-v1.js',
   'assets/powerslidepro-audience.html',
   'assets/powerslidepro-logo.png',
   'data/books'
