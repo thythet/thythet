@@ -33,5 +33,7 @@ contextBridge.exposeInMainWorld('PowerSlideDesktop', Object.freeze({
     return () => ipcRenderer.removeListener('pspro:update-open',listener);
   },
   windowAction: (command) => ipcRenderer.send('pspro:window-action', command),
+  displayOptions: () => ipcRenderer.invoke('pspro:display-options'),
+  selectDisplay: id => ipcRenderer.invoke('pspro:display-select', id),
   platform: process.platform
 }));
