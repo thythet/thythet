@@ -33,9 +33,20 @@ test('Preview never automatically persists interface font; save action originate
   assert.match(source,/winui=1/);
   // The only IPC set belongs to a user-initiated preference message.
   const start=source.indexOf("data.type==='tahoe-ui-font-preference'");
-  const end=source.indexOf("data.type==='tahoe-font-need'");
+  const end=source.indexOf("data.type==='tahoe-font-need'",start);
   assert.ok(start>0&&end>start);
   const action=source.slice(start,end);
   assert.match(action,/await host\?\.setUIFont\?\.\(data\.family\)/);
   assert.match(action,/success/);
+});
+
+test('Standalone presenter services cannot persist interface-font preferences',()=>{
+  const source=read('shell.html');
+  const start=source.indexOf('window.TahoePowerSlidePresenterServices=');
+  const end=source.indexOf("window.addEventListener('message'",start);
+  assert.ok(start>=0&&end>start);
+  const service=source.slice(start,end);
+  assert.doesNotMatch(service,/setUIFont|tahoe-ui-font-preference/);
+  assert.match(service,/tahoe-font-ready/);
+  assert.match(service,/tahoe-font-need/);
 });

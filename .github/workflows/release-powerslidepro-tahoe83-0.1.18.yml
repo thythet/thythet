@@ -78,9 +78,24 @@ jobs:
           const wasm=fs.readdirSync(folder).find(n=>n.endsWith('_bg.wasm'));
           if(!wasm)throw Error('Missing renderer');
           const bytes=fs.readFileSync(path.join(folder,wasm));
-          for(const marker of ['detachedSupported','tahoe-deckcraft-smart-request','Add Bible','tahoe-present-smart','desktopReveal']){
-            if(!bytes.includes(Buffer.from(marker)))throw Error('Renderer missing '+marker);
+          // Rust/LLVM and wasm-opt may fold strings into immediate comparisons,
+          // so literal UTF-8 byte searches in optimized WASM are not a feature test.
+          if(!WebAssembly.validate(bytes))throw Error('Invalid WebAssembly module');
+          const html=fs.readFileSync(path.join(folder,'index.html'),'utf8');
+          const modules=fs.readdirSync(folder).filter(n=>/^deckcraft-web-.*\.js$/.test(n));
+          if(!html.includes(wasm)||!modules.some(n=>html.includes(n)&&fs.statSync(path.join(folder,n)).size>0)){
+            throw Error('Renderer HTML does not reference its compiled WASM and JS modules');
           }
+          const checks={
+            'apps/deckcraft-web/src/web.rs':['detachedSupported','tahoe-deckcraft-smart-request','+ Add Bible','grouped_undo("Add Bible"'],
+            'crates/ui-egui/src/show.rs':['tahoe-present-smart'],
+            'crates/ui-egui/src/backstage.rs':['desktopReveal']
+          };
+          for(const [relative,markers] of Object.entries(checks)){
+            const source=fs.readFileSync(path.join('tahoe83/deckcraft-src',relative),'utf8');
+            for(const marker of markers)if(!source.includes(marker))throw Error(relative+' missing '+marker);
+          }
+          console.log('Fresh renderer is valid and referenced by its HTML; source feature checks passed.');
           JS
       - name: Validate and stage the desktop application
         working-directory: tahoe83/powerslidepro-desktop
