@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PowerSlidePro — Presenter View</title>
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:#fff;font:14px/1.45 system-ui,sans-serif}
+#screen{position:fixed;inset:0;width:100%;height:100%;border:0;display:block;background:#000}
+button{font:600 14px/1.25 system-ui,sans-serif;cursor:pointer;transition:background .16s,border-color .16s,transform .16s,box-shadow .16s}
+button:focus-visible{outline:2px solid #f7af80;outline-offset:3px}
+#message{position:absolute!important;width:1px;height:1px;overflow:hidden;white-space:nowrap;clip-path:inset(50%);margin:-1px;border:0;padding:0}
+#display-actions{position:fixed;right:12px;bottom:10px;display:flex;gap:7px;z-index:6;opacity:.4;transition:opacity .15s}
+#display-actions:hover,#display-actions:focus-within{opacity:1}
+#display-actions button{font-size:11px;padding:7px 9px;background:#343842bb;color:#fff;border:1px solid #4b4e55;border-radius:8px}
+</style>
+</head>
+<body>
+<iframe id="screen" title="Presenter controls" allow="clipboard-read;clipboard-write;fullscreen" allowfullscreen></iframe>
+<p id="message" role="status" aria-live="polite">Connecting to the presentation…</p>
+<div id="display-actions">
+<button id="show-editor" type="button">Main Editor</button>
+<button id="move-screen" type="button">Display Settings</button>
+<button id="retry-inline" type="button">Reconnect</button>
+</div>
+<script>
+(()=>{
+'use strict';
+const origin=location.origin, iframe=document.getElementById('screen');
+const status=document.getElementById('message');
+const notify=(type,extra={})=>{
+ try{if(window.opener&&!window.opener.closed)window.opener.postMessage({type,...extra},origin)}catch{}
+};
+let loaded=false,requested=false,latest=null,latestState=null;
+const toSlide=data=>iframe.contentWindow?.postMessage(data,origin);
+const signalReady=()=>notify('pspro-presenter-ready');
+function statusUpdate(message){status.textContent=message;document.getElementById('retry-inline').title=message;document.getElementById('move-screen').title=message;}
+function requestDocument(){
+ signalReady();
+ requested=true;
+ statusUpdate(loaded?'Requesting current presentation…':'Waiting for PowerSlidePro renderer…');
+}
+window.addEventListener('message',event=>{
+ if(event.origin!==origin)return;
+ const data=event.data||{};
+ if(event.source===window.opener){
+   if(data.type==='pspro-presenter-service-result'){
+     toSlide(data.message);
+   }else if(data.type==='pspro-presenter-smart-result'){
+     toSlide({type:'tahoe-deckcraft-smart-result',data:data.data});
+   }else if(data.type==='pspro-audience-data'){
+     latest=data;
+     if(loaded){
+       statusUpdate('Opening the audience presentation…');
+       toSlide({type:'tahoe-deckcraft-audience-load',
+        name:data.name||'Audience.deckcraft',data:data.data,index:String(data.index||0)});
+     }
+   }else if(data.type==='pspro-audience-error'){
+     statusUpdate('Presentation export failed: '+(data.message||'Unknown error')+'. Click Retry Connection.');
+   }else if(data.type==='pspro-audience-state'){
+     latestState={type:'tahoe-deckcraft-audience-state',index:String(data.index||0),blank:data.blank||''};
+     if(loaded)toSlide(latestState);
+   }else if(data.type==='pspro-audience-end'){
+     window.close();
+   }
+ }else if(event.source===iframe.contentWindow&&data.type==='tahoe-deckcraft-live-editor'&&data.action==='smart-add'){
+   notify('pspro-presenter-smart-add',{data:data.data});
+ }else if(event.source===iframe.contentWindow&&['tahoe-generator-paste-request','tahoe-font-ready','tahoe-font-need','tahoe-font-rescan'].includes(data.type)){
+   notify('pspro-presenter-service',{message:data});
+ }else if(event.source===iframe.contentWindow&&data.type==='tahoe-deckcraft-audience'){
+   switch(data.action){
+     case 'ready':
+       loaded=true;
+       if(latest){
+         statusUpdate('Loading slides…');
+         toSlide({type:'tahoe-deckcraft-audience-load',
+           name:latest.name||'Audience.deckcraft',data:latest.data,index:String(latest.index||0)});
+       }else requestDocument();
+       break;
+     case 'loaded':
+       loaded=true;
+       statusUpdate('Slides ready.');
+       
+       if(latestState)toSlide(latestState);
+       notify('pspro-presenter-loaded');
+       // Start in windowed mode without a confirmation overlay.
+       break;
+     case 'error':
+       statusUpdate('Unable to load slides: '+(data.data||'Unknown error')+'. Click Retry Connection.');
+       break;
+     case 'state':
+       notify('pspro-presenter-control',{index:data.index,blank:data.blank||''});
+       break;
+     case 'focus-editor':
+       notify('pspro-presenter-focus-editor');
+       break;
+     case 'end':
+       notify('pspro-presenter-control',{end:true});
+       break;
+   }
+ }
+});
+document.getElementById('retry-inline').onclick=requestDocument;
+document.getElementById('show-editor').onclick=()=>notify('pspro-presenter-focus-editor');
+document.getElementById('move-screen').onclick=()=>notify('pspro-presenter-display-settings');
+window.addEventListener('beforeunload',()=>notify('pspro-presenter-closed'));
+let mode='';
+try{const platform=window.opener?.PowerSlideDesktop?.platform;if(platform==='darwin')mode='&desktop=1&macui=1';if(platform==='win32')mode='&desktop=1&winui=1';}catch{}
+iframe.src='../apps/deckcraft-web/index.html?blank&presenter=1&v=83detach1'+mode;
+setTimeout(()=>{
+ if(!requested){requestDocument();}
+},600);
+setTimeout(()=>{
+ if(!latest&&!loaded)statusUpdate('Still waiting for the PowerSlidePro renderer. If this persists, click Retry Connection.');
+},18000);
+})();
+</script>
+</body>
+</html>
