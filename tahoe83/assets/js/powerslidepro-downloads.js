@@ -1,8 +1,8 @@
 /* Tahoe82: Get Software library, verified GitHub release links only. */
 (()=>{
 'use strict';
-const RELEASE='powerslidepro-desktop-v0.1.17';
-const ENDPOINT='https://api.github.com/repos/thythet/thythet/releases/tags/'+RELEASE;
+const VERSIONS=['0.1.18','0.1.17'];
+const ENDPOINT='https://api.github.com/repos/thythet/thythet/releases/tags/powerslidepro-desktop-v';
 const btn=document.createElement('button');
 btn.id='pspro-desktop-get';btn.type='button';btn.setAttribute('aria-haspopup','dialog');
 btn.setAttribute('aria-label','Get Software');
@@ -15,35 +15,39 @@ let overlay=null,lastFocus=null;
 function el(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;}
 function close(){if(!overlay)return;overlay.remove();overlay=null;lastFocus?.focus();lastFocus=null;}
 const rows=[];
-function row(icon,title,detail,regex){
+function row(icon,title,detail,suffix){
  const r=el('div','sw-platform'),i=el('span','sw-platform-icon');
  i.innerHTML='<i class="'+icon+'" aria-hidden="true"></i>';
  const l=el('span','sw-platform-label');
- l.append(el('strong',null,title),el('small',null,detail));
+ const small=el('small',null,detail);l.append(el('strong',null,title),small);
  const status=el('span','sw-status','Checking…');
- r.append(i,l,status);rows.push({status,regex});return r;
+ r.append(i,l,status);rows.push({status,small,detail,suffix});return r;
 }
 async function loadReleases(){
- try{
-   const r=await fetch(ENDPOINT,{headers:{Accept:'application/vnd.github+json'},cache:'no-store'});
-   if(!r.ok)throw Error('No release yet');
+ const current=overlay,targets=rows.slice();
+ const valid=a=>a?.state==='uploaded'&&a.size>0&&typeof a.browser_download_url==='string'&&a.browser_download_url.startsWith('https://github.com/thythet/thythet/releases/download/');
+ let chosen=null;
+ for(const version of VERSIONS){
+  try{
+   const r=await fetch(ENDPOINT+version,{headers:{Accept:'application/vnd.github+json'},cache:'no-store'});
+   if(!r.ok)continue;
    const j=await r.json(),files=Array.isArray(j.assets)?j.assets:[];
-   for(const x of rows){
-     const asset=files.find(a=>x.regex.test(a.name||'')&&typeof a.browser_download_url==='string'
-       &&a.browser_download_url.startsWith('https://github.com/thythet/thythet/releases/download/'));
-     x.status.replaceChildren();
-     if(!asset){x.status.textContent='Coming soon';continue;}
-     const a=el('a','sw-download');a.href=asset.browser_download_url;
-     a.rel='noopener noreferrer';a.target='_blank';
-     a.innerHTML='<i class="ri-download-2-line" aria-hidden="true"></i><span>Download</span>';
-     a.setAttribute('aria-label','Download '+asset.name);x.status.append(a);
-   }
-   const sha=files.find(a=>a.name==='SHA256SUMS.txt');
-   const link=document.getElementById('pspro-download-checksums');
-   if(link&&sha?.browser_download_url?.startsWith('https://github.com/thythet/thythet/releases/download/')){
-     link.href=sha.browser_download_url;link.hidden=false;
-   }
- }catch(_){rows.forEach(x=>x.status.textContent='Not available');}
+   if(j.draft||!j.published_at||j.tag_name!=='powerslidepro-desktop-v'+version)continue;
+   const assets=targets.map(x=>files.find(a=>a.name==='PowerSlidePro-'+version+'-'+x.suffix&&valid(a)));
+   const sha=files.find(a=>a.name==='SHA256SUMS.txt'&&valid(a));
+   if(assets.every(Boolean)&&sha){chosen={version,assets,sha};break;}
+  }catch{}
+ }
+ if(overlay!==current)return;
+ if(!chosen){targets.forEach(x=>x.status.textContent='Not available');return;}
+ targets.forEach((x,i)=>{
+  const asset=chosen.assets[i];x.small.textContent=x.detail+' · '+chosen.version;
+  x.status.replaceChildren();const a=el('a','sw-download');a.href=asset.browser_download_url;a.rel='noopener noreferrer';a.target='_blank';
+  a.innerHTML='<i class="ri-download-2-line" aria-hidden="true"></i><span>Download</span>';
+  a.setAttribute('aria-label','Download '+asset.name);x.status.append(a);
+ });
+ const link=document.getElementById('pspro-download-checksums');
+ if(link){link.href=chosen.sha.browser_download_url;link.hidden=false;}
 }
 btn.addEventListener('click',()=>{
  if(overlay)return;
@@ -58,10 +62,9 @@ btn.addEventListener('click',()=>{
    el('div','sw-app-sub','Offline presentations · Khmer Bible · 66 books'));
  app.append(logo,info,el('span','sw-beta','BETA'));
  const heading=el('div','sw-platform-heading','Available for');
- const version=RELEASE.match(/v(\d+\.\d+\.\d+)$/)?.[1]||'0.1.17';
- const win=row('ri-windows-fill','Windows 10 / 11','64-bit · EXE · '+version,/PowerSlidePro-0\.1\.17-win-x64\.exe$/i);
- const arm=row('ri-apple-fill','macOS · Apple Silicon','M-series Mac · DMG · '+version,/PowerSlidePro-0\.1\.17-mac-arm64\.dmg$/i);
- const intel=row('ri-apple-fill','macOS · Intel','Intel Mac · DMG · '+version,/PowerSlidePro-0\.1\.17-mac-x64\.dmg$/i);
+ const win=row('ri-windows-fill','Windows 10 / 11','64-bit · EXE','win-x64.exe');
+ const arm=row('ri-apple-fill','macOS · Apple Silicon','M-series Mac · DMG','mac-arm64.dmg');
+ const intel=row('ri-apple-fill','macOS · Intel','Intel Mac · DMG','mac-x64.dmg');
  const keyboardHeading=el('div','sw-platform-heading','Keyboard layout');
  const keyboardApp=el('section','sw-app sw-keyboard-app');
  const keyboardIcon=el('span','sw-keyboard-icon');keyboardIcon.innerHTML='<i class="ri-keyboard-line" aria-hidden="true"></i>';
