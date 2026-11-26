@@ -4676,7 +4676,7 @@ function bindDesktopApps(){
       // Tahoe77 keeps Presenter View inside the app window. Only the separate
       // audience browser window goes fullscreen; never stretch or cover the editor.
       el.classList.remove("deckcraft-present-mode","app-fullscreen-fallback");
-      window.dispatchEvent(new CustomEvent("powerslidepro-present",{detail:{active:!!d.active}}));
+      window.dispatchEvent(new CustomEvent("powerslidepro-present",{detail:{active:!!d.active,detachedSupported:!!d.detachedSupported}}));
       focusTahoeWindow(el);updateFullscreenUI();return}
    if(d.type!=="tahoe-app-command")return;
    const id=d.app;if(!desktopApps[id])return;
@@ -7164,8 +7164,8 @@ addEventListener("resize",()=>{pinDashboardLauncher();
 </script>
 <script src="assets/js/powerslidepro-cloud.js?v=77compact-dialogs"></script>
 <script src="assets/js/powerslidepro-save-v93.js?v=77compact-dialogs"></script>
-<script src="assets/js/powerslidepro-present-v1.js?v=83windowed2"></script>
-<script defer src="assets/js/powerslidepro-downloads.js?v=0.1.17-khmer-keyboard"></script>
+<script src="assets/js/powerslidepro-present-v1.js?v=83detach1"></script>
+<script defer src="assets/js/powerslidepro-downloads.js?v=0.1.18-check"></script>
 <script src="assets/js/powerslidepro-live-v1.js?v=83liveedit1"></script>
 <script src="assets/js/thechat-native-shell-v1.js?v=77-native-chat1"></script>
 
