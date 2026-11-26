@@ -3038,6 +3038,7 @@ fn post_parent_present(active: bool) {
     let payload = js_sys::Object::new();
     let _ = js_sys::Reflect::set(&payload, &wasm_bindgen::JsValue::from_str("type"), &wasm_bindgen::JsValue::from_str("tahoe-deckcraft-present"));
     let _ = js_sys::Reflect::set(&payload, &wasm_bindgen::JsValue::from_str("active"), &wasm_bindgen::JsValue::from_bool(active));
+    let _ = js_sys::Reflect::set(&payload, &"detachedSupported".into(), &true.into());
     let _ = parent.post_message(&payload.into(), "*");
 }
 
