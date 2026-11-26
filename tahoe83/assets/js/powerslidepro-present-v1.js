@@ -2,7 +2,7 @@
 (()=>{
 "use strict";
 const $=s=>document.querySelector(s), origin=location.origin;
-let showing=false, audience=null, presenter=null, detached=false, detaching=false, latest=null, loadingTimeout=null, screenDetails=null, placedScreen=null;
+let showing=false, detachable=false, audience=null, presenter=null, detached=false, detaching=false, latest=null, loadingTimeout=null, screenDetails=null, placedScreen=null;
 const desktop=window.PowerSlideDesktop;
 const prefKey='pspro-audience-display-v1';
 const webPref=()=>{try{return localStorage.getItem(prefKey)||'auto'}catch{return 'auto'}};
@@ -53,7 +53,7 @@ function refreshButton(){
  btn.style.display=showing?"block":"none";
  const settings=$("#pspro-display-settings");if(settings)settings.style.display=showing?"block":"none";
  btn.textContent=visible()?"▣ Audience Screen Open":"▣ Open Audience Screen";
- const p=$("#pspro-presenter-launch");if(p){p.style.display=showing?"block":"none";p.textContent=presenterVisible()?"Presenter Open":"Open Presenter";}
+ const p=$("#pspro-presenter-launch");if(p){p.style.display=showing&&detachable?"block":"none";p.textContent=presenterVisible()?"Presenter Open":"Open Presenter";}
 }
 function explain(message,offerLink=false){
  launcher();
@@ -78,7 +78,7 @@ function closeShow(){
  if(loadingTimeout)clearTimeout(loadingTimeout);clearHint();
 }
 function openPresenter(automatic=false){
- if(!showing)return;
+ if(!showing||!detachable)return;
  if(presenterVisible()){if(!automatic)presenter.focus();return;}
  const url=new URL('assets/powerslidepro-presenter.html?v=83detach1',location.href);
  try{presenter=window.open(url.href,'powerslidepro-presenter','popup,width=1240,height=820,resizable=yes,scrollbars=yes');}catch{presenter=null;}
@@ -149,10 +149,10 @@ function openAudience(automatic=false){
  },22000);
 }
 window.addEventListener("powerslidepro-present",event=>{
- showing=!!event.detail?.active;
+ showing=!!event.detail?.active;detachable=!!event.detail?.detachedSupported;
  if(!showing)closeShow();
  refreshButton();
- if(showing){if(!presenterVisible())openPresenter(true);if(!visible())openAudience(true);}
+ if(showing){if(detachable&&!presenterVisible())openPresenter(true);if(!visible())openAudience(true);}
 });
 window.addEventListener("message",e=>{
  if(e.origin!==origin)return;
@@ -181,7 +181,7 @@ window.addEventListener("message",e=>{
  if(d.type==="tahoe-deckcraft-live-editor"&&e.source===frame()&&d.action==="smart-result"){
   toPresenter({type:"pspro-presenter-smart-result",data:d.data});return;
  }
- if(presenterVisible()&&e.source===presenter){
+ if(presenter&&e.source===presenter){
   if(!showing)return;
   if(d.type==="pspro-presenter-ready")deliver({type:"tahoe-deckcraft-audience-export"});
   else if(d.type==="pspro-presenter-loaded"){
@@ -221,7 +221,7 @@ window.addEventListener("message",e=>{
   deliver({type:"tahoe-deckcraft-audience-export"});
  }else if(d.type==="pspro-audience-control"){
   if(!showing)return;
-  if(d.end||d.blank==="end"){deliver({type:"tahoe-deckcraft-detach",action:"end"});return;}
+  if(d.end||d.blank==="end"){if(detachable)deliver({type:"tahoe-deckcraft-detach",action:"end"});else deliver({type:"tahoe-deckcraft-presenter-control",index:'0',blank:'end'});return;}
   if(detached){toPresenter({type:"pspro-audience-state",index:String(d.index||0),blank:d.blank||""});}
   else deliver({type:"tahoe-deckcraft-presenter-control",index:String(d.index||0),blank:d.blank||""});
  }else if(d.type==="pspro-audience-move"){
@@ -237,5 +237,9 @@ window.addEventListener("message",e=>{
   refreshButton();
  }
 });
+setInterval(()=>{
+ if(presenter?.closed){presenter=null;if(detached||detaching)deliver({type:'tahoe-deckcraft-detach',action:'end'});refreshButton();}
+ if(audience?.closed){audience=null;refreshButton();}
+},600);
 window.addEventListener("beforeunload",closeShow);
 })();
