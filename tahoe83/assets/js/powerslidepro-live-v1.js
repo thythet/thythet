@@ -50,7 +50,9 @@ function open(){
  mount();shell.classList.add("pspro-open");closing=false;
  if(loaded){label("Editing live · changes update Presenter View");return;}
  if(ready){request();return;}
- const url=new URL($("#deckCraftFrame")?.dataset.src||"apps/deckcraft-web/index.html?blank",location.href);
+ const editor=$("#deckCraftFrame");
+ const source=window.PowerSlideDesktop?editor?.src:editor?.dataset.src;
+ const url=new URL(source||"apps/deckcraft-web/index.html?blank",location.href);
  url.searchParams.set("liveeditor","1");url.searchParams.delete("audience");
  frame.src=url.href;label("Loading editable PowerSlidePro window…");
 }
@@ -67,10 +69,19 @@ function close(){
  }else shell.classList.remove("pspro-open");
 }
 window.TahoePowerSlideLive={open,close};
+// A fresh snapshot is required for every presentation; never reuse a stale
+// editable copy from the previous deck or slideshow.
+window.addEventListener("powerslidepro-present",event=>{
+ if(event.detail?.active||!shell)return;
+ shell.classList.remove("pspro-open");
+ loaded=false;ready=false;pendingSnapshot=false;closing=false;
+ frame.removeAttribute("src");label("Presentation ended");
+});
 window.addEventListener("message",e=>{
  if(e.origin!==origin)return;
  const d=e.data||{};if(d.type!=="tahoe-deckcraft-live-editor")return;
  if(e.source===frame?.contentWindow){
+  if(!frame.hasAttribute("src"))return;
   if(d.action==="ready"){ready=true;request();}
   else if(d.action==="loaded"){loaded=true;pendingSnapshot=false;label("Editing live · changes update Presenter View");}
   else if(d.action==="change"||d.action==="save"){
