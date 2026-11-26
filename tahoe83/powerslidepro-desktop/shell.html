@@ -203,6 +203,23 @@ function send(type,other,target=iframe.contentWindow){
 function safeName(name){
  return (String(name||'Presentation').replace(/[\\/:*?"<>|]/g,'_').trim().slice(0,90)||'Presentation')+'.deckcraft';
 }
+// Only the presentation bridge calls this for its exact same-origin child.
+window.TahoePowerSlidePresenterServices=async (data,reply)=>{
+ if(!data||typeof reply!=='function')return;
+ const target={postMessage:reply};
+ if(data.type==='tahoe-generator-paste-request'){
+  const id=data.id,request=data.request;
+  if(!['tahoe-song-khmer-input','tahoe-smart-khmer-input'].includes(id)||!Number.isSafeInteger(request)||request<1||request>=1000000000)return;
+  let value='';try{value=String(await host?.readPasteText?.()||'').slice(0,500000);}catch{}
+  reply({type:'tahoe-generator-paste-result',id,request,text:value});
+ }else if(data.type==='tahoe-font-ready'){
+  void sendInstalledFontCatalog(target);
+  if(host?.platform==='darwin'||host?.platform==='win32'){
+    try{const family=await host.getUIFont();reply({type:'tahoe-ui-font-restore',family:typeof family==='string'?family:'Default'});}catch{}
+  }
+ }else if(data.type==='tahoe-font-need')void loadPCFont(data.family,target);
+ else if(data.type==='tahoe-font-rescan')void sendInstalledFontCatalog(target);
+};
 window.addEventListener('message',async e=>{
  if(e.origin!==origin)return;
  const isLive=e.source===document.getElementById('pspro-live-frame')?.contentWindow;
