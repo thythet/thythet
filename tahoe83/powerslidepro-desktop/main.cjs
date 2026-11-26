@@ -43,10 +43,12 @@ function placeAudience(recover=false){
   const target=recover?(all.find(d=>d.id===audienceDisplayId)||primary):chosen;
   audienceDisplayId=target.id;
   const area=target.workArea;
-  if(win.isFullScreen())win.setFullScreen(false);
-  if(win.isMaximized())win.unmaximize();
   const width=Math.min(1280,area.width),height=Math.min(720,area.height);
-  win.setBounds({x:area.x+Math.round((area.width-width)/2),y:area.y+Math.round((area.height-height)/2),width,height});
+  const bounds={x:area.x+Math.round((area.width-width)/2),y:area.y+Math.round((area.height-height)/2),width,height};
+  const apply=()=>{if(!win.isDestroyed()&&audienceWindow===win){if(win.isMaximized())win.unmaximize();win.setBounds(bounds);}};
+  // macOS fullscreen transitions are asynchronous; restore windowed placement
+  // after the native transition rather than trying to resize a fullscreen Space.
+  if(win.isFullScreen()){win.once('leave-full-screen',apply);win.setFullScreen(false);}else apply();
 }
 
 const savedPaths = new Map();
@@ -220,6 +222,7 @@ function createMainWindow() {
     if(details.url.split('?')[0]!==origin+'/tahoe80/assets/powerslidepro-audience.html')return;
     audienceWindow=child;
     placeAudience();
+    child.showInactive();
     child.on('closed',()=>{if(audienceWindow===child){audienceWindow=null;audienceDisplayId=undefined;}});
     child.webContents.on('will-navigate',(event,url)=>{if(url.split('?')[0]!==origin+'/tahoe80/assets/powerslidepro-audience.html')event.preventDefault();});
   });
@@ -229,7 +232,7 @@ function createMainWindow() {
         action: 'allow',
         overrideBrowserWindowOptions: {
           title: 'PowerSlidePro — Audience',
-          width: 1280, height: 720, backgroundColor: '#000',
+          width: 1280, height: 720, backgroundColor: '#000', show: false,
           webPreferences: {
             sandbox: true, contextIsolation: true, nodeIntegration: false,
             partition: 'persist:pspro-editor',
