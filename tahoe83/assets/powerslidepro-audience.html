@@ -7,7 +7,7 @@
 <style>
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:#fff;font:14px/1.45 system-ui,sans-serif}
 #screen{position:fixed;inset:0;width:100%;height:100%;border:0;display:block;background:#000}
-#launch{position:fixed;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;background:rgba(12,13,18,.84);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+#launch{position:fixed;inset:0;z-index:5;display:none;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;background:rgba(12,13,18,.84);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 #card{box-sizing:border-box;width:min(768px,100%);padding:16px;border:1px solid rgba(255,255,255,.06);border-radius:16px;background:#202228;box-shadow:0 24px 80px rgba(0,0,0,.52);text-align:center}
 .actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
 button{font:600 14px/1.25 system-ui,sans-serif;cursor:pointer;transition:background .16s,border-color .16s,transform .16s,box-shadow .16s}
@@ -40,6 +40,7 @@ button:focus-visible{outline:2px solid #f7af80;outline-offset:3px}
 <div id="display-actions">
 <button id="fs-again" type="button">Fullscreen</button>
 <button id="move-screen" type="button">Move to Second Screen</button>
+<button id="retry-inline" type="button">Retry Connection</button>
 <button id="exit" type="button">End Show</button>
 </div>
 <script>
@@ -53,7 +54,7 @@ const notify=(type,extra={})=>{
 let loaded=false,requested=false,latest=null,latestState=null;
 const toSlide=data=>iframe.contentWindow?.postMessage(data,origin);
 const signalReady=()=>notify('pspro-audience-ready');
-function statusUpdate(message){status.textContent=message}
+function statusUpdate(message){status.textContent=message;document.getElementById('retry-inline').title=message;document.getElementById('move-screen').title=message;}
 function requestDocument(){
  signalReady();
  requested=true;
@@ -90,10 +91,11 @@ window.addEventListener('message',event=>{
        break;
      case 'loaded':
        loaded=true;
-       statusUpdate('Slides ready. Enter fullscreen or continue windowed.');
+       statusUpdate('Slides ready.');
+       display.style.display='none';
        if(latestState)toSlide(latestState);
        notify('pspro-audience-loaded');
-       // Keep setup visible until a user clicks Fullscreen or Windowed.
+       // Start in windowed mode without a confirmation overlay.
        break;
      case 'error':
        statusUpdate('Unable to load slides: '+(data.data||'Unknown error')+'. Click Retry Connection.');
@@ -112,8 +114,7 @@ async function enterFullscreen(){
   await document.documentElement.requestFullscreen({navigationUI:'hide'});
   display.style.display='none';iframe.focus();
  }catch(e){
-  statusUpdate('Fullscreen blocked. Move/maximize this window or select Continue Windowed.');
-  display.style.display='flex';
+  statusUpdate('Fullscreen blocked. Move or maximize the audience window manually.');
  }
 }
 document.getElementById('fullscreen').onclick=enterFullscreen;
@@ -122,6 +123,7 @@ document.getElementById('windowed').onclick=()=>{
 };
 document.getElementById('fs-again').onclick=enterFullscreen;
 document.getElementById('retry').onclick=requestDocument;
+document.getElementById('retry-inline').onclick=requestDocument;
 document.getElementById('exit').onclick=()=>{
  notify('pspro-audience-control',{end:true});window.close();
 };
@@ -129,17 +131,16 @@ document.getElementById('move-screen').onclick=async()=>{
  try{
   if(typeof window.getScreenDetails!=='function'){
    statusUpdate('Your browser does not support automatic screen placement. Drag the window manually.');
-   display.style.display='flex';return;
+   return;
   }
   const details=await window.getScreenDetails();
   const second=details.screens?.find(screen=>!screen.isPrimary);
-  if(!second){statusUpdate('No extended second monitor detected. Check Windows display settings.');display.style.display='flex';return}
+  if(!second){statusUpdate('No extended second monitor detected. Check Windows display settings.');return}
   window.moveTo(second.availLeft??second.left,second.availTop??second.top);
   window.resizeTo(second.availWidth??second.width,second.availHeight??second.height);
  }catch(error){
   statusUpdate('Automatic placement requires browser permission. Move the window to screen 2 manually.');
-  display.style.display='flex';
- }
+   }
 };
 window.addEventListener('beforeunload',()=>notify('pspro-audience-closed'));
 setTimeout(()=>{
