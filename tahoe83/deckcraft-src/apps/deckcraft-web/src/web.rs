@@ -539,6 +539,7 @@ impl eframe::App for WebShell {
                 if let Ok(v) = serde_json::from_str::<serde_json::Value>(&data) {
                     self.remote_smart.input = v.get("input").and_then(|v| v.as_str()).unwrap_or("").to_owned();
                     self.remote_smart.font_family = v.get("font").and_then(|v| v.as_str()).unwrap_or(BIBLE_DEFAULT_FONT).chars().take(160).collect();
+                    request_selected_desktop_font(&self.remote_smart.font_family);
                     self.remote_smart.number_style = match v.get("number").and_then(|v| v.as_str()) { Some("English") => VerseNumberStyle::English, Some("Bible source") => VerseNumberStyle::Source, _ => VerseNumberStyle::Khmer };
                     self.remote_smart.request(ctx, &self.app, false, true);
                     if !self.remote_smart.running { post_parent_live("smart-result", &self.remote_smart.status, "", 0); }
@@ -2288,7 +2289,7 @@ impl SmartGenerator {
             .open(&mut open)
             .default_width(620.0)
             .min_width(420.0)
-            .order(egui::Order::Tooltip)
+            .order(egui::Order::Foreground)
             .movable(true)
             .resizable(true)
             .collapsible(false)
@@ -2898,21 +2899,24 @@ fn apply_smart_slides(app: &mut SlideApp, slides: &[SmartSlide], replace: bool, 
     for slide in slides {
         match slide {
             SmartSlide::Title(text) => {
-                app.run("slide.new", json!({"layout": "blank"}))?;
+                let at = app.session.active().map(|d| d.doc.slides.len()).unwrap_or(0);
+                app.run("slide.new", json!({"layout": "blank", "at": at}))?;
                 app.run("slide.rename", json!({"name": format!("Smart · {}", text.chars().take(42).collect::<String>())}))?;
                 app.run("insert.textBox", json!({"rect": [80.0, 120.0, 800.0, 300.0], "text": text}))?;
                 apply_generated_style(app, font, 38.0, true)?;
                 app.run("format.autofit", json!({"mode": "shrink"}))?;
             }
             SmartSlide::Text(text) => {
-                app.run("slide.new", json!({"layout": "blank"}))?;
+                let at = app.session.active().map(|d| d.doc.slides.len()).unwrap_or(0);
+                app.run("slide.new", json!({"layout": "blank", "at": at}))?;
                 app.run("slide.rename", json!({"name": "Smart · Application"}))?;
                 app.run("insert.textBox", json!({"rect": [70.0, 55.0, 820.0, 445.0], "text": text}))?;
                 apply_generated_style(app, font, 38.0, false)?;
                 app.run("format.autofit", json!({"mode": "shrink"}))?;
             }
             SmartSlide::Bible { book_name, chapter, verse_start, verse_end, first_group, verses } => {
-                app.run("slide.new", json!({"layout": "blank"}))?;
+                let at = app.session.active().map(|d| d.doc.slides.len()).unwrap_or(0);
+                app.run("slide.new", json!({"layout": "blank", "at": at}))?;
                 let reference = bible_reference(book_name, *chapter, *verse_start, *verse_end, number_style);
                 app.run("slide.rename", json!({"name": format!("Bible · {reference}")}))?;
                 let body = verses.iter().map(|v| format!("{}  {}", format_bible_number(v.number, number_style), v.text)).collect::<Vec<_>>().join("\n\n");
