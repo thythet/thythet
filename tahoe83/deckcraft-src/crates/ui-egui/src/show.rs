@@ -1835,15 +1835,76 @@ fn render_thumb(ctx: &egui::Context, show: &mut Show, doc: &Presentation, i: usi
 /// PowerSlidePro's light-theme black button label on the dark presenter surface.
 #[cfg(target_arch = "wasm32")]
 fn presenter_button(ui: &mut Ui, label: &str, highlighted: bool) -> egui::Response {
-    ui.add(
-        egui::Button::new(
-            egui::RichText::new(label).color(Color32::WHITE).size(13.0),
-        )
+    presenter_icon_button(ui, label, "", highlighted)
+}
+
+/// Use drawn icons instead of font-dependent symbols, including when a
+/// customized Khmer UI font lacks those symbols.
+#[cfg(target_arch = "wasm32")]
+fn presenter_icon_button(ui: &mut Ui, label: &str, icon: &str, highlighted: bool) -> egui::Response {
+    let text = if icon.is_empty() { label.to_owned() } else { format!("    {label}") };
+    let response = ui.add(
+        egui::Button::new(egui::RichText::new(text).color(Color32::WHITE).size(13.0))
         .fill(if highlighted { Color32::from_rgb(215, 100, 48) } else { Color32::from_rgb(57, 60, 67) })
         .stroke(Stroke::new(1.0, if highlighted { Color32::from_rgb(242, 139, 88) } else { Color32::from_rgb(77, 82, 91) }))
         .corner_radius(6.0)
         .min_size(vec2(0.0, 27.0)),
-    )
+    );
+    if !icon.is_empty() {
+        let center = pos2(response.rect.left() + 12.0, response.rect.center().y);
+        paint_presenter_icon(ui, center, 1.0, icon, Color32::WHITE);
+    }
+    response
+}
+
+#[cfg(target_arch = "wasm32")]
+fn paint_presenter_icon(ui: &Ui, center: egui::Pos2, scale: f32, icon: &str, color: Color32) {
+    let p = ui.painter();
+    let stroke = Stroke::new(1.5 * scale, color);
+    let pt = |x: f32, y: f32| center + vec2(x * scale, y * scale);
+    let line = |x1, y1, x2, y2| { p.line_segment([pt(x1,y1), pt(x2,y2)], stroke); };
+    match icon {
+        "left" => { line(2.5,-5.0,-2.5,0.0); line(-2.5,0.0,2.5,5.0); }
+        "right" => { line(-2.5,-5.0,2.5,0.0); line(2.5,0.0,-2.5,5.0); }
+        "grid" => {
+            for y in [-4.5, 1.0] {
+                for x in [-4.5, 1.0] {
+                    p.rect_stroke(Rect::from_min_max(pt(x,y),pt(x+3.5,y+3.5)),0.5,stroke,egui::StrokeKind::Inside);
+                }
+            }
+        }
+        "edit" => {
+            line(-5.0,5.0,-3.5,0.5); line(-3.5,0.5,2.5,-5.0);
+            line(2.5,-5.0,5.0,-2.5); line(5.0,-2.5,-1.0,3.5);
+            line(-1.0,3.5,-5.0,5.0); line(1.0,-3.5,3.5,-1.0);
+        }
+        "stop" => { p.rect_stroke(Rect::from_center_size(center,vec2(9.0,9.0)*scale),1.0,stroke,egui::StrokeKind::Inside); }
+        "pause" => { line(-2.5,-4.5,-2.5,4.5); line(2.5,-4.5,2.5,4.5); }
+        "play" => { line(-3.0,-5.0,4.0,0.0); line(4.0,0.0,-3.0,5.0); line(-3.0,5.0,-3.0,-5.0); }
+        "reset" => {
+            let mut prev = pt(4.5,-2.0);
+            for step in 1..=16 {
+                let angle = -0.42 + (step as f32 / 16.0) * 5.2;
+                let next = pt(5.0*angle.cos(),5.0*angle.sin());
+                p.line_segment([prev,next],stroke); prev=next;
+            }
+            line(-1.0,-5.0,-5.0,-5.0); line(-5.0,-5.0,-5.0,-1.0);
+        }
+        "resize" => { line(0.0,-5.0,0.0,5.0);line(-2.5,-2.5,0.0,-5.0);line(0.0,-5.0,2.5,-2.5);line(-2.5,2.5,0.0,5.0);line(0.0,5.0,2.5,2.5); }
+        _ => {}
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+fn presenter_nav_button(ui: &mut Ui, enabled: bool, size: egui::Vec2, icon: &str, label: &str) -> egui::Response {
+    let response = ui.add_enabled(enabled, egui::Button::new("")
+        .min_size(size)
+        .fill(Color32::from_rgb(40,43,50))
+        .stroke(Stroke::new(1.5,Color32::from_rgb(112,119,133))))
+        .on_hover_text(label);
+    paint_presenter_icon(ui,response.rect.center(),2.4,icon,
+        if enabled { Color32::WHITE } else { Color32::from_gray(125) });
+    response
 }
 
 /// Reusable cached slide picture; only a few new thumbnails are rendered per frame.
@@ -2071,14 +2132,14 @@ fn web_presenter_panel(
                             .color(MUTED).size(13.0));
                     }
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        if presenter_button(ui, "End Show", false).clicked() { *keep = false; }
-                        if presenter_button(ui, "✎ Edit Live", false)
+                        if presenter_icon_button(ui, "End Show", "stop", false).clicked() { *keep = false; }
+                        if presenter_icon_button(ui, "Edit Live", "edit", false)
                             .on_hover_text("Open a second editable PowerSlidePro window without stopping the audience show")
                             .clicked()
                         {
                             ctx.data_mut(|d| d.insert_temp(egui::Id::new("tahoe-deckcraft-live-edit"), true));
                         }
-                        if presenter_button(ui, if full_grid { "Back to Presenter" } else { "All Slides ▦" }, full_grid).clicked() {
+                        if presenter_icon_button(ui, if full_grid { "Back to Presenter" } else { "All Slides" }, "grid", full_grid).clicked() {
                             show.grid = !show.grid;
                         }
                     });
@@ -2126,17 +2187,17 @@ fn web_presenter_panel(
                 }
 
                 ui.horizontal(|ui| {
-                    if presenter_button(ui, "◀ Previous", false).clicked() {
+                    if presenter_icon_button(ui, "Previous", "left", false).clicked() {
                         jump = visible.iter().rev().find(|&&i| i < active).copied();
                     }
-                    if presenter_button(ui, "Next ▶", false).clicked() {
+                    if presenter_icon_button(ui, "Next", "right", false).clicked() {
                         jump = show.state.peek_next(doc);
                     }
                     ui.separator();
-                    if presenter_button(ui, if show.timer.paused() { "Resume" } else { "Pause" }, show.timer.paused()).clicked() {
+                    if presenter_icon_button(ui, if show.timer.paused() { "Resume" } else { "Pause" }, if show.timer.paused() { "play" } else { "pause" }, show.timer.paused()).clicked() {
                         show.timer.toggle(now);
                     }
-                    if presenter_button(ui, "Reset Timer", false).clicked() { show.timer.reset(now); }
+                    if presenter_icon_button(ui, "Reset Timer", "reset", false).clicked() { show.timer.reset(now); }
                     if presenter_button(ui, "Black", show.blank == Some(Color32::BLACK)).clicked() {
                         toggle_blank(show, Color32::BLACK);
                     }
@@ -2144,7 +2205,7 @@ fn web_presenter_panel(
                         toggle_blank(show, Color32::WHITE);
                     }
                     #[cfg(target_arch = "wasm32")]
-                    if presenter_button(ui, "+ Smart Generate", false).clicked() {
+                    if presenter_button(ui, "Smart Generate", false).clicked() {
                         ctx.data_mut(|d| d.insert_temp(egui::Id::new("tahoe-present-smart"), true));
                     }
                 });
@@ -2240,21 +2301,11 @@ fn web_presenter_panel(
                         ui.horizontal(|ui| {
                             ui.spacing_mut().item_spacing.x = nav_gap;
                             ui.add_space(((right_w - nav_gap - nav_w * 2.0) * 0.5).max(0.0));
-                            if ui.add_enabled(previous.is_some(),
-                                egui::Button::new(egui::RichText::new("◀").size(32.0).color(Color32::WHITE))
-                                    .min_size(vec2(nav_w, nav_h))
-                                    .fill(Color32::from_rgb(40, 43, 50))
-                                    .stroke(Stroke::new(1.5, Color32::from_rgb(112, 119, 133))))
-                                .on_hover_text("Previous slide").clicked()
+                            if presenter_nav_button(ui, previous.is_some(), vec2(nav_w, nav_h), "left", "Previous slide").clicked()
                             {
                                 jump = previous;
                             }
-                            if ui.add_enabled(next_slide.is_some(),
-                                egui::Button::new(egui::RichText::new("▶").size(32.0).color(Color32::WHITE))
-                                    .min_size(vec2(nav_w, nav_h))
-                                    .fill(Color32::from_rgb(40, 43, 50))
-                                    .stroke(Stroke::new(1.5, Color32::from_rgb(112, 119, 133))))
-                                .on_hover_text("Next slide").clicked()
+                            if presenter_nav_button(ui, next_slide.is_some(), vec2(nav_w, nav_h), "right", "Next slide").clicked()
                             {
                                 jump = next_slide;
                             }
@@ -2296,9 +2347,9 @@ fn web_presenter_panel(
                 }
                 ui.horizontal(|ui| {
                     ui.label(egui::RichText::new("SLIDE THUMBNAILS").color(Color32::WHITE).size(12.0).strong());
-                    ui.label(egui::RichText::new("↕ Drag divider to resize").color(MUTED).size(11.0));
+                    ui.label(egui::RichText::new("Drag divider to resize").color(MUTED).size(11.0));
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        if presenter_button(ui, "▦ All Slides", false).clicked() { show.grid = true; }
+                        if presenter_icon_button(ui, "All Slides", "grid", false).clicked() { show.grid = true; }
                     });
                 });
                 let thumb_h = (strip_h - 29.0).max(50.0);

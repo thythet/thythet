@@ -92,7 +92,7 @@ test('Smart Generate has a higher layer and presenter keyboard is gated',()=>{
  const show=fs.readFileSync(path.join(root,'deckcraft-src/crates/ui-egui/src/show.rs'),'utf8');
  const web=fs.readFileSync(path.join(root,'deckcraft-src/apps/deckcraft-web/src/web.rs'),'utf8');
  assert.match(show,/Area::new\(egui::Id::new\("tahoe77-web-presenter"\)\)\s*\.order\(egui::Order::Middle\)/);
- assert.match(web,/Window::new\("✦ Smart Generate"\)[\s\S]{0,900}\.order\(egui::Order::Foreground\)/);
+ assert.match(web,/Window::new\("Smart Generate"\)[\s\S]{0,900}\.order\(egui::Order::Foreground\)/);
  assert.match(show,/if smart_open \{ true \} else \{ keyboard/);
 });
 test('native audience starts fullscreen and Escape only leaves fullscreen',()=>{
@@ -110,4 +110,23 @@ test('modal locks presenter input without fading its opaque background',()=>{
  assert.match(show,/if smart_open \{ lock_presenter_ui\(ui\); \}/);
  assert.match(show,/ctx\.layer_painter\(ui\.layer_id\(\)\)\.rect_filled\(full, 0\.0, BG\)/);
  assert.doesNotMatch(show,/if smart_open \{ ui\.disable\(\); \}/);
+});
+
+test('compact Smart Generate uses text only, outlined actions, defaults and actionable feedback',()=>{
+ const web=fs.readFileSync(path.join(root,'deckcraft-src/apps/deckcraft-web/src/web.rs'),'utf8');
+ const dialog=web.slice(web.indexOf('impl SmartGenerator {'),web.indexOf('    fn restore_from_first_slide',web.indexOf('impl SmartGenerator {')));
+ assert.match(dialog,/Window::new\("Smart Generate"\)/);
+ assert.doesNotMatch(dialog,/Slide 0 · Bible program input|ui\.label\("Khmer font"\)|ui\.label\("Verse numbers"\)|ui\.label\(&self\.status\)/);
+ for(const label of ['Paste','Sample','Repair Refs','Append','Generate & Replace','+ Add Bible'])assert.ok(dialog.includes('smart_outline_button("'+label+'"'));
+ assert.match(web,/fn smart_outline_button[\s\S]{0,900}\.stroke\(egui::Stroke::new\(1\.0/);
+ assert.match(dialog,/smart_status_is_actionable/);
+ assert.match(web,/font_family: BIBLE_DEFAULT_FONT\.into\(\),\s*number_style: VerseNumberStyle::Khmer/);
+});
+test('presenter toolbar uses vector icons and text-only Smart Generate',()=>{
+ const show=fs.readFileSync(path.join(root,'deckcraft-src/crates/ui-egui/src/show.rs'),'utf8');
+ assert.match(show,/presenter_button\(ui, "Smart Generate", false\)/);
+ assert.match(show,/presenter_icon_button\(ui, "Edit Live", "edit", false\)/);
+ assert.match(show,/presenter_icon_button\(ui, "All Slides", "grid", false\)/);
+ assert.match(show,/fn paint_presenter_icon[\s\S]{0,800}line_segment/);
+ assert.doesNotMatch(show,/presenter_button\(ui, "\+ Smart Generate"|presenter_button\(ui, "✎ Edit Live"/);
 });

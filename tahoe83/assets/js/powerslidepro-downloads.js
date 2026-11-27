@@ -1,7 +1,7 @@
 /* Tahoe82: Get Software library, verified GitHub release links only. */
 (()=>{
 'use strict';
-const VERSIONS=['0.1.20','0.1.19','0.1.18','0.1.17'];
+const VERSIONS=['0.1.21','0.1.20','0.1.19','0.1.18','0.1.17'];
 const ENDPOINT='https://api.github.com/repos/thythet/thythet/releases/tags/powerslidepro-desktop-v';
 const btn=document.createElement('button');
 btn.id='pspro-desktop-get';btn.type='button';btn.setAttribute('aria-haspopup','dialog');

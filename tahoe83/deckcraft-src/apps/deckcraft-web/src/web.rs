@@ -2275,6 +2275,21 @@ impl Default for SmartGenerator {
     }
 }
 
+fn smart_outline_button(label: &str, accent: bool) -> egui::Button<'_> {
+    let orange = egui::Color32::from_rgb(214, 91, 38);
+    egui::Button::new(egui::RichText::new(label)
+        .color(if accent { orange } else { egui::Color32::from_rgb(52, 56, 64) }))
+        .fill(if accent { egui::Color32::from_rgb(255, 247, 242) } else { egui::Color32::WHITE })
+        .stroke(egui::Stroke::new(1.0, if accent { orange } else { egui::Color32::from_rgb(199, 203, 209) }))
+        .corner_radius(6.0)
+        .min_size(egui::vec2(0.0, 28.0))
+}
+
+fn smart_status_is_actionable(status: &str) -> bool {
+    !(status.is_empty() || status.starts_with("Generated ") || status.starts_with("Added ")
+        || status.starts_with("Expanded recognized book abbreviations"))
+}
+
 impl SmartGenerator {
     fn ui(&mut self, ctx: &egui::Context, app: &mut SlideApp) {
         self.poll(ctx, app);
@@ -2288,12 +2303,12 @@ impl SmartGenerator {
         }
 
         let mut open = self.open;
-        egui::Window::new("✦ Smart Generate")
+        egui::Window::new("Smart Generate")
             .id(egui::Id::new("deckcraft_smart_generator"))
             .open(&mut open)
-            .default_width(620.0_f32.min((ctx.content_rect().width() - 32.0).max(260.0)))
-            .min_width(420.0_f32.min((ctx.content_rect().width() - 32.0).max(260.0)))
-            .default_pos(ctx.content_rect().center() - egui::vec2(310.0, 240.0))
+            .default_width(510.0_f32.min((ctx.content_rect().width() - 32.0).max(260.0)))
+            .min_width(340.0_f32.min((ctx.content_rect().width() - 32.0).max(260.0)))
+            .default_pos(ctx.content_rect().center() - egui::vec2(255.0, 205.0))
             .order(egui::Order::Foreground)
             .movable(true)
             .resizable(true)
@@ -2311,73 +2326,49 @@ impl SmartGenerator {
                 ui.spacing_mut().item_spacing = egui::vec2(6.0, 5.0);
                 ui.spacing_mut().interact_size.y = 27.0;
                 ui.visuals_mut().override_text_color = Some(egui::Color32::from_rgb(44, 48, 55));
-                ui.strong("Slide 0 · Bible program input");
-                ui.small(if app.show.is_some() { "Enter new Bible references. Add Bible appends slides without interrupting the show." } else { "Paste the whole program here, or enter only new references for Add Bible. Slide 0 is the hidden Smart Generate source." });
-                ui.add_space(6.0);
                 // Native browser textarea: Chrome/Safari shape Khmer combining marks,
                 // line wrapping and cursor clusters correctly; egui's glyph-by-glyph
                 // TextEdit does not. Sync the text into the existing Smart Generate source.
                 let (input_rect, _) = ui.allocate_exact_size(
-                    egui::vec2(ui.available_width().max(100.0), (ctx.content_rect().height() - 260.0).clamp(70.0, 300.0)),
+                    egui::vec2(ui.available_width().max(100.0), (ctx.content_rect().height() - 180.0).clamp(70.0, 260.0)),
                     egui::Sense::hover(),
                 );
                 sync_native_smart_input(ctx, input_rect, &mut self.input);
                 ui.add_space(6.0);
-                ui.horizontal(|ui| {
-                    ui.label("Khmer font");
-                    let families = deckcraft_fonts::FontDb::global().families();
-                    egui::ComboBox::from_id_salt("smart_font_family")
-                        .selected_text(if self.font_family.is_empty() { "Theme font" } else { self.font_family.as_str() })
-                        .width(220.0)
-                        .show_ui(ui, |ui| {
-                            ui.selectable_value(&mut self.font_family, String::new(), "Theme font");
-                            for family in families {
-                                if ui.selectable_value(&mut self.font_family, family.clone(), &family).clicked() {
-                                    request_selected_desktop_font(&family);
-                                }
-                            }
-                        });
-                });
-                ui.horizontal(|ui| {
-                    ui.label("Verse numbers");
-                    egui::ComboBox::from_id_salt("smart-verse-digits").selected_text(self.number_style.label()).show_ui(ui,|ui|{
-                        for style in [VerseNumberStyle::Khmer,VerseNumberStyle::English,VerseNumberStyle::Source] {
-                            ui.selectable_value(&mut self.number_style,style,style.label());
-                        }
-                    });
-                });
-                if !self.status.is_empty() {
-                    ui.separator();
-                    ui.label(&self.status);
-                }
-                ui.separator();
                 ui.horizontal_wrapped(|ui| {
-                    if ui.button("Paste").on_hover_text("Paste from the clipboard into Smart Generate").clicked() {
+                    if ui.add(smart_outline_button("Paste", false)).on_hover_text("Paste from the clipboard into Smart Generate").clicked() {
                         paste_generator_input("tahoe-smart-khmer-input");
                     }
-                    if ui.button("Sample").clicked() {
+                    if ui.add(smart_outline_button("Sample", false)).clicked() {
                         self.input = smart_sample().to_string();
                         set_native_smart_input(&self.input);
                     }
-                    if ui.button("Repair Refs").clicked() {
+                    if ui.add(smart_outline_button("Repair Refs", false)).clicked() {
                         self.input = expand_smart_refs(&self.input);
                         // The native Khmer textarea otherwise sends the old value back
                         // on the next egui frame and silently undoes the repair.
                         set_native_smart_input(&self.input);
                         self.status = "Expanded recognized book abbreviations and normalized Bible references.".into();
                     }
-                    ui.add_enabled_ui(!self.running, |ui| {
-                        ui.add_enabled_ui(!self.live_guard && !self.remote_add, |ui| {
-                            if ui.button("Append").clicked() { self.request(ctx, app, false, false); }
-                            if ui.button("Generate & Replace").clicked() { self.request(ctx, app, true, false); }
-                        });
-                        if ui.button("+ Add Bible").on_hover_text("Append only new Bible slides; preserve existing slides and the hidden source.").clicked() {
-                            self.request(ctx, app, false, true);
-                        }
-                    });
+                    let can_replace = !self.running && !self.live_guard && !self.remote_add;
+                    if ui.add_enabled(can_replace, smart_outline_button("Append", false)).clicked() {
+                        self.request(ctx, app, false, false);
+                    }
+                    if ui.add_enabled(can_replace, smart_outline_button("Generate & Replace", false)).clicked() {
+                        self.request(ctx, app, true, false);
+                    }
                 });
+                let add_width = ui.available_width().max(80.0);
+                if ui.add_enabled(!self.running, smart_outline_button("+ Add Bible", true)
+                    .min_size(egui::vec2(add_width, 30.0)))
+                    .on_hover_text("Append only new Bible slides; preserve existing slides and the hidden source.").clicked() {
+                    self.request(ctx, app, false, true);
+                }
+                // Keep actionable feedback, not persistent explanatory or success copy.
                 if self.running {
-                    ui.small("Reading Tahoe Bible1954 data and preparing slides…");
+                    ui.small("Preparing slides…");
+                } else if smart_status_is_actionable(&self.status) {
+                    ui.colored_label(egui::Color32::from_rgb(166, 48, 32), &self.status);
                 }
             });
         self.open = open;
