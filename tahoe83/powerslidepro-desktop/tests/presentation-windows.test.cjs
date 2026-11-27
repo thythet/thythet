@@ -72,16 +72,34 @@ test('native placement selects extended, remembered display, and primary after d
  assert.ok(start>=0&&end>start);
  const p={id:1,workArea:{x:0,y:0,width:1920,height:1080}},s={id:2,workArea:{x:-1600,y:0,width:1600,height:900}},t={id:3,workArea:{x:1920,y:0,width:1440,height:900}};
  let displays=[p,s,t],pref='auto',bounds,full=false,exitHandler;
- const win={isDestroyed:()=>false,isFullScreen:()=>full,isMaximized:()=>false,setBounds:b=>bounds=b,once:(_,fn)=>exitHandler=fn,setFullScreen:v=>{full=v;exitHandler?.();}};
+ const win={isDestroyed:()=>false,isFullScreen:()=>full,isMaximized:()=>false,setBounds:b=>bounds=b,once:(_,fn)=>exitHandler=fn,setFullScreen:v=>{full=v;if(!v){const cb=exitHandler;exitHandler=undefined;cb?.();}}};
  const screen={getPrimaryDisplay:()=>p,getAllDisplays:()=>displays};
  const place=new Function('screen','audienceWindow','getDisplayPreference','let audienceDisplayId;'+main.slice(start,end)+';return placeAudience;')(screen,win,()=>pref);
  place();assert.ok(bounds.x<0);
  pref='3';place();assert.ok(bounds.x>=1920);
  displays=[p,s];place(true);assert.ok(bounds.x>=0&&bounds.x<1920);
- full=true;pref='2';place();assert.equal(full,false);assert.ok(bounds.x<0);
+ full=true;pref='2';place();assert.equal(full,true);assert.ok(bounds.x<0);
+ full=false;place(false,true);assert.equal(full,true);assert.ok(bounds.x<0);
+ full=false;place();assert.equal(full,false); // manual Escape remains windowed until a new show
 });
 test('audience page has no startup confirmation, retains display controls',()=>{
  const html=fs.readFileSync(path.join(root,'assets/powerslidepro-audience.html'),'utf8');
  assert.doesNotMatch(html,/Continue Windowed|id="launch"/);
  for(const id of ['fs-again','move-screen','retry-inline','exit'])assert.ok(html.includes('id="'+id+'"'));
+});
+
+test('Smart Generate has a higher layer and presenter keyboard is gated',()=>{
+ const show=fs.readFileSync(path.join(root,'deckcraft-src/crates/ui-egui/src/show.rs'),'utf8');
+ const web=fs.readFileSync(path.join(root,'deckcraft-src/apps/deckcraft-web/src/web.rs'),'utf8');
+ assert.match(show,/Area::new\(egui::Id::new\("tahoe77-web-presenter"\)\)\s*\.order\(egui::Order::Middle\)/);
+ assert.match(web,/Window::new\("✦ Smart Generate"\)[\s\S]{0,900}\.order\(egui::Order::Foreground\)/);
+ assert.match(show,/if smart_open \{ true \} else \{ keyboard/);
+});
+test('native audience starts fullscreen and Escape only leaves fullscreen',()=>{
+ const main=fs.readFileSync(path.join(root,'powerslidepro-desktop/main.cjs'),'utf8');
+ const html=fs.readFileSync(path.join(root,'assets/powerslidepro-audience.html'),'utf8');
+ assert.match(main,/placeAudience\(false,true\)/);
+ assert.match(main,/event\.preventDefault\(\);child\.setFullScreen\(false\)/);
+ assert.match(html,/setTimeout\(\(\)=>controls\.classList\.remove\('active'\),2500\)/);
+ assert.match(html,/pspro-audience-try-fullscreen/);
 });

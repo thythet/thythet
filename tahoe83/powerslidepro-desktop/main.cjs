@@ -39,16 +39,17 @@ let audienceDisplayId;
 const displayPrefsPath=()=>path.join(app.getPath('userData'),'presentation-display.json');
 function getDisplayPreference(){try{return String(JSON.parse(fs.readFileSync(displayPrefsPath(),'utf8')).display||'auto')}catch{return 'auto'}}
 function setDisplayPreference(value){fs.writeFileSync(displayPrefsPath(),JSON.stringify({display:value}));}
-function placeAudience(recover=false){
+function placeAudience(recover=false, fullscreen){
   const win=audienceWindow;if(!win||win.isDestroyed())return;
   const primary=screen.getPrimaryDisplay(),all=screen.getAllDisplays(),pref=getDisplayPreference();
   const chosen=all.find(d=>String(d.id)===pref)||all.find(d=>d.id!==primary.id)||primary;
   const target=recover?(all.find(d=>d.id===audienceDisplayId)||primary):chosen;
   audienceDisplayId=target.id;
   const area=target.workArea;
+  const enterFullscreen=fullscreen ?? win.isFullScreen();
   const width=Math.min(1280,area.width),height=Math.min(720,area.height);
   const bounds={x:area.x+Math.round((area.width-width)/2),y:area.y+Math.round((area.height-height)/2),width,height};
-  const apply=()=>{if(!win.isDestroyed()&&audienceWindow===win){if(win.isMaximized())win.unmaximize();win.setBounds(bounds);}};
+  const apply=()=>{if(!win.isDestroyed()&&audienceWindow===win){if(win.isMaximized())win.unmaximize();win.setBounds(bounds);if(enterFullscreen)win.setFullScreen(true);}};
   // macOS fullscreen transitions are asynchronous; restore windowed placement
   // after the native transition rather than trying to resize a fullscreen Space.
   if(win.isFullScreen()){win.once('leave-full-screen',apply);win.setFullScreen(false);}else apply();
@@ -298,8 +299,16 @@ function createMainWindow() {
     }
     if(page!==origin+'/tahoe80/assets/powerslidepro-audience.html')return;
     audienceWindow=child;
-    placeAudience();
+    child.setAutoHideMenuBar(true);
+    child.setMenuBarVisibility(false);
+    // Set the display bounds before entering native fullscreen. No browser gesture is needed.
+    placeAudience(false,true);
     child.showInactive();
+    child.webContents.on("before-input-event",(event,input)=>{
+      if(input.type==="keyDown"&&input.key==="Escape"&&child.isFullScreen()){
+        event.preventDefault();child.setFullScreen(false);
+      }
+    });
     child.on('closed',()=>{if(audienceWindow===child){audienceWindow=null;audienceDisplayId=undefined;}});
     child.webContents.on('will-navigate',(event,url)=>{if(url.split('?')[0]!==origin+'/tahoe80/assets/powerslidepro-audience.html')event.preventDefault();});
   });
@@ -551,6 +560,10 @@ if (ownsInstance) app.whenReady().then(async () => {
     if(!mainWindow||event.sender!==mainWindow.webContents)return false;
     if(value!=='auto'&&!screen.getAllDisplays().some(d=>String(d.id)===value))return false;
     try{setDisplayPreference(value);placeAudience();return true;}catch{return false;}
+  });
+  ipcMain.handle('pspro:audience-fullscreen',event=>{
+    if(!mainWindow||event.sender!==mainWindow.webContents||!audienceWindow||audienceWindow.isDestroyed())return false;
+    placeAudience(false,true);return true;
   });
   screen.on('display-removed',(_event,display)=>{if(display.id===audienceDisplayId)placeAudience(true);});
   screen.on('display-metrics-changed',(_event,display,metrics)=>{if(display.id===audienceDisplayId&&metrics.includes('workArea')&&audienceWindow&&!audienceWindow.isDestroyed()&&!audienceWindow.isFullScreen())placeAudience(true);});

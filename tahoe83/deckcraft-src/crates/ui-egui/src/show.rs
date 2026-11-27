@@ -584,7 +584,8 @@ pub fn ui(app: &mut SlideApp, ui: &mut Ui) {
         }
         show.after_enter(&doc, now);
     }
-    let mut keep = keyboard(&ctx, &mut show, &doc, now);
+    let smart_open = cfg!(target_arch = "wasm32") && show.presenter && ctx.data(|d| d.get_temp::<bool>(egui::Id::new("tahoe-present-smart-open"))).unwrap_or(false);
+    let mut keep = if smart_open { true } else { keyboard(&ctx, &mut show, &doc, now) };
     let (mouse_click, mouse_secondary, moved) = ctx.input(|i| (i.pointer.primary_clicked(), i.pointer.secondary_clicked(), i.pointer.delta().length() > 0.0));
     // Presenter controls handle their own pointer events. Do not also advance the
     // underlying audience-stage state when the operator clicks Next or a thumbnail.
@@ -2031,10 +2032,13 @@ fn web_presenter_panel(
     let mut strip_h = ctx.data_mut(|d| d.get_persisted::<f32>(strip_id))
         .unwrap_or(124.0).clamp(84.0, max_strip);
 
+    // Keep the full presenter surface below all foreground windows and menus.
+    let smart_open = ctx.data(|d| d.get_temp::<bool>(egui::Id::new("tahoe-present-smart-open"))).unwrap_or(false);
     egui::Area::new(egui::Id::new("tahoe77-web-presenter"))
-        .order(egui::Order::Foreground)
+        .order(egui::Order::Middle)
         .fixed_pos(full.min)
         .show(ctx, |ui| {
+            if smart_open { ui.disable(); }
             ui.set_width(full.width());
             ui.set_min_height(full.height());
             ui.painter().rect_filled(full, 0.0, BG);

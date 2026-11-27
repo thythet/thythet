@@ -1,0 +1,237 @@
+name: Release PowerSlidePro Tahoe83 v0.1.19
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/release-powerslidepro-tahoe83-0.1.19.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: powerslidepro-tahoe83-v019
+  cancel-in-progress: false
+
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          sparse-checkout: tahoe83
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: trunk
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: tahoe83/deckcraft-src
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install packaging and WASM dependencies
+        run: |
+          python -m pip install Pillow==11.3.0
+          if ! sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y binaryen python3-fonttools; then
+            sudo apt-get update -o Acquire::Retries=2
+            sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y binaryen python3-fonttools
+          fi
+      - name: Verify presentation bridge and generator input
+        run: |
+          node --check tahoe83/assets/js/powerslidepro-present-v1.js
+          node --check tahoe83/assets/js/powerslidepro-live-v1.js
+          node --check tahoe83/assets/js/powerslidepro-downloads.js
+          node --test tahoe83/powerslidepro-desktop/tests/presentation-windows.test.cjs
+          node --test tahoe83/deckcraft-src/apps/deckcraft-web/generator-paste.test.cjs
+      - name: Test fonts and non-destructive slide append
+        working-directory: tahoe83/deckcraft-src
+        run: |
+          cargo test -p deckcraft-fonts --test tahoe_font_group
+          cargo test -p deckcraft-engine --test tahoe_undo_group --test tahoe_bible_append
+      - name: Rebuild the Tahoe83 renderer
+        run: |
+          set -euo pipefail
+          backup="$(mktemp -d)"
+          cp -a tahoe83/apps/deckcraft-web/fonts "$backup/fonts"
+          cp -a tahoe83/apps/deckcraft-web/song-library "$backup/song-library"
+          rm -rf tahoe83/apps/deckcraft-web
+          mkdir -p tahoe83/apps/deckcraft-web
+          (cd tahoe83/deckcraft-src/apps/deckcraft-web && trunk build --release)
+          cp -a "$backup/fonts" tahoe83/apps/deckcraft-web/fonts
+          cp -a "$backup/song-library" tahoe83/apps/deckcraft-web/song-library
+          test -s tahoe83/apps/deckcraft-web/index.html
+          test -s tahoe83/apps/deckcraft-web/generator-paste.js
+          test -s tahoe83/apps/deckcraft-web/font-manager.js
+          for f in songs allsong2 allsong3; do test -s "tahoe83/apps/deckcraft-web/song-library/$f.json"; done
+          node - <<'JS'
+          const fs=require('node:fs'),path=require('node:path');
+          const folder='tahoe83/apps/deckcraft-web';
+          const wasm=fs.readdirSync(folder).find(n=>n.endsWith('_bg.wasm'));
+          if(!wasm)throw Error('Missing renderer');
+          const bytes=fs.readFileSync(path.join(folder,wasm));
+          // Rust/LLVM and wasm-opt may fold strings into immediate comparisons,
+          // so literal UTF-8 byte searches in optimized WASM are not a feature test.
+          if(!WebAssembly.validate(bytes))throw Error('Invalid WebAssembly module');
+          const html=fs.readFileSync(path.join(folder,'index.html'),'utf8');
+          const modules=fs.readdirSync(folder).filter(n=>/^deckcraft-web-.*\.js$/.test(n));
+          if(!html.includes(wasm)||!modules.some(n=>html.includes(n)&&fs.statSync(path.join(folder,n)).size>0)){
+            throw Error('Renderer HTML does not reference its compiled WASM and JS modules');
+          }
+          const checks={
+            'apps/deckcraft-web/src/web.rs':['detachedSupported','tahoe-deckcraft-smart-request','+ Add Bible','grouped_undo("Add Bible"'],
+            'crates/ui-egui/src/show.rs':['tahoe-present-smart'],
+            'crates/ui-egui/src/backstage.rs':['desktopReveal']
+          };
+          for(const [relative,markers] of Object.entries(checks)){
+            const source=fs.readFileSync(path.join('tahoe83/deckcraft-src',relative),'utf8');
+            for(const marker of markers)if(!source.includes(marker))throw Error(relative+' missing '+marker);
+          }
+          console.log('Fresh renderer is valid and referenced by its HTML; source feature checks passed.');
+          JS
+      - name: Validate and stage the desktop application
+        working-directory: tahoe83/powerslidepro-desktop
+        run: |
+          node -e "if(require('./package.json').version!=='0.1.19')process.exit(1)"
+          npm run check
+          test -s build/installer.nsh
+          test -s payload/tahoe80/assets/powerslidepro-presenter.html
+          test -s payload/tahoe80/assets/js/powerslidepro-live-v1.js
+      - uses: actions/upload-artifact@v4
+        with:
+          name: powerslidepro-019-desktop-source
+          path: tahoe83/powerslidepro-desktop/
+          if-no-files-found: error
+          retention-days: 2
+          include-hidden-files: true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: powerslidepro-019-web
+          path: |
+            tahoe83/apps/deckcraft-web/
+          if-no-files-found: error
+          retention-days: 7
+          include-hidden-files: true
+
+  package:
+    needs: stage
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: win
+          - os: macos-latest
+            target: mac
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: powerslidepro-019-desktop-source
+          path: powerslidepro-desktop
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check scripts and install dependencies
+        working-directory: powerslidepro-desktop
+        run: |
+          node --check main.cjs
+          node --check preload.cjs
+          node -e "if(!require('node:fs').existsSync('build/installer.nsh'))throw Error('Missing NSIS installer script')"
+          npm install --no-audit --no-fund
+      - name: Build installers
+        working-directory: powerslidepro-desktop
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+          WIN_CSC_LINK: ${{ secrets.POWERSLIDEPRO_WIN_CSC_LINK }}
+          WIN_CSC_KEY_PASSWORD: ${{ secrets.POWERSLIDEPRO_WIN_CSC_KEY_PASSWORD }}
+        run: npm run dist:${{ matrix.target }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: powerslidepro-019-${{ matrix.target }}
+          path: |
+            powerslidepro-desktop/dist/*.exe
+            powerslidepro-desktop/dist/*.dmg
+            powerslidepro-desktop/dist/latest.yml
+            powerslidepro-desktop/dist/*.blockmap
+          if-no-files-found: error
+          retention-days: 30
+
+  publish:
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          sparse-checkout: tahoe83
+      - uses: actions/download-artifact@v4
+        with:
+          name: powerslidepro-019-web
+          path: /tmp/powerslidepro-web
+      - uses: actions/download-artifact@v4
+        with:
+          name: powerslidepro-019-win
+          path: release-assets
+      - uses: actions/download-artifact@v4
+        with:
+          name: powerslidepro-019-mac
+          path: release-assets
+      - name: Verify all three installers and checksums
+        run: |
+          set -euo pipefail
+          test -s release-assets/PowerSlidePro-0.1.19-win-x64.exe
+          test -s release-assets/PowerSlidePro-0.1.19-mac-arm64.dmg
+          test -s release-assets/PowerSlidePro-0.1.19-mac-x64.dmg
+          test -s release-assets/latest.yml
+          grep -q 'version: 0.1.19' release-assets/latest.yml
+          grep -q 'sha512:' release-assets/latest.yml
+          (cd release-assets && sha256sum *.exe *.dmg latest.yml > SHA256SUMS.txt)
+      - name: Publish compiled web renderer to Tahoe83 only
+        id: web
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          test -s /tmp/powerslidepro-web/index.html
+          git fetch origin "$SOURCE_SHA" --depth=1
+          git diff --quiet "$SOURCE_SHA" HEAD -- tahoe83/deckcraft-src tahoe83/powerslidepro-desktop tahoe83/assets tahoe83/index.html tahoe83/sw.js
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -rf tahoe83/apps/deckcraft-web
+          cp -a /tmp/powerslidepro-web tahoe83/apps/deckcraft-web
+          git add -A tahoe83/apps/deckcraft-web
+          git add -f tahoe83/apps/deckcraft-web
+          if ! git diff --cached --quiet; then
+            git commit -m "Build PowerSlidePro v0.1.19 renderer for Tahoe83"
+            git push origin HEAD:main
+          fi
+          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: powerslidepro-desktop-v0.1.19
+          target_commitish: ${{ steps.web.outputs.commit }}
+          name: PowerSlidePro Desktop v0.1.19 (Windows + macOS beta)
+          prerelease: true
+          fail_on_unmatched_files: true
+          body: |
+            Tahoe83 v0.1.19: Smart Generate dialog layering and navigation fix, automatic native fullscreen Audience Screen on the selected monitor, and auto-hidden audience controls. Retains independent windows, live editing, remembered displays and non-destructive Add Bible.
+            Retains the v0.1.17 desktop recent-files, local export, document icons, and bundled/installed Khmer font support.
+            Includes Windows x64, macOS Apple Silicon and Intel installers. Browser multi-monitor access remains permission-dependent. This is a beta release; physical multi-monitor hardware verification is recommended.
+          files: |
+            release-assets/*.exe
+            release-assets/*.dmg
+            release-assets/latest.yml
+            release-assets/*.blockmap
+            release-assets/SHA256SUMS.txt

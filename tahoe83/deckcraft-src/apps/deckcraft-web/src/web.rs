@@ -825,6 +825,8 @@ impl eframe::App for WebShell {
     }
 
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+        // The presenter is painted below the modal; its navigation is locked while the dialog is open.
+        ui.ctx().data_mut(|d| d.insert_temp(egui::Id::new("tahoe-present-smart-open"), self.smart.open && self.app.show.is_some()));
         self.app.ui(ui);
         DESKTOP_SAVE_AS_PENDING.with(|p| {
             if std::mem::replace(&mut *p.borrow_mut(), false) {
@@ -917,8 +919,10 @@ impl eframe::App for WebShell {
                     self.smart.status.clear();
                 }
                 self.smart.open = true;
+                ui.ctx().request_repaint();
             }
             self.smart.ui(ui.ctx(), &mut self.app);
+            ui.ctx().data_mut(|d| d.insert_temp(egui::Id::new("tahoe-present-smart-open"), self.smart.open));
         }
         if self.app.show.is_none() {
             let take = |key: egui::Id| ui.ctx().data_mut(|d| {
@@ -2287,8 +2291,9 @@ impl SmartGenerator {
         egui::Window::new("✦ Smart Generate")
             .id(egui::Id::new("deckcraft_smart_generator"))
             .open(&mut open)
-            .default_width(620.0)
-            .min_width(420.0)
+            .default_width(620.0_f32.min((ctx.content_rect().width() - 32.0).max(260.0)))
+            .min_width(420.0_f32.min((ctx.content_rect().width() - 32.0).max(260.0)))
+            .default_pos(ctx.content_rect().center() - egui::vec2(310.0, 240.0))
             .order(egui::Order::Foreground)
             .movable(true)
             .resizable(true)
@@ -2313,7 +2318,7 @@ impl SmartGenerator {
                 // line wrapping and cursor clusters correctly; egui's glyph-by-glyph
                 // TextEdit does not. Sync the text into the existing Smart Generate source.
                 let (input_rect, _) = ui.allocate_exact_size(
-                    egui::vec2(ui.available_width().max(260.0), 300.0),
+                    egui::vec2(ui.available_width().max(100.0), (ctx.content_rect().height() - 260.0).clamp(70.0, 300.0)),
                     egui::Sense::hover(),
                 );
                 sync_native_smart_input(ctx, input_rect, &mut self.input);

@@ -10,13 +10,13 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:
 button{font:600 14px/1.25 system-ui,sans-serif;cursor:pointer;transition:background .16s,border-color .16s,transform .16s,box-shadow .16s}
 button:focus-visible{outline:2px solid #f7af80;outline-offset:3px}
 #message{position:absolute!important;width:1px;height:1px;overflow:hidden;white-space:nowrap;clip-path:inset(50%);margin:-1px;border:0;padding:0}
-#display-actions{position:fixed;right:12px;bottom:10px;display:flex;gap:7px;z-index:6;opacity:.4;transition:opacity .15s}
-#display-actions:hover,#display-actions:focus-within{opacity:1}
+#display-actions{position:fixed;right:12px;bottom:10px;display:flex;gap:7px;z-index:6;opacity:0;pointer-events:none;transition:opacity .15s}
+#display-actions.active,#display-actions:focus-within{opacity:1;pointer-events:auto}
 #display-actions button{font-size:11px;padding:7px 9px;background:#343842bb;color:#fff;border:1px solid #4b4e55;border-radius:8px}
 </style>
 </head>
 <body>
-<iframe id="screen" title="Audience slides" allow="fullscreen" allowfullscreen src="../apps/deckcraft-web/index.html?blank&audience=1&v=79initial"></iframe>
+<iframe id="screen" title="Audience slides" allow="fullscreen" allowfullscreen src="../apps/deckcraft-web/index.html?blank&audience=1&v=83fullscreen19"></iframe>
 <p id="message" role="status" aria-live="polite">Connecting to the presentation…</p>
 <div id="display-actions">
 <button id="fs-again" type="button">Fullscreen</button>
@@ -32,7 +32,24 @@ const status=document.getElementById('message');
 const notify=(type,extra={})=>{
  try{if(window.opener&&!window.opener.closed)window.opener.postMessage({type,...extra},origin)}catch{}
 };
-let loaded=false,requested=false,latest=null,latestState=null;
+let loaded=false,requested=false,latest=null,latestState=null,autoFullscreenAttempted=false;
+const controls=document.getElementById('display-actions');
+let hideTimer;
+function revealControls(){
+ controls.classList.add('active');clearTimeout(hideTimer);
+ hideTimer=setTimeout(()=>controls.classList.remove('active'),2500);
+}
+window.addEventListener('pointermove',revealControls,{passive:true});
+window.addEventListener('keydown',event=>{if(event.key==='Tab')revealControls();},true);
+function bindSlideControls(){
+ try{const doc=iframe.contentDocument;if(!doc)return;
+ doc.addEventListener('pointermove',revealControls,{passive:true});
+ doc.addEventListener('keydown',event=>{
+   if(event.key==='Tab')revealControls();
+   if(event.key==='Escape'&&document.fullscreenElement){event.preventDefault();event.stopImmediatePropagation();void document.exitFullscreen();}
+ },true);}catch{}
+}
+iframe.addEventListener('load',bindSlideControls);bindSlideControls();
 const toSlide=data=>iframe.contentWindow?.postMessage(data,origin);
 const signalReady=()=>notify('pspro-audience-ready');
 function statusUpdate(message){status.textContent=message;document.getElementById('retry-inline').title=message;document.getElementById('move-screen').title=message;}
@@ -45,7 +62,9 @@ window.addEventListener('message',event=>{
  if(event.origin!==origin)return;
  const data=event.data||{};
  if(event.source===window.opener){
-   if(data.type==='pspro-audience-data'){
+   if(data.type==='pspro-audience-try-fullscreen'){
+     if(!autoFullscreenAttempted){autoFullscreenAttempted=true;void enterFullscreen(true);}
+   }else if(data.type==='pspro-audience-data'){
      latest=data;
      if(loaded){
        statusUpdate('Opening the audience presentation…');
@@ -76,7 +95,7 @@ window.addEventListener('message',event=>{
        
        if(latestState)toSlide(latestState);
        notify('pspro-audience-loaded');
-       // Start in windowed mode without a confirmation overlay.
+       // Native fullscreen is managed by Electron; web fullscreen is attempted once by the opener.
        break;
      case 'error':
        statusUpdate('Unable to load slides: '+(data.data||'Unknown error')+'. Click Retry Connection.');
@@ -90,15 +109,17 @@ window.addEventListener('message',event=>{
    }
  }
 });
-async function enterFullscreen(){
+async function enterFullscreen(automatic=false){
  try{
-  await document.documentElement.requestFullscreen({navigationUI:'hide'});
+  if(window.opener?.PowerSlideDesktop?.audienceFullscreen){if(!automatic)notify('pspro-audience-fullscreen');return;}
+  if(!document.fullscreenElement)await document.documentElement.requestFullscreen({navigationUI:'hide'});
   iframe.focus();
  }catch(e){
-  statusUpdate('Fullscreen blocked. Move or maximize the audience window manually.');
+  statusUpdate('Browser requires a click for fullscreen. Move the mouse and select Fullscreen.');
+  if(automatic)revealControls();
  }
 }
-document.getElementById('fs-again').onclick=enterFullscreen;
+document.getElementById('fs-again').onclick=()=>enterFullscreen(false);
 document.getElementById('retry-inline').onclick=requestDocument;
 document.getElementById('exit').onclick=()=>{
  notify('pspro-audience-control',{end:true});window.close();

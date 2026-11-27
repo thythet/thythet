@@ -52,5 +52,6 @@ contextBridge.exposeInMainWorld('PowerSlideDesktop', Object.freeze({
   windowAction: (command) => ipcRenderer.send('pspro:window-action', command),
   displayOptions: () => ipcRenderer.invoke('pspro:display-options'),
   selectDisplay: id => ipcRenderer.invoke('pspro:display-select', id),
+  audienceFullscreen: () => ipcRenderer.invoke('pspro:audience-fullscreen'),
   platform: process.platform
 }));

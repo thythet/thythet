@@ -106,7 +106,7 @@ document.getElementById('move-screen').onclick=()=>notify('pspro-presenter-displ
 window.addEventListener('beforeunload',()=>notify('pspro-presenter-closed'));
 let mode='';
 try{const platform=window.opener?.PowerSlideDesktop?.platform;if(platform==='darwin')mode='&desktop=1&macui=1';if(platform==='win32')mode='&desktop=1&winui=1';}catch{}
-iframe.src='../apps/deckcraft-web/index.html?blank&presenter=1&v=83detach1'+mode;
+iframe.src='../apps/deckcraft-web/index.html?blank&presenter=1&v=83fullscreen19'+mode;
 setTimeout(()=>{
  if(!requested){requestDocument();}
 },600);

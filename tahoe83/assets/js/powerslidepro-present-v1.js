@@ -63,7 +63,7 @@ function explain(message,offerLink=false){
  if(offerLink){
   hint.append(document.createElement("br"));
   const anchor=document.createElement("a");
-  anchor.href=new URL("assets/powerslidepro-audience.html?v=83detach1",location.href).href;
+  anchor.href=new URL("assets/powerslidepro-audience.html?v=83fullscreen19",location.href).href;
   anchor.target="_blank";anchor.rel="opener";
   anchor.textContent="Open audience in a new tab";
   hint.append(anchor);
@@ -80,7 +80,7 @@ function closeShow(){
 function openPresenter(automatic=false){
  if(!showing||!detachable)return;
  if(presenterVisible()){if(!automatic)presenter.focus();return;}
- const url=new URL('assets/powerslidepro-presenter.html?v=83detach1',location.href);
+ const url=new URL('assets/powerslidepro-presenter.html?v=83fullscreen19',location.href);
  try{presenter=window.open(url.href,'powerslidepro-presenter','popup,width=1240,height=820,resizable=yes,scrollbars=yes');}catch{presenter=null;}
  refreshButton();
  if(!presenter){explain('Presenter window was blocked. Use Open Presenter after allowing popups.');return;}
@@ -106,7 +106,7 @@ async function placeOnExternalScreen(w,recover=false){
  const chosen=recover?primary:list.find(s=>screenKey(s)===webPref())||list.find(s=>!s.isPrimary)||primary;
  if(!chosen)return;
  try{
-  const width=Math.min(1280,chosen.availWidth??chosen.width),height=Math.min(720,chosen.availHeight??chosen.height);
+  const width=chosen.availWidth??chosen.width,height=chosen.availHeight??chosen.height;
   w.moveTo((chosen.availLeft??chosen.left)+Math.round(((chosen.availWidth??chosen.width)-width)/2),(chosen.availTop??chosen.top)+Math.round(((chosen.availHeight??chosen.height)-height)/2));
   w.resizeTo(width,height);placedScreen=screenKey(chosen);
  }catch{}
@@ -129,7 +129,7 @@ async function displaySettings(){
 function openAudience(automatic=false){
  if(visible()){if(!automatic)audience.focus();return}
  // Direct button click: do not delay window.open, or popup blockers will reject it.
- const url=new URL("assets/powerslidepro-audience.html?v=83detach1",location.href);
+ const url=new URL("assets/powerslidepro-audience.html?v=83fullscreen19",location.href);
  try{
   audience=window.open(url.href,"powerslidepro-audience",
    "popup,width=1280,height=720,resizable=yes,scrollbars=yes");
@@ -142,7 +142,8 @@ function openAudience(automatic=false){
  }
  clearHint();refreshButton();if(!automatic)audience.focus();
  // Automatic placement uses existing permission; Display settings can grant it.
- void placeOnExternalScreen(audience);
+ const opened=audience;
+ void placeOnExternalScreen(opened).then(()=>{if(!desktop?.displayOptions&&visible()&&audience===opened)toAudience({type:'pspro-audience-try-fullscreen'});});
  if(loadingTimeout)clearTimeout(loadingTimeout);
  loadingTimeout=setTimeout(()=>{
   if(showing&&visible())explain("Audience window is taking longer than expected to initialize. Check its loading message, then retry if necessary.");
@@ -219,11 +220,14 @@ window.addEventListener("message",e=>{
   // has finished initializing; the viewer is a separate renderer.
   clearHint();
   deliver({type:"tahoe-deckcraft-audience-export"});
+  if(!desktop?.displayOptions){const opened=audience;void placeOnExternalScreen(opened).then(()=>{if(visible()&&audience===opened)toAudience({type:"pspro-audience-try-fullscreen"});});}
  }else if(d.type==="pspro-audience-control"){
   if(!showing)return;
   if(d.end||d.blank==="end"){if(detachable)deliver({type:"tahoe-deckcraft-detach",action:"end"});else deliver({type:"tahoe-deckcraft-presenter-control",index:'0',blank:'end'});return;}
   if(detached){toPresenter({type:"pspro-audience-state",index:String(d.index||0),blank:d.blank||""});}
   else deliver({type:"tahoe-deckcraft-presenter-control",index:String(d.index||0),blank:d.blank||""});
+ }else if(d.type==="pspro-audience-fullscreen"){
+  if(desktop?.audienceFullscreen)void desktop.audienceFullscreen();
  }else if(d.type==="pspro-audience-move"){
   if(desktop?.selectDisplay)void desktop.selectDisplay("auto");
  }else if(d.type==="pspro-audience-loaded"){
