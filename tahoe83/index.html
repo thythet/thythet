@@ -6957,7 +6957,7 @@ function handlePwaLaunchShortcut(){
 }
 window.addEventListener("load",handlePwaLaunchShortcut,{once:true});
 
-if('serviceWorker' in navigator&&location.protocol!=='file:'){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=83-holybible2',{scope:'./',updateViaCache:'none'}).catch(()=>{}),{once:true})}
+if('serviceWorker' in navigator&&location.protocol!=='file:'){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=83-mac-names1',{scope:'./',updateViaCache:'none'}).catch(()=>{}),{once:true})}
 
 /* Bind core controls before optional app modules: one failed module must never freeze Tahoe. */
 const tahoeSafeInit=(label,fn)=>{try{fn()}catch(e){console.error("[Tahoe startup] "+label,e);try{sessionStorage.setItem("tahoe.lastStartupError",label+": "+String(e?.message||e))}catch{}}};
@@ -7200,7 +7200,7 @@ addEventListener("resize",()=>{pinDashboardLauncher();
 <script src="assets/js/powerslidepro-cloud.js?v=77compact-dialogs"></script>
 <script src="assets/js/powerslidepro-save-v93.js?v=77compact-dialogs"></script>
 <script src="assets/js/powerslidepro-present-v1.js?v=83fullscreen19"></script>
-<script defer src="assets/js/powerslidepro-downloads.js?v=0.1.21-holybible-downloads1"></script>
+<script defer src="assets/js/powerslidepro-downloads.js?v=mac-names1"></script>
 <script src="assets/js/powerslidepro-live-v1.js?v=83liveedit1"></script>
 <script src="assets/js/thechat-native-shell-v1.js?v=77-native-chat1"></script>
 

@@ -15,6 +15,10 @@ let overlay=null,lastFocus=null;
 function el(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;}
 function close(){if(!overlay)return;overlay.remove();overlay=null;lastFocus?.focus();lastFocus=null;}
 const rows=[];
+const MAC_SUFFIXES={'mac-arm64.dmg':['mac-M-Series.dmg','mac-arm64.dmg'],'mac-x64.dmg':['mac-Intel.dmg','mac-x64.dmg']};
+function installerAsset(files,product,version,suffix,valid){return (MAC_SUFFIXES[suffix]||[suffix]).map(name=>files.find(a=>a.name===product+'-'+version+'-'+name&&valid(a))).find(Boolean);}
+function compareVersions(a,b){const x=a.split('.').map(Number),y=b.split('.').map(Number);return y[0]-x[0]||y[1]-x[1]||y[2]-x[2];}
+async function discoverReleases(){try{const r=await fetch('https://api.github.com/repos/thythet/thythet/releases?per_page=100',{headers:{Accept:'application/vnd.github+json'},cache:'no-store'});if(r.ok){const list=await r.json();if(Array.isArray(list))return list.filter(x=>!x.draft&&x.published_at);}}catch{}return [];}
 // Verified, published BibleApp release; independent of the PowerSlidePro API request.
 const BIBLE_VERSION="0.1.1";
 const BIBLE_ASSETS=[
@@ -34,15 +38,15 @@ const BIBLE_ASSETS=[
   },
   {
     "icon": "ri-apple-fill",
-    "title": "macOS · Apple Silicon",
-    "detail": "M-series Mac · DMG · v0.1.1",
+    "title": "macOS · M-Series (Apple Silicon)",
+    "detail": "M1, M2, M3, M4, M5 and newer · DMG · v0.1.1",
     "url": "https://github.com/thythet/thythet/releases/download/bibleapp-v0.1.1/BibleApp-0.1.1-mac-arm64.dmg",
     "name": "BibleApp-0.1.1-mac-arm64.dmg"
   },
   {
     "icon": "ri-apple-fill",
-    "title": "macOS · Intel",
-    "detail": "Intel Mac · DMG · v0.1.1",
+    "title": "macOS · Intel Mac",
+    "detail": "Intel processor · DMG · v0.1.1",
     "url": "https://github.com/thythet/thythet/releases/download/bibleapp-v0.1.1/BibleApp-0.1.1-mac-x64.dmg",
     "name": "BibleApp-0.1.1-mac-x64.dmg"
   }
@@ -65,17 +69,19 @@ function row(icon,title,detail,suffix){
  const status=el('span','sw-status','Checking…');
  r.append(i,l,status);rows.push({status,small,detail,suffix});return r;
 }
-async function loadReleases(){
+async function loadReleases(discovered){
  const current=overlay,targets=rows.slice();
  const valid=a=>a?.state==='uploaded'&&a.size>0&&typeof a.browser_download_url==='string'&&a.browser_download_url.startsWith('https://github.com/thythet/thythet/releases/download/');
  let chosen=null;
- for(const version of VERSIONS){
+ const available=await discovered;
+ const versions=[...new Set([...VERSIONS,...available.map(x=>/^powerslidepro-desktop-v(\d+\.\d+\.\d+)$/.exec(x.tag_name)?.[1]).filter(Boolean)])].sort(compareVersions);
+ for(const version of versions){
   try{
    const r=await fetch(ENDPOINT+version,{headers:{Accept:'application/vnd.github+json'},cache:'no-store'});
    if(!r.ok)continue;
    const j=await r.json(),files=Array.isArray(j.assets)?j.assets:[];
    if(j.draft||!j.published_at||j.tag_name!=='powerslidepro-desktop-v'+version)continue;
-   const assets=targets.map(x=>files.find(a=>a.name==='PowerSlidePro-'+version+'-'+x.suffix&&valid(a)));
+   const assets=targets.map(x=>installerAsset(files,'PowerSlidePro',version,x.suffix,valid));
    const sha=files.find(a=>a.name==='SHA256SUMS.txt'&&valid(a));
    if(assets.every(Boolean)&&sha){chosen={version,assets,sha};break;}
   }catch{}
@@ -91,6 +97,22 @@ async function loadReleases(){
  const link=document.getElementById('pspro-download-checksums');
  if(link){link.href=chosen.sha.browser_download_url;link.hidden=false;}
 }
+async function refreshBibleRelease(discovered,current,section,versionBadge,verify){
+ const list=await discovered;
+ const candidates=list.map(r=>({r,version:/^bibleapp-v(\d+\.\d+\.\d+)$/.exec(r.tag_name)?.[1]})).filter(x=>x.version).sort((a,b)=>compareVersions(a.version,b.version));
+ for(const {r,version} of candidates){
+  if(compareVersions(version,BIBLE_VERSION)>0)continue;
+  const files=Array.isArray(r.assets)?r.assets:[];
+  const valid=a=>a?.state==='uploaded'&&a.size>0&&a.browser_download_url==='https://github.com/thythet/thythet/releases/download/'+r.tag_name+'/'+a.name;
+  const suffixes=['win-x64.exe','win-x64.msi','mac-arm64.dmg','mac-x64.dmg'];
+  const matched=suffixes.map(suffix=>installerAsset(files,'BibleApp',version,suffix,valid));
+  const checksum=files.find(a=>a.name==='SHA256SUMS.txt'&&valid(a));
+  if(!matched.every(Boolean)||!checksum)continue;
+  if(overlay!==current)return;
+  const updated=BIBLE_ASSETS.map((a,i)=>({...a,detail:a.detail.replace('v'+BIBLE_VERSION,'v'+version),url:matched[i].browser_download_url,name:matched[i].name}));
+  section.replaceChildren(...updated.map(bibleDownloadRow));versionBadge.textContent='v'+version;verify.href=checksum.browser_download_url;return;
+ }
+}
 btn.addEventListener('click',()=>{
  if(overlay)return;
  rows.length=0;lastFocus=document.activeElement;overlay=el('div');overlay.id='pspro-download-backdrop';
@@ -105,14 +127,15 @@ btn.addEventListener('click',()=>{
  app.append(logo,info,el('span','sw-beta','BETA'));
  const heading=el('div','sw-platform-heading','Available for');
  const win=row('ri-windows-fill','Windows 10 / 11','64-bit · EXE','win-x64.exe');
- const arm=row('ri-apple-fill','macOS · Apple Silicon','M-series Mac · DMG','mac-arm64.dmg');
- const intel=row('ri-apple-fill','macOS · Intel','Intel Mac · DMG','mac-x64.dmg');
+ const arm=row('ri-apple-fill','macOS · M-Series (Apple Silicon)','M1, M2, M3, M4, M5 and newer · DMG','mac-arm64.dmg');
+ const intel=row('ri-apple-fill','macOS · Intel Mac','Intel processor · DMG','mac-x64.dmg');
  const bibleHeading=el('div','sw-platform-heading','Bible software');
  const bibleApp=el('section','sw-app'),bibleLogo=el('img','sw-logo');
  bibleLogo.src='../bibleapp/web/assets/icon-192.png';bibleLogo.alt='HolyBible';
  const bibleInfo=el('div');bibleInfo.append(el('div','sw-app-title','HolyBible'),el('div','sw-app-sub','ព្រះគម្ពីរបរិសុទ្ធ · Khmer Bible · Offline reading'));
- bibleApp.append(bibleLogo,bibleInfo,el('span','sw-beta','v'+BIBLE_VERSION));
- const bibleRows=BIBLE_ASSETS.map(bibleDownloadRow);
+ const bibleVersionBadge=el('span','sw-beta','v'+BIBLE_VERSION);
+ bibleApp.append(bibleLogo,bibleInfo,bibleVersionBadge);
+ const bibleRows=el('div');bibleRows.append(...BIBLE_ASSETS.map(bibleDownloadRow));
  const bibleHelp=el('details','sw-keyboard-help');
  const bibleCmd=el('code',null,'xattr -dr com.apple.quarantine "/Applications/Bible App.app"');
  bibleHelp.append(el('summary',null,'macOS installation help'),el('p',null,'Open the correct DMG and move Bible App to Applications. If macOS blocks the app, first verify the installer checksum and use System Settings → Privacy & Security → Open Anyway if available. Only for this trusted release, if quarantine is still the issue, run in Terminal:'),el('p'));
@@ -141,10 +164,10 @@ btn.addEventListener('click',()=>{
  const checksum=el('a',null,'Verify SHA-256');checksum.id='pspro-download-checksums';checksum.hidden=true;
  checksum.target='_blank';checksum.rel='noopener noreferrer';
  links.append(releases,checksum);footer.append(links);
- d.append(x,app,heading,win,arm,intel,bibleHeading,bibleApp,...bibleRows,bibleVerify,bibleHelp,keyboardHeading,keyboardApp,keyboardHelp,footer);
+ d.append(x,app,heading,win,arm,intel,bibleHeading,bibleApp,bibleRows,bibleVerify,bibleHelp,keyboardHeading,keyboardApp,keyboardHelp,footer);
  overlay.append(d);document.body.append(overlay);
  overlay.onclick=e=>{if(e.target===overlay)close();};
- x.focus();loadReleases();
+ x.focus();const discovered=discoverReleases();loadReleases(discovered);refreshBibleRelease(discovered,overlay,bibleRows,bibleVersionBadge,bibleVerify);
 });
 document.addEventListener('keydown',e=>{if(overlay&&e.key==='Escape'){e.preventDefault();e.stopPropagation();close();}});
 })();
