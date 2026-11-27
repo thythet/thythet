@@ -2000,6 +2000,15 @@ fn presenter_preview(
     response
 }
 
+// Disable navigation without applying egui's default disabled-widget alpha
+// to the entire presenter surface. Otherwise the audience-stage paint beneath
+// this surface becomes visible through its background and slide previews.
+#[cfg(any(target_arch = "wasm32", test))]
+fn lock_presenter_ui(ui: &mut Ui) {
+    ui.disable();
+    ui.set_opacity(1.0);
+}
+
 /// Tahoe77 browser Presenter View: controls only in this editor, with a separate
 /// audience window. A grid takes over the presenter surface, never the projector.
 #[cfg(target_arch = "wasm32")]
@@ -2038,10 +2047,14 @@ fn web_presenter_panel(
         .order(egui::Order::Middle)
         .fixed_pos(full.min)
         .show(ctx, |ui| {
-            if smart_open { ui.disable(); }
+            if smart_open { lock_presenter_ui(ui); }
             ui.set_width(full.width());
             ui.set_min_height(full.height());
-            ui.painter().rect_filled(full, 0.0, BG);
+            // Paint a fully opaque cover on the same layer, independently of
+            // disabled child widgets, so the lower audience stage cannot bleed through.
+            if ui.is_visible() {
+                ctx.layer_painter(ui.layer_id()).rect_filled(full, 0.0, BG);
+            }
             ui.spacing_mut().item_spacing = vec2(8.0, 7.0);
             egui::Frame::NONE.inner_margin(egui::Margin::symmetric(18, 13)).show(ui, |ui| {
                 let available = (full.width() - 36.0).max(150.0);
@@ -2470,6 +2483,19 @@ mod tests {
     #![allow(clippy::unwrap_used, clippy::expect_used)]
 
     use super::*;
+
+    #[test]
+    fn presenter_modal_lock_keeps_painter_opaque() {
+        egui::__run_test_ui(|ui| {
+            lock_presenter_ui(ui);
+            assert!(!ui.is_enabled(), "presenter controls must stay locked");
+            assert_eq!(ui.opacity(), 1.0, "the presenter must not fade");
+            ui.horizontal(|child| {
+                assert!(!child.is_enabled());
+                assert_eq!(child.opacity(), 1.0, "slide previews must stay opaque");
+            });
+        });
+    }
 
     /// Send real egui key events to the presenter UI, without the audience window's handler.
     #[test]

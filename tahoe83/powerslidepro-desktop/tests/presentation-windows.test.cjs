@@ -103,3 +103,11 @@ test('native audience starts fullscreen and Escape only leaves fullscreen',()=>{
  assert.match(html,/setTimeout\(\(\)=>controls\.classList\.remove\('active'\),2500\)/);
  assert.match(html,/pspro-audience-try-fullscreen/);
 });
+
+test('modal locks presenter input without fading its opaque background',()=>{
+ const show=fs.readFileSync(path.join(root,'deckcraft-src/crates/ui-egui/src/show.rs'),'utf8');
+ assert.match(show,/fn lock_presenter_ui\(ui: &mut Ui\)\s*\{\s*ui\.disable\(\);\s*ui\.set_opacity\(1\.0\);\s*\}/);
+ assert.match(show,/if smart_open \{ lock_presenter_ui\(ui\); \}/);
+ assert.match(show,/ctx\.layer_painter\(ui\.layer_id\(\)\)\.rect_filled\(full, 0\.0, BG\)/);
+ assert.doesNotMatch(show,/if smart_open \{ ui\.disable\(\); \}/);
+});
