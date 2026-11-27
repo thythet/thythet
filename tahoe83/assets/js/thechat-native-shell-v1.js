@@ -5,6 +5,75 @@
   const host = document.getElementById("theChatWindow");
   const frame = document.getElementById("theChatFrame");
   if (!host || !frame) return;
+
+  // Mirror chat22's native unread total without touching its database.
+  const launcher = document.getElementById("theChatLauncher");
+  if (!launcher) return;
+  const badge = document.createElement("span");
+  badge.id = "theChatNotificationBadge";
+  badge.hidden = true;
+  badge.setAttribute("aria-hidden","true");
+  launcher.appendChild(badge);
+  const css = document.createElement("style");
+  css.textContent = "#theChatNotificationBadge{position:absolute;top:-3px;right:-3px;min-width:21px;height:21px;padding:0 5px;box-sizing:border-box;border:2px solid white;border-radius:999px;background:#ef4444;color:white;font:700 11px/17px system-ui,sans-serif;text-align:center;pointer-events:none;z-index:3;white-space:nowrap}#theChatNotificationBadge[hidden]{display:none!important}";
+  document.head.appendChild(css);
+  let observer, lastOpen = host.classList.contains("open");
+  const paint = (label = "") => {
+    const valid = label === "99+" || /^[1-9][0-9]*$/.test(label);
+    badge.hidden = !valid;
+    if (badge.textContent !== (valid ? label : "")) badge.textContent = valid ? label : "";
+    launcher.setAttribute("aria-label",valid ? "Open thechat, "+label+" unread messages" : "Open thechat");
+    launcher.title = valid ? "thechat · "+label+" unread messages" : "thechat";
+  };
+  const permitted = () => typeof canUseDesktopApps === "function" && canUseDesktopApps();
+  const sync = () => {
+    if (!permitted()) return paint();
+    try {
+      const doc = frame.contentDocument, native = doc?.getElementById("minimizedUnread"), gate = doc?.getElementById("authGate");
+      paint(native && !native.hidden && gate?.classList.contains("hidden") ? native.textContent.trim() : "");
+    } catch { paint(); }
+  };
+  const observe = () => {
+    observer?.disconnect();
+    try {
+      const doc = frame.contentDocument, native = doc?.getElementById("minimizedUnread"), gate = doc?.getElementById("authGate");
+      if (native && gate) {
+        observer = new MutationObserver(sync);
+        observer.observe(native,{attributes:true,childList:true,characterData:true,subtree:true});
+        observer.observe(gate,{attributes:true,attributeFilter:["class"]});
+      }
+    } catch {}
+    sync();
+  };
+  frame.addEventListener("load",observe);
+  const checkAccess = () => {
+    if (!permitted()) {
+      paint();
+      if (frame.getAttribute("src") !== "about:blank") {observer?.disconnect();frame.src="about:blank";}
+      return;
+    }
+    if (frame.getAttribute("src") === "about:blank") {frame.loading="eager";frame.src=frame.dataset.src;}
+    sync();
+  };
+  // On normal close, return to chat home to stop hidden active-chat auto-read.
+  const leaveConversation = () => {
+    try {
+      const doc=frame.contentDocument;
+      if (!doc || doc.querySelector(".tc-overlay.show") || doc.querySelector("#window .home-mode")) return;
+      const escape=()=>doc.dispatchEvent(new frame.contentWindow.KeyboardEvent("keydown",{key:"Escape",bubbles:true,cancelable:true}));
+      escape();
+      if (!doc.querySelector("#window .home-mode")) escape();
+    } catch {}
+  };
+  new MutationObserver(()=>{
+    const open=host.classList.contains("open");
+    if(lastOpen&&!open)leaveConversation();
+    lastOpen=open;sync();
+  }).observe(host,{attributes:true,attributeFilter:["class"]});
+  window.setInterval(checkAccess,1000);
+  checkAccess();
+  observe();
+
   let drag = null;
 
   const moveWindow = (clientX, clientY) => {
