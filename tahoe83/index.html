@@ -3441,6 +3441,10 @@ body #postsWindow #postsFrame{background:none!important;background-color:transpa
  border:0!important;display:block}
 #qtWindow{width:min(880px,94vw);height:min(830px,90dvh);min-width:520px;min-height:490px}
 #bibleWebWindow{width:min(1140px,94vw);height:min(840px,91dvh);min-width:680px;min-height:500px}
+#holyBibleWindow{width:min(1140px,94vw);height:min(840px,91dvh);min-width:680px;min-height:500px}
+#holyBibleFrame{background:#f8fafb!important}
+#holyBibleLauncher{left:auto;right:22px;top:auto;bottom:max(100px,calc(env(safe-area-inset-bottom) + 88px))}
+#holyBibleLauncher img{width:40px;height:40px;object-fit:contain;border-radius:11px;pointer-events:none}
 #allSongWebWindow{width:min(710px,94vw);height:min(815px,90dvh);min-width:460px;min-height:490px;background:#0f0f0f!important}
 #qtFrame{background:#f7f7f7!important}#bibleWebFrame{background:#f8fafb!important}#allSongWebFrame{background:#0f0f0f!important}
 #qtLauncher{left:804px;bottom:max(22px,env(safe-area-inset-bottom))}
@@ -3453,7 +3457,8 @@ body #postsWindow #postsFrame{background:none!important;background-color:transpa
  #qtLauncher{left:16px;bottom:max(162px,calc(env(safe-area-inset-bottom) + 150px))}
  #bibleWebLauncher{left:88px;bottom:max(162px,calc(env(safe-area-inset-bottom) + 150px))}
  #allSongWebLauncher{left:160px;bottom:max(162px,calc(env(safe-area-inset-bottom) + 150px))}
- #qtWindow,#bibleWebWindow,#allSongWebWindow{left:0!important;top:0!important;transform:none!important;
+ #holyBibleLauncher{left:232px;right:auto;bottom:max(162px,calc(env(safe-area-inset-bottom) + 150px))}
+ #qtWindow,#bibleWebWindow,#allSongWebWindow,#holyBibleWindow{left:0!important;top:0!important;transform:none!important;
   width:100vw!important;height:100dvh!important;min-width:0!important;min-height:0!important;
   border:0!important;border-radius:0!important}
  .tahoe-web-addon-window .addon-chrome{padding-top:env(safe-area-inset-top);height:calc(42px + env(safe-area-inset-top))}
@@ -3587,6 +3592,7 @@ body #postsWindow #postsFrame{background:none!important;background-color:transpa
 <button class="desktop-app-launcher" id="listenWordLauncher" aria-label="Open Listen to the Word" title="ស្ដាប់ព្រះបន្ទូល"><i class="ri-mic-fill" aria-hidden="true"></i></button>
 <button class="desktop-app-launcher" id="qtLauncher" aria-label="Open ពេលសៀមស្ងាត់" title="ពេលសៀមស្ងាត់"><img src="../qt/assets/site-icon.png" alt=""></button>
 <button class="desktop-app-launcher" id="bibleWebLauncher" aria-label="Open ព្រះគម្ពីរខ្មែរ ១៩៥៤ (Web)" title="ព្រះគម្ពីរខ្មែរ ១៩៥៤ (Web)"><img src="../bible/assets/icon-192.png" alt=""></button>
+<button class="desktop-app-launcher" id="holyBibleLauncher" aria-label="Open HolyBible" title="HolyBible · ព្រះគម្ពីរបរិសុទ្ធ"><img src="../bibleapp/web/assets/icon-192.png" alt=""></button>
 <button class="desktop-app-launcher" id="allSongWebLauncher" aria-label="Open Song Finder" title="Song Finder"><i class="ri-music-2-fill" aria-hidden="true"></i></button>
 <button type="button" class="desktop-arrange-button" id="arrangeAppsBtn" aria-label="Arrange Apps" aria-controls="desktopContextMenu" aria-expanded="false" title="Arrange apps and desktop icons"><i class="ri-layout-grid-fill" aria-hidden="true"></i><span>Arrange Apps</span></button>
 <div class="desktop-context-menu" id="desktopContextMenu" role="menu" aria-label="Desktop arrangement">
@@ -3845,6 +3851,25 @@ body #postsWindow #postsFrame{background:none!important;background-color:transpa
   <a class="addon-external" href="../bible/" target="_blank" rel="noopener noreferrer" aria-label="Open ព្រះគម្ពីរខ្មែរ ១៩៥៤ (Web) standalone" title="Open original app"><i class="ri-external-link-line" aria-hidden="true"></i></a>
  </header>
  <iframe id="bibleWebFrame" src="about:blank" data-src="../bible/index.html" title="ព្រះគម្ពីរខ្មែរ ១៩៥៤ (Web)" loading="lazy" allow="autoplay; clipboard-read; clipboard-write; fullscreen" allowfullscreen></iframe>
+ <i class="desktop-app-drag-edge bottom" data-app-drag></i><i class="desktop-app-drag-edge left" data-app-drag></i><i class="desktop-app-drag-edge right" data-app-drag></i>
+ <i class="desktop-app-resize n" data-app-resize="n"></i><i class="desktop-app-resize s" data-app-resize="s"></i>
+ <i class="desktop-app-resize w" data-app-resize="w"></i><i class="desktop-app-resize e" data-app-resize="e"></i>
+ <i class="desktop-app-resize nw" data-app-resize="nw"></i><i class="desktop-app-resize ne" data-app-resize="ne"></i>
+ <i class="desktop-app-resize sw" data-app-resize="sw"></i><i class="desktop-app-resize se" data-app-resize="se"></i>
+</section>
+
+<!-- HolyBible: reuse the standalone BibleApp and its existing account and storage. -->
+<section class="desktop-app-window tahoe-web-addon-window" id="holyBibleWindow" aria-label="HolyBible">
+ <header class="addon-chrome" data-app-drag>
+  <span class="addon-dots">
+   <button type="button" class="addon-dot close" id="holyBibleClose" aria-label="Close HolyBible"><i class="ri-close-line"></i></button>
+   <button type="button" class="addon-dot minimize" id="holyBibleMin" aria-label="Minimize HolyBible"><i class="ri-subtract-line"></i></button>
+   <button type="button" class="addon-dot zoom" id="holyBibleZoom" aria-label="Zoom HolyBible"><i class="ri-fullscreen-line"></i></button>
+  </span>
+  <span class="addon-title"><img src="../bibleapp/web/assets/icon-192.png" alt="">HolyBible</span>
+  <a class="addon-external" href="../bibleapp/web/" target="_blank" rel="noopener noreferrer" aria-label="Open HolyBible standalone" title="Open original app"><i class="ri-external-link-line" aria-hidden="true"></i></a>
+ </header>
+ <iframe id="holyBibleFrame" src="about:blank" data-src="../bibleapp/web/index.html" title="HolyBible" loading="lazy" allow="autoplay; clipboard-read; clipboard-write; fullscreen" allowfullscreen></iframe>
  <i class="desktop-app-drag-edge bottom" data-app-drag></i><i class="desktop-app-drag-edge left" data-app-drag></i><i class="desktop-app-drag-edge right" data-app-drag></i>
  <i class="desktop-app-resize n" data-app-resize="n"></i><i class="desktop-app-resize s" data-app-resize="s"></i>
  <i class="desktop-app-resize w" data-app-resize="w"></i><i class="desktop-app-resize e" data-app-resize="e"></i>
@@ -4507,6 +4532,7 @@ const desktopApps={
  listenword:{window:"#listenWordWindow",frame:"#listenWordFrame",launcher:"#listenWordLauncher",stateKey:"listenWordWindowState",launcherKey:"listenWordLauncherPos",title:"ស្ដាប់ព្រះបន្ទូល"},
  qt:{window:"#qtWindow",frame:"#qtFrame",launcher:"#qtLauncher",stateKey:"qtWindowState",launcherKey:"qtLauncherPos",title:"ពេលសៀមស្ងាត់"},
  bibleweb:{window:"#bibleWebWindow",frame:"#bibleWebFrame",launcher:"#bibleWebLauncher",stateKey:"bibleWebWindowState",launcherKey:"bibleWebLauncherPos",title:"ព្រះគម្ពីរខ្មែរ ១៩៥៤ (Web)"},
+ holybible:{window:"#holyBibleWindow",frame:"#holyBibleFrame",launcher:"#holyBibleLauncher",stateKey:"holyBibleWindowState",launcherKey:"holyBibleLauncherPos",title:"HolyBible"},
  allsongweb:{window:"#allSongWebWindow",frame:"#allSongWebFrame",launcher:"#allSongWebLauncher",stateKey:"allSongWebWindowState",launcherKey:"allSongWebLauncherPos",title:"Song Finder"}
 };
 function themeBridgePayload(){
@@ -4529,9 +4555,9 @@ function themeBridgePayload(){
  }
 }
 function ensureDesktopAppLoaded(id){const c=desktopApps[id],f=$(c?.frame);if(!f)return;const src=f.dataset.src;if(src&&(!f.src||f.src==="about:blank")){f.src=src;f.dataset.loading="1"}}
-function sendDesktopAppTheme(id){if(["word","grid","effect","pdf","photo","vector","posts","prayinfo","listenword","qt","bibleweb","allsongweb"].includes(id))return;const c=desktopApps[id],f=$(c?.frame);if(f?.contentWindow&&f.src!=="about:blank")try{f.contentWindow.postMessage(themeBridgePayload(),"*")}catch{}}
+function sendDesktopAppTheme(id){if(["word","grid","effect","pdf","photo","vector","posts","prayinfo","listenword","qt","bibleweb","holybible","allsongweb"].includes(id))return;const c=desktopApps[id],f=$(c?.frame);if(f?.contentWindow&&f.src!=="about:blank")try{f.contentWindow.postMessage(themeBridgePayload(),"*")}catch{}}
 function syncAllAppThemes(){Object.keys(desktopApps).forEach(sendDesktopAppTheme)}
-function desktopAppAction(id,action,value){if(["word","grid","effect","pdf","photo","vector","posts","prayinfo","listenword","qt","bibleweb","allsongweb"].includes(id))return;const c=desktopApps[id],f=$(c?.frame);if(!f?.contentWindow)return;f.contentWindow.postMessage({type:id==="bible"?"tahoe-bible-action":id==="powerslide"?"tahoe-powerslide-action":"tahoe-deckcraft-action",action,value},"*")}
+function desktopAppAction(id,action,value){if(["word","grid","effect","pdf","photo","vector","posts","prayinfo","listenword","qt","bibleweb","holybible","allsongweb"].includes(id))return;const c=desktopApps[id],f=$(c?.frame);if(!f?.contentWindow)return;f.contentWindow.postMessage({type:id==="bible"?"tahoe-bible-action":id==="powerslide"?"tahoe-powerslide-action":"tahoe-deckcraft-action",action,value},"*")}
 function updateFullscreenUI(){Object.entries(desktopApps).forEach(([id,c])=>{const el=$(c.window),active=document.fullscreenElement===el||el?.classList.contains("app-fullscreen-fallback");if(id==="bible"){el?.classList.toggle("fullscreen-reading",active);const i=$("#bibleChromeFullscreen i");if(i)i.className=active?"ri-fullscreen-exit-line":"ri-fullscreen-line";desktopAppAction("bible","fullscreen-reader",active)}else if(id==="powerslide"){el?.classList.toggle("fullscreen-workspace",active);const i=$("#powerChromeFullscreen i");if(i)i.className=active?"ri-fullscreen-exit-line":"ri-fullscreen-line";desktopAppAction("powerslide","fullscreen-workspace",active)}else if(id==="deckcraft"){const i=$("#deckCraftFullscreen i");if(i)i.className=active?"ri-fullscreen-exit-line":"ri-fullscreen-line"}else if(id==="thechat"){const i=$("#theChatWinFullscreen i");if(i)i.className=active?"ri-fullscreen-exit-line":"ri-fullscreen-line"}})}
 async function toggleDesktopFullscreen(id){const c=desktopApps[id],el=$(c?.window);if(!el)return;try{if(document.fullscreenElement===el){await document.exitFullscreen();return}if(document.fullscreenElement)await document.exitFullscreen();if(el.requestFullscreen){await el.requestFullscreen({navigationUI:"hide"});return}}catch{}el.classList.toggle("app-fullscreen-fallback");updateFullscreenUI()}
 document.addEventListener("fullscreenchange",updateFullscreenUI);
@@ -4563,7 +4589,7 @@ function openDesktopApp(id){
  // Loading an iframe while its Tahoe window is display:none can leave PowerSlidePro at 0×0 and stuck during renderer startup.
  requestAnimationFrame(()=>{ensureDesktopAppLoaded(id);setTimeout(()=>sendDesktopAppTheme(id),0)})
 }
-function closeDesktopApp(id){const c=desktopApps[id],el=$(c?.window);el?.classList.remove("open");$(c?.launcher)?.classList.remove("active");if(id==="deckcraft")el?.classList.remove("deckcraft-present-mode","app-fullscreen-fallback");if(["word","grid","effect","pdf","photo","vector","thechat","posts","prayinfo","listenword","qt","bibleweb","allsongweb"].includes(id))el?.classList.remove("app-fullscreen-fallback")}
+function closeDesktopApp(id){const c=desktopApps[id],el=$(c?.window);el?.classList.remove("open");$(c?.launcher)?.classList.remove("active");if(id==="deckcraft")el?.classList.remove("deckcraft-present-mode","app-fullscreen-fallback");if(["word","grid","effect","pdf","photo","vector","thechat","posts","prayinfo","listenword","qt","bibleweb","holybible","allsongweb"].includes(id))el?.classList.remove("app-fullscreen-fallback")}
 function zoomDesktopApp(id){
  const c=desktopApps[id],el=$(c.window);if(!el)return;
  if(el.dataset.zoomed==="1"){el.dataset.zoomed="0";restoreDesktopAppState(id)}
@@ -4628,6 +4654,11 @@ function bindDesktopApps(){
  $("#bibleWebClose").onclick=()=>closeDesktopApp("bibleweb");
  $("#bibleWebMin").onclick=()=>closeDesktopApp("bibleweb");
  $("#bibleWebZoom").onclick=()=>zoomDesktopApp("bibleweb");
+ bindFloatingControl($("#holyBibleLauncher"),"holyBibleLauncherPos",()=>openDesktopApp("holybible"),{});
+ $("#holyBibleClose").onclick=()=>closeDesktopApp("holybible");
+ $("#holyBibleMin").onclick=()=>closeDesktopApp("holybible");
+ $("#holyBibleZoom").onclick=()=>zoomDesktopApp("holybible");
+ $("#holyBibleLauncher").addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openDesktopApp("holybible")}});
  bindFloatingControl($("#allSongWebLauncher"),"allSongWebLauncherPos",()=>openDesktopApp("allsongweb"),{left:948,bottom:22});
  $("#allSongWebClose").onclick=()=>closeDesktopApp("allsongweb");
  $("#allSongWebMin").onclick=()=>closeDesktopApp("allsongweb");
@@ -4771,7 +4802,7 @@ dashboardResponsiveObserver.observe(win);
 addEventListener("resize",updateDashboardResponsiveState,{passive:true});
 requestAnimationFrame(updateDashboardResponsiveState);
 let tahoeFront="dashboard",tahoeZ=40;
-function allTahoeWindows(){return [win,$("#finderWindow"),$("#bibleWindow"),$("#powerSlideWindow"),$("#deckCraftWindow"),$("#theChatWindow"),$("#postsWindow"),$("#prayInfoWindow"),$("#listenWordWindow"),...["qtWindow","bibleWebWindow","allSongWebWindow"].map(x=>$("#"+x))].filter(Boolean)}
+function allTahoeWindows(){return [win,$("#finderWindow"),$("#bibleWindow"),$("#powerSlideWindow"),$("#deckCraftWindow"),$("#theChatWindow"),$("#postsWindow"),$("#prayInfoWindow"),$("#listenWordWindow"),...["qtWindow","bibleWebWindow","holyBibleWindow","allSongWebWindow"].map(x=>$("#"+x))].filter(Boolean)}
 function focusTahoeWindow(target){
  tahoeZ++;
  allTahoeWindows().forEach(w=>{if(w!==target)w.style.zIndex="24"});
@@ -5182,30 +5213,31 @@ function applyProReadOnly(){
 
 function updateShellAccess(){
  const p=state.profile||{},owner=isOwnerAdmin(),logged=!!p.authenticated&&!p.anonymous,a=firebaseRuntime.currentAccess||{},blocked=!!a.blocked&&!owner,pro=!!a.pro&&!owner;
- const gate=$("#authGate"),portal=$("#userPortal"),finderLauncher=$("#finderLauncher"),bibleLauncher=$("#bibleLauncher"),bibleNextLauncher=$("#bibleNextLauncher"),powerLauncher=$("#powerSlideLauncher"),powerNextLauncher=$("#powerSlideNextLauncher"),allSongLauncher=$("#allSongNextLauncher"),deckCraftLauncher=$("#deckCraftLauncher"),theChatLauncher=$("#theChatLauncher"),postsLauncher=$("#postsLauncher"),prayInfoLauncher=$("#prayInfoLauncher"),listenWordLauncher=$("#listenWordLauncher"),qtLauncher=$("#qtLauncher"),bibleWebLauncher=$("#bibleWebLauncher"),allSongWebLauncher=$("#allSongWebLauncher");
+ const gate=$("#authGate"),portal=$("#userPortal"),finderLauncher=$("#finderLauncher"),bibleLauncher=$("#bibleLauncher"),bibleNextLauncher=$("#bibleNextLauncher"),powerLauncher=$("#powerSlideLauncher"),powerNextLauncher=$("#powerSlideNextLauncher"),allSongLauncher=$("#allSongNextLauncher"),deckCraftLauncher=$("#deckCraftLauncher"),theChatLauncher=$("#theChatLauncher"),postsLauncher=$("#postsLauncher"),prayInfoLauncher=$("#prayInfoLauncher"),listenWordLauncher=$("#listenWordLauncher"),qtLauncher=$("#qtLauncher"),bibleWebLauncher=$("#bibleWebLauncher"),holyBibleLauncher=$("#holyBibleLauncher"),allSongWebLauncher=$("#allSongWebLauncher");
  gate?.classList.toggle("hidden",logged);
+ if(!canUseDesktopApps())closeDesktopApp("holybible");
  if(blocked){
    portal?.classList.remove("show");win.style.visibility="hidden";
-   [finderLauncher,bibleLauncher,bibleNextLauncher,powerLauncher,powerNextLauncher,allSongLauncher,deckCraftLauncher,theChatLauncher,postsLauncher,prayInfoLauncher,listenWordLauncher,qtLauncher,bibleWebLauncher,allSongWebLauncher].forEach(x=>{if(x)x.style.display="none"});return
+   [finderLauncher,bibleLauncher,bibleNextLauncher,powerLauncher,powerNextLauncher,allSongLauncher,deckCraftLauncher,theChatLauncher,postsLauncher,prayInfoLauncher,listenWordLauncher,qtLauncher,bibleWebLauncher,holyBibleLauncher,allSongWebLauncher].forEach(x=>{if(x)x.style.display="none"});return
  }
  if(owner){
    portal?.classList.remove("show");win.style.visibility="";
-   [finderLauncher,bibleLauncher,bibleNextLauncher,powerLauncher,powerNextLauncher,allSongLauncher,deckCraftLauncher,theChatLauncher,postsLauncher,prayInfoLauncher,listenWordLauncher,qtLauncher,bibleWebLauncher,allSongWebLauncher].forEach(x=>{if(x)x.style.display=""});
+   [finderLauncher,bibleLauncher,bibleNextLauncher,powerLauncher,powerNextLauncher,allSongLauncher,deckCraftLauncher,theChatLauncher,postsLauncher,prayInfoLauncher,listenWordLauncher,qtLauncher,bibleWebLauncher,holyBibleLauncher,allSongWebLauncher].forEach(x=>{if(x)x.style.display=""});
    win.classList.remove("pro-readonly");applyProReadOnly();return
  }
  if(logged&&pro){
    portal?.classList.remove("show");win.style.visibility="";
    if(finderLauncher)finderLauncher.style.display="";
-   if(bibleLauncher)bibleLauncher.style.display="";if(bibleNextLauncher)bibleNextLauncher.style.display="";if(powerLauncher)powerLauncher.style.display="";if(powerNextLauncher)powerNextLauncher.style.display="";if(allSongLauncher)allSongLauncher.style.display="";if(deckCraftLauncher)deckCraftLauncher.style.display="";if(theChatLauncher)theChatLauncher.style.display="";if(postsLauncher)postsLauncher.style.display="";if(prayInfoLauncher)prayInfoLauncher.style.display="";if(listenWordLauncher)listenWordLauncher.style.display="";if(qtLauncher)qtLauncher.style.display="";if(bibleWebLauncher)bibleWebLauncher.style.display="";if(allSongWebLauncher)allSongWebLauncher.style.display="";
+   if(bibleLauncher)bibleLauncher.style.display="";if(bibleNextLauncher)bibleNextLauncher.style.display="";if(powerLauncher)powerLauncher.style.display="";if(powerNextLauncher)powerNextLauncher.style.display="";if(allSongLauncher)allSongLauncher.style.display="";if(deckCraftLauncher)deckCraftLauncher.style.display="";if(theChatLauncher)theChatLauncher.style.display="";if(postsLauncher)postsLauncher.style.display="";if(prayInfoLauncher)prayInfoLauncher.style.display="";if(listenWordLauncher)listenWordLauncher.style.display="";if(qtLauncher)qtLauncher.style.display="";if(bibleWebLauncher)bibleWebLauncher.style.display="";if(holyBibleLauncher)holyBibleLauncher.style.display="";if(allSongWebLauncher)allSongWebLauncher.style.display="";
    applyProReadOnly();return
  }
  if(logged){
    win.classList.remove("pro-readonly");win.style.visibility="hidden";
-   [finderLauncher,bibleLauncher,bibleNextLauncher,powerLauncher,powerNextLauncher,allSongLauncher,deckCraftLauncher,theChatLauncher,postsLauncher,prayInfoLauncher,listenWordLauncher,qtLauncher,bibleWebLauncher,allSongWebLauncher].forEach(x=>{if(x)x.style.display="none"});
+   [finderLauncher,bibleLauncher,bibleNextLauncher,powerLauncher,powerNextLauncher,allSongLauncher,deckCraftLauncher,theChatLauncher,postsLauncher,prayInfoLauncher,listenWordLauncher,qtLauncher,bibleWebLauncher,holyBibleLauncher,allSongWebLauncher].forEach(x=>{if(x)x.style.display="none"});
    portal?.classList.add("show");renderUserPortal();return
  }
  portal?.classList.remove("show");win.classList.remove("pro-readonly");win.style.visibility="hidden";
- [finderLauncher,bibleLauncher,bibleNextLauncher,powerLauncher,powerNextLauncher,allSongLauncher,deckCraftLauncher,theChatLauncher,postsLauncher,prayInfoLauncher,listenWordLauncher,qtLauncher,bibleWebLauncher,allSongWebLauncher].forEach(x=>{if(x)x.style.display="none"})
+ [finderLauncher,bibleLauncher,bibleNextLauncher,powerLauncher,powerNextLauncher,allSongLauncher,deckCraftLauncher,theChatLauncher,postsLauncher,prayInfoLauncher,listenWordLauncher,qtLauncher,bibleWebLauncher,holyBibleLauncher,allSongWebLauncher].forEach(x=>{if(x)x.style.display="none"})
 }
 function renderUserPortal(){const p=state.profile||{},a=firebaseRuntime.currentAccess||{},mods=a.modules||{dashboard:true,finder:false},av=portalAvatarHTML(p),name=p.displayName||"User",email=p.email||"";["#userPortalTopAvatar","#userPortalAvatar"].forEach(sel=>{const el=$(sel);if(el)el.innerHTML=av});$("#userPortalTopName").textContent=name;$("#userPortalTopEmail").textContent=email;$("#userPortalName").textContent=name;$("#userPortalEmail").textContent=email;$("#userPortalAccess").innerHTML=`<span class="user-chip">${esc(a.role||"viewer")}</span>${a.pro?'<span class="user-chip pro">PRO</span>':""}`;const m=$("#userPortalModules");if(!m)return;m.innerHTML=`<article class="user-module"><i class="ri-user-3-line"></i><h3>My Dashboard</h3><p>Your account, role, access level, and profile status.</p></article>`+`<article class="user-module ${mods.finder?"":"locked"}"><i class="${mods.finder?"ri-folder-3-line":"ri-lock-line"}"></i><h3>File Finder</h3><p>${mods.finder?"View files shared by the administrator. Read-only access.":"The administrator has not enabled File Finder for this account."}</p>${mods.finder?'<button class="ff-btn primary" id="userOpenFinder">Open Files</button>':""}</article>`;$("#userOpenFinder")?.addEventListener("click",()=>{portal.classList.remove("show");openFinderWindow();$("#finderWindow").classList.add("user-readonly")})}
 function applyProfile(){
@@ -5346,6 +5378,7 @@ const DESKTOP_LAUNCHER_META=[
  {id:"listenWordLauncher",key:"listenWordLauncherPos",name:"ស្ដាប់ព្រះបន្ទូល",type:"content"},
  {id:"qtLauncher",key:"qtLauncherPos",name:"ពេលសៀមស្ងាត់",type:"content"},
  {id:"bibleWebLauncher",key:"bibleWebLauncherPos",name:"ព្រះគម្ពីរខ្មែរ ១៩៥៤ (Web)",type:"content"},
+ {id:"holyBibleLauncher",key:"holyBibleLauncherPos",name:"HolyBible",type:"content"},
  {id:"allSongWebLauncher",key:"allSongWebLauncherPos",name:"Song Finder",type:"content"},
  {id:"bibleLauncher",key:"bibleLauncherPos",name:"Bible Legacy",type:"legacy"},
  {id:"powerSlideLauncher",key:"powerSlideLauncherPos",name:"PowerSlide Legacy",type:"legacy"},
@@ -5390,7 +5423,7 @@ function arrangeDesktopIcons(mode="auto",sort="type"){
  state.settings.desktopArrangeMode=mode;state.settings.desktopArrangeSort=sort;save();showToast(mode==="auto"?"Desktop icons arranged":`Icons arranged ${mode}`)
 }
 function resetDesktopIconLayout(){
- const bottomOrder=["finderLauncher","bibleNextLauncher","allSongNextLauncher","powerSlideNextLauncher","deckCraftLauncher","vectorLauncher","photoLauncher","pdfLauncher","effectLauncher","gridLauncher","wordLauncher","theChatLauncher","postsLauncher","prayInfoLauncher","listenWordLauncher","qtLauncher","bibleWebLauncher","allSongWebLauncher","bibleLauncher","powerSlideLauncher"],mobile=innerWidth<=760,size=mobile?56:62,gap=mobile?8:10,left=mobile?14:14,bottom=mobile?14:22;
+ const bottomOrder=["finderLauncher","bibleNextLauncher","allSongNextLauncher","powerSlideNextLauncher","deckCraftLauncher","vectorLauncher","photoLauncher","pdfLauncher","effectLauncher","gridLauncher","wordLauncher","theChatLauncher","postsLauncher","prayInfoLauncher","listenWordLauncher","qtLauncher","bibleWebLauncher","holyBibleLauncher","allSongWebLauncher","bibleLauncher","powerSlideLauncher"],mobile=innerWidth<=760,size=mobile?56:62,gap=mobile?8:10,left=mobile?14:14,bottom=mobile?14:22;
  const cols=Math.max(1,Math.floor((innerWidth-left*2+gap)/(size+gap)));
  bottomOrder.forEach((id,i)=>{const item=desktopLauncherItems(true).find(x=>x.id===id);if(!item)return;const el=item.el;const col=i%cols,row=Math.floor(i/cols);setDesktopLauncherPoint(item,left+col*(size+gap),Math.max(4,innerHeight-el.offsetHeight-bottom-row*(size+gap)),{persist:false,animate:true})});
  const dash=desktopLauncherItems(true).find(x=>x.id==="minimizedLauncher");if(dash)setDesktopLauncherPoint(dash,Math.max(4,innerWidth-(dash.el.offsetWidth||62)-(mobile?14:22)),mobile?14:22,{persist:false,animate:true});
@@ -5571,7 +5604,7 @@ function firebasePathURL(){
  return `${db}/${path}.json${auth}`;
 }
 function globalSettingsPayload(){
- const localOnly=new Set(["fastMode","vectorLauncherPos","photoLauncherPos","pdfLauncherPos","effectLauncherPos","gridLauncherPos","wordLauncherPos","postsLauncherPos","prayInfoLauncherPos","listenWordLauncherPos","qtLauncherPos","bibleWebLauncherPos","allSongWebLauncherPos","finderLauncherPos","bibleLauncherPos","powerSlideLauncherPos","bibleNextLauncherPos","powerSlideNextLauncherPos","allSongNextLauncherPos","deckCraftLauncherPos","theChatLauncherPos","dashboardLauncherPos","desktopSnapToGrid","desktopArrangeMode","desktopArrangeSort","bibleWindowState","powerSlideWindowState","deckCraftWindowState","theChatWindowState","preZoomSize","preZoomDim","preZoomPos","iconEditorTarget","bibleLast"]);
+ const localOnly=new Set(["fastMode","vectorLauncherPos","photoLauncherPos","pdfLauncherPos","effectLauncherPos","gridLauncherPos","wordLauncherPos","postsLauncherPos","prayInfoLauncherPos","listenWordLauncherPos","qtLauncherPos","bibleWebLauncherPos","holyBibleLauncherPos","holyBibleWindowState","allSongWebLauncherPos","finderLauncherPos","bibleLauncherPos","powerSlideLauncherPos","bibleNextLauncherPos","powerSlideNextLauncherPos","allSongNextLauncherPos","deckCraftLauncherPos","theChatLauncherPos","dashboardLauncherPos","desktopSnapToGrid","desktopArrangeMode","desktopArrangeSort","bibleWindowState","powerSlideWindowState","deckCraftWindowState","theChatWindowState","preZoomSize","preZoomDim","preZoomPos","iconEditorTarget","bibleLast"]);
  return Object.fromEntries(Object.entries(state.settings||{}).filter(([k])=>!localOnly.has(k)));
 }
 function globalConfigPayload(){
@@ -5634,6 +5667,8 @@ function mergeGlobalConfig(g){
      listenWordLauncherPos:state.settings?.listenWordLauncherPos,
      qtLauncherPos:state.settings?.qtLauncherPos,
      bibleWebLauncherPos:state.settings?.bibleWebLauncherPos,
+      holyBibleLauncherPos:state.settings?.holyBibleLauncherPos,
+      holyBibleWindowState:state.settings?.holyBibleWindowState,
      allSongWebLauncherPos:state.settings?.allSongWebLauncherPos,
      dashboardLauncherPos:state.settings?.dashboardLauncherPos,
      desktopSnapToGrid:state.settings?.desktopSnapToGrid,
@@ -6922,7 +6957,7 @@ function handlePwaLaunchShortcut(){
 }
 window.addEventListener("load",handlePwaLaunchShortcut,{once:true});
 
-if('serviceWorker' in navigator&&location.protocol!=='file:'){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=83copy1',{scope:'./',updateViaCache:'none'}).catch(()=>{}),{once:true})}
+if('serviceWorker' in navigator&&location.protocol!=='file:'){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=83-holybible1',{scope:'./',updateViaCache:'none'}).catch(()=>{}),{once:true})}
 
 /* Bind core controls before optional app modules: one failed module must never freeze Tahoe. */
 const tahoeSafeInit=(label,fn)=>{try{fn()}catch(e){console.error("[Tahoe startup] "+label,e);try{sessionStorage.setItem("tahoe.lastStartupError",label+": "+String(e?.message||e))}catch{}}};
