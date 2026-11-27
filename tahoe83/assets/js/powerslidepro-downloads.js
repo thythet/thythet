@@ -15,6 +15,48 @@ let overlay=null,lastFocus=null;
 function el(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;}
 function close(){if(!overlay)return;overlay.remove();overlay=null;lastFocus?.focus();lastFocus=null;}
 const rows=[];
+// Verified, published BibleApp release; independent of the PowerSlidePro API request.
+const BIBLE_VERSION="0.1.1";
+const BIBLE_ASSETS=[
+  {
+    "icon": "ri-windows-fill",
+    "title": "Windows 10 / 11",
+    "detail": "64-bit · EXE · v0.1.1",
+    "url": "https://github.com/thythet/thythet/releases/download/bibleapp-v0.1.1/BibleApp-0.1.1-win-x64.exe",
+    "name": "BibleApp-0.1.1-win-x64.exe"
+  },
+  {
+    "icon": "ri-windows-fill",
+    "title": "Windows 10 / 11",
+    "detail": "64-bit · MSI · v0.1.1",
+    "url": "https://github.com/thythet/thythet/releases/download/bibleapp-v0.1.1/BibleApp-0.1.1-win-x64.msi",
+    "name": "BibleApp-0.1.1-win-x64.msi"
+  },
+  {
+    "icon": "ri-apple-fill",
+    "title": "macOS · Apple Silicon",
+    "detail": "M-series Mac · DMG · v0.1.1",
+    "url": "https://github.com/thythet/thythet/releases/download/bibleapp-v0.1.1/BibleApp-0.1.1-mac-arm64.dmg",
+    "name": "BibleApp-0.1.1-mac-arm64.dmg"
+  },
+  {
+    "icon": "ri-apple-fill",
+    "title": "macOS · Intel",
+    "detail": "Intel Mac · DMG · v0.1.1",
+    "url": "https://github.com/thythet/thythet/releases/download/bibleapp-v0.1.1/BibleApp-0.1.1-mac-x64.dmg",
+    "name": "BibleApp-0.1.1-mac-x64.dmg"
+  }
+];
+const BIBLE_CHECKSUM="https://github.com/thythet/thythet/releases/download/bibleapp-v0.1.1/SHA256SUMS.txt";
+function bibleDownloadRow(asset){
+ const r=el('div','sw-platform'),i=el('span','sw-platform-icon');
+ i.innerHTML='<i class="'+asset.icon+'" aria-hidden="true"></i>';
+ const l=el('span','sw-platform-label');l.append(el('strong',null,asset.title),el('small',null,asset.detail));
+ const a=el('a','sw-download');a.href=asset.url;a.target='_blank';a.rel='noopener noreferrer';
+ a.innerHTML='<i class="ri-download-2-line" aria-hidden="true"></i><span>Download</span>';
+ a.setAttribute('aria-label','Download '+asset.name);r.append(i,l,a);return r;
+}
+
 function row(icon,title,detail,suffix){
  const r=el('div','sw-platform'),i=el('span','sw-platform-icon');
  i.innerHTML='<i class="'+icon+'" aria-hidden="true"></i>';
@@ -65,6 +107,17 @@ btn.addEventListener('click',()=>{
  const win=row('ri-windows-fill','Windows 10 / 11','64-bit · EXE','win-x64.exe');
  const arm=row('ri-apple-fill','macOS · Apple Silicon','M-series Mac · DMG','mac-arm64.dmg');
  const intel=row('ri-apple-fill','macOS · Intel','Intel Mac · DMG','mac-x64.dmg');
+ const bibleHeading=el('div','sw-platform-heading','Bible software');
+ const bibleApp=el('section','sw-app'),bibleLogo=el('img','sw-logo');
+ bibleLogo.src='../bibleapp/web/assets/icon-192.png';bibleLogo.alt='HolyBible';
+ const bibleInfo=el('div');bibleInfo.append(el('div','sw-app-title','HolyBible'),el('div','sw-app-sub','ព្រះគម្ពីរបរិសុទ្ធ · Khmer Bible · Offline reading'));
+ bibleApp.append(bibleLogo,bibleInfo,el('span','sw-beta','v'+BIBLE_VERSION));
+ const bibleRows=BIBLE_ASSETS.map(bibleDownloadRow);
+ const bibleHelp=el('details','sw-keyboard-help');
+ const bibleCmd=el('code',null,'xattr -dr com.apple.quarantine "/Applications/Bible App.app"');
+ bibleHelp.append(el('summary',null,'macOS installation help'),el('p',null,'Open the correct DMG and move Bible App to Applications. If macOS blocks the app, first verify the installer checksum and use System Settings → Privacy & Security → Open Anyway if available. Only for this trusted release, if quarantine is still the issue, run in Terminal:'),el('p'));
+ bibleHelp.lastChild.append(bibleCmd);
+ const bibleVerify=el('a','sw-download','Verify HolyBible SHA-256');bibleVerify.href=BIBLE_CHECKSUM;bibleVerify.target='_blank';bibleVerify.rel='noopener noreferrer';
  const keyboardHeading=el('div','sw-platform-heading','Keyboard layout');
  const keyboardApp=el('section','sw-app sw-keyboard-app');
  const keyboardIcon=el('span','sw-keyboard-icon');keyboardIcon.innerHTML='<i class="ri-keyboard-line" aria-hidden="true"></i>';
@@ -88,7 +141,7 @@ btn.addEventListener('click',()=>{
  const checksum=el('a',null,'Verify SHA-256');checksum.id='pspro-download-checksums';checksum.hidden=true;
  checksum.target='_blank';checksum.rel='noopener noreferrer';
  links.append(releases,checksum);footer.append(links);
- d.append(x,app,heading,win,arm,intel,keyboardHeading,keyboardApp,keyboardHelp,footer);
+ d.append(x,app,heading,win,arm,intel,bibleHeading,bibleApp,...bibleRows,bibleVerify,bibleHelp,keyboardHeading,keyboardApp,keyboardHelp,footer);
  overlay.append(d);document.body.append(overlay);
  overlay.onclick=e=>{if(e.target===overlay)close();};
  x.focus();loadReleases();
